@@ -1,12 +1,8 @@
 let materias = JSON.parse(localStorage.getItem('materias')) || [];
 
-function toggleMenu() {
-    document.getElementById('menu-lateral').classList.toggle('open');
-    document.getElementById('overlay').classList.toggle('active');
-}
-
 function atualizarLista() {
     const lista = document.getElementById('lista-materias');
+    if (!lista) return;
     lista.innerHTML = '';
 
     materias.forEach(m => {
@@ -14,17 +10,19 @@ function atualizarLista() {
         const card = document.createElement('div');
         card.className = 'materia-card';
         card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="color:var(--primary)">${m.nome}</h3>
-                <button onclick="excluirMateria(${m.id})" class="btn-delete">
-                    <i data-lucide="trash-2"></i>
+            <div class="materia-header">
+                <div>
+                    <span class="materia-title">${m.nome}</span>
+                    <p style="font-size: 0.8rem; color: #888;">Média: ${media}</p>
+                </div>
+                <button onclick="excluirMateria(${m.id})" style="background:none; border:none; color:#ff4d4d; opacity:0.7;">
+                    <i data-lucide="trash-2" size="18"></i>
                 </button>
             </div>
-            <p style="font-size:0.8rem; margin:5px 0;">Média: ${media}</p>
             <div class="bimestres-grid">
                 ${[1,2,3,4].map(n => `
-                    <div>
-                        <label style="font-size:0.6rem; color:#888; display:block">B${n}</label>
+                    <div class="bimestre-box">
+                        <label>${n}º Bim</label>
                         <input type="number" class="bimestre-input" value="${m['n'+n]}" 
                             onchange="editarNota(${m.id}, ${n}, this.value)">
                     </div>
@@ -34,6 +32,7 @@ function atualizarLista() {
         lista.appendChild(card);
     });
     lucide.createIcons();
+    calcularGeral();
 }
 
 function editarNota(id, b, val) {
@@ -49,12 +48,17 @@ function confirmarNovaMateria() {
         materias.push({ id: Date.now(), nome, n1:0, n2:0, n3:0, n4:0 });
         localStorage.setItem('materias', JSON.stringify(materias));
         atualizarLista();
-        document.getElementById('modal-materia').style.display = 'none';
+        fecharModal();
     }
 }
 
+function toggleMenu() {
+    document.getElementById('menu-lateral').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('active');
+}
+
 function excluirMateria(id) {
-    if(confirm("Excluir esta matéria?")) {
+    if(confirm("Deseja apagar esta matéria?")) {
         materias = materias.filter(m => m.id !== id);
         localStorage.setItem('materias', JSON.stringify(materias));
         atualizarLista();
