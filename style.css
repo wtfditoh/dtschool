@@ -1,71 +1,64 @@
 :root {
     --bg: #05050a;
     --primary: #8a2be2;
-    --primary-light: #a04ef6;
-    --card-bg: rgba(255, 255, 255, 0.05);
-    --border: rgba(255, 255, 255, 0.1);
-    --text: #ffffff;
+    --card: rgba(255, 255, 255, 0.05);
+    --glass: rgba(255, 255, 255, 0.08);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
 
 body { 
-    background: radial-gradient(circle at top right, #1a0b2e, #05050a) no-repeat fixed;
-    color: var(--text);
-    min-height: 100vh;
-    padding-bottom: 30px;
+    background: #05050a radial-gradient(circle at top right, #1a0b2e, #05050a) no-repeat fixed;
+    color: white; min-height: 100vh;
 }
 
-/* HEADER COM EFEITO DE VIDRO */
+/* HEADER FIXO */
 .glass-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 20px; background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    position: sticky; top: 0; z-index: 100;
-    border-bottom: 1px solid var(--border);
+    padding: 15px 20px; background: rgba(10, 10, 15, 0.9);
+    backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 100;
 }
 
-/* BOTÕES ESTILIZADOS */
-.btn-icon { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 12px; }
-.btn-add-main { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-weight: bold; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); }
+.btn-add-main {
+    background: var(--primary); color: white; border: none;
+    padding: 10px 15px; border-radius: 12px; font-weight: bold;
+}
 
-/* MENU LATERAL (DRAWER) - SEM BUG */
+/* MENU LATERAL CORRIGIDO */
 .drawer {
-    position: fixed; top: 0; left: -100%; width: 280px; height: 100%;
-    background: rgba(15, 15, 20, 0.95); backdrop-filter: blur(25px);
-    z-index: 1001; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 30px 20px; border-right: 1px solid var(--border);
+    position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+    background: #0f0f14; z-index: 1001; transition: 0.3s ease;
+    padding: 20px; border-right: 1px solid var(--glass);
 }
 .drawer.open { left: 0; }
+
+.drawer-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--glass);
+}
+
+.btn-close { background: #222; border: none; color: white; padding: 8px; border-radius: 8px; cursor: pointer; }
+
 .nav-item-drawer {
-    display: flex; align-items: center; gap: 15px; width: 100%;
-    padding: 16px; background: transparent; border: none; color: #888;
-    font-size: 1rem; border-radius: 15px; margin-bottom: 10px; transition: 0.3s;
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 15px; background: none; border: none; color: #888;
+    font-size: 1rem; border-radius: 12px; margin-bottom: 8px; text-align: left;
 }
-.nav-item-drawer.active { background: rgba(138, 43, 226, 0.15); color: var(--primary-light); font-weight: 600; }
+.nav-item-drawer.active { background: rgba(138, 43, 226, 0.15); color: var(--primary); }
 
-/* CARDS DE MATÉRIA - ONDE ESTAVA FEIO */
+/* CARDS E GRID */
+.tab-content { padding: 20px; }
+.stats-row { display: flex; gap: 15px; margin-bottom: 20px; font-size: 0.9rem; color: #888; }
+
 .materia-card {
-    background: var(--card-bg); border: 1px solid var(--border);
-    padding: 22px; border-radius: 28px; margin: 15px;
-    backdrop-filter: blur(10px);
+    background: var(--card); border: 1px solid var(--glass);
+    padding: 20px; border-radius: 20px; margin-bottom: 15px;
 }
-.materia-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.materia-title { font-size: 1.2rem; color: var(--primary-light); font-weight: 700; }
-
-/* GRID DE NOTAS ORGANIZADO */
-.bimestres-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-}
-.bimestre-box { text-align: center; }
-.bimestre-box label { font-size: 0.65rem; color: #aaa; text-transform: uppercase; margin-bottom: 6px; display: block; }
+.bimestres-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
 .bimestre-input {
-    width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border);
-    color: white; text-align: center; padding: 10px 0; border-radius: 12px;
-    font-size: 1rem; font-weight: 600; outline: none; transition: 0.3s;
+    width: 100%; background: #000; border: 1px solid #333;
+    color: white; text-align: center; padding: 8px 0; border-radius: 8px;
 }
-.bimestre-input:focus { border-color: var(--primary); background: rgba(138, 43, 226, 0.1); }
 
-/* OVERLAY DO MENU */
-#overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; z-index: 1000; backdrop-filter: blur(3px); }
+#overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1000; }
 #overlay.active { display: block; }
