@@ -9,85 +9,109 @@
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
 
 body { 
-    background: var(--bg) radial-gradient(circle at 50% 0%, #1a0b2e 0%, #05050a 80%) no-repeat fixed !important;
-    color: white !important;
+    background: var(--bg) radial-gradient(circle at 50% 0%, #1a0b2e 0%, #05050a 80%) no-repeat fixed;
+    color: white;
     min-height: 100vh;
 }
 
-/* HEADER E PONTO NEON */
+/* TOPO MENOR E COMPACTO */
 .glass-header { 
-    display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; 
+    display: flex; align-items: center; justify-content: space-between; 
+    padding: 12px 20px; /* Reduzi o padding para ficar menor */
     background: rgba(10, 10, 15, 0.8) !important; backdrop-filter: blur(20px);
     position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--glass-border);
 }
 
+.topo-compacto {
+    font-size: 17px !important; /* Menor igual ao anterior */
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
 .logo-dot { 
-    display: inline-block; width: 10px; height: 10px; background: var(--success); border-radius: 50%;
-    margin-right: 10px; box-shadow: 0 0 15px var(--success); animation: pulse 2s infinite;
+    display: inline-block; width: 8px; height: 8px; background: var(--success); border-radius: 50%;
+    margin-right: 8px; box-shadow: 0 0 12px var(--success); animation: pulse 2s infinite;
 }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
 
-/* BOTÕES PRINCIPAIS */
-.btn-icon { background: transparent !important; border: none !important; color: white !important; }
+/* BOTÕES DO HEADER */
+.btn-icon { background: transparent; border: none; color: white; cursor: pointer; }
 .btn-add-main { 
-    background: var(--primary) !important; color: white !important; border: none !important; 
-    width: 44px; height: 44px; border-radius: 14px; font-size: 24px; font-weight: bold;
-    box-shadow: 0 5px 15px rgba(138,43,226,0.3);
+    background: var(--primary); color: white; border: none; 
+    width: 38px; height: 38px; border-radius: 12px; font-size: 20px; font-weight: bold;
+    box-shadow: 0 4px 12px rgba(138,43,226,0.3);
 }
 
-/* MENU LATERAL */
+/* MENU LATERAL E O "X" EM CAIXINHA */
 .drawer { 
-    position: fixed; top: 0; left: -100%; width: 280px; height: 100%; background: #0a0a0f !important; 
-    z-index: 1001; transition: 0.4s; padding: 25px; border-right: 1px solid var(--glass-border);
+    position: fixed; top: 0; left: -100%; width: 280px; height: 100%; background: #0a0a0f; 
+    z-index: 1001; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px; border-right: 1px solid var(--glass-border);
 }
 .drawer.open { left: 0; }
-.drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
+
+.drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 35px; }
+
+.btn-close-box {
+    background: rgba(255,255,255,0.08) !important;
+    border: none !important;
+    color: white !important;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .nav-item { 
-    display: flex; align-items: center; gap: 12px; width: 100%; padding: 15px; 
-    background: transparent !important; border: none !important; color: #666 !important; 
-    border-radius: 12px; margin-bottom: 8px; font-size: 16px; text-align: left;
+    display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; 
+    background: transparent !important; border: none !important; color: #555 !important; 
+    border-radius: 12px; margin-bottom: 5px; font-size: 15px; text-align: left;
 }
-.nav-item.active { background: rgba(138, 43, 226, 0.15) !important; color: var(--primary) !important; font-weight: bold; }
+.nav-item.active { background: rgba(138, 43, 226, 0.12) !important; color: var(--primary) !important; font-weight: bold; }
 
-/* MODAIS E BOTÕES QUE ESTAVAM BRANCOS */
-.modal, .modal-custom { 
-    position: fixed; inset: 0; background: rgba(0,0,0,0.92) !important; 
-    display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px;
-}
-.modal-content { 
-    background: #111118 !important; padding: 30px; border-radius: 30px; 
-    width: 100%; max-width: 340px; text-align: center; border: 1px solid var(--glass-border);
+/* APROVADO COM VIDA (GLOW) */
+.aprovado-badge {
+    color: var(--success) !important;
+    background: rgba(0, 255, 127, 0.1) !important;
+    border: 1px solid var(--success) !important;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 900;
+    text-shadow: 0 0 8px var(--success);
+    box-shadow: 0 0 10px rgba(0, 255, 127, 0.2);
 }
 
-.area-botoes-modal { display: flex !important; gap: 12px !important; margin-top: 20px !important; }
+/* BOTÕES DOS MODAIS (CONSERTADOS) */
+.modal, .modal-custom { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; backdrop-filter: blur(10px); }
+.modal-content { background: #0f0f15 !important; padding: 30px; border-radius: 28px; width: 100%; max-width: 330px; text-align: center; border: 1px solid var(--glass-border); }
+.area-botoes-modal { display: flex !important; gap: 10px !important; margin-top: 20px !important; }
 
 .btn-modal-acao { 
     flex: 1 !important; background: var(--primary) !important; color: white !important; 
-    border: none !important; padding: 16px !important; border-radius: 14px !important; 
-    font-weight: bold !important; font-size: 14px !important; text-transform: uppercase;
+    border: none !important; padding: 15px !important; border-radius: 12px !important; font-weight: bold !important; font-size: 13px !important;
 }
-
 .btn-modal-voltar { 
-    flex: 1 !important; background: #222 !important; color: #888 !important; 
-    border: none !important; padding: 16px !important; border-radius: 14px !important; 
-    font-weight: bold !important; font-size: 14px !important; text-transform: uppercase;
+    flex: 1 !important; background: #1a1a1a !important; color: #777 !important; 
+    border: none !important; padding: 15px !important; border-radius: 12px !important; font-weight: bold !important; font-size: 13px !important;
 }
+.btn-danger-fix { background: #ff4444 !important; color: white !important; }
 
-.btn-danger-fix { background: #ff4444 !important; }
-
-/* INPUTS */
 input#nome-materia-input {
     width: 100% !important; background: #000 !important; border: 1px solid #333 !important; 
-    color: white !important; padding: 16px !important; border-radius: 14px !important; 
-    margin: 15px 0 !important; text-align: center !important; font-size: 16px !important;
+    color: white !important; padding: 14px !important; border-radius: 12px !important; margin: 15px 0 !important; text-align: center;
 }
 
-/* CARDS E STATS */
-.materia-card { background: var(--glass); padding: 22px; border-radius: 25px; margin: 15px; border: 1px solid var(--glass-border); }
-.progress-bg { height: 10px; background: rgba(255,255,255,0.03); border-radius: 10px; margin: 15px 0; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--primary); transition: 0.8s; }
-.stats-row { display: flex; gap: 15px; padding: 20px; }
-.stat-card { background: var(--glass); flex: 1; padding: 18px; border-radius: 20px; text-align: center; border: 1px solid var(--glass-border); }
-.stat-card span { display: block; font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+/* CARDS E PROGRESSO */
+.materia-card { background: var(--glass); padding: 20px; border-radius: 24px; margin: 15px; border: 1px solid var(--glass-border); }
+.progress-bg { height: 8px; background: rgba(255,255,255,0.03); border-radius: 10px; margin: 12px 0; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #b066ff); box-shadow: 0 0 10px var(--primary); border-radius: 10px; transition: 0.8s; }
+
+.stats-row { display: flex; gap: 12px; padding: 15px 20px; }
+.stat-card { background: var(--glass); flex: 1; padding: 15px; border-radius: 20px; text-align: center; border: 1px solid var(--glass-border); }
+.stat-card span { display: block; font-size: 1.4rem; font-weight: 900; color: var(--primary); }
+.stat-card label { font-size: 10px; color: #555; text-transform: uppercase; }
+
 #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1000; }
 #overlay.active { display: block; }
