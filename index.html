@@ -3,69 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DT School | Dashboard</title>
+    <title>DT School</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
-    <div class="app-container">
-        <header class="glass-header">
-            <div class="logo-area">
-                <span class="logo-dot"></span>
-                <h1>DT School</h1>
+    <header class="glass-header">
+        <div class="logo-area">
+            <span class="logo-dot"></span>
+            <h1>DT School</h1>
+        </div>
+        <button onclick="adicionarMateria()" class="btn-add-main">
+            <i data-lucide="plus"></i>
+        </button>
+    </header>
+
+    <main id="aba-notas" class="tab-content active">
+        <div class="stats-overview">
+            <div class="stat-item">
+                <span id="media-geral">0.0</span>
+                <label>Média Geral</label>
             </div>
-            <button onclick="adicionarMateria()" class="btn-add-main">
-                <i data-lucide="plus"></i>
-            </button>
-        </header>
-
-        <section id="aba-notas" class="tab-content active">
-            <div class="stats-overview glass">
-                <div class="stat-item">
-                    <span id="media-geral">0.0</span>
-                    <label>Média Geral</label>
-                </div>
-                <div class="stat-item">
-                    <span id="materias-aprovadas">0/0</span>
-                    <label>Aprovadas</label>
-                </div>
-            </div>
-            <div id="lista-materias"></div>
-        </section>
-
-        <section id="aba-agenda" class="tab-content">
-            <div class="header-section">
-                <h2>Agenda de Atividades</h2>
-                <button class="btn-task" onclick="abrirModalTarefa()">+ Nova Tarefa</button>
-            </div>
-            <div id="lista-tarefas" class="agenda-list"></div>
-        </section>
-
-        <nav class="bottom-nav glass">
-            <button onclick="mudarAba('notas')" class="nav-item active" id="nav-notas">
-                <i data-lucide="layout-dashboard"></i>
-                <span>Notas</span>
-            </button>
-            <button onclick="mudarAba('agenda')" class="nav-item" id="nav-agenda">
-                <i data-lucide="calendar"></i>
-                <span>Agenda</span>
-            </button>
-        </nav>
-    </div>
-
-    <div id="modal-tarefa" class="modal glass-modal">
-        <div class="modal-content">
-            <h3>Nova Atividade</h3>
-            <input type="text" id="task-title" placeholder="Nome da atividade...">
-            <input type="date" id="task-date">
-            <div class="modal-actions">
-                <button onclick="salvarTarefa()" class="btn-confirm">Salvar</button>
-                <button onclick="fecharModalTarefa()" class="btn-cancel">Cancelar</button>
+            <div class="stat-item">
+                <span id="materias-aprovadas">0/0</span>
+                <label>Aprovadas</label>
             </div>
         </div>
-    </div>
+        <div id="lista-materias"></div>
+    </main>
+
+    <main id="aba-agenda" class="tab-content">
+        <div class="header-section">
+            <h2 style="margin: 20px 0;">📅 Agenda</h2>
+            <button onclick="abrirModalTarefa()" class="btn-task">+ Nova Tarefa</button>
+        </div>
+        <div id="lista-tarefas"></div>
+    </main>
+
+    <nav class="bottom-nav">
+        <button onclick="mudarAba('notas')" class="nav-item active" id="nav-notas">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Notas</span>
+        </button>
+        <button onclick="mudarAba('agenda')" class="nav-item" id="nav-agenda">
+            <i data-lucide="calendar"></i>
+            <span>Agenda</span>
+        </button>
+    </nav>
 
     <script src="script.js"></script>
 </body>
