@@ -3,105 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DT School</title>
-    <link rel="icon" type="image/png" href="icon-512.png">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css?v=8.0">
+    <title>DT School Pro</title>
+    <link rel="stylesheet" href="style.css?v=50">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
-    <div id="menu-lateral" class="drawer">
-        <div class="drawer-header">
-            <div class="logo-area">
-                <span class="logo-dot"></span>
-                <h2>DT School</h2>
-            </div>
-            <button onclick="toggleMenu()" class="btn-close-menu">
-                <i data-lucide="x"></i>
-            </button>
-        </div>
-        <nav class="drawer-nav">
-            <button onclick="navegar('notas')" class="nav-item-drawer active" id="btn-nav-notas">
-                <i data-lucide="layout-dashboard"></i> Notas
-            </button>
-            <button onclick="navegar('desempenho')" class="nav-item-drawer" id="btn-nav-desempenho">
-                <i data-lucide="trending-up"></i> Desempenho
-            </button>
-            <button onclick="navegar('agenda')" class="nav-item-drawer" id="btn-nav-agenda">
-                <i data-lucide="calendar"></i> Agenda
-            </button>
-        </nav>
-    </div>
     <div id="overlay" onclick="toggleMenu()"></div>
 
     <header class="glass-header">
-        <button onclick="toggleMenu()" class="btn-icon-header">
-            <i data-lucide="menu"></i>
-        </button>
-        <div class="logo-area">
-            <h1>DT School</h1>
-        </div>
-        <button onclick="adicionarMateria()" class="btn-add-main">
-            <i data-lucide="plus"></i>
-        </button>
+        <button onclick="toggleMenu()" class="btn-icon"><i data-lucide="menu"></i></button>
+        <h1>DT School</h1>
+        <button onclick="abrirModal()" class="btn-add-main">+</button>
     </header>
 
-    <main id="aba-notas" class="tab-content active">
-        <div class="stats-overview">
-            <div class="stat-item">
+    <nav id="menu-lateral" class="drawer">
+        <div class="drawer-header">
+            <span>MENU</span>
+            <button onclick="toggleMenu()" class="btn-close">X</button>
+        </div>
+        <button onclick="navegar('notas')" id="btn-notas" class="nav-item active">
+            <i data-lucide="layout-grid"></i> Notas
+        </button>
+        <button onclick="navegar('agenda')" id="btn-agenda" class="nav-item">
+            <i data-lucide="calendar"></i> Agenda
+        </button>
+    </nav>
+
+    <main id="conteudo-principal">
+        <div class="stats-container">
+            <div class="stat-card">
                 <span id="media-geral">0.0</span>
                 <label>Média Geral</label>
             </div>
-            <div class="stat-item">
-                <span id="materias-aprovadas">0/0</span>
+            <div class="stat-card">
+                <span id="aprovadas-count">0/0</span>
                 <label>Aprovadas</label>
             </div>
         </div>
         <div id="lista-materias"></div>
     </main>
 
-    <main id="aba-desempenho" class="tab-content" style="display: none;">
-        <div class="card-grafico">
-            <h3>Evolução de Médias</h3>
-            <div class="chart-container">
-                <canvas id="graficoDesempenho"></canvas>
-            </div>
-        </div>
-    </main>
-
-    <main id="aba-agenda" class="tab-content" style="display: none;">
-        <div class="empty-state">
-            <i data-lucide="calendar"></i>
-            <h2>Minha Agenda</h2>
-            <p>Em breve: Organize suas provas e entregas.</p>
-        </div>
-    </main>
-
-    <div id="modal-materia" class="modal-container" style="display: none;">
+    <div id="modal-materia" class="modal">
         <div class="modal-content">
             <h3>Nova Disciplina</h3>
-            <input type="text" id="nome-materia-input" placeholder="Ex: Matemática">
-            <div class="modal-btns">
-                <button onclick="fecharModal()" class="btn-cancel">Cancelar</button>
-                <button onclick="confirmarNovaMateria()" class="btn-confirm">Adicionar</button>
+            <input type="text" id="nome-materia-input" placeholder="Digite o nome...">
+            <div class="modal-buttons">
+                <button onclick="fecharModal()" class="btn-cancelar">Sair</button>
+                <button onclick="confirmarNovaMateria()" class="btn-confirmar">Criar</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-excluir" class="modal-container" style="display: none;">
-        <div class="modal-content">
-            <i data-lucide="trash-2" style="color: #ff4d4d; margin-bottom: 10px;"></i>
-            <h3>Excluir Matéria?</h3>
-            <p>As notas serão perdidas permanentemente.</p>
-            <div class="modal-btns">
-                <button onclick="fecharModalExcluir()" class="btn-cancel">Não</button>
-                <button id="btn-confirmar-exclusao" class="btn-delete">Sim, excluir</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js?v=3.5"></script>
+    <script src="script.js?v=50"></script>
 </body>
 </html>
