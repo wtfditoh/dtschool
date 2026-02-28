@@ -94,3 +94,57 @@ body {
 
 .btn-add-main { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 10px; }
 .btn-delete { background: rgba(255,0,0,0.2); color: var(--danger); border: none; padding: 5px; border-radius: 5px; }
+
+/* CORREÇÃO DO CABEÇALHO (Logo e Botão +) */
+header, .glass-header {
+    display: flex !important;
+    flex-direction: row !important; /* Força a ficar na horizontal */
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+/* CORREÇÃO DO CARD (Nome/Status e Lixeira) */
+.materia-info {
+    display: flex !important;
+    flex-direction: row !important; /* Força a ficar na horizontal */
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* Garante que o texto da matéria não empurre o botão */
+.materia-info div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+/* Estilo do botão de lixeira para ficar bonito ao lado */
+.btn-delete {
+    background: rgba(255, 77, 77, 0.15) !important;
+    color: #ff4d4d !important;
+    border: none;
+    padding: 8px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 35px;
+    height: 35px;
+}
+
+/* Estilo do botão + para ficar bonito no topo */
+.btn-add-main {
+    background: #8a2be2 !important;
+    color: white !important;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
