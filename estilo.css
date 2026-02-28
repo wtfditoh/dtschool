@@ -200,3 +200,53 @@ input[type="number"]:focus { border-color: var(--primary) !important; }
 
 #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1000; }
 #overlay.active { display: block; }
+
+/* CONSERTO DOS BOTÕES DOS MODAIS */
+.modal-btns { 
+    display: flex; 
+    gap: 12px; 
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* Estilo para todos os botões de modal (Sair, Criar, Voltar, Apagar) */
+.modal-btns button {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none !important; /* Mata aquele contorno branco feio */
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.modal-btns button:active { transform: scale(0.95); }
+
+/* Cores específicas */
+.btn-confirm { 
+    background: var(--primary) !important; 
+    color: white !important; 
+}
+
+.btn-cancel { 
+    background: #222 !important; 
+    color: white !important; 
+}
+
+.btn-delete { 
+    background: #ff4444 !important; 
+    color: white !important; 
+}
+
+/* Conserto do Input que também estava feio na foto */
+.modal-content input {
+    width: 100%;
+    padding: 15px;
+    background: #000 !important;
+    border: 1px solid #333 !important;
+    color: white !important;
+    border-radius: 12px;
+    margin: 15px 0;
+    text-align: center;
+}
