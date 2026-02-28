@@ -1,60 +1,55 @@
 :root {
     --bg: #05050a;
     --primary: #8a2be2;
+    --success: #00c853;
+    --danger: #ff3d00;
     --card: rgba(255, 255, 255, 0.05);
     --glass: rgba(255, 255, 255, 0.1);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-
 body { 
     background: var(--bg) radial-gradient(circle at top right, #1a0b2e, #05050a) no-repeat fixed !important;
-    color: white !important;
+    color: white !important; margin: 0; font-family: sans-serif;
 }
 
 .glass-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 15px 20px; background: rgba(10, 10, 15, 0.9);
-    backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 100;
+    padding: 15px 20px; background: rgba(5, 5, 10, 0.8);
+    backdrop-filter: blur(20px); sticky; top: 0; z-index: 100;
     border-bottom: 1px solid var(--glass);
 }
 
-.btn-icon { background: none; border: none; color: white; }
-.btn-add-main { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 10px; font-weight: bold; font-size: 20px; }
+/* Status e Gráfico */
+.status-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: bold; }
+.status-aprovado { background: rgba(0, 200, 83, 0.2); color: var(--success); }
+.status-reprovado { background: rgba(255, 61, 0, 0.2); color: var(--danger); }
 
-/* MENU LATERAL CORRIGIDO */
-.drawer {
-    position: fixed; top: 0; left: -100%; width: 280px; height: 100%;
-    background: #0f0f14; z-index: 1001; transition: 0.3s ease;
-    padding: 25px; border-right: 1px solid var(--glass);
-}
-.drawer.open { left: 0; }
-.drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; color: var(--primary); font-weight: bold; }
-.btn-close { background: #222; border: none; color: white; padding: 5px 10px; border-radius: 5px; }
+.progress-container { height: 6px; background: #222; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+.progress-bar { height: 100%; background: var(--primary); transition: 0.5s; }
 
-.nav-item {
-    display: flex; align-items: center; gap: 12px; width: 100%;
-    padding: 15px; background: none; border: none; color: #888;
-    font-size: 1rem; border-radius: 12px; margin-bottom: 5px; text-align: left;
-}
-.nav-item.active { background: rgba(138, 43, 226, 0.15); color: var(--primary); font-weight: bold; }
-
-/* CARDS E GRID */
-.stats-container { display: flex; gap: 10px; padding: 20px; }
-.stat-card { background: var(--card); flex: 1; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid var(--glass); }
-.stat-card span { display: block; font-size: 1.5rem; font-weight: bold; color: var(--primary); }
-
-.materia-card { background: var(--card); border: 1px solid var(--glass); padding: 20px; border-radius: 20px; margin: 0 20px 15px 20px; }
+/* Grid de Notas */
 .bimestres-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
-.bimestre-input { width: 100%; background: #000; border: 1px solid #333; color: white; text-align: center; padding: 10px 0; border-radius: 8px; font-weight: bold; }
+.bimestre-input { 
+    width: 100%; background: #000; border: 1px solid #333; 
+    color: white; text-align: center; padding: 8px 0; border-radius: 10px; font-weight: bold;
+}
 
-/* MODAL */
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-.modal-content { background: #16161d; padding: 25px; border-radius: 20px; width: 100%; max-width: 320px; border: 1px solid var(--glass); }
-.modal-content input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; margin: 15px 0; border-radius: 10px; text-align: center; }
-.modal-buttons { display: flex; gap: 10px; }
-.btn-confirmar { flex: 1; padding: 10px; background: var(--primary); border: none; color: white; border-radius: 8px; font-weight: bold; }
-.btn-cancelar { flex: 1; padding: 10px; background: #333; border: none; color: white; border-radius: 8px; }
-
+/* Reutilize o restante do CSS anterior (Drawer, Modal, Stats-Grid) */
+.drawer { position: fixed; top: 0; left: -100%; width: 280px; height: 100%; background: #0a0a0f; z-index: 1001; transition: 0.3s; padding: 20px; border-right: 1px solid var(--glass); }
+.drawer.open { left: 0; }
+.nav-item { display: flex; align-items: center; gap: 15px; width: 100%; padding: 15px; background: none; border: none; color: #666; border-radius: 12px; margin-bottom: 5px; text-align: left; }
+.nav-item.active { background: rgba(138, 43, 226, 0.1); color: var(--primary); font-weight: bold; }
 #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1000; }
 #overlay.active { display: block; }
+.stats-grid { display: flex; gap: 10px; padding: 20px; }
+.stat-card { background: var(--card); flex: 1; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid var(--glass); }
+.stat-card span { display: block; font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+.materia-card { background: var(--card); border: 1px solid var(--glass); padding: 20px; border-radius: 20px; margin: 0 20px 15px 20px; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; }
+.modal-content { background: #111; padding: 25px; border-radius: 25px; width: 90%; max-width: 320px; text-align: center; }
+.modal-content input { width: 100%; padding: 12px; background: #222; border: 1px solid #333; color: white; margin: 15px 0; border-radius: 12px; text-align: center; }
+.modal-buttons { display: flex; gap: 10px; }
+.btn-confirmar { flex: 1; padding: 12px; background: var(--primary); border: none; color: white; border-radius: 10px; font-weight: bold; }
+.btn-cancelar { flex: 1; padding: 12px; background: #222; border: none; color: white; border-radius: 10px; }
+.btn-icon { background: none; border: none; color: white; }
+.btn-add-main { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 12px; font-weight: bold; font-size: 20px; }
