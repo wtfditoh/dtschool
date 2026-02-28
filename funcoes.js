@@ -6,22 +6,18 @@ function toggleMenu() {
     document.getElementById('overlay').classList.toggle('active');
 }
 
-function mostrarAviso(titulo, texto, icone) {
-    document.getElementById('aviso-titulo').innerText = titulo;
-    document.getElementById('aviso-texto').innerText = texto;
-    document.getElementById('aviso-icon').innerHTML = `<i data-lucide="${icone}" style="width:50px; height:50px; color:#8a2be2;"></i>`;
+function navegar(p) {
+    toggleMenu();
+    if(p === 'notas') return;
+    const msg = p === 'agenda' ? 'Em breve poderás marcar teus testes aqui!' : 'Em breve verás quem é o melhor da DT School!';
+    document.getElementById('aviso-titulo').innerText = p.charAt(0).toUpperCase() + p.slice(1);
+    document.getElementById('aviso-texto').innerText = msg;
+    document.getElementById('aviso-icon').innerHTML = `<i data-lucide="${p === 'agenda' ? 'calendar' : 'trophy'}" style="width:45px; height:45px; color:#8a2be2;"></i>`;
     document.getElementById('modal-aviso-container').style.display = 'flex';
     lucide.createIcons();
 }
 
 function fecharAviso() { document.getElementById('modal-aviso-container').style.display = 'none'; }
-
-function navegar(p) {
-    toggleMenu();
-    if(p === 'notas') return;
-    const msg = p === 'agenda' ? 'Em breve poderás marcar teus testes aqui!' : 'Em breve verás quem é o melhor da DT School!';
-    mostrarAviso(p.charAt(0).toUpperCase() + p.slice(1), msg, p === 'agenda' ? 'calendar' : 'trophy');
-}
 
 function abrirModalExcluir(id) {
     idParaExcluir = id;
@@ -46,24 +42,23 @@ function atualizarLista() {
         const soma = (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0);
         const media = (soma / 4).toFixed(1);
         const percent = Math.min((soma / 24) * 100, 100);
+        const aprovado = soma >= 24;
 
         return `
         <div class="materia-card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="font-size:18px;">${m.nome}</h3>
-                <button onclick="abrirModalExcluir(${m.id})" style="background:none; border:none; color:#ff4444; opacity:0.6;">
-                    <i data-lucide="trash-2" style="width:18px;"></i>
-                </button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="font-size:16px; font-weight:800;">${m.nome}</h3>
+                ${aprovado ? '<span class="aprovado-badge">APROVADO</span>' : `<span style="font-size:10px; color:#444;">FALTAM ${(24-soma).toFixed(1)}</span>`}
             </div>
             <div class="progress-bg"><div class="progress-fill" style="width:${percent}%;"></div></div>
-            <div style="display:flex; justify-content:space-between; font-size:12px; color:#555; margin-bottom:15px;">
-                <span>MÉDIA: ${media}</span>
-                <span>${soma >= 24 ? 'APROVADO' : 'FALTAM ' + (24-soma).toFixed(1)}</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span style="font-size:11px; color:#555; font-weight:bold;">MÉDIA: ${media}</span>
+                <button onclick="abrirModalExcluir(${m.id})" style="background:none; border:none; color:#ff4444; opacity:0.4;"><i data-lucide="trash-2" style="width:16px;"></i></button>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
                 ${[1,2,3,4].map(n => `
                     <input type="number" value="${m['n'+n] || ''}" placeholder="${n}º"
-                        style="width:100%; background:#000; border:1px solid #333; color:white; padding:12px; border-radius:12px; text-align:center;"
+                        style="width:100%; background:rgba(0,0,0,0.3); border:1px solid #222; color:white; padding:10px; border-radius:10px; text-align:center; font-size:13px; font-weight:bold;"
                         onchange="salvarNota(${m.id}, ${n}, this.value)">
                 `).join('')}
             </div>
@@ -71,8 +66,8 @@ function atualizarLista() {
     }).join('');
     
     const total = materias.length;
-    const mediaGeral = total > 0 ? (materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0) / total).toFixed(1) : "0.0";
-    document.getElementById('media-geral').innerText = mediaGeral;
+    const somaMedias = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
+    document.getElementById('media-geral').innerText = total > 0 ? (somaMedias / total).toFixed(1) : "0.0";
     document.getElementById('aprov-count').innerText = `${materias.filter(m => (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4)) >= 24).length}/${total}`;
     lucide.createIcons();
 }
