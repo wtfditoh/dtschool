@@ -46,21 +46,26 @@ function atualizarLista() {
 
         return `
         <div class="materia-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h3 style="font-size:16px; font-weight:800;">${m.nome}</h3>
-                ${aprovado ? '<span class="aprovado-badge">APROVADO</span>' : `<span style="font-size:10px; color:#444;">FALTAM ${(24-soma).toFixed(1)}</span>`}
+            <div class="card-top">
+                <h3 style="font-size:17px; font-weight:800;">${m.nome}</h3>
+                <button onclick="abrirModalExcluir(${m.id})" style="background:none; border:none; color:#ff4444; opacity:0.5; padding:5px;">
+                    <i data-lucide="trash-2" style="width:18px;"></i>
+                </button>
             </div>
+            
             <div class="progress-bg"><div class="progress-fill" style="width:${percent}%;"></div></div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <span style="font-size:11px; color:#555; font-weight:bold;">MÉDIA: ${media}</span>
-                <button onclick="abrirModalExcluir(${m.id})" style="background:none; border:none; color:#ff4444; opacity:0.4;"><i data-lucide="trash-2" style="width:16px;"></i></button>
-            </div>
+            
             <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
                 ${[1,2,3,4].map(n => `
                     <input type="number" value="${m['n'+n] || ''}" placeholder="${n}º"
                         style="width:100%; background:rgba(0,0,0,0.3); border:1px solid #222; color:white; padding:10px; border-radius:10px; text-align:center; font-size:13px; font-weight:bold;"
                         onchange="salvarNota(${m.id}, ${n}, this.value)">
                 `).join('')}
+            </div>
+
+            <div class="card-bottom">
+                <span style="font-size:11px; color:#555; font-weight:bold;">MÉDIA: ${media}</span>
+                ${aprovado ? '<span class="aprovado-badge">APROVADO</span>' : `<span class="falta-badge">FALTAM ${(24-soma).toFixed(1)}</span>`}
             </div>
         </div>`;
     }).join('');
