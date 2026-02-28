@@ -6,63 +6,77 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
-body { background: var(--bg); color: white; overflow-x: hidden; }
 
-/* Ponto Verde no Início */
+body { 
+    background: var(--bg) radial-gradient(circle at top right, #1a0b2e, #05050a) no-repeat fixed;
+    color: white;
+    min-height: 100vh;
+}
+
+/* O NOVO PONTO VERDE (ESFERA NEON) */
 .logo-dot { 
-    color: var(--success); 
-    text-shadow: 0 0 12px var(--success); 
-    margin-right: 4px;
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background: var(--success);
+    border-radius: 50%;
+    margin-right: 10px;
+    box-shadow: 0 0 15px var(--success), 0 0 30px var(--success);
+    vertical-align: middle;
 }
 
 .glass-header { 
     display: flex; align-items: center; justify-content: space-between; 
-    padding: 15px 20px; background: rgba(5,5,10,0.8); backdrop-filter: blur(15px);
+    padding: 15px 20px; background: rgba(5,5,10,0.85); backdrop-filter: blur(20px);
     position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--glass);
 }
 
-.btn-add-main { background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 12px; font-size: 24px; }
+.btn-icon { background: transparent; border: none; color: white; }
+.btn-add-main { background: var(--primary); color: white; border: none; width: 45px; height: 45px; border-radius: 14px; font-size: 24px; box-shadow: 0 5px 15px rgba(138,43,226,0.4); }
 
-/* MENU LATERAL - Corrigindo botões brancos das fotos */
-.drawer { position: fixed; top: 0; left: -100%; width: 280px; height: 100%; background: #0a0a0f; z-index: 1001; transition: 0.3s; padding: 20px; border-right: 1px solid var(--glass); }
+/* MENU LATERAL */
+.drawer { position: fixed; top: 0; left: -100%; width: 280px; height: 100%; background: #0a0a0f; z-index: 1001; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px; border-right: 1px solid var(--glass); }
 .drawer.open { left: 0; }
-.drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-
-.nav-item { 
-    display: flex; align-items: center; gap: 12px; width: 100%; padding: 15px; 
-    background: transparent !important; /* Remove o fundo branco */
-    border: none !important; /* Remove bordas de botão padrão */
-    color: #888; border-radius: 12px; margin-bottom: 8px; text-align: left; font-size: 16px;
-}
-
-.nav-item i { width: 20px; height: 20px; }
-
-.nav-item.active { 
-    background: rgba(138, 43, 226, 0.15) !important; 
-    color: var(--primary); font-weight: bold; 
-}
-
+.nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px; background: transparent !important; border: none !important; color: #666; border-radius: 12px; margin-bottom: 8px; text-align: left; font-size: 16px; }
+.nav-item.active { background: rgba(138, 43, 226, 0.15) !important; color: var(--primary); font-weight: bold; }
 .btn-close { background: var(--glass); border: none; color: white; width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
 
-/* CARDS E STATS */
-.stats-row { display: flex; gap: 15px; padding: 20px; margin-top: 5px; }
-.stat-card { background: var(--glass); flex: 1; padding: 15px; border-radius: 20px; text-align: center; border: 1px solid var(--glass); }
-.stat-card span { display: block; font-size: 1.4rem; font-weight: bold; color: var(--primary); }
+/* BARRINHA QUE APARECE SEMPRE */
+.progress-bg { 
+    height: 10px; 
+    background: rgba(255,255,255,0.03); 
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px; 
+    margin: 15px 0; 
+    overflow: hidden; 
+    position: relative;
+}
+.progress-fill { 
+    height: 100%; 
+    background: linear-gradient(90deg, var(--primary), #b066ff);
+    transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
+    border-radius: 12px;
+}
 
-.materia-card { background: var(--glass); padding: 20px; border-radius: 24px; margin: 15px; border: 1px solid rgba(255,255,255,0.05); }
-.status-badge { font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: bold; border: 1px solid rgba(255,255,255,0.1); }
-.aprovado { color: var(--success); border-color: var(--success); background: rgba(0,255,127,0.1); }
+.materia-card { background: var(--glass); padding: 22px; border-radius: 28px; margin: 15px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
+.status-badge { font-size: 10px; padding: 5px 12px; border-radius: 20px; font-weight: 800; border: 1px solid rgba(255,255,255,0.1); text-transform: uppercase; letter-spacing: 0.5px; }
+.aprovado { color: var(--success); border-color: var(--success); background: rgba(0,255,127,0.15); box-shadow: 0 0 15px rgba(0,255,127,0.1); }
 
-.progress-bg { height: 8px; background: #1a1a1a; border-radius: 10px; margin: 15px 0; overflow: hidden; }
-.progress-fill { height: 100%; transition: 0.6s ease; }
+.stats-row { display: flex; gap: 15px; padding: 20px; }
+.stat-card { background: var(--glass); flex: 1; padding: 18px; border-radius: 24px; text-align: center; border: 1px solid var(--glass); }
+.stat-card span { display: block; font-size: 1.6rem; font-weight: bold; color: var(--primary); margin-bottom: 4px; }
+.stat-card label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
 
 /* MODAIS */
-.modal, .modal-custom { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-.modal-content { background: #16161d; padding: 30px; border-radius: 28px; width: 100%; max-width: 320px; text-align: center; border: 1px solid var(--glass); }
-.modal-content input { width: 100%; padding: 15px; background: #000; border: 1px solid #333; color: white; margin: 20px 0; border-radius: 12px; text-align: center; font-size: 16px; }
-.modal-btns { display: flex; gap: 10px; }
-.btn-confirm { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; flex: 1; font-weight: bold; }
-.btn-cancel { background: #222; color: white; border: none; padding: 14px; border-radius: 12px; flex: 1; }
-.btn-delete { background: #ff4444; color: white; border: none; padding: 14px; border-radius: 12px; flex: 1; font-weight: bold; }
+.modal, .modal-custom { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; backdrop-filter: blur(8px); }
+.modal-content { background: #111118; padding: 35px; border-radius: 32px; width: 100%; max-width: 340px; text-align: center; border: 1px solid var(--glass); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+.modal-content input { width: 100%; padding: 16px; background: #000; border: 1px solid #333; color: white; margin: 20px 0; border-radius: 14px; text-align: center; font-size: 16px; }
+.modal-btns { display: flex; gap: 12px; }
+.btn-confirm { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 14px; flex: 1; font-weight: bold; }
+.btn-cancel { background: #222; color: white; border: none; padding: 15px; border-radius: 14px; flex: 1; }
+.btn-delete { background: #ff4444; color: white; border: none; padding: 15px; border-radius: 14px; flex: 1; font-weight: bold; }
+
 #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1000; }
 #overlay.active { display: block; }
+
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
