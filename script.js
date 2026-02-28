@@ -1,70 +1,53 @@
 let materias = JSON.parse(localStorage.getItem('materias')) || [];
-let graficoInstancia = null;
 
-// INICIALIZAÇÃO
-document.addEventListener('DOMContentLoaded', () => {
-    lucide.createIcons();
-    atualizarLista();
-});
+function atualizarLista() {
+    const lista = document.getElementById('lista-materias');
+    lista.innerHTML = '';
 
-// MENU E NAVEGAÇÃO
-function toggleMenu() {
-    document.getElementById('menu-lateral').classList.toggle('open');
-    document.getElementById('overlay').classList.toggle('active');
-}
+    materias.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'materia-card';
+        
+        // Cálculo da média da matéria
+        const mediaMateria = ((m.n1 + m.n2 + m.n3 + m.n4) / 4).toFixed(1);
 
-function navegar(aba) {
-    document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-    document.querySelectorAll('.nav-item-drawer').forEach(btn => btn.classList.remove('active'));
-    
-    document.getElementById('aba-' + aba).style.display = 'block';
-    document.getElementById('btn-nav-' + aba).classList.add('active');
-    
-    if(aba === 'desempenho') renderizarGrafico();
-    toggleMenu();
-}
-
-// LÓGICA DO GRÁFICO
-function renderizarGrafico() {
-    const ctx = document.getElementById('graficoDesempenho').getContext('2d');
-    if(graficoInstancia) graficoInstancia.destroy();
-
-    const labels = materias.length > 0 ? materias.map(m => m.nome) : ['Sem dados'];
-    const notas = materias.length > 0 ? materias.map(m => parseFloat(m.nota || 0)) : [0];
-
-    graficoInstancia = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Suas Notas',
-                data: notas,
-                borderColor: '#8a2be2',
-                backgroundColor: 'rgba(138, 43, 226, 0.1)',
-                fill: true,
-                tension: 0.4,
-                borderWidth: 3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, max: 10, grid: { color: 'rgba(255,255,255,0.05)' } },
-                x: { grid: { display: false } }
-            }
-        }
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                    <h3 style="color: var(--primary);">${m.nome}</h3>
+                    <small>Média: ${mediaMateria}</small>
+                </div>
+                <button onclick="abrirExcluir(${m.id})" class="btn-trash">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+            <div class="bimestres-grid">
+                ${[1,2,3,4].map(num => `
+                    <div class="bimestre-item">
+                        <label>${num}º B</label>
+                        <input type="number" step="0.5" value="${m['n'+num]}" 
+                            onchange="atualizarNota(${m.id}, ${num}, this.value)">
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        lista.appendChild(card);
     });
+    lucide.createIcons();
+    calcularGeral();
 }
 
-// FUNÇÕES DE MATÉRIA (ADICIONAR/REMOVER) - Mantenha as que você já tem ou use essas simplificadas:
-function adicionarMateria() { document.getElementById('modal-materia').style.display = 'flex'; }
-function fecharModal() { document.getElementById('modal-materia').style.display = 'none'; }
+function atualizarNota(id, bimestre, valor) {
+    const idx = materias.findIndex(m => m.id === id);
+    materias[idx]['n' + bimestre] = parseFloat(valor) || 0;
+    localStorage.setItem('materias', JSON.stringify(materias));
+    atualizarLista();
+}
 
 function confirmarNovaMateria() {
     const nome = document.getElementById('nome-materia-input').value;
     if(nome) {
-        materias.push({ id: Date.now(), nome: nome, nota: 0 });
+        materias.push({ id: Date.now(), nome: nome, n1: 0, n2: 0, n3: 0, n4: 0 });
         localStorage.setItem('materias', JSON.stringify(materias));
         atualizarLista();
         fecharModal();
@@ -72,24 +55,19 @@ function confirmarNovaMateria() {
     }
 }
 
-function atualizarLista() {
-    const lista = document.getElementById('lista-materias');
-    lista.innerHTML = materias.map(m => `
-        <div class="stat-item" style="margin-bottom:10px; text-align:left; display:flex; justify-content:space-between; align-items:center;">
-            <span>${m.nome}</span>
-            <input type="number" value="${m.nota}" onchange="atualizarNota(${m.id}, this.value)" style="width:50px; background:none; border:1px solid #444; color:white; text-align:center; border-radius:5px;">
-        </div>
-    `).join('');
-    
-    // Cálculos de média geral aqui...
-    const media = materias.length ? (materias.reduce((a, b) => a + parseFloat(b.nota), 0) / materias.length).toFixed(1) : "0.0";
-    document.getElementById('media-geral').innerText = media;
-    document.getElementById('materias-aprovadas').innerText = `${materias.filter(m => m.nota >= 6).length}/${materias.length}`;
+function abrirExcluir(id) {
+    const modal = document.getElementById('modal-excluir');
+    modal.style.display = 'flex';
+    document.getElementById('btn-confirmar-exclusao').onclick = () => {
+        materias = materias.filter(m => m.id !== id);
+        localStorage.setItem('materias', JSON.stringify(materias));
+        atualizarLista();
+        modal.style.display = 'none';
+    };
 }
 
-function atualizarNota(id, valor) {
-    const index = materias.findIndex(m => m.id === id);
-    materias[index].nota = valor;
-    localStorage.setItem('materias', JSON.stringify(materias));
-    atualizarLista();
+// Funções de Menu e Modal permanecem as mesmas...
+function toggleMenu() {
+    document.getElementById('menu-lateral').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('active');
 }
