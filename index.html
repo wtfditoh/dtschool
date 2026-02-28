@@ -5,43 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DT School Pro</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="estilo.css?v=1.1">
+    <link rel="stylesheet" href="estilo.css?v=2.0">
 </head>
 <body>
     <div id="overlay" onclick="toggleMenu()"></div>
 
     <header class="glass-header">
         <button onclick="toggleMenu()" class="btn-icon"><i data-lucide="menu"></i></button>
-        <h1>DT School</h1>
+        <h1>DT School<span class="logo-dot">.</span></h1>
         <button onclick="abrirModal()" class="btn-add-main">+</button>
     </header>
 
     <nav id="menu-lateral" class="drawer">
         <div class="drawer-header">
-            <span>DT SCHOOL</span>
-            <button onclick="toggleMenu()" class="btn-close">X</button>
+            <span style="font-weight:bold;">DT SCHOOL<span class="logo-dot">.</span></span>
+            <button onclick="toggleMenu()" class="btn-close"><i data-lucide="x"></i></button>
         </div>
-        <button onclick="navegar('notas')" class="nav-item active">
-            <i data-lucide="layout-grid"></i> Notas
-        </button>
-        <button onclick="navegar('ranking')" class="nav-item">
-            <i data-lucide="trophy"></i> Ranking <small>(Breve)</small>
-        </button>
-        <button onclick="navegar('agenda')" class="nav-item">
-            <i data-lucide="calendar"></i> Agenda
-        </button>
+        <button onclick="navegar('notas')" class="nav-item active"><i data-lucide="layout-grid"></i> Notas</button>
+        <button onclick="navegar('ranking')" class="nav-item"><i data-lucide="trophy"></i> Ranking</button>
+        <button onclick="navegar('agenda')" class="nav-item"><i data-lucide="calendar"></i> Agenda</button>
     </nav>
 
     <main class="container">
         <div class="stats-row">
-            <div class="stat-card">
-                <span id="media-geral">0.0</span>
-                <label>Média Geral</label>
-            </div>
-            <div class="stat-card">
-                <span id="aprov-count">0/0</span>
-                <label>Matérias</label>
-            </div>
+            <div class="stat-card"><span id="media-geral">0.0</span><label>Média Geral</label></div>
+            <div class="stat-card"><span id="aprov-count">0/0</span><label>Aprovadas</label></div>
         </div>
         <div id="lista-materias"></div>
     </main>
@@ -57,6 +45,27 @@
         </div>
     </div>
 
-    <script src="funcoes.js?v=1.1"></script>
+    <div id="modal-aviso-container" class="modal-custom">
+        <div class="modal-content">
+            <div id="aviso-icon" style="margin-bottom:15px;"></div>
+            <h3 id="aviso-titulo"></h3>
+            <p id="aviso-texto" style="color:#888; margin: 15px 0;"></p>
+            <button onclick="fecharAviso()" class="btn-confirm" style="width:100%">Entendido</button>
+        </div>
+    </div>
+
+    <div id="modal-excluir-container" class="modal-custom">
+        <div class="modal-content" style="border: 1px solid rgba(255,68,68,0.3)">
+            <i data-lucide="alert-triangle" style="color:#ff4444; width:45px; height:45px;"></i>
+            <h3>Apagar Disciplina?</h3>
+            <p style="color:#888; margin:15px 0;">Esta ação não pode ser desfeita.</p>
+            <div class="modal-btns">
+                <button onclick="fecharModalExcluir()" class="btn-cancel">Voltar</button>
+                <button onclick="confirmarExclusao()" class="btn-delete">Apagar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="funcoes.js?v=2.0"></script>
 </body>
 </html>
