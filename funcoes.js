@@ -9,23 +9,19 @@ function toggleMenu() {
 function mostrarAviso(titulo, texto, icone) {
     document.getElementById('aviso-titulo').innerText = titulo;
     document.getElementById('aviso-texto').innerText = texto;
-    document.getElementById('aviso-icon').innerHTML = `<i data-lucide="${icone}" style="width:50px; height:50px; color:#8a2be2;"></i>`;
+    document.getElementById('aviso-icon').innerHTML = `<i data-lucide="${icone}" style="width:55px; height:55px; color:#8a2be2;"></i>`;
     document.getElementById('modal-aviso-container').style.display = 'flex';
     lucide.createIcons();
 }
 
 function fecharAviso() { document.getElementById('modal-aviso-container').style.display = 'none'; }
 
-function navegar(p, elemento) {
-    if(p === 'notas') {
-        toggleMenu();
-        return;
-    }
-    // Para Agenda e Ranking
+function navegar(p) {
+    toggleMenu();
+    if(p === 'notas') return;
     const icon = p === 'agenda' ? 'calendar' : 'trophy';
     const msg = p === 'agenda' ? 'A tua agenda escolar estará disponível em breve!' : 'O ranking global chega na próxima atualização.';
     mostrarAviso(p.charAt(0).toUpperCase() + p.slice(1), msg, icon);
-    toggleMenu();
 }
 
 function abrirModalExcluir(id) {
@@ -52,34 +48,38 @@ function atualizarLista() {
         const media = (soma / 4).toFixed(1);
         const falta = Math.max(0, (24 - soma)).toFixed(1);
         const percent = Math.min((soma / 24) * 100, 100);
+        const isAprovado = soma >= 24;
 
         return `
         <div class="materia-card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <h3 style="margin-bottom:5px;">${m.nome}</h3>
-                    <span class="status-badge ${soma >= 24 ? 'aprovado' : ''}">
-                        ${soma >= 24 ? '✓ APROVADO' : 'EM CURSO'}
+                    <h3 style="margin-bottom:6px; font-size:18px;">${m.nome}</h3>
+                    <span class="status-badge ${isAprovado ? 'aprovado' : ''}">
+                        ${isAprovado ? '✓ Aprovado' : 'Em Curso'}
                     </span>
                 </div>
-                <button onclick="abrirModalExcluir(${m.id})" style="background:none; border:none; color:#ff4444;">
-                    <i data-lucide="trash-2"></i>
+                <button onclick="abrirModalExcluir(${m.id})" style="background:none; border:none; color:#ff4444; opacity:0.5;">
+                    <i data-lucide="trash-2" style="width:20px;"></i>
                 </button>
             </div>
             
             <div class="progress-bg">
-                <div class="progress-fill" style="width:${percent}%; background:${soma >= 24 ? '#00ff7f' : '#8a2be2'}; box-shadow:${soma >= 24 ? '0 0 10px #00ff7f' : 'none'};"></div>
+                <div class="progress-fill" style="width:${percent}%; 
+                    background:${isAprovado ? 'var(--success)' : 'var(--primary)'}; 
+                    box-shadow:${isAprovado ? '0 0 15px var(--success)' : 'none'};">
+                </div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; font-size:11px; color:#666; margin-bottom:10px;">
-                <span>Média: ${media}</span>
-                <span style="color: ${falta > 0 ? '#666' : '#00ff7f'}">${falta > 0 ? 'Faltam ' + falta + ' pts' : 'Meta batida!'}</span>
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:#555; margin-bottom:15px; font-weight:bold;">
+                <span>MÉDIA: ${media}</span>
+                <span style="color: ${falta > 0 ? '#555' : 'var(--success)'}">${falta > 0 ? 'FALTAM ' + falta + ' PTS' : 'META BATIDA!'}</span>
             </div>
 
-            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
                 ${[1,2,3,4].map(n => `
                     <input type="number" value="${m['n'+n] || ''}" placeholder="${n}º"
-                        style="width:100%; background:#000; border:1px solid #333; color:white; padding:10px; border-radius:10px; text-align:center;"
+                        style="width:100%; background:rgba(0,0,0,0.3); border:1px solid #222; color:white; padding:12px; border-radius:12px; text-align:center; font-weight:bold;"
                         onchange="salvarNota(${m.id}, ${n}, this.value)">
                 `).join('')}
             </div>
