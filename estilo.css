@@ -1,90 +1,202 @@
+/* =========================================
+   ESTILO RENOVAÇÃO 7.0 - DT SCHOOL PRO
+   ========================================= */
+
 :root {
     --bg: #05050a;
-    --primary: #8a2be2;
-    --success: #00ff7f;
-    --glass: rgba(255, 255, 255, 0.08);
+    --primary: #8a2be2;      /* Roxo Principal */
+    --primary-glow: rgba(138, 43, 226, 0.3);
+    --success: #00ff7f;      /* Verde Neon */
+    --success-glow: rgba(0, 255, 127, 0.4);
+    --glass: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-main: #ffffff;
+    --text-dim: #88888b;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+/* 1. RESET E FUNDO VIVO */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: 'Inter', -apple-system, sans-serif; 
+    -webkit-tap-highlight-color: transparent;
+}
 
 body { 
-    background: var(--bg) radial-gradient(circle at top right, #1a0b2e, #05050a) no-repeat fixed;
-    color: white;
+    background: var(--bg) radial-gradient(circle at 40% -10%, #1a0b2e 0%, #05050a 70%) no-repeat fixed;
+    color: var(--text-main);
     min-height: 100vh;
+    line-height: 1.5;
 }
 
-/* PONTO NEON */
+/* 2. TOPO PREMIUM (EFEITO VIDRO) */
+.glass-header { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 16px 20px; 
+    background: rgba(10, 10, 15, 0.75); 
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+h1 {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+}
+
+/* 3. O PONTO NEON (AGORA PULSANDO) */
 .logo-dot { 
     display: inline-block;
     width: 10px;
     height: 10px;
     background: var(--success);
     border-radius: 50%;
-    margin-right: 8px;
-    box-shadow: 0 0 12px var(--success);
+    margin-right: 10px;
+    box-shadow: 0 0 15px var(--success), 0 0 5px var(--success);
+    animation: pulseNeon 2s infinite ease-in-out;
 }
 
-.glass-header { 
-    display: flex; align-items: center; justify-content: space-between; 
-    padding: 15px 20px; background: rgba(5,5,10,0.85); backdrop-filter: blur(20px);
-    position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--glass);
+@keyframes pulseNeon {
+    0% { transform: scale(1); box-shadow: 0 0 10px var(--success); }
+    50% { transform: scale(1.2); box-shadow: 0 0 20px var(--success), 0 0 30px var(--success-glow); }
+    100% { transform: scale(1); box-shadow: 0 0 10px var(--success); }
 }
 
-.btn-icon { background: transparent; border: none; color: white; }
-.btn-add-main { background: var(--primary); color: white; border: none; width: 45px; height: 45px; border-radius: 14px; font-size: 24px; box-shadow: 0 5px 15px rgba(138,43,226,0.4); }
+/* 4. BOTÕES E ÍCONES */
+.btn-icon { background: transparent; border: none; color: white; display: flex; align-items: center; }
+.btn-add-main { 
+    background: var(--primary); 
+    color: white; 
+    border: none; 
+    width: 44px; 
+    height: 44px; 
+    border-radius: 14px; 
+    font-size: 26px; 
+    font-weight: bold;
+    box-shadow: 0 4px 15px var(--primary-glow);
+    transition: transform 0.2s;
+}
+.btn-add-main:active { transform: scale(0.9); }
 
-/* CORREÇÃO DO DRAWER HEADER */
+/* 5. MENU LATERAL (DRAWER) */
 .drawer { 
-    position: fixed; top: 0; left: -100%; width: 280px; height: 100%; 
-    background: #0a0a0f; z-index: 1001; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-    padding: 25px; border-right: 1px solid var(--glass); 
+    position: fixed; top: 0; left: -100%; width: 290px; height: 100%; 
+    background: rgba(10, 10, 15, 0.98); 
+    z-index: 1001; 
+    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+    padding: 25px; 
+    border-right: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
 }
 .drawer.open { left: 0; }
 
 .drawer-header { 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; /* NOME DE UM LADO, X DO OUTRO */
-    width: 100%;
-    margin-bottom: 35px; 
+    display: flex; align-items: center; justify-content: space-between; 
+    margin-bottom: 40px; 
 }
 
-.logo-box { display: flex; align-items: center; }
-.logo-text { font-weight: 800; letter-spacing: 1px; font-size: 18px; }
+.nav-item { 
+    display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; 
+    background: transparent !important; border: none !important; 
+    color: var(--text-dim); border-radius: 14px; margin-bottom: 10px; 
+    font-size: 16px; font-weight: 500;
+}
+
+.nav-item.active { 
+    background: rgba(138, 43, 226, 0.12) !important; 
+    color: var(--primary); 
+    font-weight: 700;
+}
 
 .btn-close { 
-    background: var(--glass); 
-    border: none; 
-    color: white; 
-    width: 38px; 
-    height: 38px; 
-    border-radius: 10px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
+    background: var(--glass); border: none; color: white; 
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
 }
 
-/* O RESTANTE DO CSS CONTINUA IGUAL À VERSÃO ANTERIOR */
-.nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px; background: transparent !important; border: none !important; color: #666; border-radius: 12px; margin-bottom: 8px; text-align: left; font-size: 16px; }
-.nav-item.active { background: rgba(138, 43, 226, 0.15) !important; color: var(--primary); font-weight: bold; }
+/* 6. CARDS DE MATÉRIA */
+.materia-card { 
+    background: var(--glass); 
+    padding: 24px; 
+    border-radius: 30px; 
+    margin: 18px; 
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
 
-.progress-bg { height: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin: 15px 0; overflow: hidden; }
-.progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #b066ff); transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 12px; }
+.status-badge { 
+    font-size: 10px; padding: 5px 12px; border-radius: 20px; 
+    font-weight: 800; border: 1px solid rgba(255,255,255,0.1); 
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.aprovado { 
+    color: var(--success); 
+    border-color: var(--success); 
+    background: rgba(0,255,127,0.12); 
+    box-shadow: 0 0 15px rgba(0,255,127,0.05);
+}
 
-.materia-card { background: var(--glass); padding: 22px; border-radius: 28px; margin: 15px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
-.status-badge { font-size: 10px; padding: 5px 12px; border-radius: 20px; font-weight: 800; border: 1px solid rgba(255,255,255,0.1); text-transform: uppercase; }
-.aprovado { color: var(--success); border-color: var(--success); background: rgba(0,255,127,0.15); }
+/* 7. BARRINHA DE PROGRESSO (LIFE BAR) */
+.progress-bg { 
+    height: 12px; 
+    background: rgba(255,255,255,0.04); 
+    border-radius: 10px; 
+    margin: 20px 0; 
+    overflow: hidden; 
+    border: 1px solid rgba(255,255,255,0.02);
+}
+.progress-fill { 
+    height: 100%; 
+    background: linear-gradient(90deg, var(--primary), #b066ff); 
+    border-radius: 10px;
+    transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
+/* 8. INPUTS DE NOTAS */
+input[type="number"] {
+    width: 100%; 
+    background: rgba(0, 0, 0, 0.4) !important; 
+    border: 1px solid #25252b !important; 
+    color: white; 
+    padding: 12px; 
+    border-radius: 14px; 
+    text-align: center; 
+    font-weight: 700;
+    transition: border 0.3s;
+}
+input[type="number"]:focus { border-color: var(--primary) !important; }
+
+/* 9. MODAIS (DESIGN LIMPO) */
+.modal, .modal-custom { 
+    position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
+    display: none; align-items: center; justify-content: center; 
+    z-index: 2000; padding: 25px; backdrop-filter: blur(10px);
+}
+.modal-content { 
+    background: #0f0f15; padding: 35px; border-radius: 35px; 
+    width: 100%; max-width: 350px; text-align: center; 
+    border: 1px solid var(--glass-border);
+}
+
+/* 10. STATS GERAIS */
 .stats-row { display: flex; gap: 15px; padding: 20px; }
-.stat-card { background: var(--glass); flex: 1; padding: 18px; border-radius: 24px; text-align: center; border: 1px solid var(--glass); }
-.stat-card span { display: block; font-size: 1.6rem; font-weight: bold; color: var(--primary); }
+.stat-card { 
+    background: var(--glass); flex: 1; padding: 20px; 
+    border-radius: 25px; text-align: center; border: 1px solid var(--glass-border);
+}
+.stat-card span { display: block; font-size: 1.7rem; font-weight: 900; color: var(--primary); }
+.stat-card label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; font-weight: 600; }
 
-.modal, .modal-custom { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; backdrop-filter: blur(8px); }
-.modal-content { background: #111118; padding: 35px; border-radius: 32px; width: 100%; max-width: 340px; text-align: center; border: 1px solid var(--glass); }
-.modal-content input { width: 100%; padding: 16px; background: #000; border: 1px solid #333; color: white; margin: 20px 0; border-radius: 14px; text-align: center; font-size: 16px; }
-.modal-btns { display: flex; gap: 12px; }
-.btn-confirm { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 14px; flex: 1; font-weight: bold; }
-.btn-cancel { background: #222; color: white; border: none; padding: 15px; border-radius: 14px; flex: 1; }
-.btn-delete { background: #ff4444; color: white; border: none; padding: 15px; border-radius: 14px; flex: 1; font-weight: bold; }
 #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1000; }
 #overlay.active { display: block; }
