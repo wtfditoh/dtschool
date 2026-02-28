@@ -1,89 +1,40 @@
 :root {
-    --bg: #08080a;
     --primary: #8a2be2;
-    --primary-light: #a64dff;
     --accent: #7cfc00;
     --danger: #ff4d4d;
-    --card-bg: #121214;
-    --input-bg: #1c1c1f;
+    --card-bg: rgba(255, 255, 255, 0.05);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    /* O degradê que você gostou */
+    /* O DEGRADÊ LINDO DE VOLTA */
     background: radial-gradient(circle at top right, #1a0b2e, #050505) no-repeat;
     background-attachment: fixed;
     color: #fff;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: sans-serif;
     padding: 20px;
     padding-bottom: 100px;
     min-height: 100vh;
 }
 
-/* Para as abas funcionarem */
-.tab-content {
-    display: none; /* Esconde as abas por padrão */
-    animation: fadeIn 0.3s ease;
-}
+/* LÓGICA DE ABAS */
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.3s ease; }
 
-.tab-content.active {
-    display: block; /* Só mostra a aba ativa */
-}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Estilo da Agenda para não ficar bagunçado */
-.agenda-container {
-    padding: 10px;
-}
-.tarefa-item {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    padding: 15px;
-    border-radius: 15px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-}
-
-
-/* Header */
-.glass-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-
-/* BOTÃO DE MAIS (+) ROXO */
-.btn-add-main {
-    background-color: var(--primary) !important;
-    color: white !important;
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-/* STATS (X de Y Aprovadas) */
+/* CARDS E CORES */
 .stats-overview {
     background: var(--card-bg);
-    border: 1px solid #222;
-    border-radius: 15px;
+    border-radius: 20px;
     display: flex;
     justify-content: space-around;
-    padding: 15px;
+    padding: 20px;
     margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-.stat-item { text-align: center; }
-.stat-item span { display: block; font-size: 1.5rem; font-weight: bold; color: var(--primary-light); }
-.stat-item label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
-
-/* CARD DA MATÉRIA */
 .card-materia {
     background: var(--card-bg);
     border-radius: 15px;
@@ -92,57 +43,54 @@ body {
     border-left: 4px solid var(--primary);
 }
 
-.materia-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-
-/* BOTÃO LIXEIRA VERMELHO */
-.btn-delete {
-    background-color: rgba(255, 77, 77, 0.2) !important;
-    color: var(--danger) !important;
-    border: 1px solid var(--danger);
-    padding: 5px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
+/* BOTÃO APROVADO VERDE */
+.status-badge.aprovado {
+    background: rgba(124, 252, 0, 0.2);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: bold;
 }
 
-/* AJUSTE PARA NÃO VAZAR AS NOTAS */
-.notas-grid {
-    display: flex;
-    gap: 5px; /* Espaço mínimo entre as notas */
+/* BOTÃO PENDENTE CINZA */
+.status-badge.pendente {
+    background: rgba(255,255,255,0.1);
+    color: #ccc;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
 }
 
-.input-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 0; /* Isso impede que o input empurre o card para fora */
-}
-
-.input-group label { font-size: 0.6rem; margin-bottom: 3px; color: #666; }
-
-.notas-grid input {
-    width: 100%; /* Ocupa apenas o espaço do grupo */
-    background: var(--input-bg);
-    border: 1px solid #333;
-    border-radius: 8px;
-    color: white;
+/* INPUTS SEM VAZAR */
+.notas-grid { display: flex; gap: 8px; margin-top: 10px; }
+.input-group { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.input-group input {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #444;
+    color: #fff;
     text-align: center;
     padding: 10px 0;
-    font-size: 0.8rem;
+    border-radius: 8px;
 }
 
 /* NAV BAIXO */
 .bottom-nav {
     position: fixed;
-    bottom: 15px; left: 15px; right: 15px;
-    background: #111;
+    bottom: 20px; left: 20px; right: 20px;
+    background: rgba(20, 20, 25, 0.9);
+    backdrop-filter: blur(10px);
+    height: 70px;
     border-radius: 20px;
     display: flex;
     justify-content: space-around;
-    padding: 15px;
-    border: 1px solid #222;
+    align-items: center;
 }
 
 .nav-item { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; }
-.nav-item.active { color: var(--primary-light); }
+.nav-item.active { color: var(--primary); }
+
+.btn-add-main { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 10px; }
+.btn-delete { background: rgba(255,0,0,0.2); color: var(--danger); border: none; padding: 5px; border-radius: 5px; }
