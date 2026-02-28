@@ -1,0 +1,33 @@
+.input-ia {
+    width: 100%;
+    background: rgba(0,0,0,0.4) !important;
+    border: 1px solid #333 !important;
+    color: white !important;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.questao-card {
+    background: rgba(255,255,255,0.05);
+    padding: 20px;
+    border-radius: 20px;
+    margin-top: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.opcao-btn {
+    width: 100%;
+    text-align: left;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #333;
+    color: #ccc;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 8px;
+    cursor: pointer;
+}
+
+.opcao-btn.correta { background: rgba(0, 255, 127, 0.2); border-color: var(--success); color: white; }
+.opcao-btn.errada { background: rgba(255, 68, 68, 0.2); border-color: #ff4444; color: white; }
