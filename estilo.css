@@ -8,7 +8,12 @@
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
 body { background: var(--bg); color: white; overflow-x: hidden; }
 
-.logo-dot { color: var(--success); text-shadow: 0 0 10px var(--success); }
+/* Ponto Verde no Início */
+.logo-dot { 
+    color: var(--success); 
+    text-shadow: 0 0 12px var(--success); 
+    margin-right: 4px;
+}
 
 .glass-header { 
     display: flex; align-items: center; justify-content: space-between; 
@@ -16,27 +21,48 @@ body { background: var(--bg); color: white; overflow-x: hidden; }
     position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--glass);
 }
 
-.btn-add-main { background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 12px; font-size: 24px; box-shadow: 0 0 15px rgba(138,43,226,0.3); }
+.btn-add-main { background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 12px; font-size: 24px; }
 
-/* MENU LATERAL */
+/* MENU LATERAL - Corrigindo botões brancos das fotos */
 .drawer { position: fixed; top: 0; left: -100%; width: 280px; height: 100%; background: #0a0a0f; z-index: 1001; transition: 0.3s; padding: 20px; border-right: 1px solid var(--glass); }
 .drawer.open { left: 0; }
 .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+
+.nav-item { 
+    display: flex; align-items: center; gap: 12px; width: 100%; padding: 15px; 
+    background: transparent !important; /* Remove o fundo branco */
+    border: none !important; /* Remove bordas de botão padrão */
+    color: #888; border-radius: 12px; margin-bottom: 8px; text-align: left; font-size: 16px;
+}
+
+.nav-item i { width: 20px; height: 20px; }
+
+.nav-item.active { 
+    background: rgba(138, 43, 226, 0.15) !important; 
+    color: var(--primary); font-weight: bold; 
+}
+
 .btn-close { background: var(--glass); border: none; color: white; width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
 
-/* MATÉRIAS E BARRINHAS */
-.materia-card { background: var(--glass); padding: 20px; border-radius: 22px; margin: 15px; border: 1px solid rgba(255,255,255,0.05); }
+/* CARDS E STATS */
+.stats-row { display: flex; gap: 15px; padding: 20px; margin-top: 5px; }
+.stat-card { background: var(--glass); flex: 1; padding: 15px; border-radius: 20px; text-align: center; border: 1px solid var(--glass); }
+.stat-card span { display: block; font-size: 1.4rem; font-weight: bold; color: var(--primary); }
+
+.materia-card { background: var(--glass); padding: 20px; border-radius: 24px; margin: 15px; border: 1px solid rgba(255,255,255,0.05); }
 .status-badge { font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: bold; border: 1px solid rgba(255,255,255,0.1); }
-.aprovado { color: var(--success); border-color: var(--success); background: rgba(0,255,127,0.1); box-shadow: 0 0 10px rgba(0,255,127,0.1); }
+.aprovado { color: var(--success); border-color: var(--success); background: rgba(0,255,127,0.1); }
 
 .progress-bg { height: 8px; background: #1a1a1a; border-radius: 10px; margin: 15px 0; overflow: hidden; }
 .progress-fill { height: 100%; transition: 0.6s ease; }
 
 /* MODAIS */
 .modal, .modal-custom { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-.modal-content { background: #16161d; padding: 30px; border-radius: 25px; width: 100%; max-width: 320px; text-align: center; border: 1px solid var(--glass); }
-.modal-content input { width: 100%; padding: 15px; background: #000; border: 1px solid #333; color: white; margin: 20px 0; border-radius: 12px; text-align: center; }
+.modal-content { background: #16161d; padding: 30px; border-radius: 28px; width: 100%; max-width: 320px; text-align: center; border: 1px solid var(--glass); }
+.modal-content input { width: 100%; padding: 15px; background: #000; border: 1px solid #333; color: white; margin: 20px 0; border-radius: 12px; text-align: center; font-size: 16px; }
 .modal-btns { display: flex; gap: 10px; }
-.btn-confirm { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 12px; flex: 1; font-weight: bold; }
-.btn-cancel { background: #222; color: white; border: none; padding: 12px; border-radius: 12px; flex: 1; }
-.btn-delete { background: #ff4444; color: white; border: none; padding: 12px; border-radius: 12px; flex: 1; font-weight: bold; }
+.btn-confirm { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; flex: 1; font-weight: bold; }
+.btn-cancel { background: #222; color: white; border: none; padding: 14px; border-radius: 12px; flex: 1; }
+.btn-delete { background: #ff4444; color: white; border: none; padding: 14px; border-radius: 12px; flex: 1; font-weight: bold; }
+#overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1000; }
+#overlay.active { display: block; }
