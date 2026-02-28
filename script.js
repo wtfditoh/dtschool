@@ -1,4 +1,5 @@
 let materias = JSON.parse(localStorage.getItem('dt_materias')) || [];
+let idParaExcluir = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     if (window.lucide) lucide.createIcons();
@@ -12,10 +13,9 @@ function mudarAba(aba) {
     document.getElementById('nav-' + aba).classList.add('active');
 }
 
-/* Lógica do Modal */
+// Lógica Adicionar
 function adicionarMateria() {
-    const modal = document.getElementById('modal-materia');
-    modal.style.display = 'flex'; // Isso ativa o alinhamento centralizado
+    document.getElementById('modal-materia').style.display = 'flex';
     document.getElementById('nome-materia-input').focus();
 }
 
@@ -28,27 +28,38 @@ function confirmarNovaMateria() {
     const nome = document.getElementById('nome-materia-input').value.trim();
     if (nome) {
         materias.push({ id: Date.now(), nome: nome, notas: [0, 0, 0, 0] });
-        localStorage.setItem('dt_materias', JSON.stringify(materias));
-        renderizarMaterias();
+        salvarETualizar();
         fecharModal();
     }
 }
 
+// Lógica Excluir
 function removerMateria(id) {
-    if(confirm("Excluir esta matéria?")) {
-        materias = materias.filter(m => m.id !== id);
-        localStorage.setItem('dt_materias', JSON.stringify(materias));
-        renderizarMaterias();
-    }
+    idParaExcluir = id;
+    document.getElementById('modal-excluir').style.display = 'flex';
+    document.getElementById('btn-confirmar-exclusao').onclick = () => {
+        materias = materias.filter(m => m.id !== idParaExcluir);
+        salvarETualizar();
+        fecharModalExcluir();
+    };
+}
+
+function fecharModalExcluir() {
+    document.getElementById('modal-excluir').style.display = 'none';
+    idParaExcluir = null;
 }
 
 function atualizarNota(id, index, valor) {
     const mat = materias.find(m => m.id === id);
     if (mat) {
         mat.notas[index] = parseFloat(valor) || 0;
-        localStorage.setItem('dt_materias', JSON.stringify(materias));
-        atualizarStats();
+        salvarETualizar();
     }
+}
+
+function salvarETualizar() {
+    localStorage.setItem('dt_materias', JSON.stringify(materias));
+    renderizarMaterias();
 }
 
 function renderizarMaterias() {
@@ -76,8 +87,8 @@ function renderizarMaterias() {
                 <div class="notas-grid">
                     ${m.notas.map((n, i) => `
                         <div class="input-group">
-                            <label>${i+1}ºB</label>
-                            <input type="number" value="${n}" onchange="atualizarNota(${m.id}, ${i}, this.value)">
+                            <label>${i+1}º</label>
+                            <input type="number" step="0.1" value="${n}" onchange="atualizarNota(${m.id}, ${i}, this.value)">
                         </div>
                     `).join('')}
                 </div>
