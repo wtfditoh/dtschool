@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DT School Pro</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="estilo.css?v=5.0">
+    <link rel="stylesheet" href="estilo.css?v=6.0">
 </head>
 <body>
     <div id="overlay" onclick="toggleMenu()"></div>
@@ -18,9 +18,15 @@
 
     <nav id="menu-lateral" class="drawer">
         <div class="drawer-header">
-            <span style="font-weight:bold;"><span class="logo-dot"></span>DT SCHOOL</span>
-            <button onclick="toggleMenu()" class="btn-close"><i data-lucide="x"></i></button>
+            <div class="logo-box">
+                <span class="logo-dot"></span>
+                <span class="logo-text">DT SCHOOL</span>
+            </div>
+            <button onclick="toggleMenu()" class="btn-close">
+                <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+            </button>
         </div>
+
         <button onclick="navegar('notas')" class="nav-item active"><i data-lucide="layout-grid"></i> Notas</button>
         <button onclick="navegar('ranking')" class="nav-item"><i data-lucide="trophy"></i> Ranking</button>
         <button onclick="navegar('agenda')" class="nav-item"><i data-lucide="calendar"></i> Agenda</button>
@@ -65,6 +71,6 @@
         </div>
     </div>
 
-    <script src="funcoes.js?v=5.0"></script>
+    <script src="funcoes.js?v=6.0"></script>
 </body>
 </html>
