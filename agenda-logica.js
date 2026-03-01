@@ -1,85 +1,51 @@
-// FORÇA O CARREGAMENTO AO ABRIR A PÁGINA
+let dataAtual = new Date();
+let dataSelecionada = "";
+
 document.addEventListener('DOMContentLoaded', () => {
+    renderizarCalendario();
     carregarTarefas();
 });
 
-let imagemBase64 = "";
+function renderizarCalendario() {
+    const grid = document.getElementById('calendar-grid');
+    const mesTxt = document.getElementById('mes-atual');
+    grid.innerHTML = "";
 
-function previewImg(input) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        imagemBase64 = e.target.result;
-        document.getElementById('preview-container').innerHTML = `<img src="${imagemBase64}" style="width:100%; border-radius:10px; margin-top:10px; border: 1px solid #8a2be2;">`;
-    };
-    reader.readAsDataURL(input.files[0]);
-}
+    const nomesDias = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+    nomesDias.forEach(d => grid.innerHTML += `<div class="dia-semana">${d}</div>`);
 
-function adicionarTarefa() {
-    const nome = document.getElementById('tarefa-nome').value;
-    const data = document.getElementById('tarefa-data').value;
-    const materia = document.getElementById('tarefa-materia').value;
+    const ano = dataAtual.getFullYear();
+    const mes = dataAtual.getMonth();
+    mesTxt.innerText = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(dataAtual);
 
-    if (!nome || !data) {
-        return alert("Preencha o título e a data!");
+    const primeiroDiaMes = new Date(ano, mes, 1).getDay();
+    const diasNoMes = new Date(ano, mes + 1, 0).getDate();
+
+    for (let i = 0; i < primeiroDiaMes; i++) grid.innerHTML += `<div></div>`;
+
+    for (let dia = 1; dia <= diasNoMes; dia++) {
+        const dataString = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+        const hoje = new Date().toISOString().split('T')[0] === dataString ? 'hoje' : '';
+        
+        grid.innerHTML += `<div class="dia-numero ${hoje}" onclick="abrirModalAgenda('${dataString}')">${dia}</div>`;
     }
-
-    const tarefa = {
-        id: Date.now(),
-        nome,
-        data,
-        materia,
-        imagem: imagemBase64
-    };
-
-    // Puxa o que já tem, adiciona a nova e salva de volta
-    let agenda = JSON.parse(localStorage.getItem('dt_agenda') || '[]');
-    agenda.push(tarefa);
-    localStorage.setItem('dt_agenda', JSON.stringify(agenda));
-
-    // Limpa os campos após salvar
-    document.getElementById('tarefa-nome').value = "";
-    document.getElementById('tarefa-data').value = "";
-    imagemBase64 = "";
-    document.getElementById('preview-container').innerHTML = "";
-    
-    // Atualiza a lista na tela na hora
-    carregarTarefas();
-}
-
-function carregarTarefas() {
-    const lista = document.getElementById('lista-agenda');
-    const agenda = JSON.parse(localStorage.getItem('dt_agenda') || '[]');
-    
-    if (agenda.length === 0) {
-        lista.innerHTML = `<p style="text-align:center; color:#666; margin-top:20px;">Nenhum compromisso agendado.</p>`;
-        return;
-    }
-
-    // Ordena por data (mais próximas primeiro)
-    agenda.sort((a, b) => new Date(a.data) - new Date(b.data));
-
-    lista.innerHTML = agenda.map(t => `
-        <div class="tarefa-item">
-            <div class="tarefa-header">
-                <div class="tarefa-info">
-                    <span class="badge-materia">${t.materia}</span>
-                    <b>${t.nome}</b>
-                    <span><i data-lucide="calendar" style="width:12px"></i> ${t.data.split('-').reverse().join('/')}</span>
-                </div>
-                <button class="btn-delete" onclick="removerTarefa(${t.id})">
-                    <i data-lucide="trash-2" style="width:18px"></i>
-                </button>
-            </div>
-            ${t.imagem ? `<img src="${t.imagem}" class="img-anexo">` : ''}
-        </div>
-    `).join('');
-    
     lucide.createIcons();
 }
 
-function removerTarefa(id) {
-    let agenda = JSON.parse(localStorage.getItem('dt_agenda') || '[]');
-    agenda = agenda.filter(t => t.id !== id);
-    localStorage.setItem('dt_agenda', JSON.stringify(agenda));
-    carregarTarefas();
+function abrirModalAgenda(data) {
+    dataSelecionada = data;
+    document.getElementById('data-selecionada-txt').innerText = data.split('-').reverse().join('/');
+    document.getElementById('modal-agenda').style.display = 'block';
 }
+
+function fecharModalAgenda() {
+    document.getElementById('modal-agenda').style.display = 'none';
+}
+
+function mudarMes(dir) {
+    dataAtual.setMonth(dataAtual.getMonth() + dir);
+    renderizarCalendario();
+}
+
+// ... manter funções de adicionarTarefa, carregarTarefas e removerTarefa anteriores ...
+// No adicionarTarefa, use dataSelecionada em vez de ler o input de data.
