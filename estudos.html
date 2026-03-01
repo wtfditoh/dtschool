@@ -9,44 +9,40 @@
     <link rel="stylesheet" href="ia-estilo.css">
 </head>
 <body>
-    <div id="custom-toast">Aviso aqui</div>
+    <div id="custom-toast">Aviso</div>
 
     <header class="glass-header">
-        <button onclick="window.location.href='index.html'" class="btn-icon"><i data-lucide="arrow-left"></i></button>
-        <h1 class="topo-compacto">DT Inteligência</h1>
+        <button onclick="window.location.href='index.html'"><i data-lucide="arrow-left"></i></button>
+        <h1>DT Inteligência</h1>
         <div style="width: 24px;"></div>
     </header>
 
     <div class="abas-container">
-        <button id="tab-simulado" class="tab-btn active" onclick="trocarAba('simulado')">Simulado</button>
-        <button id="tab-chat" class="tab-btn" onclick="trocarAba('chat')">Tira-Dúvidas</button>
+        <button id="t-sim" class="tab-btn active" onclick="trocarAba('simulado')">Simulado</button>
+        <button id="t-chat" class="tab-btn" onclick="trocarAba('chat')">Tira-Dúvidas</button>
     </div>
 
-    <main>
+    <main id="main-content">
         <section id="secao-simulado" class="aba-conteudo active">
             <div class="materia-card">
-                <input type="text" id="assunto-ia" placeholder="Assunto (Ex: DNA)" class="input-ia">
+                <input type="text" id="assunto-ia" placeholder="Qual o assunto?" class="input-ia">
                 <select id="nivel-ia" class="input-ia">
-                    <option value="2º ano EM">2º ano EM</option>
+                    <option value="2º ano EM" selected>2º ano EM</option>
                     <option value="3º ano EM">3º ano EM</option>
                 </select>
-                <button onclick="gerarQuestoes()" id="btn-gerar" class="btn-gerar">Gerar 10 Questões</button>
+                <button onclick="gerarQuestoes()" id="btn-gerar" class="btn-modal-acao">Gerar 10 Questões</button>
             </div>
             <div id="container-questoes"></div>
         </section>
 
         <section id="secao-chat" class="aba-conteudo">
-            <div class="chat-wrapper">
-                <div class="chat-actions">
-                    <button class="btn-action" onclick="limparChat()">Limpar Conversa</button>
-                </div>
-                <div id="chat-respostas">
-                    <div class="msg-ia">Dúvida sobre a matéria? Manda aí!</div>
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="pergunta-ia" placeholder="Manda sua dúvida...">
-                    <button onclick="perguntarIA()" class="btn-send"><i data-lucide="send"></i></button>
-                </div>
+            <button class="clear-btn" onclick="limparHistorico()" style="margin: 10px auto; display: block; opacity: 0.5; font-size: 10px;">Limpar Conversa</button>
+            <div id="chat-respostas">
+                <div class="msg-ia">Olá! Mande sua dúvida que eu explico agora.</div>
+            </div>
+            <div class="input-chat-container">
+                <input type="text" id="pergunta-ia" placeholder="Sua dúvida..." onkeypress="if(event.key==='Enter') perguntarIA()">
+                <button onclick="perguntarIA()" class="btn-send"><i data-lucide="send"></i></button>
             </div>
         </section>
     </main>
