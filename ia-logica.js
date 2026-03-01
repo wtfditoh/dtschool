@@ -1,64 +1,68 @@
 const API_KEY = "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";
 
-// Função para gerenciar as abas (Esconde uma, mostra a outra)
-function aba(n) {
-    const pSimulado = document.getElementById('painel-simulado');
-    const pChat = document.getElementById('painel-chat');
+// Iniciar ícones do Lucide
+document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+    const chatSalvo = localStorage.getItem('dt_chat_data');
+    if(chatSalvo) document.getElementById('chat-box').innerHTML = chatSalvo;
+});
+
+// FUNÇÃO DAS ABAS
+function alternarAba(abaNome) {
+    document.querySelectorAll('.dt-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.dt-tab-button').forEach(b => b.classList.remove('active'));
     
-    if(n === 'simulado') {
-        pSimulado.style.display = 'block';
-        pChat.style.display = 'none';
-        document.getElementById('tab-simulado').classList.add('active');
-        document.getElementById('tab-chat').classList.remove('active');
-    } else {
-        pSimulado.style.display = 'none';
-        pChat.style.display = 'block';
-        document.getElementById('tab-chat').classList.add('active');
-        document.getElementById('tab-simulado').classList.remove('active');
-    }
+    document.getElementById('painel-' + abaNome).classList.add('active');
+    document.getElementById('tab-' + abaNome).classList.add('active');
 }
 
-// Modal de aviso
-function aviso(msg) {
-    const m = document.getElementById('custom-modal');
-    document.getElementById('modal-text').innerText = msg;
-    m.style.display = 'flex';
+// MODAL DE AVISO
+function exibirAviso(texto) {
+    const modal = document.getElementById('modal-aviso');
+    document.getElementById('modal-texto-msg').innerText = texto;
+    modal.style.display = 'flex';
 }
+function fecharModal() { document.getElementById('modal-aviso').style.display = 'none'; }
 
-function fecharModal() { document.getElementById('custom-modal').style.display = 'none'; }
-
-// Limpar Histórico
+// LIXEIRA (LIMPAR TUDO)
 function limparTudo() {
-    if(confirm("Deseja apagar o histórico do Chat?")) {
-        localStorage.removeItem('dt_chat_data');
-        document.getElementById('chat-box').innerHTML = "";
+    if(confirm("Deseja apagar o histórico de questões e conversas?")) {
+        localStorage.clear();
+        location.reload();
     }
 }
 
-async function gerar() {
-    const tema = document.getElementById('tema').value;
-    if(!tema) return aviso("Digite o assunto do simulado!");
-    
-    const lista = document.getElementById('questoes');
-    lista.innerHTML = "<div class='dt-card' style='text-align:center'>⏳ Criando questões e mini aula...</div>";
+// GERAR SIMULADO
+async function gerarSimulado() {
+    const tema = document.getElementById('campo-tema').value;
+    const nivel = document.getElementById('campo-nivel').value;
+    if(!tema) return exibirAviso("Por favor, digite um assunto para o simulado.");
+
+    const container = document.getElementById('container-questoes');
+    container.innerHTML = "<div class='dt-questao-card' style='text-align:center'>⏳ O professor está preparando as questões...</div>";
 
     try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const prompt = `Gere 5 questões nível ${nivel} sobre ${tema}. Retorne APENAS o JSON puro seguindo este formato rigorosamente: [{"p":"pergunta","o":["opção1","opção2","opção3","opção4"],"c":0,"e":"EXPLICAÇÃO DIDÁTICA DA RESPOSTA"}]`;
+        
+        const resposta = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [{role: "user", content: `Gere 10 questões sobre ${tema}. Retorne APENAS JSON: [{"p":"pergunta","o":["a","b","c","d"],"c":0,"e":"EXPLICAÇÃO DIDÁTICA DA RESPOSTA"}]`}]
+                messages: [{role: "user", content: prompt}],
+                temperature: 0.5
             })
         });
-        const d = await res.json();
-        const qts = JSON.parse(d.choices[0].message.content.match(/\[.*\]/s)[0]);
-        lista.innerHTML = "";
 
-        qts.forEach((q, i) => {
+        const dados = await resposta.json();
+        const textoJson = dados.choices[0].message.content.match(/\[.*\]/s)[0];
+        const questoes = JSON.parse(textoJson);
+        
+        container.innerHTML = "";
+        questoes.forEach((q, i) => {
             const card = document.createElement('div');
-            card.className = "dt-card";
-            card.innerHTML = `<p><b>${i+1}.</b> ${q.p}</p>`;
+            card.className = "dt-questao-card";
+            card.innerHTML = `<p style="margin-bottom:15px;"><strong>${i+1}.</strong> ${q.p}</p>`;
             
             q.o.forEach((opt, idx) => {
                 const btn = document.createElement('button');
@@ -67,42 +71,55 @@ async function gerar() {
                 btn.onclick = () => {
                     card.querySelectorAll('.dt-opt-btn').forEach(b => b.disabled = true);
                     if(idx === q.c) {
-                        btn.style.background = "#1b4d2e !important"; // Verde Escuro
+                        btn.style.background = "#1b4d2e !important";
                         btn.style.borderColor = "#2ecc71 !important";
                     } else {
-                        btn.style.background = "#4d1b1b !important"; // Vermelho Escuro
+                        btn.style.background = "#4d1b1b !important";
                         btn.style.borderColor = "#e74c3c !important";
-                        card.querySelectorAll('.dt-opt-btn')[q.c].style.border = "1px solid #2ecc71";
+                        card.querySelectorAll('.dt-opt-btn')[q.c].style.border = "2px solid #2ecc71";
                     }
+                    
                     const aula = document.createElement('div');
                     aula.className = "dt-mini-aula";
-                    aula.innerHTML = `<b>🎓 Mini Aula:</b><br>${q.e}`;
+                    aula.innerHTML = `<strong>🎓 Mini Aula:</strong><br>${q.e}`;
                     card.appendChild(aula);
                 };
                 card.appendChild(btn);
             });
-            lista.appendChild(card);
+            container.appendChild(card);
         });
-    } catch(e) { lista.innerHTML = "<div class='dt-card'>Erro ao gerar simulado.</div>"; }
+    } catch(e) {
+        container.innerHTML = "<div class='dt-questao-card'>Erro ao gerar. Verifique sua conexão.</div>";
+    }
 }
 
-async function enviar() {
-    const input = document.getElementById('msg-in');
+// CHAT TIRA-DÚVIDAS
+async function enviarMensagem() {
+    const input = document.getElementById('chat-input');
     const box = document.getElementById('chat-box');
     if(!input.value) return;
 
-    const texto = input.value;
+    const msgUser = input.value;
     input.value = "";
-    box.innerHTML += `<div class="dt-bolha user">${texto}</div>`;
+    box.innerHTML += `<div class="dt-msg user">${msgUser}</div>`;
+    box.scrollTop = box.scrollHeight;
 
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const resposta = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
-            messages: [{role: "system", content: "Você é um tutor acadêmico. Responda apenas sobre estudos, de forma concisa e em tópicos."}, {role: "user", content: texto}]
+            messages: [
+                {role: "system", content: "Você é um professor tutor da DT Educator. Responda em tópicos claros e objetivos apenas sobre temas escolares."},
+                {role: "user", content: msgUser}
+            ],
+            temperature: 0.7
         })
     });
-    const d = await res.json();
-    box.innerHTML += `<div class="dt-bolha ia">${d.choices[0].message.content.replace(/\n/g, '<br>')}</div>`;
-        }
+
+    const dados = await resposta.json();
+    const textoIA = dados.choices[0].message.content.replace(/\n/g, '<br>');
+    box.innerHTML += `<div class="dt-msg ia">${textoIA}</div>`;
+    box.scrollTop = box.scrollHeight;
+    localStorage.setItem('dt_chat_data', box.innerHTML);
+}
