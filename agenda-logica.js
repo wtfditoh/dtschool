@@ -3,9 +3,23 @@ let dataSelecionada = "";
 let imagemBase64 = "";
 
 document.addEventListener('DOMContentLoaded', () => {
+    carregarMateriasNoSelect();
     renderizarCalendario();
     carregarTarefas();
 });
+
+function carregarMateriasNoSelect() {
+    const select = document.getElementById('tarefa-materia');
+    const materiasDB = JSON.parse(localStorage.getItem('materias_db') || '[]');
+    
+    if (materiasDB.length === 0) {
+        select.innerHTML = '<option value="Geral">Crie matérias nas Notas</option>';
+        return;
+    }
+
+    select.innerHTML = materiasDB.map(m => `<option value="${m.nome}">${m.nome}</option>`).join('');
+    select.insertAdjacentHTML('afterbegin', '<option value="Geral">Geral / Outros</option>');
+}
 
 function renderizarCalendario() {
     const grid = document.getElementById('calendar-grid');
@@ -17,7 +31,6 @@ function renderizarCalendario() {
 
     const ano = mesExibido.getFullYear();
     const mes = mesExibido.getMonth();
-    
     topoMes.innerText = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(mesExibido);
 
     const primeiroDiaMes = new Date(ano, mes, 1).getDay();
@@ -42,9 +55,13 @@ function renderizarCalendario() {
 }
 
 function selecionarDia(data) {
-    dataSelecionada = data;
+    if (dataSelecionada === data) {
+        dataSelecionada = "";
+    } else {
+        dataSelecionada = data;
+    }
     renderizarCalendario();
-    carregarTarefas(data);
+    carregarTarefas(dataSelecionada);
 }
 
 function mudarMes(valor) {
@@ -66,7 +83,7 @@ function previewImg(input) {
     const reader = new FileReader();
     reader.onload = e => {
         imagemBase64 = e.target.result;
-        document.getElementById('preview-container').innerHTML = `<img src="${imagemBase64}" style="width:100%; border-radius:15px; margin-top:15px; border:1px solid var(--primary);">`;
+        document.getElementById('preview-container').innerHTML = `<img src="${imagemBase64}" style="width:100%; border-radius:15px; margin-top:15px;">`;
     };
     reader.readAsDataURL(input.files[0]);
 }
@@ -83,7 +100,6 @@ function adicionarTarefa() {
     agenda.push(nova);
     localStorage.setItem('dt_agenda', JSON.stringify(agenda));
 
-    // Reset
     document.getElementById('tarefa-nome').value = "";
     imagemBase64 = "";
     document.getElementById('preview-container').innerHTML = "";
@@ -105,7 +121,7 @@ function carregarTarefas(filtroData = null) {
     }
 
     if (agenda.length === 0) {
-        lista.innerHTML = "<p style='color:#666; text-align:center; padding:20px;'>Nenhum compromisso encontrado.</p>";
+        lista.innerHTML = "<p style='color:#666; text-align:center; padding:20px;'>Nenhum compromisso.</p>";
         return;
     }
 
@@ -113,9 +129,9 @@ function carregarTarefas(filtroData = null) {
 
     lista.innerHTML = agenda.map(t => `
         <div class="tarefa-item">
-            <div style="display:flex; justify-content:space-between;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                 <div>
-                    <span style="background:var(--primary); font-size:10px; padding:3px 8px; border-radius:5px;">${t.materia}</span>
+                    <span style="background:var(--primary); font-size:10px; padding:3px 8px; border-radius:5px; font-weight:bold;">${t.materia}</span>
                     <b style="display:block; margin-top:5px; font-size:17px;">${t.nome}</b>
                     <small style="color:#888;">${t.data.split('-').reverse().join('/')}</small>
                 </div>
@@ -133,4 +149,4 @@ function removerTarefa(id) {
     localStorage.setItem('dt_agenda', JSON.stringify(agenda));
     renderizarCalendario();
     carregarTarefas(dataSelecionada);
-}
+        }
