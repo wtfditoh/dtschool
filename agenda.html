@@ -1,0 +1,32 @@
+<main class="container" style="padding: 15px; overflow-y: auto; height: 85vh;">
+    <div class="materia-card">
+        <h3 class="titulo-ia">Novo Compromisso</h3>
+        <input type="text" id="tarefa-nome" placeholder="Título (ex: Prova de Bio)" class="input-ia">
+        
+        <div style="display: flex; gap: 10px;">
+            <input type="date" id="tarefa-data" class="input-ia">
+            <select id="tarefa-materia" class="input-ia">
+                <option value="Geral">Matéria...</option>
+                <option value="Matemática">Matemática</option>
+                <option value="Português">Português</option>
+                <option value="História">História</option>
+                <option value="Biologia">Biologia</option>
+            </select>
+        </div>
+
+        <label class="btn-modal-acao" style="width: 100%; display: block; text-align: center; margin-bottom: 10px; background: #333;">
+            <i data-lucide="image"></i> Anexar Foto
+            <input type="file" id="tarefa-img" accept="image/*" style="display: none;" onchange="previewImg(this)">
+        </label>
+        <div id="preview-container"></div>
+
+        <button onclick="adicionarTarefa()" class="btn-modal-acao" style="width: 100%;">Salvar na Agenda</button>
+    </div>
+
+    <div style="margin-top: 20px; display: flex; gap: 5px; overflow-x: auto; padding-bottom: 10px;">
+        <button class="tab-btn active" onclick="filtrar('Tudo')">Tudo</button>
+        <button class="tab-btn" onclick="filtrar('Matemática')">Exatas</button>
+    </div>
+
+    <div id="lista-agenda"></div>
+</main>
