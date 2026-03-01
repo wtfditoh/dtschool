@@ -1,40 +1,47 @@
+/* RESET PARA APP DARK */
 * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-appearance: none; }
 body { background: #05020a !important; color: #fff; font-family: sans-serif; overflow-x: hidden; }
 
-/* HEADER E MENU */
-.dt-header { height: 60px; background: #0a0414; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #1f0b3d; position: sticky; top: 0; z-index: 999; }
+/* HEADER */
+.dt-header { height: 60px; background: #0d061a; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #1f0b3d; position: sticky; top: 0; z-index: 100; }
 .dt-menu-btn { background: none; border: none; color: #8a2be2; cursor: pointer; }
 .dt-btn-lixeira { background: none; border: none; color: #ff4444; cursor: pointer; }
-.dt-logo { font-weight: bold; color: #8a2be2; font-size: 18px; }
+.dt-logo { font-weight: bold; font-size: 18px; color: #fff; }
 
-/* SIDEBAR (3 TRAÇINHOS) */
-.dt-sidebar { position: fixed; left: -250px; top: 0; width: 250px; height: 100%; background: #0d061a; z-index: 2000; transition: 0.3s; padding: 20px; border-right: 1px solid #8a2be2; }
-.dt-sidebar.open { left: 0; }
-.dt-close-menu { background: none; border: none; color: #fff; font-size: 30px; margin-bottom: 20px; }
-.dt-menu-items button { width: 100%; padding: 15px; background: none; border: none; color: #ccc; text-align: left; font-size: 16px; border-bottom: 1px solid #1f0b3d; display: flex; align-items: center; gap: 10px; }
-
-/* ABAS */
+/* TABS */
 .dt-nav-tabs { display: flex; padding: 10px; gap: 10px; background: #05020a; }
 .dt-tab-button { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #1f0b3d; background: #110820 !important; color: #666 !important; font-weight: bold; }
 .dt-tab-button.active { background: #8a2be2 !important; color: #fff !important; border: none; }
 
-/* FORMULÁRIO */
-.dt-section { display: none; padding: 15px; padding-bottom: 100px; }
-.dt-section.active { display: block; }
-.dt-input-dark { width: 100% !important; background: #000 !important; color: #fff !important; border: 1px solid #2a104a !important; padding: 15px !important; border-radius: 12px !important; margin-bottom: 10px !important; }
-.dt-btn-principal { width: 100%; padding: 15px; border-radius: 12px; border: none; background: #8a2be2 !important; color: #fff !important; font-weight: bold; }
+/* CONTEÚDO */
+.dt-aba { display: none; padding: 15px; padding-bottom: 100px; }
+.dt-aba.active { display: block; animation: fadeIn 0.3s; }
 
-/* QUESTÃO E MINI AULA */
-.dt-questao-card { background: #0d061a; padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px solid #1f0b3d; }
-.dt-opt-btn { width: 100%; text-align: left; padding: 15px; margin-top: 8px; background: #160a28 !important; color: #fff !important; border: 1px solid #2a104a !important; border-radius: 10px; }
-.dt-mini-aula { margin-top: 15px; padding: 12px; background: rgba(138, 43, 226, 0.1) !important; border-left: 4px solid #8a2be2; border-radius: 5px; font-size: 13px; color: #ddd; }
+/* FORMULÁRIO */
+.dt-card-form { background: #110820; padding: 20px; border-radius: 20px; border: 1px solid #1f0b3d; margin-bottom: 20px; }
+.dt-card-form label { display: block; margin-bottom: 10px; font-size: 14px; color: #888; }
+.dt-input { width: 100% !important; background: #000 !important; color: #fff !important; border: 1px solid #2a104a !important; padding: 15px !important; border-radius: 12px !important; margin-bottom: 15px !important; font-size: 16px !important; }
+.dt-btn-gerar { width: 100%; padding: 16px; border-radius: 12px; border: none; background: #8a2be2 !important; color: #fff !important; font-weight: bold; cursor: pointer; }
+
+/* QUESTÕES */
+.dt-questao-card { background: #0d061a; padding: 15px; border-radius: 15px; border: 1px solid #1f0b3d; margin-top: 15px; }
+.dt-opt-btn { width: 100%; text-align: left; padding: 15px; margin-top: 10px; background: #160a28 !important; color: #fff !important; border: 1px solid #2a104a !important; border-radius: 10px; }
+.dt-mini-aula { margin-top: 15px; padding: 12px; background: rgba(138, 43, 226, 0.1) !important; border-left: 4px solid #8a2be2; border-radius: 5px; color: #ddd; font-size: 13px; }
 
 /* CHAT */
-.dt-chat-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 80px; }
+.dt-chat-scroll { display: flex; flex-direction: column; gap: 10px; height: 60vh; overflow-y: auto; padding-right: 5px; }
+.dt-bolha { padding: 12px 16px; border-radius: 18px; max-width: 85%; line-height: 1.4; }
+.dt-bolha.ia { background: #160a28; align-self: flex-start; border-bottom-left-radius: 2px; }
+.dt-bolha.user { background: #8a2be2; align-self: flex-end; border-bottom-right-radius: 2px; }
 .dt-chat-input-area { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; gap: 10px; padding: 15px; background: #0a0414; border-top: 1px solid #1f0b3d; }
-.dt-chat-input-area input { flex: 1; background: #000; color: #fff; border: 1px solid #2a104a; padding: 12px; border-radius: 10px; }
-.dt-btn-send { background: #8a2be2; border: none; color: #fff; padding: 10px 15px; border-radius: 10px; }
+.dt-chat-input-area input { flex: 1; background: #000; color: #fff; border: 1px solid #2a104a; padding: 12px; border-radius: 12px; }
+.dt-btn-send { background: #8a2be2; border: none; color: #fff; padding: 10px 15px; border-radius: 12px; }
 
 /* MODAL */
-.dt-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; align-items: center; justify-content: center; }
-.dt-modal-box { background: #110820; padding: 30px; border-radius: 20px; border: 1px solid #8a2be2; text-align: center; }
+.dt-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+.dt-modal-box { background: #110820; padding: 30px; border-radius: 25px; border: 1px solid #1f0b3d; text-align: center; width: 100%; max-width: 320px; }
+.dt-modal-footer { display: flex; gap: 10px; margin-top: 20px; }
+.dt-btn-cancelar { flex: 1; background: #1a1a1a; color: #fff; border: 1px solid #333; padding: 12px; border-radius: 10px; font-weight: bold; }
+.dt-btn-confirmar { flex: 1; background: #ff4444; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
