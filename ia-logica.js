@@ -1,121 +1,93 @@
-// Sua Key do Groq (Lembre de dar "Allow Secret" no GitHub)
 const API_KEY = "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";
 
-// Função para trocar as abas (já que seu HTML chama essa função)
-function trocarAba(aba) {
-    const simulado = document.getElementById('secao-simulado');
-    const chat = document.getElementById('secao-chat');
-    const btnSim = document.getElementById('tab-simulado');
-    const btnChat = document.getElementById('tab-chat');
+// CARREGAR HISTÓRICO AO ABRIR
+window.onload = () => {
+    const historico = localStorage.getItem('dt_chat_history');
+    if (historico) document.getElementById('chat-respostas').innerHTML = historico;
+    lucide.createIcons();
+};
 
-    if (aba === 'simulado') {
-        simulado.style.display = 'block';
-        chat.style.display = 'none';
-        btnSim.classList.add('active');
-        btnChat.classList.remove('active');
-    } else {
-        simulado.style.display = 'none';
-        chat.style.display = 'flex'; // Chat usa flex para o scroll funcionar
-        btnSim.classList.remove('active');
-        btnChat.classList.add('active');
-    }
-}
-
-// Função Principal de chamada da IA
 async function chamarIA(prompt) {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
-        headers: {
-            "Authorization": `Bearer ${API_KEY}`,
-            "Content-Type": "application/json"
-        },
+        headers: { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
             messages: [{ role: "user", content: prompt }],
-            temperature: 0.7
+            temperature: 0.6
         })
     });
     const data = await response.json();
-    if (data.error) throw new Error(data.error.message);
     return data.choices[0].message.content;
 }
 
-// Função para GERAR QUESTÕES
+// SIMULADO COM 10 QUESTÕES E EXPLICAÇÃO
 async function gerarQuestoes() {
     const assunto = document.getElementById('assunto-ia').value;
     const nivel = document.getElementById('nivel-ia').value;
     const container = document.getElementById('container-questoes');
     const btn = document.getElementById('btn-gerar');
 
-    if (!assunto) return alert("Por favor, digite um assunto!");
+    if(!assunto) return alert("Digite o assunto!");
 
-    btn.innerText = "Gerando questões...";
+    btn.innerText = "Criando Simulado...";
     btn.disabled = true;
-    container.innerHTML = "<p style='color: #888; text-align: center;'>Criando simulado personalizado...</p>";
+    container.innerHTML = "<div class='msg-ia'>Sua prova está sendo elaborada por nossa inteligência...</div>";
 
-    const prompt = `Gere 5 questões de múltipla escolha sobre ${assunto} para o nível ${nivel}. 
-    Retorne APENAS um array JSON puro, sem explicações, seguindo este modelo:
-    [{"pergunta": "Qual o rio do Egito?", "opcoes": ["Nilo", "Amazonas", "Tibre", "Ganges"], "correta": 0}]`;
+    const prompt = `Aja como um professor rigoroso de ${nivel}. Gere EXATAMENTE 10 questões de múltipla escolha sobre ${assunto}. 
+    Retorne APENAS um array JSON: [{"p": "pergunta", "o": ["opção0", "opção1", "opção2", "opção3"], "c": 0, "e": "Explicação curta"}]`;
 
     try {
         const resposta = await chamarIA(prompt);
         const questoes = JSON.parse(resposta.replace(/```json|```/g, ""));
         
-        container.innerHTML = ""; // Limpa o "Gerando..."
+        container.innerHTML = `<h3 class='titulo-ia'>Simulado: ${assunto} (${nivel})</h3>`;
         questoes.forEach((q, i) => {
             const div = document.createElement('div');
-            div.className = "materia-card";
-            div.style.marginTop = "15px";
-            div.innerHTML = `<p><strong>${i+1}.</strong> ${q.pergunta}</p>` + 
-                q.opcoes.map((opt, idx) => `<button class="opcao-btn" style="width:100%; margin: 5px 0; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #111; color: white; text-align: left;" onclick="verificarQuestao(this, ${idx}, ${q.correta})">${opt}</button>`).join('');
+            div.className = "questao-card";
+            div.innerHTML = `<p><strong>${i+1}.</strong> ${q.p}</p>` + 
+                q.o.map((opt, idx) => `<button class="opcao-btn" onclick="validar(this,${idx},${q.c},'${q.e.replace(/'/g, "")}')">${opt}</button>`).join('');
             container.appendChild(div);
         });
-    } catch (e) {
-        container.innerHTML = `<p style="color: red;">Erro: ${e.message}</p>`;
-    } finally {
-        btn.innerText = "Gerar 5 Questões";
-        btn.disabled = false;
-    }
+    } catch (err) { alert("Erro ao gerar. Tente outro assunto."); }
+    finally { btn.innerText = "Gerar 10 Questões"; btn.disabled = false; }
 }
 
-// Função para o TIRA-DÚVIDAS (Chat)
+function validar(btn, sel, cor, exp) {
+    const pai = btn.parentElement;
+    const btns = pai.querySelectorAll('.opcao-btn');
+    btns.forEach(b => b.disabled = true);
+
+    if(sel === cor) {
+        btn.style.borderColor = "#00ff7f";
+        btn.style.background = "rgba(0,255,127,0.1)";
+    } else {
+        btn.style.borderColor = "#ff4444";
+        btn.style.background = "rgba(255,68,68,0.1)";
+        btns[cor].style.borderColor = "#00ff7f";
+    }
+
+    const feedback = document.createElement('div');
+    feedback.className = "explicacao-box";
+    feedback.innerHTML = `<strong>Resposta:</strong> ${exp}`;
+    pai.appendChild(feedback);
+}
+
+// CHAT COM MEMÓRIA
 async function perguntarIA() {
     const input = document.getElementById('pergunta-ia');
     const chat = document.getElementById('chat-respostas');
-    const btn = document.getElementById('btn-perguntar');
-    
-    if (!input.value) return;
+    if(!input.value) return;
 
-    const msg = input.value;
+    const texto = input.value;
     input.value = "";
-    btn.disabled = true;
-
-    // Adiciona pergunta do usuário
-    chat.innerHTML += `<div style="align-self: flex-end; background: #6a1b9a; padding: 10px; border-radius: 12px; margin: 5px; max-width: 80%; color: white;">${msg}</div>`;
+    chat.innerHTML += `<div class="msg-user">${texto}</div>`;
     chat.scrollTop = chat.scrollHeight;
 
     try {
-        const resposta = await chamarIA(`Responda de forma didática e curta: ${msg}`);
-        chat.innerHTML += `<div class="msg-ia" style="background: #1a1a1a; padding: 10px; border-radius: 12px; margin: 5px; max-width: 80%; border: 1px solid #333;">${resposta}</div>`;
+        const resposta = await chamarIA(`Responda como tutor escolar: ${texto}`);
+        chat.innerHTML += `<div class="msg-ia">${resposta}</div>`;
         chat.scrollTop = chat.scrollHeight;
-    } catch (e) {
-        chat.innerHTML += `<div style="color: red; margin: 5px;">Erro ao conectar. Tente novamente.</div>`;
-    } finally {
-        btn.disabled = false;
-    }
-}
-
-// Função para validar a resposta do simulado
-function verificarQuestao(btn, selecionada, correta) {
-    const pai = btn.parentElement;
-    const botoes = pai.querySelectorAll('button');
-    botoes.forEach(b => b.disabled = true);
-
-    if (selecionada === correta) {
-        btn.style.background = "#00c853"; // Verde
-        btn.style.borderColor = "#00c853";
-    } else {
-        btn.style.background = "#d32f2f"; // Vermelho
-        botoes[correta].style.background = "#00c853";
-    }
+        localStorage.setItem('dt_chat_history', chat.innerHTML); // SALVA NA MEMÓRIA
+    } catch (e) { chat.innerHTML += `<div class="msg-ia" style="color:red">Erro na conexão.</div>`; }
 }
