@@ -5,10 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DT School - IA</title>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="estilo.css?v=12.0">
-    <link rel="stylesheet" href="ia-estilo.css?v=4.0">
+    <link rel="stylesheet" href="ia-estilo.css?v=5.0">
+    <style>
+        /* Ajuste rápido para garantir que o layout não quebre */
+        body { 
+            background: #05050a; 
+            overflow: hidden; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            margin: 0;
+        }
+        .aba-conteudo { display: none; flex: 1; flex-direction: column; overflow-y: auto; }
+        .aba-conteudo.active { display: flex; }
+    </style>
 </head>
-<body style="background: #05050a; overflow: hidden; height: 100vh; display: flex; flex-direction: column;">
+<body>
     
     <header class="glass-header">
         <button onclick="window.location.href='index.html'" class="btn-icon">
@@ -23,7 +37,7 @@
         <button id="tab-chat" class="tab-btn" onclick="trocarAba('chat')">Tira-Dúvidas</button>
     </div>
 
-    <main class="container" style="flex: 1; position: relative; overflow-y: auto; padding: 15px;">
+    <main class="container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 10px;">
         
         <section id="secao-simulado" class="aba-conteudo active">
             <div class="materia-card">
@@ -41,17 +55,18 @@
                 </select>
                 
                 <button onclick="gerarQuestoes()" id="btn-gerar" class="btn-modal-acao" style="width: 100%;">
-                    Gerar 5 Questões
+                    Gerar 10 Questões
                 </button>
             </div>
             
-            <div id="container-questoes"></div>
+            <div id="container-questoes" style="margin-top: 10px; padding-bottom: 30px;">
+                </div>
         </section>
 
-        <section id="secao-chat" class="aba-conteudo" style="display: none; height: 100%; flex-direction: column;">
-            <div class="chat-wrapper">
-                <div id="chat-respostas" class="chat-box">
-                    <div class="msg-ia">Olá! Sou sua IA de estudos. O que você quer que eu te explique hoje?</div>
+        <section id="secao-chat" class="aba-conteudo">
+            <div class="chat-wrapper" style="display: flex; flex-direction: column; height: 100%;">
+                <div id="chat-respostas" class="chat-box" style="flex: 1; overflow-y: auto; padding-bottom: 10px;">
+                    <div class="msg-ia">Olá! Sou sua IA de estudos. Suas conversas agora ficam salvas! O que vamos aprender?</div>
                 </div>
                 
                 <div class="input-chat-container">
@@ -65,23 +80,10 @@
 
     </main>
 
-    <script src="ia-logica.js?v=4.0"></script>
+    <script src="ia-logica.js?v=5.0"></script>
     <script>
         // Inicializa os ícones do Lucide
         lucide.createIcons();
 
-        // Função para trocar abas corrigida para o HTML atual
-        function trocarAba(aba) {
-            const simulado = document.getElementById('secao-simulado');
-            const chat = document.getElementById('secao-chat');
-            const btnSim = document.getElementById('tab-simulado');
-            const btnChat = document.getElementById('tab-chat');
-
-            if (aba === 'simulado') {
-                simulado.style.display = 'block';
-                chat.style.display = 'none';
-                btnSim.classList.add('active');
-                btnChat.classList.remove('active');
-            } else {
-                simulado.style.display = 'none
-                    
+        //
+        
