@@ -1,36 +1,62 @@
-<main class="container" style="padding: 15px; margin-top: 60px;">
-    
-    <div class="materia-card" style="padding: 10px;">
-        <div id="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <button onclick="mudarMes(-1)" class="btn-icon"><i data-lucide="chevron-left"></i></button>
-            <h3 id="mes-atual" style="color: var(--primary); margin: 0;">Março 2026</h3>
-            <button onclick="mudarMes(1)" class="btn-icon"><i data-lucide="chevron-right"></i></button>
-        </div>
-        <div id="calendar-grid" class="calendar-grid">
-            </div>
-    </div>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Minha Agenda</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="estilo.css?v=12.0">
+    <link rel="stylesheet" href="agenda-estilo.css">
+</head>
+<body class="bg-dark">
+    <header class="glass-header">
+        <button onclick="window.location.href='index.html'" class="btn-icon"><i data-lucide="arrow-left"></i></button>
+        <h1 id="mes-atual" class="topo-compacto">Março 2026</h1>
+        <button onclick="abrirModalAgendaHoje()" class="btn-add-main">+</button>
+    </header>
 
-    <div id="modal-agenda" class="modal-agenda" style="display: none;">
-        <div class="materia-card shadow-lg" style="border: 1px solid var(--primary);">
-            <div style="display: flex; justify-content: space-between;">
-                <h4 id="data-selecionada-txt" style="color:#fff;">01/03/2026</h4>
-                <button onclick="fecharModalAgenda()" style="background:none; border:none; color:#fff;">X</button>
+    <main class="container-agenda">
+        <div class="calendar-card">
+            <div class="calendar-nav">
+                <button onclick="mudarMes(-1)"><i data-lucide="chevron-left"></i></button>
+                <span id="label-mes">Março</span>
+                <button onclick="mudarMes(1)"><i data-lucide="chevron-right"></i></button>
             </div>
-            <input type="text" id="tarefa-nome" placeholder="Título da atividade" class="input-ia">
+            <div id="calendar-grid" class="calendar-grid"></div>
+        </div>
+
+        <div class="agenda-section">
+            <h3 class="section-title">Compromissos</h3>
+            <div id="lista-agenda"></div>
+        </div>
+    </main>
+
+    <div id="modal-agenda" class="modal">
+        <div class="modal-content glass">
+            <h3 id="modal-data-titulo">Nova Atividade</h3>
+            <input type="text" id="tarefa-nome" placeholder="Título" class="input-ia">
             <select id="tarefa-materia" class="input-ia">
-                <option value="Geral">Matéria...</option>
+                <option value="Geral">Escolha a Matéria...</option>
                 <option value="Matemática">Matemática</option>
                 <option value="Português">Português</option>
+                <option value="História">História</option>
             </select>
-            <label class="btn-anexo" for="tarefa-img" style="margin-top:10px;">
-                <i data-lucide="image"></i> Foto
+            <input type="date" id="tarefa-data-input" class="input-ia">
+            
+            <label class="btn-anexo" for="tarefa-img">
+                <i data-lucide="image"></i> Anexar Foto
                 <input type="file" id="tarefa-img" accept="image/*" style="display: none;" onchange="previewImg(this)">
             </label>
             <div id="preview-container"></div>
-            <button onclick="adicionarTarefa()" class="btn-modal-acao" style="width: 100%; margin-top: 10px;">Salvar</button>
+
+            <div class="area-botoes-modal">
+                <button onclick="fecharModalAgenda()" class="btn-modal-voltar">Sair</button>
+                <button onclick="adicionarTarefa()" class="btn-modal-acao">Salvar</button>
+            </div>
         </div>
     </div>
 
-    <h3 style="color: #fff; margin-top: 25px; margin-left: 10px;">Visão Geral</h3>
-    <div id="lista-agenda"></div>
-</main>
+    <script src="agenda-logica.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
