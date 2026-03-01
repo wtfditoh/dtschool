@@ -1,33 +1,35 @@
 const API_KEY = "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";
 
-// GARANTE QUE AS ABAS COMECEM CERTAS
+// Inicia na aba de simulado ao carregar
 document.addEventListener('DOMContentLoaded', () => {
-    aba('simulado'); // Começa sempre no simulado
+    aba('simulado');
 });
 
 function aba(n) {
-    // Esconde os painéis usando display none direto
+    // Esconde fisicamente os painéis
     const pSimulado = document.getElementById('painel-simulado');
     const pChat = document.getElementById('painel-chat');
+    const tSimulado = document.getElementById('tab-simulado');
+    const tChat = document.getElementById('tab-chat');
 
     if (n === 'simulado') {
         pSimulado.style.display = 'block';
         pChat.style.display = 'none';
-        document.getElementById('tab-simulado').classList.add('active');
-        document.getElementById('tab-chat').classList.remove('active');
+        tSimulado.classList.add('active');
+        tChat.classList.remove('active');
     } else {
         pSimulado.style.display = 'none';
         pChat.style.display = 'block';
-        document.getElementById('tab-chat').classList.add('active');
-        document.getElementById('tab-simulado').classList.remove('active');
+        tChat.classList.add('active');
+        tSimulado.classList.remove('active');
     }
 }
 
-// SÓ MOSTRA O MODAL SE CHAMAR ESSA FUNÇÃO
+// O MODAL SÓ APARECE AQUI
 function aviso(msg) {
     const m = document.getElementById('custom-modal');
     document.getElementById('modal-text').innerText = msg;
-    m.style.display = 'flex';
+    m.style.setProperty('display', 'flex', 'important');
 }
 
 async function gerar() {
@@ -69,7 +71,7 @@ async function gerar() {
                         card.querySelectorAll('.dt-opt-btn')[q.c].style.border = "2px solid #28a745";
                     }
                     const aula = document.createElement('div');
-                    aula.style = "margin-top:15px; padding:10px; border-left:4px solid #8a2be2; background:rgba(255,255,255,0.05); font-size:14px;";
+                    aula.style = "margin-top:15px; padding:12px; border-left:4px solid #8a2be2; background:rgba(255,255,255,0.05); font-size:14px; color:#ccc;";
                     aula.innerHTML = `<b>🎓 Mini Aula:</b><br>${q.e}`;
                     card.appendChild(aula);
                 };
