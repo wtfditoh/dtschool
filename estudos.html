@@ -2,58 +2,46 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DT Inteligência</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DT Educator - Premium</title>
     <link rel="stylesheet" href="ia-estilo.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="dt-corpo">
+<body>
 
-    <div class="dt-topo">
-        <button onclick="window.location.href='index.html'" class="dt-lixeira" style="color:white !important;"><i data-lucide="chevron-left"></i></button>
-        <span style="font-weight:bold; letter-spacing:1px;">DT INTELIGÊNCIA</span>
-        <button onclick="limparTudo()" class="dt-lixeira"><i data-lucide="trash-2"></i></button>
-    </div>
+    <header class="dt-header">
+        <div class="dt-logo">DT Educator</div>
+        <button class="dt-btn-lixeira" onclick="limparTudo()" title="Limpar tudo">
+            <i data-lucide="trash-2"></i>
+        </button>
+    </header>
 
-    <nav class="dt-abas-box">
-        <button id="tab-simulado" class="dt-tab active" onclick="aba('simulado')">Simulado</button>
-        <button id="tab-chat" class="dt-tab" onclick="aba('chat')">Tira-Dúvidas</button>
+    <nav class="dt-nav-tabs">
+        <button id="tab-simulado" class="dt-tab-button active" onclick="alternarAba('simulado')">Simulado</button>
+        <button id="tab-chat" class="dt-tab-button" onclick="alternarAba('chat')">Tira-Dúvidas</button>
     </nav>
 
-    <main class="dt-container">
-        <section id="painel-simulado" class="dt-painel active">
-            <div class="dt-card">
-                <input type="text" id="tema" class="dt-input" placeholder="Assunto do simulado...">
-                <select id="nivel" class="dt-select">
-                    <option value="Ensino Médio">Ensino Médio</option>
-                    <option value="ENEM">ENEM / Vestibular</option>
+    <main class="dt-main-content">
+        
+        <section id="painel-simulado" class="dt-section active">
+            <div class="dt-card-input">
+                <label class="dt-label">O que vamos estudar hoje?</label>
+                <input type="text" id="campo-tema" placeholder="Ex: História do Brasil, Álgebra..." class="dt-input-dark">
+                
+                <label class="dt-label">Nível de dificuldade</label>
+                <select id="campo-nivel" class="dt-input-dark">
+                    <option value="Fundamental">Ensino Fundamental</option>
+                    <option value="Medio">Ensino Médio / ENEM</option>
+                    <option value="Superior">Ensino Superior</option>
                 </select>
-                <button class="dt-btn-gerar" onclick="gerar()">GERAR SIMULADO</button>
+                
+                <button class="dt-btn-principal" onclick="gerarSimulado()">GERAR QUESTÕES</button>
             </div>
-            <div id="questoes"></div>
+            
+            <div id="container-questoes"></div>
         </section>
 
-        <section id="painel-chat" class="dt-painel">
-            <div id="chat-box" class="dt-chat-box">
-                <div class="dt-bolha ia">Olá! Sou seu tutor. Pergunte algo sobre seus estudos.</div>
-            </div>
-            <div class="dt-chat-input-fix">
-                <input type="text" id="msg-in" placeholder="Sua dúvida de estudo..." style="background:transparent; border:none; color:white; width:80%; outline:none;">
-                <button onclick="enviar()" class="dt-lixeira" style="color:var(--roxo) !important;"><i data-lucide="send"></i></button>
-            </div>
-        </section>
-    </main>
-
-    <div id="custom-modal" class="dt-modal">
-        <div class="dt-card" style="max-width:320px; text-align:center;">
-            <p id="modal-text" style="margin-bottom:20px;"></p>
-            <div style="display:flex; gap:10px;">
-                <button id="btn-modal-cancel" class="dt-tab" style="display:none;">Voltar</button>
-                <button id="btn-modal-ok" class="dt-btn-gerar" style="padding:10px !important;">OK</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="ia-logica.js"></script>
-</body>
-</html>
+        <section id="painel-chat" class="dt-section">
+            <div id="chat-box" class="dt-chat-container">
+                <div class="dt
+                    
