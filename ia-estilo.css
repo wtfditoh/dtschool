@@ -1,77 +1,32 @@
-/* Cores e Reset */
-:root {
-    --primary: #8a2be2;
-    --bg: #05050a;
-    --card: #121218;
-    --text: #eee;
-    --border: #252530;
-}
+/* Forçar Modo Escuro Total */
+.dt-dark-mode { background: #05050a; color: #eee; margin: 0; height: 100vh; overflow: hidden; font-family: sans-serif; }
 
-body { 
-    background: var(--bg); 
-    color: var(--text); 
-    font-family: 'Segoe UI', sans-serif; 
-    margin: 0; 
-}
+.dt-header { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 1px solid #222; }
+.dt-back-btn { background: none; border: none; color: white; cursor: pointer; }
+.dt-title { font-weight: bold; font-size: 18px; }
 
-/* Fim do fundo branco em inputs e botões */
-input, select, button {
-    background: #000;
-    color: white;
-    border: 1px solid var(--border);
-    outline: none;
-}
+.dt-tabs { display: flex; background: #161620; margin: 15px; padding: 5px; border-radius: 12px; }
+.dt-tab { flex: 1; padding: 12px; border: none; background: transparent; color: #777; font-weight: bold; border-radius: 10px; }
+.dt-tab.active { background: #8a2be2; color: white; }
 
-/* Ajuste das Questões (Botões agora são cards) */
-.opcao-btn {
-    width: 100%;
-    text-align: left;
-    padding: 15px;
-    margin-top: 10px;
-    background: #1a1a25;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: 0.3s;
-}
+/* Cards e Inputs sem Branco */
+.dt-card { background: #121218; padding: 20px; border-radius: 15px; border: 1px solid #252530; margin-bottom: 15px; }
+.dt-input { width: 100%; background: #000 !important; border: 1px solid #333; color: white !important; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: block; box-sizing: border-box; }
+.dt-btn-purple { background: #8a2be2; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; }
 
-/* Chat com Scroll Real (Para poderes subir a conversa) */
-#chat-respostas {
-    flex: 1;
-    overflow-y: auto; /* ATIVA O SCROLL */
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 10px 5px 120px 5px;
-}
+/* Questões - Corrigindo botões minúsculos */
+.dt-quest-card { background: #121218; padding: 15px; border-radius: 15px; border: 1px solid #252530; margin-top: 15px; }
+.dt-opt-btn { width: 100%; text-align: left; padding: 15px; margin-top: 10px; background: #1a1a25; border: 1px solid #333; color: #ccc; border-radius: 10px; cursor: pointer; font-size: 15px; }
 
-.msg-ia { align-self: flex-start; background: #1a1a25; padding: 12px; border-radius: 15px 15px 15px 0; max-width: 85%; border: 1px solid #333; }
-.msg-user { align-self: flex-end; background: var(--primary); padding: 12px; border-radius: 15px 15px 0 15px; max-width: 85%; }
+/* Chat com Scroll para Voltar a Conversa */
+.dt-chat-wrapper { display: flex; flex-direction: column; height: 100%; position: relative; }
+.dt-chat-scroll { flex: 1; overflow-y: auto !important; display: flex; flex-direction: column; gap: 15px; padding: 10px 5px 120px 5px; -webkit-overflow-scrolling: touch; }
+.dt-msg-ia { align-self: flex-start; background: #1a1a25; padding: 12px; border-radius: 15px 15px 15px 0; max-width: 85%; border: 1px solid #333; line-height: 1.5; }
+.dt-msg-user { align-self: flex-end; background: #8a2be2; padding: 12px; border-radius: 15px 15px 0 15px; max-width: 85%; }
 
-/* Barra de Digitação Fixa */
-.input-chat-container {
-    position: fixed;
-    bottom: 15px;
-    left: 10px;
-    right: 10px;
-    background: #0d0d12;
-    padding: 10px;
-    border-radius: 30px;
-    border: 1px solid var(--border);
-    display: flex;
-    gap: 10px;
-}
+/* Barra de Baixo Fixa */
+.dt-input-bar { position: absolute; bottom: 15px; left: 0; right: 0; background: #0d0d12; padding: 10px; border-radius: 30px; border: 1px solid #252530; display: flex; gap: 10px; }
+.dt-input-bar input { flex: 1; background: transparent; border: none; color: white; outline: none; }
+.dt-btn-send { background: #8a2be2; border: none; width: 40px; height: 40px; border-radius: 50%; color: white; }
 
-/* Toast (Aviso de "Digite o assunto") */
-#custom-toast {
-    position: fixed;
-    top: -100px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--primary);
-    color: white;
-    padding: 12px 25px;
-    border-radius: 30px;
-    transition: 0.5s;
-    z-index: 9999;
-}
+.dt-btn-clear { background: none; border: 1px solid #222; color: #555; font-size: 10px; padding: 5px 10px; border-radius: 20px; align-self: flex-end; margin-bottom: 5px; }
