@@ -10,24 +10,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function carregarMateriasNoSelect() {
     const select = document.getElementById('tarefa-materia');
+    // Pegando as matérias que você salvou no banco das Notas
     const materiasDB = JSON.parse(localStorage.getItem('materias_db') || '[]');
     
-    // Limpa tudo antes de preencher
-    select.innerHTML = "";
+    // Limpamos o select e colocamos a opção padrão
+    select.innerHTML = '<option value="Geral">Geral / Outros</option>';
     
-    // Adiciona "Geral / Outros" como primeira opção
-    const optGeral = document.createElement('option');
-    optGeral.value = "Geral";
-    optGeral.textContent = "Geral / Outros";
-    select.appendChild(optGeral);
-    
-    // Adiciona as matérias das notas
-    materiasDB.forEach(m => {
-        const option = document.createElement('option');
-        option.value = m.nome;
-        option.textContent = m.nome;
-        select.appendChild(option);
-    });
+    // Adicionamos cada matéria salva
+    if (materiasDB.length > 0) {
+        materiasDB.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.nome;
+            opt.textContent = m.nome;
+            select.appendChild(opt);
+        });
+    }
 }
 
 function renderizarCalendario() {
@@ -77,8 +74,8 @@ function mudarMes(valor) {
 function abrirModalAgendaHoje() {
     const dataAlvo = dataSelecionada || new Date().toISOString().split('T')[0];
     document.getElementById('tarefa-data-input').value = dataAlvo;
+    carregarMateriasNoSelect(); // Recarrega para garantir que as novas matérias apareçam
     document.getElementById('modal-agenda').style.display = 'flex';
-    carregarMateriasNoSelect(); 
 }
 
 function fecharModalAgenda() {
@@ -96,20 +93,20 @@ function previewImg(input) {
 
 function adicionarTarefa() {
     const btnSalvar = document.getElementById('btn-salvar-agenda');
-    const nome = document.getElementById('tarefa-nome').value;
+    const nome = document.getElementById('tarefa-nome').value.trim();
     const data = document.getElementById('tarefa-data-input').value;
     const materia = document.getElementById('tarefa-materia').value;
 
-    // AVISO NO BOTÃO (SEM ALERT DO CHROME)
+    // Lógica de aviso sem Alert do Navegador
     if (!nome || !data) {
-        const textoOriginal = btnSalvar.innerText;
+        const textoAntigo = btnSalvar.innerText;
         btnSalvar.innerText = "Preencha Título e Data!";
-        btnSalvar.style.background = "#ff4444";
+        btnSalvar.style.backgroundColor = "#ff4444";
         
         setTimeout(() => {
-            btnSalvar.innerText = textoOriginal;
-            btnSalvar.style.background = "#8a2be2";
-        }, 2500);
+            btnSalvar.innerText = textoAntigo;
+            btnSalvar.style.backgroundColor = "#8a2be2";
+        }, 2000);
         return;
     }
 
@@ -118,6 +115,7 @@ function adicionarTarefa() {
     agenda.push(nova);
     localStorage.setItem('dt_agenda', JSON.stringify(agenda));
 
+    // Resetar campos
     document.getElementById('tarefa-nome').value = "";
     imagemBase64 = "";
     document.getElementById('preview-container').innerHTML = "";
@@ -131,7 +129,7 @@ function carregarTarefas(filtroData = null) {
     const titulo = document.getElementById('titulo-lista');
     let agenda = JSON.parse(localStorage.getItem('dt_agenda') || '[]');
     
-    if (filtroData) {
+    if (filtroData && filtroData !== "") {
         agenda = agenda.filter(t => t.data === filtroData);
         titulo.innerText = "Dia " + filtroData.split('-').reverse().join('/');
     } else {
@@ -139,7 +137,7 @@ function carregarTarefas(filtroData = null) {
     }
 
     if (agenda.length === 0) {
-        lista.innerHTML = "<p style='color:#666; text-align:center; padding:30px;'>Nenhuma atividade.</p>";
+        lista.innerHTML = "<p style='color:#666; text-align:center; padding:30px;'>Sem atividades para este dia.</p>";
         return;
     }
 
@@ -150,7 +148,7 @@ function carregarTarefas(filtroData = null) {
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                 <div>
                     <span style="background:var(--primary); font-size:10px; padding:3px 8px; border-radius:5px; font-weight:bold;">${t.materia}</span>
-                    <b style="display:block; margin-top:5px; font-size:17px;">${t.nome}</b>
+                    <b style="display:block; margin-top:5px; font-size:18px;">${t.nome}</b>
                     <small style="color:#888;">${t.data.split('-').reverse().join('/')}</small>
                 </div>
                 <button onclick="removerTarefa(${t.id})" style="background:none; border:none; color:#ff4444; padding:10px;"><i data-lucide="trash-2"></i></button>
