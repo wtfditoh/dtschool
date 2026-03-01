@@ -1,68 +1,88 @@
-/* RESET RADICAL */
-* { 
-    margin: 0; padding: 0; box-sizing: border-box; 
-    -webkit-appearance: none; appearance: none;
+/* RESET E CORES BASE */
+:root {
+    --roxo: #8a2be2;
+    --roxo-claro: #a066ff;
+    --fundo-deep: #05020a;
+    --fundo-card: #0d061a;
+    --cinza-texto: #b0b0b0;
 }
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-appearance: none; outline: none; }
 
 body { 
-    background-color: #05020a !important; 
-    color: #e0e0e0 !important; 
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.6;
+    background-color: var(--fundo-deep) !important; 
+    color: #ffffff !important; 
+    font-family: 'Segoe UI', sans-serif;
+    overflow-x: hidden;
 }
 
-/* HEADER FIXO E LIMPO */
-.dt-topo {
-    position: sticky; top: 0; z-index: 100;
-    height: 60px; display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px; background: #0d051a; border-bottom: 1px solid #2a104a;
+/* HEADER */
+.dt-header {
+    height: 65px; background: #0a0414; border-bottom: 1px solid #1f0b3d;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+    position: sticky; top: 0; z-index: 1000;
+}
+.dt-logo { font-weight: 800; font-size: 20px; color: var(--roxo); letter-spacing: 1px; }
+.dt-btn-lixeira { background: none; border: none; color: #ff4444; cursor: pointer; }
+
+/* ABAS */
+.dt-nav-tabs { display: flex; padding: 10px 20px; gap: 10px; background: var(--fundo-deep); }
+.dt-tab-button {
+    flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #1f0b3d;
+    background: #110820 !important; color: #666 !important; font-weight: bold; cursor: pointer;
+}
+.dt-tab-button.active { background: var(--roxo) !important; color: #fff !important; border: none; }
+
+/* INPUTS E FORMULÁRIOS */
+.dt-section { display: none; padding: 15px; }
+.dt-section.active { display: block; animation: fadeIn 0.3s ease; }
+
+.dt-card-input { background: var(--fundo-card); padding: 20px; border-radius: 20px; border: 1px solid #1f0b3d; }
+.dt-label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--cinza-texto); }
+
+.dt-input-dark {
+    width: 100% !important; background: #000000 !important; color: #fff !important;
+    border: 1px solid #2a104a !important; padding: 15px !important; border-radius: 12px !important;
+    font-size: 16px !important; margin-bottom: 20px !important;
 }
 
-.dt-lixeira { background: none !important; border: none !important; color: #8a2be2 !important; cursor: pointer; }
-
-/* NAVEGAÇÃO POR ABAS (ESTILO BOTÃO) */
-.dt-abas-box { display: flex; padding: 15px; gap: 10px; background: #05020a; }
-.dt-tab {
-    flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #2a104a;
-    background: #110820 !important; color: #666 !important; font-weight: 600; font-size: 14px;
-}
-.dt-tab.active { background: #8a2be2 !important; color: #fff !important; border: none; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); }
-
-/* INPUTS BLINDADOS (SEM FUNDO BRANCO) */
-.dt-card { background: #110820; border-radius: 18px; padding: 20px; margin-bottom: 15px; border: 1px solid #1f1135; }
-
-#tema, #nivel, #msg-in {
-    width: 100% !important; background: #000 !important; color: #fff !important;
-    border: 1px solid #3d1a6d !important; padding: 16px !important; border-radius: 12px !important;
-    font-size: 16px !important; margin-bottom: 15px !important;
+.dt-btn-principal {
+    width: 100%; padding: 16px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, var(--roxo), var(--roxo-claro)) !important;
+    color: #fff !important; font-weight: bold; font-size: 16px; cursor: pointer;
 }
 
-/* BOTÃO DE RESPOSTA (ESTILO NEUTRO) */
+/* QUESTÕES E MINI AULA */
+.dt-questao-card { background: var(--fundo-card); padding: 20px; border-radius: 20px; border: 1px solid #1f0b3d; margin-top: 15px; }
 .dt-opt-btn {
-    width: 100%; text-align: left; padding: 16px; margin-top: 10px;
-    background: #1c0f30 !important; color: #fff !important;
-    border: 1px solid #3d1a6d !important; border-radius: 12px; font-size: 15px;
+    width: 100%; text-align: left; padding: 15px; margin-top: 10px;
+    background: #160a28 !important; color: #fff !important;
+    border: 1px solid #2a104a !important; border-radius: 12px; cursor: pointer;
 }
 
-/* MINI AULA (ESTILO NOTA DE ESTUDO) */
 .dt-mini-aula {
-    margin-top: 15px; padding: 15px; border-radius: 12px;
-    background: #160b28 !important; border-left: 4px solid #8a2be2;
-    color: #bbb; font-size: 14px; animation: fadeIn 0.4s ease;
+    margin-top: 15px; padding: 15px; background: rgba(138, 43, 226, 0.1) !important;
+    border-left: 4px solid var(--roxo); border-radius: 8px; font-size: 14px; color: #ddd;
 }
 
-/* CHAT (ESTILO WHATSAPP DARK) */
-.dt-chat-box { display: flex; flex-direction: column; gap: 15px; padding: 10px 0 100px 0; }
-.dt-bolha { padding: 14px 18px; border-radius: 20px; max-width: 85%; font-size: 15px; }
-.dt-bolha.ia { background: #1c0f30; color: #eee; align-self: flex-start; border-bottom-left-radius: 5px; }
-.dt-bolha.user { background: #8a2be2; color: #fff; align-self: flex-end; border-bottom-right-radius: 5px; }
+/* CHAT */
+.dt-chat-container { height: 60vh; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+.dt-msg { padding: 15px; border-radius: 18px; max-width: 85%; line-height: 1.5; }
+.dt-msg.ia { background: #160a28; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #1f0b3d; }
+.dt-msg.user { background: var(--roxo); align-self: flex-end; border-bottom-right-radius: 4px; }
 
-/* MODAL DE AVISO (CORREÇÃO TOTAL) */
-#custom-modal {
+.dt-chat-input-area { 
+    display: flex; gap: 10px; padding: 15px; background: #0a0414; border-top: 1px solid #1f0b3d;
+    position: fixed; bottom: 0; left: 0; right: 0;
+}
+.dt-chat-input-area input { flex: 1; background: #000; border: 1px solid #2a104a; color: #fff; padding: 12px; border-radius: 12px; }
+.dt-btn-send { background: var(--roxo); border: none; color: #fff; padding: 10px 15px; border-radius: 12px; }
+
+/* MODAL */
+.dt-modal-overlay {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-    z-index: 1000; align-items: center; justify-content: center; padding: 30px;
+    z-index: 10000; align-items: center; justify-content: center; padding: 20px;
 }
-#modal-conteudo { background: #110820; padding: 25px; border-radius: 20px; border: 1px solid #8a2be2; text-align: center; width: 100%; max-width: 320px; }
-#btn-modal-ok { background: #8a2be2; color: #fff; border: none; padding: 12px 40px; border-radius: 10px; margin-top: 15px; font-weight: bold; }
+.dt-modal-box { background: #110820; padding: 30px; border-radius: 24px; border: 1px solid var(--roxo); text-align: center; max-width: 320px; width: 100%; }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
