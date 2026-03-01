@@ -1,95 +1,33 @@
-/* agenda-estilo.css */
-:root {
-    --primary: #8a2be2;
-    --bg-card: rgba(255, 255, 255, 0.05);
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    text-align: center;
 }
 
-.bg-dark { background-color: #05050a; color: white; }
+.dia-semana { color: var(--primary); font-size: 10px; font-weight: bold; padding-bottom: 5px; }
 
-.btn-anexo {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px dashed rgba(255, 255, 255, 0.3);
-    color: #ccc;
-    padding: 12px;
-    border-radius: 12px;
+.dia-numero {
+    aspect-ratio: 1/1;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 14px;
     cursor: pointer;
-    transition: 0.3s;
+    border: 1px solid transparent;
 }
 
-.btn-anexo:hover { background: rgba(255, 255, 255, 0.15); }
+.dia-numero:hover { background: rgba(138, 43, 226, 0.2); }
+.dia-numero.hoje { border-color: var(--primary); color: var(--primary); font-weight: bold; }
+.dia-numero.tem-tarefa { background: rgba(138, 43, 226, 0.4); }
 
-#preview-container img {
-    width: 100%;
-    border-radius: 12px;
-    margin-top: 10px;
-    border: 1px solid var(--primary);
-}
-
-.tarefa-item {
-    background: var(--bg-card);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 18px;
-    padding: 15px;
-    margin-bottom: 15px;
-    animation: fadeIn 0.4s ease;
-}
-
-.tarefa-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
-}
-
-.tarefa-info b { font-size: 17px; color: #fff; display: block; }
-.tarefa-info span { font-size: 13px; color: #888; }
-
-.btn-delete {
-    background: rgba(255, 68, 68, 0.2);
-    color: #ff4444;
-    border: none;
-    padding: 8px;
-    border-radius: 10px;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Ajuste para os campos de texto e data ficarem escuros */
-.input-ia {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
-    padding: 12px !important;
-    border-radius: 12px !important;
-    margin-bottom: 10px;
-    width: 100%;
-}
-
-/* Deixa o ícone do calendário do sistema escuro */
-input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-}
-
-.badge-materia {
-    background: #8a2be2;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 10px;
-    margin-bottom: 5px;
-    display: inline-block;
-}
-
-.img-anexo {
-    width: 100%;
-    border-radius: 10px;
-    margin-top: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
+.modal-agenda {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    z-index: 1000;
 }
