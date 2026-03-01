@@ -5,7 +5,7 @@ async function gerar() {
     if(!tema) return alert("Digite o assunto!");
     
     const lista = document.getElementById('questoes');
-    lista.innerHTML = "<div class='dt-card'>⏳ O professor está preparando sua aula...</div>";
+    lista.innerHTML = "<div class='dt-card'>⏳ Preparando sua Mini Aula e Questões...</div>";
 
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -13,12 +13,13 @@ async function gerar() {
             headers: { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [{role: "user", content: `Gere 10 questões sobre ${tema}. Retorne APENAS JSON puro: [{"p":"pergunta","o":["a","b","c","d"],"c":0,"e":"EXPLICAÇÃO DA RESPOSTA"}]`}]
+                messages: [{role: "user", content: `Gere 10 questões sobre ${tema}. Retorne APENAS o array JSON puro, sem texto antes ou depois: [{"p":"pergunta","o":["A","B","C","D"],"c":0,"e":"Aqui vai a mini aula explicando o porquê desta resposta"}]`}]
             })
         });
         
         const d = await res.json();
-        const qts = JSON.parse(d.choices[0].message.content.match(/\[.*\]/s)[0]);
+        const textoLimpo = d.choices[0].message.content.match(/\[.*\]/s)[0];
+        const qts = JSON.parse(textoLimpo);
         lista.innerHTML = "";
 
         qts.forEach((q, i) => {
@@ -32,37 +33,32 @@ async function gerar() {
                 btn.innerText = opt;
                 
                 btn.onclick = () => {
-                    // Desativa todos os botões desta questão
+                    // Trava os botões
                     card.querySelectorAll('.dt-opt-btn').forEach(b => b.disabled = true);
                     
-                    // Pinta de verde se acertou, vermelho se errou
+                    // Lógica de Cores após o clique
                     if(idx === q.c) {
-                        btn.style.background = "#28a745 !important";
-                        btn.style.borderColor = "#28a745 !important";
+                        btn.style.setProperty('background-color', '#28a745', 'important');
                     } else {
-                        btn.style.background = "#dc3545 !important";
-                        btn.style.borderColor = "#dc3545 !important";
-                        // Mostra qual era a certa em verde discreto
+                        btn.style.setProperty('background-color', '#dc3545', 'important');
+                        // Mostra a correta
                         card.querySelectorAll('.dt-opt-btn')[q.c].style.border = "2px solid #28a745";
                     }
 
-                    // CRIA A MINI AULA (EXPLICAÇÃO)
+                    // APARECER A MINI AULA
                     const aulaDiv = document.createElement('div');
                     aulaDiv.className = "dt-mini-aula";
-                    aulaDiv.innerHTML = `<b>🎓 Mini Aula:</b><br>${q.e}`;
+                    aulaDiv.innerHTML = `<strong>🎓 Mini Aula:</strong><br>${q.e}`;
                     card.appendChild(aulaDiv);
                 };
                 card.appendChild(btn);
             });
             lista.appendChild(card);
         });
-    } catch(e) { lista.innerHTML = "<div class='dt-card'>Erro ao conectar. Tente de novo.</div>"; }
+    } catch(e) { 
+        console.error(e);
+        lista.innerHTML = "<div class='dt-card'>Erro ao gerar. Tente um tema mais específico.</div>"; 
+    }
 }
 
-// Funções de troca de aba permanecem as mesmas
-function aba(n) {
-    document.querySelectorAll('section').forEach(s => s.style.display = 'none');
-    document.getElementById('painel-' + n).style.display = 'block';
-    document.querySelectorAll('.dt-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + n).classList.add('active');
-}
+// Mantenha as funções de enviar() e aba() que já funcionam.
