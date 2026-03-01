@@ -12,8 +12,8 @@
     <div class="fixed-top">
         <header class="header">
             <button onclick="window.location.href='index.html'" class="btn-icon"><i data-lucide="chevron-left"></i></button>
-            <span class="logo-txt">DT INTELIGÊNCIA</span>
-            <button onclick="perguntarLimpar()" class="btn-icon" style="color:#555;"><i data-lucide="trash-2"></i></button>
+            <span style="font-weight:bold;">DT INTELIGÊNCIA</span>
+            <button onclick="perguntarLimpar()" class="btn-icon" style="color:#555 !important;"><i data-lucide="trash-2"></i></button>
         </header>
         <nav class="tabs-box">
             <button id="btn-sim" class="tab-btn active" onclick="showAba('simulado')">Simulado</button>
@@ -24,22 +24,20 @@
     <main class="main-content">
         <section id="aba-simulado" class="aba-painel active">
             <div class="card-ia">
-                <input type="text" id="assunto" placeholder="Digite o assunto...">
+                <input type="text" id="assunto" placeholder="Assunto do simulado...">
                 <select id="nivel">
                     <option value="Ensino Médio">Ensino Médio</option>
-                    <option value="ENEM">ENEM / Vestibular</option>
+                    <option value="ENEM">ENEM</option>
                 </select>
-                <button class="btn-principal" onclick="validarEGerar()">GERAR QUESTÕES</button>
+                <button class="btn-principal" onclick="validarEGerar()">GERAR SIMULADO</button>
             </div>
             <div id="questoes-lista"></div>
         </section>
 
         <section id="aba-chat" class="aba-painel">
-            <div id="chat-box" class="chat-log">
-                <div class="bolha ia">Olá! Como posso te ajudar hoje?</div>
-            </div>
+            <div id="chat-box" class="chat-log"></div>
             <div class="chat-input-area">
-                <input type="text" id="chat-in" placeholder="Sua dúvida..." onkeypress="if(event.key==='Enter') enviarMsg()">
+                <input type="text" id="chat-in" placeholder="Sua dúvida...">
                 <button onclick="enviarMsg()" class="btn-send"><i data-lucide="send"></i></button>
             </div>
         </section>
@@ -47,10 +45,10 @@
 
     <div id="custom-modal" class="modal-overlay">
         <div class="card-ia modal-content">
-            <p id="modal-text"></p>
-            <div class="modal-btns">
-                <button id="btn-modal-cancel" class="tab-btn" style="display:none;">Voltar</button>
-                <button id="btn-modal-ok" class="btn-principal">Ok</button>
+            <p id="modal-text" style="margin-bottom:20px;"></p>
+            <div style="display:flex; gap:10px;">
+                <button id="btn-modal-cancel" class="tab-btn" style="display:none;">Sair</button>
+                <button id="btn-modal-ok" class="btn-principal" style="padding:10px !important;">OK</button>
             </div>
         </div>
     </div>
