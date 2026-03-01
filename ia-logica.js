@@ -5,7 +5,7 @@ async function gerar() {
     if(!tema) return alert("Digite o assunto!");
     
     const lista = document.getElementById('questoes');
-    lista.innerHTML = "<div class='dt-card'>⏳ Preparando sua Mini Aula e Questões...</div>";
+    lista.innerHTML = "<div class='dt-card'>⏳ Gerando simulado com mini aula...</div>";
 
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -13,19 +13,18 @@ async function gerar() {
             headers: { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [{role: "user", content: `Gere 10 questões sobre ${tema}. Retorne APENAS o array JSON puro, sem texto antes ou depois: [{"p":"pergunta","o":["A","B","C","D"],"c":0,"e":"Aqui vai a mini aula explicando o porquê desta resposta"}]`}]
+                messages: [{role: "user", content: `Gere 10 questões sobre ${tema}. Retorne APENAS JSON: [{"p":"pergunta","o":["a","b","c","d"],"c":0,"e":"explicação"}]`}]
             })
         });
         
         const d = await res.json();
-        const textoLimpo = d.choices[0].message.content.match(/\[.*\]/s)[0];
-        const qts = JSON.parse(textoLimpo);
+        const qts = JSON.parse(d.choices[0].message.content.match(/\[.*\]/s)[0]);
         lista.innerHTML = "";
 
         qts.forEach((q, i) => {
             const card = document.createElement('div');
             card.className = "dt-card";
-            card.innerHTML = `<p style='margin-bottom:10px;'><b>${i+1}.</b> ${q.p}</p>`;
+            card.innerHTML = `<p><b>${i+1}.</b> ${q.p}</p>`;
             
             q.o.forEach((opt, idx) => {
                 const btn = document.createElement('button');
@@ -33,32 +32,35 @@ async function gerar() {
                 btn.innerText = opt;
                 
                 btn.onclick = () => {
-                    // Trava os botões
                     card.querySelectorAll('.dt-opt-btn').forEach(b => b.disabled = true);
                     
-                    // Lógica de Cores após o clique
+                    // FORÇANDO A COR DIRETAMENTE NO ELEMENTO
                     if(idx === q.c) {
                         btn.style.setProperty('background-color', '#28a745', 'important');
+                        btn.style.setProperty('color', 'white', 'important');
                     } else {
                         btn.style.setProperty('background-color', '#dc3545', 'important');
-                        // Mostra a correta
+                        btn.style.setProperty('color', 'white', 'important');
+                        // Destaca a correta
                         card.querySelectorAll('.dt-opt-btn')[q.c].style.border = "2px solid #28a745";
                     }
 
-                    // APARECER A MINI AULA
-                    const aulaDiv = document.createElement('div');
-                    aulaDiv.className = "dt-mini-aula";
-                    aulaDiv.innerHTML = `<strong>🎓 Mini Aula:</strong><br>${q.e}`;
-                    card.appendChild(aulaDiv);
+                    // EXIBIR MINI AULA
+                    const aula = document.createElement('div');
+                    aula.className = "dt-mini-aula";
+                    aula.innerHTML = `<b>🎓 Mini Aula:</b><br>${q.e}`;
+                    card.appendChild(aula);
                 };
                 card.appendChild(btn);
             });
             lista.appendChild(card);
         });
-    } catch(e) { 
-        console.error(e);
-        lista.innerHTML = "<div class='dt-card'>Erro ao gerar. Tente um tema mais específico.</div>"; 
-    }
+    } catch(e) { lista.innerHTML = "<div class='dt-card'>Erro ao carregar questões.</div>"; }
 }
 
-// Mantenha as funções de enviar() e aba() que já funcionam.
+function aba(n) {
+    document.querySelectorAll('.dt-painel').forEach(p => p.style.display = 'none');
+    document.getElementById('painel-' + n).style.display = 'block';
+    document.querySelectorAll('.dt-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + n).classList.add('active');
+}
