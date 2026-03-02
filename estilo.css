@@ -85,40 +85,48 @@ input#nome-materia-input { width: 100%; background: #000; border: 1px solid #333
 /* Container oculto estúdio fotográfico */
 #compartilhamento-container { position: fixed; left: -9999px; top: 0; width: 1080px; height: 1920px; overflow: hidden; }
 
-/* O Novo Design do Card de Celebração - PREMIUM */
+/* O Novo Design do Card de Celebração - ESTILO NEURÔNIO */
 .card-vitoria-story {
     width: 100%; height: 100%;
-    background: radial-gradient(circle at center, #1a0b2e 0%, #0a0a0a 70%, #000000 100%);
+    background: radial-gradient(circle at center, #1a0b2e 0%, #050505 100%);
     display: flex; flex-direction: column; align-items: center; justify-content: space-between;
     padding: 120px 60px; box-sizing: border-box;
     font-family: sans-serif;
     position: relative;
-    border: 15px solid #1a0b2e;
+    border: 10px solid #1a0b2e;
 }
 
-/* Efeito de textura de fundo */
+/* Fundo com Neurônios Neon Apagados */
 .card-vitoria-story::before {
     content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background-image: url('data:image/svg+xml,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm63 31c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM34 90c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm56-76c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM12 86c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm28-65c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm23-11c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM60 91c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM35 41c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM12 60c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7" fill="%238a2be2" fill-opacity="0.05" fill-rule="evenodd"/%3E%3C/svg%3E');
-    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%238a2be2' stroke-width='1' stroke-opacity='0.15'%3E%3Ccircle cx='400' cy='400' r='5' fill='%238a2be2'/%3E%3Cpath d='M400 400 L450 320 M400 400 L320 350 M400 400 L420 480 M450 320 L520 300 M320 350 L250 320 M420 480 L480 550'/%3E%3Ccircle cx='450' cy='320' r='3'/%3E%3Ccircle cx='320' cy='350' r='3'/%3E%3Ccircle cx='420' cy='480' r='3'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat;
+    opacity: 0.6;
 }
 
 .vitoria-content { text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 1; }
-.logo-neon-vitoria { margin-bottom: 70px; filter: drop-shadow(0 0 30px rgba(138, 43, 226, 1)); }
+.logo-neon-vitoria { margin-bottom: 60px; filter: drop-shadow(0 0 40px rgba(138, 43, 226, 0.8)); }
 
+/* Texto sem retângulo - Brilho limpo */
 .status-conquista {
-    color: #fff; font-size: 45px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 5px; margin-bottom: 10px;
-    background: linear-gradient(to bottom, #fff, #8a2be2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    color: #fff; font-size: 50px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 4px; margin-bottom: 20px;
+    text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
 }
 
-.materia-nome-vitoria { color: #fff; font-size: 130px; font-weight: 800; line-height: 1.1; margin: 0; text-transform: uppercase; text-shadow: 0 0 40px rgba(138, 43, 226, 0.6); }
+.materia-nome-vitoria { 
+    color: #fff; font-size: 140px; font-weight: 900; line-height: 1; margin: 0; 
+    text-transform: uppercase; 
+    text-shadow: 0 0 30px rgba(138, 43, 226, 0.5);
+}
 
+/* Subtítulo mais clean */
 .badge-comemorativa {
-    margin-top: 50px; font-size: 38px; font-weight: 700;
-    color: #fff; text-transform: uppercase; letter-spacing: 3px;
-    padding: 15px 40px; border-top: 2px solid rgba(138, 43, 226, 0.3); border-bottom: 2px solid rgba(138, 43, 226, 0.3);
+    margin-top: 40px; font-size: 35px; font-weight: 600;
+    color: rgba(255, 255, 255, 0.8); text-transform: uppercase; letter-spacing: 8px;
+    border-bottom: 1px solid rgba(138, 43, 226, 0.4);
+    padding-bottom: 10px;
 }
 
-.vitoria-footer { text-align: center; color: #666; font-size: 28px; font-weight: 600; letter-spacing: 3px; z-index: 1; text-transform: uppercase; }
-.link-app-vitoria { font-size: 24px; color: #444; margin-top: 15px; text-transform: lowercase; font-weight: 400; }
+.vitoria-footer { text-align: center; color: #8a2be2; font-size: 30px; font-weight: 800; letter-spacing: 5px; z-index: 1; text-transform: uppercase; }
+.link-app-vitoria { font-size: 24px; color: #444; margin-top: 15px; text-transform: lowercase; font-weight: 400; letter-spacing: 1px; }
