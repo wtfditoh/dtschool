@@ -1,21 +1,19 @@
 {
-  "name": "Hub Brain - Alta Performance",
-  "short_name": "Hub Brain",
+  "name": "Hub Brain",
+  "short_name": "HubBrain",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#0a0a0a",
+  "background_color": "#000000",
   "theme_color": "#8a2be2",
-  "description": "Plataforma de gestão de estudos Hub Brain",
   "icons": [
     {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "https://hubbrain.netlify.app/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
     },
     {
-      "src": "icon-512.png",
-      "sizes": "192x192",
+      "src": "https://hubbrain.netlify.app/favicon.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]
