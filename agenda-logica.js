@@ -53,7 +53,7 @@ window.carregarTarefas = (filtroData = null) => {
     if(!lista) return;
 
     let tarefas = [...agendaGlobal];
-    const hojeStr = getHojeLocal(); // CORRIGIDO AQUI
+    const hojeStr = getHojeLocal();
     
     if (filtroData && filtroData !== "") {
         tarefas = tarefas.filter(t => filtroData >= t.dataInicio && filtroData <= t.dataFim);
@@ -119,6 +119,7 @@ window.renderizarCalendario = function() {
     const topoMes = document.getElementById('mes-topo');
     if(!grid || !topoMes) return;
     grid.innerHTML = "";
+    
     const nomesDias = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
     nomesDias.forEach(d => grid.innerHTML += `<div class="dia-semana">${d}</div>`);
 
@@ -131,26 +132,53 @@ window.renderizarCalendario = function() {
 
     for (let i = 0; i < primeiroDiaMes; i++) grid.innerHTML += `<div></div>`;
 
-    const hojeLocal = getHojeLocal(); // CORRIGIDO AQUI PARA O CALENDÁRIO
+    const hojeLocal = getHojeLocal();
 
     for (let dia = 1; dia <= diasNoMes; dia++) {
         const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-        const temTarefa = agendaGlobal.some(t => dataStr >= t.dataInicio && dataStr <= t.dataFim);
         
-        // COMPARAÇÃO CORRIGIDA
+        // Filtra todas as tarefas que englobam esse dia
+        const tarefasDoDia = agendaGlobal.filter(t => dataStr >= t.dataInicio && dataStr <= t.dataFim);
+        
+        let htmlDot = "";
+        
+        if (tarefasDoDia.length > 0) {
+            // Separa as que não estão concluídas para calcular a urgência real
+            const tarefasAtivas = tarefasDoDia.filter(t => !t.concluida);
+            
+            if (tarefasAtivas.length === 0) {
+                // Se todas do dia estão concluídas, bolinha azul
+                htmlDot = '<div class="dot status-concluido"></div>';
+            } else {
+                // Mapeia os pesos de urgência
+                const pesos = tarefasAtivas.map(t => {
+                    const fim = new Date(t.dataFim + "T00:00:00");
+                    const hoje = new Date(hojeLocal + "T00:00:00");
+                    const diff = Math.ceil((fim - hoje) / (1000 * 60 * 60 * 24));
+                    
+                    if (diff <= 3) return { classe: 'status-urgente', peso: 3 }; // Vermelho
+                    if (diff <= 7) return { classe: 'status-alerta', peso: 2 };  // Amarelo
+                    return { classe: 'status-tranquilo', peso: 1 };             // Verde
+                });
+
+                // Pega a de maior peso (mais urgente)
+                const maiorUrgencia = pesos.sort((a, b) => b.peso - a.peso)[0];
+                htmlDot = `<div class="dot ${maiorUrgencia.classe}"></div>`;
+            }
+        }
+        
         const hojeClass = hojeLocal === dataStr ? 'hoje' : '';
         const selClass = dataSelecionada === dataStr ? 'selecionado' : '';
         
         grid.innerHTML += `
             <div class="dia-numero ${hojeClass} ${selClass}" onclick="selecionarDia('${dataStr}')">
                 ${dia}
-                ${temTarefa ? '<div class="dot"></div>' : ''}
+                ${htmlDot}
             </div>`;
     }
     lucide.createIcons();
 };
 
-// --- RESTO DAS FUNÇÕES IGUAIS ---
 window.adicionarTarefa = async function() {
     const nome = document.getElementById('tarefa-nome').value.trim();
     const desc = document.getElementById('tarefa-desc').value.trim();
@@ -158,7 +186,7 @@ window.adicionarTarefa = async function() {
     const dataFim = document.getElementById('tarefa-data-fim').value;
     const materia = document.getElementById('tarefa-materia').value;
 
-    if (!nome || !dataInicio || !dataFim) return; // Validação agora é feita no HTML
+    if (!nome || !dataInicio || !dataFim) return;
 
     const nova = { 
         nome, descricao: desc, dataInicio, dataFim, materia, 
