@@ -82,11 +82,43 @@ input#nome-materia-input { width: 100%; background: #000; border: 1px solid #333
 #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1000; }
 #overlay.active { display: block; }
 
+/* Container oculto estúdio fotográfico */
 #compartilhamento-container { position: fixed; left: -9999px; top: 0; width: 1080px; height: 1920px; overflow: hidden; }
-.card-vitoria-story { width: 100%; height: 100%; background-color: #000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 150px 80px; box-sizing: border-box; border: 20px solid #1a0b2e; }
-.vitoria-content { text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.logo-neon-vitoria { margin-bottom: 80px; filter: drop-shadow(0 0 25px rgba(138, 43, 226, 0.9)); }
-.status-aprovado { color: #8a2be2; font-size: 50px; font-weight: 900; text-transform: uppercase; letter-spacing: 15px; margin-bottom: 20px; text-shadow: 0 0 20px rgba(138, 43, 226, 0.7); }
-.materia-nome-vitoria { color: #fff; font-size: 110px; font-weight: 800; line-height: 1.1; margin: 0; text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
-.badge-conquista { margin-top: 60px; background: linear-gradient(45deg, #1a0b2e, #8a2be2); color: #fff; padding: 20px 60px; border-radius: 50px; font-size: 35px; font-weight: 700; box-shadow: 0 0 30px rgba(138, 43, 226, 0.5); }
-.vitoria-footer { text-align: center; color: #444; font-size: 30px; font-weight: 600; letter-spacing: 2px; }
+
+/* O Novo Design do Card de Celebração - PREMIUM */
+.card-vitoria-story {
+    width: 100%; height: 100%;
+    background: radial-gradient(circle at center, #1a0b2e 0%, #0a0a0a 70%, #000000 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    padding: 120px 60px; box-sizing: border-box;
+    font-family: sans-serif;
+    position: relative;
+    border: 15px solid #1a0b2e;
+}
+
+/* Efeito de textura de fundo */
+.card-vitoria-story::before {
+    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url('data:image/svg+xml,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm63 31c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM34 90c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm56-76c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM12 86c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm28-65c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm23-11c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM60 91c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM35 41c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zM12 60c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7" fill="%238a2be2" fill-opacity="0.05" fill-rule="evenodd"/%3E%3C/svg%3E');
+    opacity: 0.5;
+}
+
+.vitoria-content { text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 1; }
+.logo-neon-vitoria { margin-bottom: 70px; filter: drop-shadow(0 0 30px rgba(138, 43, 226, 1)); }
+
+.status-conquista {
+    color: #fff; font-size: 45px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 5px; margin-bottom: 10px;
+    background: linear-gradient(to bottom, #fff, #8a2be2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.materia-nome-vitoria { color: #fff; font-size: 130px; font-weight: 800; line-height: 1.1; margin: 0; text-transform: uppercase; text-shadow: 0 0 40px rgba(138, 43, 226, 0.6); }
+
+.badge-comemorativa {
+    margin-top: 50px; font-size: 38px; font-weight: 700;
+    color: #fff; text-transform: uppercase; letter-spacing: 3px;
+    padding: 15px 40px; border-top: 2px solid rgba(138, 43, 226, 0.3); border-bottom: 2px solid rgba(138, 43, 226, 0.3);
+}
+
+.vitoria-footer { text-align: center; color: #666; font-size: 28px; font-weight: 600; letter-spacing: 3px; z-index: 1; text-transform: uppercase; }
+.link-app-vitoria { font-size: 24px; color: #444; margin-top: 15px; text-transform: lowercase; font-weight: 400; }
