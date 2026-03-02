@@ -130,3 +130,86 @@ input#nome-materia-input { width: 100%; background: #000; border: 1px solid #333
 
 .vitoria-footer { text-align: center; color: #8a2be2; font-size: 30px; font-weight: 800; letter-spacing: 5px; z-index: 1; text-transform: uppercase; }
 .link-app-vitoria { font-size: 24px; color: #444; margin-top: 15px; text-transform: lowercase; font-weight: 400; letter-spacing: 1px; }
+
+/* ==========================================
+   ESTILO DO BOTÃO DE INSTALAÇÃO (MENU)
+   ========================================== */
+.btn-instalar-pwa {
+    background: rgba(138, 43, 226, 0.1) !important;
+    border: 1px solid rgba(138, 43, 226, 0.4) !important;
+    color: white !important;
+    padding: 14px !important;
+    border-radius: 14px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    width: 90%;
+    margin: 20px auto 10px auto;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.btn-instalar-pwa i {
+    color: #8a2be2;
+}
+
+.btn-instalar-pwa:active {
+    transform: scale(0.96);
+    background: rgba(138, 43, 226, 0.3) !important;
+    border-color: #8a2be2 !important;
+}
+
+/* ==========================================
+   ALERTA NEON DO DASHBOARD (NOTIFICAÇÃO)
+   ========================================== */
+#alerta-dashboard {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.alerta-neon-topo {
+    background: linear-gradient(90deg, rgba(138, 43, 226, 0.2), rgba(0, 0, 0, 0.4));
+    border-left: 4px solid #8a2be2;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    animation: slideInDown 0.5s ease-out;
+}
+
+@keyframes slideInDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* ==========================================
+   AJUSTES PARA MOBILE (MODO APP)
+   ========================================== */
+/* Remove o scroll elástico chato no iPhone e deixa mais suave */
+html, body {
+    overscroll-behavior-y: contain;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Garante que o conteúdo não fique "colado" no topo em iPhones com Notch */
+@supports (padding-top: env(safe-area-inset-top)) {
+    .glass-header {
+        padding-top: env(safe-area-inset-top);
+        height: calc(70px + env(safe-area-inset-top));
+    }
+}
+
+/* Esconder barra de rolagem mas manter funcionalidade */
+::-webkit-scrollbar {
+    display: none;
+}
