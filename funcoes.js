@@ -50,8 +50,8 @@ async function salvarNaNuvem() {
     }
 }
 
-// NOVA FUNÇÃO: GERA O CARD DE VITÓRIA PREMIUM
-window.gerarCardVitoria = function(nomeMateria) {
+// FUNÇÃO PARA GERAR O CARD DE VITÓRIA DINÂMICO
+window.gerarCardVitoria = function(nomeMateria, mediaReal) {
     let container = document.getElementById('compartilhamento-container');
     if (!container) {
         container = document.createElement('div');
@@ -59,19 +59,30 @@ window.gerarCardVitoria = function(nomeMateria) {
         document.body.appendChild(container);
     }
 
+    let elogio = "Mais uma pra conta!";
+    let subtitulo = `MÉDIA ${mediaReal} ATINGIDA`;
+
+    if (mediaReal >= 8.0) {
+        elogio = "Desempenho de Elite!";
+        subtitulo = `NOTA EXTRAORDINÁRIA: ${mediaReal}`;
+    } else if (mediaReal >= 6.0) {
+        elogio = "Objetivo Concluído!";
+        subtitulo = `MÉDIA ${mediaReal} SUPERADA`;
+    }
+
     container.innerHTML = `
         <div class="card-vitoria-story">
             <div class="vitoria-content">
                 <div class="logo-neon-vitoria">
-                    <i data-lucide="brain-circuit" style="width:200px; height:200px; color:#8a2be2;"></i>
+                    <i data-lucide="brain-circuit" style="width:220px; height:220px; color:#8a2be2;"></i>
                 </div>
-                <p class="status-aprovado">Aprovado</p>
+                <p class="status-conquista">${elogio}</p>
                 <h1 class="materia-nome-vitoria">${nomeMateria}</h1>
-                <div class="badge-conquista">META ATINGIDA</div>
+                <p class="badge-comemorativa">${subtitulo}</p>
             </div>
             <div class="vitoria-footer">
                 <p>HUB BRAIN - ALTA PERFORMANCE</p>
-                <p style="font-size: 25px; color: #444; margin-top:10px;">ORGULHO DA TUA EVOLUÇÃO</p>
+                <p class="link-app-vitoria">hubbrain.web.app</p>
             </div>
         </div>
     `;
@@ -80,18 +91,16 @@ window.gerarCardVitoria = function(nomeMateria) {
 
     setTimeout(() => {
         html2canvas(container, { 
-            backgroundColor: '#000000', 
-            width: 1080, 
-            height: 1920, 
-            scale: 1 
+            backgroundColor: null, width: 1080, height: 1920, scale: 1,
+            logging: false, useCORS: true
         }).then(canvas => {
             const link = document.createElement('a');
             link.href = canvas.toDataURL("image/png");
-            link.download = `HubBrain_Aprovado_${nomeMateria}.png`;
+            link.download = `HubBrain_Vitoria_${nomeMateria}.png`;
             link.click();
             container.innerHTML = '';
         });
-    }, 300);
+    }, 400);
 };
 
 window.toggleMenu = function() {
@@ -134,7 +143,7 @@ window.atualizarLista = function() {
     const lista = document.getElementById('lista-materias');
     if(!lista) return;
 
-    // MÁGICA DA ORDENAÇÃO
+    // ORDENAÇÃO POR MAIOR MÉDIA
     materias.sort((a, b) => {
         const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
         const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
@@ -171,7 +180,7 @@ window.atualizarLista = function() {
                 ${aprovado ? `
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span class="aprovado-badge">APROVADO</span>
-                        <button onclick="gerarCardVitoria('${m.nome}')" style="background:none; border:none; color:#8a2be2; cursor:pointer; padding:5px; display:flex;">
+                        <button onclick="gerarCardVitoria('${m.nome}', '${media}')" style="background:none; border:none; color:#8a2be2; cursor:pointer; padding:5px; display:flex;">
                             <i data-lucide="share-2" style="width:16px;"></i>
                         </button>
                     </div>
