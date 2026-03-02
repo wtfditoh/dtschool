@@ -239,3 +239,79 @@ window.confirmarNovaMateria = function() {
     }
 };
       
+/* ==========================================
+   LÓGICA PWA: INSTALAÇÃO E ALERTAS
+   ========================================== */
+let instaladorPWA = null;
+
+// 1. Escuta o evento que o navegador dispara quando o site PODE ser instalado
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Impede o Chrome de mostrar aquele banner automático feio
+    e.preventDefault();
+    // Guarda o evento para usar quando o aluno clicar no botão
+    instaladorPWA = e;
+    
+    // Faz o botão "Baixar App" aparecer no menu lateral
+    const containerBotao = document.getElementById('pwa-install-container');
+    if (containerBotao) {
+        containerBotao.style.display = 'block';
+    }
+    
+    console.log("Hub Brain pronto para decolar (PWA)! 🚀");
+});
+
+// 2. Função disparada pelo botão "Baixar App Hub Brain"
+window.instalarApp = async function() {
+    if (!instaladorPWA) {
+        // Se não houver instalador, pode ser iPhone ou já instalado
+        alert("Para instalar no iPhone: Toque no ícone de 'Compartilhar' (setinha) e depois em 'Adicionar à Tela de Início' 📲");
+        return;
+    }
+
+    // Mostra o prompt de instalação do sistema
+    instaladorPWA.prompt();
+    
+    const { outcome } = await instaladorPWA.userChoice;
+    if (outcome === 'accepted') {
+        console.log('O aluno aceitou a instalação! 🎉');
+        document.getElementById('pwa-install-container').style.display = 'none';
+    }
+    instaladorPWA = null;
+};
+
+// 3. Detecta se o app já está rodando como "Aplicativo Instalado"
+window.addEventListener('appinstalled', () => {
+    console.log('Hub Brain instalado com sucesso!');
+    document.getElementById('pwa-install-container').style.display = 'none';
+});
+
+/* ==========================================
+   EXEMPLO DE NOTIFICAÇÃO NO DASHBOARD
+   ========================================== */
+// Chame essa função dentro do seu carregarDados() ou DOMContentLoaded
+window.verificarAlertasHoje = function(materias) {
+    const alertaArea = document.getElementById('alerta-dashboard');
+    if (!alertaArea) return;
+
+    // Exemplo: Se tiver matéria com média baixa ou atividade próxima
+    // Aqui você pode adaptar para a sua lógica da Agenda!
+    const precisaFocar = materias.filter(m => {
+        const soma = (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0);
+        return soma > 0 && soma < 12; // Exemplo: notas baixas
+    });
+
+    if (precisaFocar.length > 0) {
+        alertaArea.innerHTML = `
+            <div class="alerta-neon-topo">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i data-lucide="alert-circle" style="color:#8a2be2;"></i>
+                    <span>Foco total! Tens ${precisaFocar.length} matérias que precisam de atenção.</span>
+                </div>
+                <button onclick="this.parentElement.remove()" style="background:none; border:none; color:white; cursor:pointer;">
+                    <i data-lucide="x" style="width:16px;"></i>
+                </button>
+            </div>
+        `;
+        lucide.createIcons();
+    }
+};
