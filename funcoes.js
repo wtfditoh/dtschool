@@ -1,5 +1,3 @@
-// --- COPIE A PARTIR DAQUI ---
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -52,6 +50,50 @@ async function salvarNaNuvem() {
     }
 }
 
+// NOVA FUNÇÃO: GERA O CARD DE VITÓRIA PREMIUM
+window.gerarCardVitoria = function(nomeMateria) {
+    let container = document.getElementById('compartilhamento-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'compartilhamento-container';
+        document.body.appendChild(container);
+    }
+
+    container.innerHTML = `
+        <div class="card-vitoria-story">
+            <div class="vitoria-content">
+                <div class="logo-neon-vitoria">
+                    <i data-lucide="brain-circuit" style="width:200px; height:200px; color:#8a2be2;"></i>
+                </div>
+                <p class="status-aprovado">Aprovado</p>
+                <h1 class="materia-nome-vitoria">${nomeMateria}</h1>
+                <div class="badge-conquista">META ATINGIDA</div>
+            </div>
+            <div class="vitoria-footer">
+                <p>HUB BRAIN - ALTA PERFORMANCE</p>
+                <p style="font-size: 25px; color: #444; margin-top:10px;">ORGULHO DA TUA EVOLUÇÃO</p>
+            </div>
+        </div>
+    `;
+
+    lucide.createIcons({ container: container });
+
+    setTimeout(() => {
+        html2canvas(container, { 
+            backgroundColor: '#000000', 
+            width: 1080, 
+            height: 1920, 
+            scale: 1 
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL("image/png");
+            link.download = `HubBrain_Aprovado_${nomeMateria}.png`;
+            link.click();
+            container.innerHTML = '';
+        });
+    }, 300);
+};
+
 window.toggleMenu = function() {
     document.getElementById('menu-lateral').classList.toggle('open');
     document.getElementById('overlay').classList.toggle('active');
@@ -92,8 +134,7 @@ window.atualizarLista = function() {
     const lista = document.getElementById('lista-materias');
     if(!lista) return;
 
-    // --- MÁGICA DA ORDENAÇÃO (ADICIONADO AQUI) ---
-    // Ordena pela soma das notas (da maior para a menor)
+    // MÁGICA DA ORDENAÇÃO
     materias.sort((a, b) => {
         const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
         const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
@@ -127,7 +168,14 @@ window.atualizarLista = function() {
 
             <div class="card-bottom">
                 <span style="font-size:11px; color:#555; font-weight:bold;">MÉDIA: ${media}</span>
-                ${aprovado ? '<span class="aprovado-badge">APROVADO</span>' : `<span class="falta-badge">FALTAM ${(24-soma).toFixed(1)}</span>`}
+                ${aprovado ? `
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="aprovado-badge">APROVADO</span>
+                        <button onclick="gerarCardVitoria('${m.nome}')" style="background:none; border:none; color:#8a2be2; cursor:pointer; padding:5px; display:flex;">
+                            <i data-lucide="share-2" style="width:16px;"></i>
+                        </button>
+                    </div>
+                ` : `<span class="falta-badge">FALTAM ${(24-soma).toFixed(1)}</span>`}
             </div>
         </div>`;
     }).join('');
