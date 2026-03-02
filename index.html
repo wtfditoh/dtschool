@@ -8,7 +8,14 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain - Inteligência Escolar</title> <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Hub Brain - Inteligência Escolar</title> 
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8a2be2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="estilo.css?v=12.0">
     <style>
         /* CSS Específico para o novo topo atraente */
@@ -60,7 +67,6 @@
             100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
         }
 
-        /* Ajuste do botão "+" para combinar com o novo topo */
         .btn-add-main {
             background: #8a2be2 !important;
             width: 38px !important;
@@ -69,6 +75,26 @@
             font-size: 24px !important;
             box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
         }
+
+        /* Estilo do Botão de Baixar App */
+        .btn-instalar-pwa {
+            background: rgba(138, 43, 226, 0.1);
+            border: 1px solid #8a2be2;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 90%;
+            margin: 20px auto 10px auto;
+            transition: 0.3s;
+            font-size: 13px;
+        }
+        .btn-instalar-pwa:active { transform: scale(0.95); background: #8a2be2; }
     </style>
 </head>
 <body>
@@ -108,12 +134,21 @@
             <i data-lucide="book-open"></i> Estudar com IA
         </button>
 
+        <div id="pwa-install-container" style="display: none;">
+            <button onclick="instalarApp()" class="btn-instalar-pwa">
+                <i data-lucide="download-cloud" style="width: 18px;"></i>
+                Baixar App Hub Brain
+            </button>
+        </div>
+
         <button onclick="localStorage.clear(); window.location.href='login.html';" class="nav-item" style="color: #ff4444; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
             <i data-lucide="log-out"></i> Sair / Trocar Conta
         </button>
     </nav>
 
     <main class="container">
+        <div id="alerta-dashboard"></div>
+
         <div class="stats-row">
             <div class="stat-card"><span id="media-geral">0.0</span><label>Média Geral</label></div>
             <div class="stat-card"><span id="aprov-count">0/0</span><label>Aprovadas</label></div>
@@ -157,9 +192,18 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <script type="module" src="funcoes.js?v=12.0"></script>
+    
     <script>
+        // Registro do Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    console.log('SW registrado!', reg);
+                }).catch(err => console.log('Erro SW', err));
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
         });
