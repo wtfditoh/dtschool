@@ -7,12 +7,12 @@
   "theme_color": "#8a2be2",
   "icons": [
     {
-      "src": "https://hubbrain.netlify.app/favicon.png",
+      "src": "icon-512.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://hubbrain.netlify.app/favicon.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
