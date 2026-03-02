@@ -51,9 +51,9 @@ async function salvarNaNuvem() {
 }
 
 // ==========================================
-// GERADOR DE CARD DE VITÓRIA PREMIUM (STORY)
+// GERADOR DE CARD E COMPARTILHAMENTO NATIVO
 // ==========================================
-window.gerarCardVitoria = function(nomeMateria, mediaReal) {
+window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     let container = document.getElementById('compartilhamento-container');
     if (!container) {
         container = document.createElement('div');
@@ -78,13 +78,10 @@ window.gerarCardVitoria = function(nomeMateria, mediaReal) {
                 <div class="logo-neon-vitoria">
                     <i data-lucide="brain-circuit" style="width:240px; height:240px; color:#8a2be2;"></i>
                 </div>
-                
                 <p class="status-conquista">${elogio}</p>
                 <h1 class="materia-nome-vitoria">${nomeMateria}</h1>
-                
                 <p class="badge-comemorativa">${subtitulo}</p>
             </div>
-            
             <div class="vitoria-footer">
                 <p>HUB BRAIN</p>
                 <p class="link-app-vitoria">https://hubbrain.netlify.app/</p>
@@ -94,18 +91,36 @@ window.gerarCardVitoria = function(nomeMateria, mediaReal) {
 
     lucide.createIcons({ container: container });
 
-    setTimeout(() => {
-        html2canvas(container, { 
+    setTimeout(async () => {
+        const canvas = await html2canvas(container, { 
             backgroundColor: null, 
             width: 1080, height: 1920, scale: 1,
             logging: false, useCORS: true
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.href = canvas.toDataURL("image/png");
-            link.download = `HubBrain_Vitoria_${nomeMateria}.png`;
-            link.click();
-            container.innerHTML = '';
         });
+
+        canvas.toBlob(async (blob) => {
+            const file = new File([blob], `HubBrain_${nomeMateria}.png`, { type: 'image/png' });
+            
+            const shareData = {
+                title: 'Hub Brain - Alta Performance',
+                text: `Passei em ${nomeMateria}!🚀 Venha você também cuidar dos seus estudos com a Hub Brain: https://hubbrain.netlify.app/`,
+                files: [file]
+            };
+
+            try {
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share(shareData);
+                } else {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `HubBrain_Vitoria_${nomeMateria}.png`;
+                    link.click();
+                }
+            } catch (err) {
+                console.log('Compartilhamento cancelado');
+            }
+            container.innerHTML = '';
+        }, 'image/png');
     }, 400);
 };
 
@@ -149,7 +164,6 @@ window.atualizarLista = function() {
     const lista = document.getElementById('lista-materias');
     if(!lista) return;
 
-    // ORDENAÇÃO: MAIOR NOTA NO TOPO
     materias.sort((a, b) => {
         const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
         const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
@@ -186,7 +200,7 @@ window.atualizarLista = function() {
                 ${aprovado ? `
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span class="aprovado-badge">APROVADO</span>
-                        <button onclick="gerarCardVitoria('${m.nome}', '${media}')" style="background:none; border:none; color:#8a2be2; cursor:pointer; padding:5px; display:flex;" title="Compartilhar Vitória">
+                        <button onclick="gerarCardVitoria('${m.nome}', '${media}')" style="background:none; border:none; color:#8a2be2; cursor:pointer; padding:5px; display:flex;">
                             <i data-lucide="share-2" style="width:16px;"></i>
                         </button>
                     </div>
@@ -224,3 +238,4 @@ window.confirmarNovaMateria = function() {
         input.value = ''; fecharModal(); atualizarLista();
     }
 };
+      
