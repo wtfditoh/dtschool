@@ -10,12 +10,15 @@ body { background: #05020a !important; color: #fff; font-family: sans-serif; ove
 
 /* TABS */
 .dt-nav-tabs { display: flex; padding: 10px; gap: 10px; background: #05020a; }
-.dt-tab-button { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #1f0b3d; background: #110820 !important; color: #666 !important; font-weight: bold; }
+.dt-tab-button { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #1f0b3d; background: #110820 !important; color: #666 !important; font-weight: bold; cursor: pointer; }
 .dt-tab-button.active { background: #8a2be2 !important; color: #fff !important; border: none; }
 
 /* CONTEÚDO */
-.dt-aba { display: none; padding: 15px; padding-bottom: 100px; }
+.dt-aba { display: none; padding: 15px; }
 .dt-aba.active { display: block; animation: fadeIn 0.3s; }
+
+/* AJUSTE ESPECÍFICO PARA O CHAT NÃO TER BARRA PRETA */
+#painel-chat { padding: 0 !important; } /* Remove respiros laterais no chat */
 
 /* FORMULÁRIO */
 .dt-card-form { background: #110820; padding: 20px; border-radius: 20px; border: 1px solid #1f0b3d; margin-bottom: 20px; }
@@ -28,20 +31,47 @@ body { background: #05020a !important; color: #fff; font-family: sans-serif; ove
 .dt-opt-btn { width: 100%; text-align: left; padding: 15px; margin-top: 10px; background: #160a28 !important; color: #fff !important; border: 1px solid #2a104a !important; border-radius: 10px; }
 .dt-mini-aula { margin-top: 15px; padding: 12px; background: rgba(138, 43, 226, 0.1) !important; border-left: 4px solid #8a2be2; border-radius: 5px; color: #ddd; font-size: 13px; }
 
-/* CHAT */
-.dt-chat-scroll { display: flex; flex-direction: column; gap: 10px; height: 60vh; overflow-y: auto; padding-right: 5px; }
+/* CHAT - CORRIGIDO */
+.dt-chat-scroll { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    height: calc(100vh - 190px); /* Altura dinâmica para colar na barra */
+    overflow-y: auto; 
+    padding: 15px; 
+}
 .dt-bolha { padding: 12px 16px; border-radius: 18px; max-width: 85%; line-height: 1.4; }
-.dt-bolha.ia { background: #160a28; align-self: flex-start; border-bottom-left-radius: 2px; }
+.dt-bolha.ia { background: #160a28; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #1f0b3d; }
 .dt-bolha.user { background: #8a2be2; align-self: flex-end; border-bottom-right-radius: 2px; }
-.dt-chat-input-area { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; gap: 10px; padding: 15px; background: #0a0414; border-top: 1px solid #1f0b3d; }
-.dt-chat-input-area input { flex: 1; background: #000; color: #fff; border: 1px solid #2a104a; padding: 12px; border-radius: 12px; }
-.dt-btn-send { background: #8a2be2; border: none; color: #fff; padding: 10px 15px; border-radius: 12px; }
+
+/* BARRA DE DIGITAÇÃO - SEM ESPAÇO PRETO */
+.dt-chat-input-area { 
+    position: fixed; 
+    bottom: 0; 
+    left: 0; 
+    width: 100%; 
+    display: flex; 
+    gap: 10px; 
+    padding: 15px; 
+    background: #0d061a; /* Mesma cor do header para fundir o visual */
+    border-top: 1px solid #1f0b3d; 
+    z-index: 100;
+}
+.dt-chat-input-area input { 
+    flex: 1; 
+    background: #000 !important; 
+    color: #fff !important; 
+    border: 1px solid #2a104a !important; 
+    padding: 12px; 
+    border-radius: 12px; 
+}
+.dt-btn-send { background: #8a2be2; border: none; color: #fff; padding: 10px 15px; border-radius: 12px; cursor: pointer; }
 
 /* MODAL */
 .dt-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
 .dt-modal-box { background: #110820; padding: 30px; border-radius: 25px; border: 1px solid #1f0b3d; text-align: center; width: 100%; max-width: 320px; }
 .dt-modal-footer { display: flex; gap: 10px; margin-top: 20px; }
-.dt-btn-cancelar { flex: 1; background: #1a1a1a; color: #fff; border: 1px solid #333; padding: 12px; border-radius: 10px; font-weight: bold; }
-.dt-btn-confirmar { flex: 1; background: #ff4444; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: bold; }
+.dt-btn-cancelar { flex: 1; background: #1a1a1a; color: #fff; border: 1px solid #333; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+.dt-btn-confirmar { flex: 1; background: #ff4444; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
