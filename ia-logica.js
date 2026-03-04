@@ -1,4 +1,4 @@
-const API_KEY = "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";
+const API_KEY = "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";
 
 // Garante que tudo carregue, inclusive os ícones
 window.addEventListener('load', () => {
