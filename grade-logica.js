@@ -20,6 +20,15 @@ let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Carrega seletor de horas customizado (se existir no HTML)
+    const selectH = document.getElementById('aula-hora-h');
+    if (selectH) {
+        for(let i=0; i<24; i++) {
+            let h = i < 10 ? '0'+i : i;
+            selectH.innerHTML += `<option value="${h}">${h}h</option>`;
+        }
+    }
+
     const local = localStorage.getItem('hub_brain_grade');
     if (local) {
         gradeHoraria = JSON.parse(local);
@@ -31,6 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const d = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
     
+    // Verifica o relógio a cada 1 minuto
     setInterval(verificarRelogioParaNotificar, 60000);
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
@@ -93,7 +103,7 @@ window.renderizarAulas = () => {
     if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
-window.carregarMateriasDasNotas = () => {
+window.abrirModalAula = () => {
     const select = document.getElementById('aula-materia-select');
     const dadosNotas = JSON.parse(localStorage.getItem('materias')) || [];
     select.innerHTML = '<option value="">Selecionar matéria...</option>';
@@ -102,10 +112,6 @@ window.carregarMateriasDasNotas = () => {
         opt.value = mat.nome; opt.textContent = mat.nome;
         select.appendChild(opt);
     });
-};
-
-window.abrirModalAula = () => {
-    window.carregarMateriasDasNotas();
     document.getElementById('modal-aula').style.display = 'flex';
 };
 
@@ -117,7 +123,17 @@ window.salvarAula = async () => {
     const o = document.getElementById('aula-ordem').value;
     const s = document.getElementById('aula-materia-select').value;
     const c = document.getElementById('aula-materia-custom').value.trim();
-    const h = document.getElementById('aula-hora').value;
+    
+    // Tenta pegar do seletor duplo (hora/min) ou do input único
+    let h;
+    const selH = document.getElementById('aula-hora-h');
+    const selM = document.getElementById('aula-hora-m');
+    if(selH && selM) {
+        h = selH.value + ":" + selM.value;
+    } else {
+        h = document.getElementById('aula-hora').value;
+    }
+    
     const p = document.getElementById('aula-prof').value.trim();
 
     const mat = s || c;
@@ -148,20 +164,7 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
     }
 };
 
-window.abrirModalNotif = () => {
-    document.getElementById('modal-notif-boasvindas').style.display = 'flex';
-    lucide.createIcons();
-};
-
-window.ativarNotificacoesReal = () => {
-    Notification.requestPermission().then(p => { 
-        if(p==='granted') {
-            alert("Sucesso! Notificações ativadas.");
-            document.getElementById('modal-notif-boasvindas').style.display = 'none';
-        }
-    });
-};
-
+// NOVA LÓGICA DE NOTIFICAÇÃO (30 MIN E 5 MIN)
 function verificarRelogioParaNotificar() {
     const hoje = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][new Date().getDay()];
     const aulas = gradeHoraria[hoje] || [];
@@ -171,14 +174,33 @@ function verificarRelogioParaNotificar() {
     aulas.forEach(aula => {
         const [h, m] = aula.hora.split(':').map(Number);
         const minAula = (h * 60) + m;
-        if (minAula - minAgora === 5) {
-            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'NOTIFICAR_AULA',
-                    materia: aula.materia,
-                    hora: aula.hora
-                });
-            }
+        const diferenca = minAula - minAgora;
+
+        if (diferenca === 30) {
+            dispararAviso(aula.materia, aula.hora, "30_MIN");
+        } else if (diferenca === 5) {
+            dispararAviso(aula.materia, aula.hora, "5_MIN");
         }
     });
-          }
+}
+
+function dispararAviso(materia, hora, tipo) {
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+            type: 'NOTIFICAR_AULA',
+            materia: materia,
+            hora: hora,
+            tempoRestante: tipo
+        });
+    }
+}
+
+window.ativarNotificacoesReal = () => {
+    Notification.requestPermission().then(p => { 
+        if(p==='granted') {
+            alert("Sucesso! Notificações ativadas.");
+            if(document.getElementById('modal-notif-boasvindas'))
+                document.getElementById('modal-notif-boasvindas').style.display = 'none';
+        }
+    });
+};
