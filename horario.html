@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Grade Horária - Hub Brain</title>
     <link rel="stylesheet" href="grade-estilo.css">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -11,15 +11,20 @@
 
     <div class="grade-container">
         <div class="grade-header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>📅 Minha Grade</h2>
-                <button onclick="ativarNotificacoes()" class="btn-notif">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button onclick="window.location.href='index.html'" style="background:none; border:none; color:white; padding:0; cursor:pointer;">
+                        <i data-lucide="chevron-left"></i>
+                    </button>
+                    <h2 style="margin:0;">📅 Minha Grade</h2>
+                </div>
+                <button onclick="ativarNotificacoes()" class="btn-notif" title="Ativar Alertas">
                     <i data-lucide="bell"></i>
                 </button>
             </div>
             
             <div class="dias-scroll">
-                <button class="btn-dia" data-dia="segunda" onclick="selecionarDia('segunda')">SEG</button>
+                <button class="btn-dia active" data-dia="segunda" onclick="selecionarDia('segunda')">SEG</button>
                 <button class="btn-dia" data-dia="terca" onclick="selecionarDia('terca')">TER</button>
                 <button class="btn-dia" data-dia="quarta" onclick="selecionarDia('quarta')">QUA</button>
                 <button class="btn-dia" data-dia="quinta" onclick="selecionarDia('quinta')">QUI</button>
@@ -27,26 +32,39 @@
             </div>
         </div>
 
-        <div id="lista-aulas" class="lista-aulas"></div>
+        <div id="lista-aulas" class="lista-aulas">
+            </div>
 
         <button class="fab-add-aula" onclick="abrirModalAula()">
             <i data-lucide="plus"></i>
         </button>
     </div>
 
-    <div id="modal-aula" class="modal-grade">
+    <div id="modal-aula" class="modal-grade" style="display: none;">
         <div class="modal-content-grade">
-            <h3>Nova Aula</h3>
-            <input type="text" id="aula-materia" class="input-grade" placeholder="Matéria">
+            <h3 style="margin-top:0; color:white;">Nova Aula</h3>
+            <label style="font-size: 12px; color: #888;">NOME DA MATÉRIA</label>
+            <input type="text" id="aula-materia" class="input-grade" placeholder="Ex: Física Quântica">
+            
+            <label style="font-size: 12px; color: #888;">HORÁRIO DE INÍCIO</label>
             <input type="time" id="aula-hora" class="input-grade">
-            <input type="text" id="aula-prof" class="input-grade" placeholder="Professor (Opcional)">
+            
+            <label style="font-size: 12px; color: #888;">PROFESSOR (OPCIONAL)</label>
+            <input type="text" id="aula-prof" class="input-grade" placeholder="Ex: Prof. Albert">
+            
             <div class="modal-btns">
                 <button onclick="fecharModalAula()" class="btn-cancelar">Sair</button>
-                <button onclick="salvarAula()" class="btn-salvar">Salvar</button>
+                <button onclick="salvarAula()" class="btn-salvar">Salvar Aula</button>
             </div>
         </div>
     </div>
 
     <script type="module" src="grade-logica.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
 </body>
 </html>
