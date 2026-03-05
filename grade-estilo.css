@@ -3,7 +3,7 @@
     --primary-glow: rgba(138, 43, 226, 0.4);
     --bg-dark: #0a0a0a;
     --card-bg: rgba(255, 255, 255, 0.05);
-    --border: rgba(255, 255, 255, 0.1);
+    --border: rgba(138, 43, 226, 0.2); /* Borda levemente roxa */
     --text: #ffffff;
     --text-dim: #888;
 }
@@ -15,33 +15,13 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 .grade-container {
     padding: 20px;
     max-width: 600px;
     margin: 0 auto;
-}
-
-/* Cabeçalho */
-.grade-header {
-    margin-bottom: 25px;
-}
-
-.grade-header h2 {
-    font-size: 24px;
-    font-weight: 800;
-    margin: 0;
-}
-
-.btn-notif {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    color: var(--primary);
-    padding: 10px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.3s;
 }
 
 /* Scroll de Dias */
@@ -51,6 +31,7 @@ body {
     overflow-x: auto;
     padding: 15px 0;
     scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .dias-scroll::-webkit-scrollbar { display: none; }
@@ -64,7 +45,7 @@ body {
     white-space: nowrap;
     font-weight: 600;
     cursor: pointer;
-    transition: 0.3s;
+    transition: 0.3s ease;
 }
 
 .btn-dia.active {
@@ -72,15 +53,10 @@ body {
     color: white;
     border-color: var(--primary);
     box-shadow: 0 0 15px var(--primary-glow);
+    transform: scale(1.05);
 }
 
-/* Lista de Aulas */
-.lista-aulas {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
+/* Cards de Aula */
 .card-aula {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -89,7 +65,9 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
+    margin-bottom: 12px;
     animation: fadeIn 0.4s ease-out;
+    backdrop-filter: blur(10px);
 }
 
 @keyframes fadeIn {
@@ -98,23 +76,26 @@ body {
 }
 
 .aula-tempo {
-    background: rgba(138, 43, 226, 0.1);
+    background: rgba(138, 43, 226, 0.15);
     color: var(--primary);
-    padding: 8px 12px;
-    border-radius: 10px;
+    padding: 10px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 60px;
     font-weight: 800;
-    font-size: 14px;
+    border: 1px solid rgba(138, 43, 226, 0.3);
 }
 
 .aula-info {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
 }
 
-.aula-info b { font-size: 16px; margin-bottom: 2px; }
-.aula-info span { font-size: 12px; color: var(--text-dim); }
+.aula-info b { font-size: 16px; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
+.aula-info span { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
 
-/* Botão Flutuante (FAB) */
+/* FAB Botão Adicionar */
 .fab-add-aula {
     position: fixed;
     bottom: 30px;
@@ -128,58 +109,98 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 20px var(--primary-glow);
+    box-shadow: 0 8px 25px var(--primary-glow);
     cursor: pointer;
-    transition: 0.3s;
+    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 99;
 }
 
-.fab-add-aula:active { transform: scale(0.9); }
+.fab-add-aula:active { transform: scale(0.9) rotate(90deg); }
 
-/* Modal */
+/* Modais */
 .modal-grade {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(5px);
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    padding: 20px;
 }
 
 .modal-content-grade {
-    background: #151515;
-    width: 85%;
-    max-width: 400px;
+    background: #111;
+    width: 100%;
+    max-width: 380px;
     padding: 25px;
-    border-radius: 24px;
-    border: 1px solid var(--border);
+    border-radius: 28px;
+    border: 1px solid var(--primary);
+    box-shadow: 0 0 30px rgba(138, 43, 226, 0.2);
 }
 
 .input-grade {
     width: 100%;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.03);
     border: 1px solid var(--border);
-    padding: 12px;
-    border-radius: 12px;
+    padding: 14px;
+    border-radius: 14px;
     color: white;
     margin-bottom: 15px;
     box-sizing: border-box;
+    outline: none;
+    transition: 0.3s;
 }
 
-.modal-btns {
+.input-grade:focus {
+    border-color: var(--primary);
+    background: rgba(138, 43, 226, 0.05);
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
+/* NOVO SELETOR DE HORA CUSTOMIZADO */
+.seletor-hora-custom {
     display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
 }
 
-.btn-cancelar, .btn-salvar {
-    flex: 1;
-    padding: 12px;
-    border-radius: 12px;
-    border: none;
+.seletor-hora-custom select {
+    background: #000;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 20px;
     font-weight: bold;
+    outline: none;
+    width: 75px;
+    text-align: center;
     cursor: pointer;
 }
 
-.btn-cancelar { background: #222; color: #888; }
-.btn-salvar { background: var(--primary); color: white; }
+/* Botões do Modal */
+.modal-btns { display: flex; gap: 12px; margin-top: 10px; }
+
+.btn-cancelar, .btn-salvar {
+    flex: 1;
+    padding: 15px;
+    border-radius: 15px;
+    border: none;
+    font-weight: 800;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: 0.3s;
+}
+
+.btn-cancelar { background: #1a1a1a; color: #666; }
+.btn-salvar { background: var(--primary); color: white; box-shadow: 0 5px 15px var(--primary-glow); }
+.btn-salvar:active { transform: scale(0.96); }
