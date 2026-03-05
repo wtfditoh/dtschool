@@ -99,12 +99,16 @@
                 <i data-lucide="trash-2" style="color:#ff4444; width:30px; height:30px;"></i>
             </div>
             <h3 style="margin:0 0 10px 0; color:white;">Remover aula?</h3>
-            <p style="color:#888; font-size:14px; margin-bottom:20px;">Essa ação não pode ser desfeita.</p>
             <div class="modal-btns">
                 <button onclick="fecharModalExcluir()" class="btn-cancelar">Não</button>
                 <button id="btn-confirmar-delete" class="btn-salvar" style="background:#ff4444 !important;">Sim, Apagar</button>
             </div>
         </div>
+    </div>
+
+    <div id="custom-toast" class="toast-container">
+        <div class="toast-icon"><i data-lucide="check-circle"></i></div>
+        <span id="toast-message">Notificações Ativadas!</span>
     </div>
 
     <script type="module" src="grade-logica.js"></script>
