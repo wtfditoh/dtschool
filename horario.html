@@ -17,6 +17,36 @@
         .hub-logo-text { font-weight: 900; font-size: 19px; color: white; text-transform: uppercase; }
         .hub-logo-text.purple { color: #8a2be2; }
         .btn-notif { background: none; border: none; color: #8a2be2; cursor: pointer; }
+
+        /* CSS DO SELETOR DE HORA CUSTOMIZADO */
+        .seletor-hora-custom {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(30, 30, 30, 0.6);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            margin: 10px 0 20px 0;
+        }
+        .seletor-hora-custom select {
+            background: #0a0a0a;
+            color: white;
+            border: 1px solid #8a2be2;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            text-align: center;
+            width: 65px;
+        }
+        .seletor-hora-custom select:focus {
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.4);
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -42,8 +72,7 @@
             <button class="btn-dia" data-dia="sexta" onclick="selecionarDia('sexta')">SEX</button>
         </div>
 
-        <div id="lista-aulas" class="lista-aulas">
-            </div>
+        <div id="lista-aulas" class="lista-aulas"></div>
 
         <button class="fab-add-aula" onclick="abrirModalAula()">
             <i data-lucide="plus"></i>
@@ -52,7 +81,7 @@
 
     <div id="modal-aula" class="modal-grade" style="display: none;">
         <div class="modal-content-grade">
-            <h3 style="margin-top:0;">Agendar Aula</h3>
+            <h3 style="margin-top:0; color:#8a2be2;">Agendar Aula</h3>
             
             <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">QUAL AULA?</label>
             <select id="aula-ordem" class="input-grade">
@@ -70,16 +99,23 @@
             </select>
             <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Ou digite outra (ex: Intervalo)" style="margin-top:-10px; font-size:13px;">
 
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label style="font-size: 11px; color: #888;">HORÁRIO</label>
-                    <input type="time" id="aula-hora" class="input-grade">
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 11px; color: #888;">PROFESSOR</label>
-                    <input type="text" id="aula-prof" class="input-grade" placeholder="Nome">
-                </div>
+            <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">HORÁRIO DA AULA</label>
+            <div class="seletor-hora-custom">
+                <select id="aula-hora-h">
+                    </select>
+                <span style="color:white; font-weight:bold;">:</span>
+                <select id="aula-hora-m">
+                    <option value="00">00</option><option value="05">05</option>
+                    <option value="10">10</option><option value="15">15</option>
+                    <option value="20">20</option><option value="25">25</option>
+                    <option value="30">30</option><option value="35">35</option>
+                    <option value="40">40</option><option value="45">45</option>
+                    <option value="50">50</option><option value="55">55</option>
+                </select>
             </div>
+
+            <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">PROFESSOR</label>
+            <input type="text" id="aula-prof" class="input-grade" placeholder="Nome do Professor">
 
             <div class="modal-btns">
                 <button onclick="fecharModalAula()" class="btn-cancelar">Sair</button>
@@ -103,7 +139,7 @@
         <div class="modal-content-grade" style="text-align:center;">
             <i data-lucide="bell-ring" style="color:#8a2be2; width:45px; margin-bottom:15px;"></i>
             <h3>Alertas Ativos</h3>
-            <p style="color:#888; font-size:14px;">Avisaremos 5 minutos antes de cada aula começar.</p>
+            <p style="color:#888; font-size:14px;">Avisaremos 30 min e 5 min antes de cada aula começar.</p>
             <button onclick="ativarNotificacoesReal()" class="btn-salvar" style="width:100%;">Ativar Notificações</button>
             <button onclick="document.getElementById('modal-notif-boasvindas').style.display='none'" style="background:none; border:none; color:#555; margin-top:15px;">Agora não</button>
         </div>
