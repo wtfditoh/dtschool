@@ -2,23 +2,21 @@
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();
-    console.log('Hub Brain SW: Instalado');
 });
 
 self.addEventListener('activate', (event) => {
     event.waitUntil(clients.claim());
-    console.log('Hub Brain SW: Ativado');
 });
 
-// ESCUTADOR DE MENSAGENS (Aqui acontece a mágica dos 30 e 5 min)
+// ESCUTADOR DE MENSAGENS (A mágica dos 30 e 5 min com suas frases)
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'NOTIFICAR_AULA') {
         const { materia, hora, tempoRestante } = event.data;
         let frases = [];
         let titulo = "🔔 Hub Brain";
 
-        // Variações para 30 minutos
-        if (tempoRestante === "30_MIN") {
+        // Verifica se veio "30_MIN" ou o número 30
+        if (tempoRestante === "30_MIN" || tempoRestante === 30) {
             titulo = "⏳ Aula em 30 min!";
             frases = [
                 `Sua aula de ${materia} começa às ${hora}. Dá tempo de um café! ☕`,
@@ -38,18 +36,18 @@ self.addEventListener('message', (event) => {
             ];
         }
 
-        // Sorteia uma das frases da lista escolhida
         const msgSorteada = frases[Math.floor(Math.random() * frases.length)];
 
         const options = {
             body: msgSorteada,
-            icon: '/icon-512.png',  // Seu ícone oficial
-            badge: '/icon-512.png', 
+            // AJUSTE: Removi a / inicial e usei ./ para garantir que ache o ícone na mesma pasta
+            icon: './icon-512.png',  
+            badge: './icon-512.png', 
             vibrate: [200, 100, 200, 100, 200],
             tag: `aula-${materia}-${tempoRestante}`, 
             renotify: true,
             requireInteraction: true,
-            data: { url: '/horario.html' }
+            data: { url: './horario.html' }
         };
 
         event.waitUntil(
@@ -58,13 +56,12 @@ self.addEventListener('message', (event) => {
     }
 });
 
-// AÇÃO AO CLICAR NA NOTIFICAÇÃO
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
             for (const client of clientList) {
-                if (client.url.includes(event.notification.data.url) && 'focus' in client) {
+                if (client.url.includes('horario.html') && 'focus' in client) {
                     return client.focus();
                 }
             }
