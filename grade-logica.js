@@ -19,6 +19,14 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
+// Função Toast
+window.mostrarAvisoCustom = (msg) => {
+    const toast = document.getElementById('custom-toast');
+    document.getElementById('toast-message').innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     const selectH = document.getElementById('aula-hora-h');
     if (selectH) {
@@ -30,10 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const local = localStorage.getItem('hub_brain_grade');
-    if (local) {
-        gradeHoraria = JSON.parse(local);
-        renderizarAulas();
-    }
+    if (local) { gradeHoraria = JSON.parse(local); renderizarAulas(); }
     if (userPhone) await carregarDadosNuvem();
     
     const d = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][new Date().getDay()];
@@ -47,10 +52,7 @@ async function carregarDadosNuvem() {
     try {
         const docRef = doc(db, "grades_horarias", userPhone);
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            gradeHoraria = docSnap.data().grade;
-            renderizarAulas();
-        }
+        if (docSnap.exists()) { gradeHoraria = docSnap.data().grade; renderizarAulas(); }
     } catch (e) { console.error(e); }
 }
 
@@ -128,7 +130,7 @@ window.salvarAula = async () => {
     if(!mat) {
         erro.style.display = 'block';
         btn.classList.add('erro');
-        setTimeout(() => { btn.classList.remove('erro'); }, 300);
+        setTimeout(() => btn.classList.remove('erro'), 300);
         return;
     }
 
@@ -138,6 +140,7 @@ window.salvarAula = async () => {
     renderizarAulas();
     fecharModalAula();
     await sincronizar();
+    window.mostrarAvisoCustom("Aula Agendada! 🚀");
 };
 
 window.abrirConfirmExcluir = (i) => {
@@ -153,11 +156,14 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
     renderizarAulas();
     await sincronizar();
     fecharModalExcluir();
+    window.mostrarAvisoCustom("Aula Removida! 🗑️");
 };
 
 window.ativarNotificacoesReal = () => {
+    if(!("Notification" in window)) { window.mostrarAvisoCustom("Não suportado! ❌"); return; }
     Notification.requestPermission().then(p => { 
-        if(p==='granted') alert("Notificações ativadas! ✅");
+        if(p==='granted') window.mostrarAvisoCustom("Notificações Ativas! ✅");
+        else window.mostrarAvisoCustom("Acesso Negado! 🚫");
     });
 };
 
@@ -177,4 +183,4 @@ function verificarRelogioParaNotificar() {
             }
         }
     });
-      }
+}
