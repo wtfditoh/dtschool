@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// Configuração Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
   authDomain: "dt-scho0l.firebaseapp.com",
@@ -19,32 +20,40 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
+// INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', async () => {
-    // Carrega seletor de horas customizado (se existir no HTML)
+    // 1. Preencher seletor de horas (00h até 23h)
     const selectH = document.getElementById('aula-hora-h');
     if (selectH) {
+        selectH.innerHTML = "";
         for(let i=0; i<24; i++) {
             let h = i < 10 ? '0'+i : i;
             selectH.innerHTML += `<option value="${h}">${h}h</option>`;
         }
     }
 
+    // 2. Carregar dados locais (Cache rápido)
     const local = localStorage.getItem('hub_brain_grade');
     if (local) {
         gradeHoraria = JSON.parse(local);
         renderizarAulas();
     }
+
+    // 3. Carregar dados da Nuvem (Firebase)
     if (userPhone) await carregarDadosNuvem();
     
-    // Auto-seleciona o dia da semana real
-    const d = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][new Date().getDay()];
+    // 4. Selecionar dia automático
+    const diasSemana = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
+    const d = diasSemana[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
     
-    // Verifica o relógio a cada 1 minuto
+    // 5. Iniciar vigia das aulas (Checa a cada 60 seg)
     setInterval(verificarRelogioParaNotificar, 60000);
+    
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
+// FIREBASE & SINCRONIZAÇÃO
 async function carregarDadosNuvem() {
     try {
         const docRef = doc(db, "grades_horarias", userPhone);
@@ -54,7 +63,7 @@ async function carregarDadosNuvem() {
             localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
             renderizarAulas();
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Erro Firebase:", e); }
 }
 
 async function sincronizar() {
@@ -65,10 +74,11 @@ async function sincronizar() {
                 grade: gradeHoraria,
                 atualizadoEm: Date.now()
             });
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Erro Sincronismo:", e); }
     }
 }
 
+// INTERFACE
 window.selecionarDia = (dia) => {
     diaAtualGrade = dia;
     document.querySelectorAll('.btn-dia').forEach(btn => {
@@ -81,6 +91,8 @@ window.renderizarAulas = () => {
     const lista = document.getElementById('lista-aulas');
     if(!lista) return;
     const aulas = gradeHoraria[diaAtualGrade] || [];
+    
+    // Ordena por horário
     aulas.sort((a, b) => a.hora.localeCompare(b.hora));
 
     lista.innerHTML = aulas.length === 0 ? 
@@ -103,6 +115,7 @@ window.renderizarAulas = () => {
     if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
+// MODAL AULA
 window.abrirModalAula = () => {
     const select = document.getElementById('aula-materia-select');
     const dadosNotas = JSON.parse(localStorage.getItem('materias')) || [];
@@ -124,19 +137,14 @@ window.salvarAula = async () => {
     const s = document.getElementById('aula-materia-select').value;
     const c = document.getElementById('aula-materia-custom').value.trim();
     
-    // Tenta pegar do seletor duplo (hora/min) ou do input único
-    let h;
-    const selH = document.getElementById('aula-hora-h');
-    const selM = document.getElementById('aula-hora-m');
-    if(selH && selM) {
-        h = selH.value + ":" + selM.value;
-    } else {
-        h = document.getElementById('aula-hora').value;
-    }
+    // Captura dos novos Selects Neon
+    const selH = document.getElementById('aula-hora-h').value;
+    const selM = document.getElementById('aula-hora-m').value;
+    const h = `${selH}:${selM}`;
     
     const p = document.getElementById('aula-prof').value.trim();
-
     const mat = s || c;
+
     if(!mat || !h) return alert("Preencha a matéria e o horário!");
 
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
@@ -147,10 +155,10 @@ window.salvarAula = async () => {
     await sincronizar();
 };
 
+// EXCLUSÃO
 window.abrirConfirmExcluir = (i) => {
     indexParaExcluir = i;
     document.getElementById('modal-confirm-excluir').style.display = 'flex';
-    lucide.createIcons();
 };
 
 window.fecharModalExcluir = () => document.getElementById('modal-confirm-excluir').style.display = 'none';
@@ -164,9 +172,10 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
     }
 };
 
-// NOVA LÓGICA DE NOTIFICAÇÃO (30 MIN E 5 MIN)
+// LÓGICA DE NOTIFICAÇÃO (30 MIN E 5 MIN)
 function verificarRelogioParaNotificar() {
-    const hoje = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][new Date().getDay()];
+    const dias = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
+    const hoje = dias[new Date().getDay()];
     const aulas = gradeHoraria[hoje] || [];
     const agora = new Date();
     const minAgora = (agora.getHours() * 60) + agora.getMinutes();
@@ -176,9 +185,12 @@ function verificarRelogioParaNotificar() {
         const minAula = (h * 60) + m;
         const diferenca = minAula - minAgora;
 
+        // Alerta de 30 minutos
         if (diferenca === 30) {
             dispararAviso(aula.materia, aula.hora, "30_MIN");
-        } else if (diferenca === 5) {
+        } 
+        // Alerta de 5 minutos
+        else if (diferenca === 5) {
             dispararAviso(aula.materia, aula.hora, "5_MIN");
         }
     });
@@ -192,15 +204,18 @@ function dispararAviso(materia, hora, tipo) {
             hora: hora,
             tempoRestante: tipo
         });
+        console.log(`Sinal enviado ao SW: ${tipo} para ${materia}`);
     }
 }
 
 window.ativarNotificacoesReal = () => {
     Notification.requestPermission().then(p => { 
         if(p==='granted') {
-            alert("Sucesso! Notificações ativadas.");
+            alert("Notificações Hub Brain ativadas! ✅");
             if(document.getElementById('modal-notif-boasvindas'))
                 document.getElementById('modal-notif-boasvindas').style.display = 'none';
+        } else {
+            alert("Você precisa permitir as notificações nas configurações do navegador.");
         }
     });
 };
