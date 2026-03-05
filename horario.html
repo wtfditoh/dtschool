@@ -9,14 +9,14 @@
     <style>
         .glass-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
-            backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+            padding: 0 15px; height: 70px; background: #0a0a0a !important;
+            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
             position: sticky; top: 0; z-index: 100;
         }
         .hub-logo-container { display: flex; align-items: center; gap: 10px; }
         .hub-logo-text { font-weight: 900; font-size: 19px; color: white; text-transform: uppercase; }
         .hub-logo-text.purple { color: #8a2be2; }
-        .btn-notif { background: none; border: none; color: #8a2be2; cursor: pointer; }
+        .btn-notif { background: none; border: none; color: #8a2be2; cursor: pointer; padding: 10px; }
     </style>
 </head>
 <body class="bg-dark">
@@ -51,7 +51,7 @@
 
     <div id="modal-aula" class="modal-grade" style="display: none;">
         <div class="modal-content-grade">
-            <h3 style="margin:0; color:#8a2be2; text-align:center;">Agendar Aula</h3>
+            <h3 style="margin:0 0 10px 0; color:#8a2be2; text-align:center;">Agendar Aula</h3>
             
             <label class="label-input">QUAL AULA?</label>
             <select id="aula-ordem" class="input-grade">
@@ -65,12 +65,12 @@
 
             <label class="label-input">MATÉRIA</label>
             <select id="aula-materia-select" class="input-grade"></select>
-            <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Ou digite outra">
+            <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Ou digite outra...">
 
             <label class="label-input">HORÁRIO</label>
             <div class="seletor-hora-custom">
                 <select id="aula-hora-h"></select>
-                <span style="color:white;">:</span>
+                <span style="color:white; font-weight:bold;">:</span>
                 <select id="aula-hora-m">
                     <option value="00">00</option><option value="05">05</option>
                     <option value="10">10</option><option value="15">15</option>
@@ -84,7 +84,7 @@
             <label class="label-input">PROFESSOR</label>
             <input type="text" id="aula-prof" class="input-grade" placeholder="Nome do Professor">
 
-            <div id="erro-modal" style="display:none; color:#ff4444; font-size:11px; text-align:center; font-weight:bold;">⚠️ Preencha a matéria!</div>
+            <div id="erro-modal" style="display:none; color:#ff4444; font-size:11px; text-align:center; font-weight:bold; margin-bottom:10px;">⚠️ Preencha a matéria!</div>
 
             <div class="modal-btns">
                 <button onclick="fecharModalAula()" class="btn-cancelar">Sair</button>
@@ -95,11 +95,14 @@
 
     <div id="modal-confirm-excluir" class="modal-grade" style="display: none;">
         <div class="modal-content-grade" style="text-align:center;">
-            <i data-lucide="trash-2" style="color:#ff4444; width:40px; margin: 0 auto 15px auto;"></i>
-            <h3 style="margin:0 0 10px 0;">Remover aula?</h3>
+            <div style="background:rgba(255,68,68,0.1); width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 15px auto;">
+                <i data-lucide="trash-2" style="color:#ff4444; width:30px; height:30px;"></i>
+            </div>
+            <h3 style="margin:0 0 10px 0; color:white;">Remover aula?</h3>
+            <p style="color:#888; font-size:14px; margin-bottom:20px;">Essa ação não pode ser desfeita.</p>
             <div class="modal-btns">
                 <button onclick="fecharModalExcluir()" class="btn-cancelar">Não</button>
-                <button id="btn-confirmar-delete" class="btn-salvar" style="background:#ff4444;">Sim, Apagar</button>
+                <button id="btn-confirmar-delete" class="btn-salvar" style="background:#ff4444 !important;">Sim, Apagar</button>
             </div>
         </div>
     </div>
