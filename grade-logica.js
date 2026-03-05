@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- FIREBASE: CARREGAR ---
+// --- FIREBASE: CARREGAR GRADE ---
 async function carregarDadosNuvem() {
     try {
         const docRef = doc(db, "grades_horarias", userPhone);
@@ -76,11 +76,11 @@ async function carregarDadosNuvem() {
             renderizarAulas(); 
         }
     } catch (e) { 
-        console.error("Erro Nuvem:", e); 
+        console.error("Erro Nuvem Grade:", e); 
     }
 }
 
-// --- FIREBASE: SALVAR ---
+// --- FIREBASE: SALVAR GRADE ---
 async function sincronizar() {
     localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
     if (userPhone) {
@@ -134,8 +134,9 @@ window.renderizarAulas = () => {
     lucide.createIcons();
 };
 
-// MODAL ADICIONAR (PUXANDO MATÉRIAS DAS NOTAS)
-window.abrirModalAula = () => {
+// MODAL ADICIONAR (PUXANDO MATÉRIAS DIRETAMENTE DO FIREBASE DAS NOTAS)
+window.abrirModalAula = async () => {
+    // Reset de campos
     document.getElementById('aula-materia-custom').value = "";
     document.getElementById('aula-prof').value = "";
     document.getElementById('aula-hora-h').value = "07";
@@ -143,21 +144,49 @@ window.abrirModalAula = () => {
     if(document.getElementById('erro-modal')) document.getElementById('erro-modal').style.display = 'none';
 
     const select = document.getElementById('aula-materia-select');
-    // Busca matérias da outra página de notas
-    const dadosNotas = JSON.parse(localStorage.getItem('materias')) || [];
-    
-    select.innerHTML = '<option value="">Selecionar Matéria...</option>';
-    dadosNotas.forEach(mat => {
-        const nomeMateria = typeof mat === 'object' ? mat.nome : mat;
-        if(nomeMateria) {
-            const opt = document.createElement('option');
-            opt.value = nomeMateria; 
-            opt.textContent = nomeMateria;
-            select.appendChild(opt);
-        }
-    });
-    
+    select.innerHTML = '<option value="">Carregando matérias...</option>';
     document.getElementById('modal-aula').style.display = 'flex';
+
+    let listaMaterias = [];
+
+    // Tenta buscar as matérias no Firebase (Coleção "notas", onde o funcoes.js salva)
+    if (userPhone) {
+        try {
+            const docRefNotas = doc(db, "notas", userPhone);
+            const docSnap = await getDoc(docRefNotas);
+            
+            if (docSnap.exists()) {
+                listaMaterias = docSnap.data().materias || [];
+                // Guarda no localStorage para backup
+                localStorage.setItem('materias', JSON.stringify(listaMaterias));
+            } else {
+                listaMaterias = JSON.parse(localStorage.getItem('materias')) || [];
+            }
+        } catch (e) {
+            console.error("Erro ao buscar matérias:", e);
+            listaMaterias = JSON.parse(localStorage.getItem('materias')) || [];
+        }
+    } else {
+        listaMaterias = JSON.parse(localStorage.getItem('materias')) || [];
+    }
+
+    // Preencher o select
+    select.innerHTML = '<option value="">Selecionar Matéria...</option>';
+    if (listaMaterias.length > 0) {
+        listaMaterias.forEach(mat => {
+            const nome = mat.nome || mat; // Trata se for objeto ou string
+            const opt = document.createElement('option');
+            opt.value = nome; 
+            opt.textContent = nome;
+            select.appendChild(opt);
+        });
+    } else {
+        const opt = document.createElement('option');
+        opt.value = "";
+        opt.textContent = "Nenhuma matéria cadastrada";
+        opt.disabled = true;
+        select.appendChild(opt);
+    }
 };
 
 window.fecharModalAula = () => document.getElementById('modal-aula').style.display = 'none';
@@ -207,7 +236,7 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
     window.mostrarAvisoCustom("Aula Removida! 🗑️");
 };
 
-// AJUDA BATERIA (PARA XIAOMI/ANDROID)
+// AJUDA BATERIA
 window.abrirAjudaBateria = () => {
     const modal = document.getElementById('modal-ajuda-bateria');
     if(modal) modal.style.display = 'flex';
@@ -242,7 +271,6 @@ function verificarRelogioParaNotificar() {
         const minAula = (h * 60) + m;
         const diff = minAula - minAgora;
         
-        // Notifica com 30 min e 5 min de antecedência
         if (diff === 30 || diff === 5) {
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.controller.postMessage({ 
@@ -254,4 +282,4 @@ function verificarRelogioParaNotificar() {
             }
         }
     });
-}
+      }
