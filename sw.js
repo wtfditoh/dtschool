@@ -24,8 +24,8 @@ self.addEventListener('message', (event) => {
         const title = "🔔 Hora da Aula!";
         const options = {
             body: `Sua aula de ${materia} começa às ${hora}. Foco total! 🧠`,
-            icon: 'icon.png', // Substitua pelo seu ícone se tiver, ou remova
-            badge: 'icon.png',
+            icon: 'icon-512.png', // Substitua pelo seu ícone se tiver, ou remova
+            badge: 'icon-512.png',
             vibrate: [200, 100, 200, 100, 200],
             tag: 'aula-notificacao', // Evita empilhar notificações da mesma aula
             renotify: true,
