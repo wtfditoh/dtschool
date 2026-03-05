@@ -3,8 +3,7 @@
   "short_name": "Hub Brain",
   "start_url": "./index.html",
   "display": "standalone",
-  // 1. ISSO AQUI GARANTE O FUNDO ESCURO NA TELA DE CARREGAMENTO
-  "background_color": "#0a0a0a", 
+  "background_color": "#0a0a0a",
   "theme_color": "#8a2be2",
   "description": "Inteligência Escolar e Gestão de Notas",
   "icons": [
@@ -12,14 +11,12 @@
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      // 2. IMPORTANTE: 'any' diz para usar a transparência original do PNG
-      "purpose": "any" 
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      // 3. IMPORTANTE: 'maskable' diz para o Android NÃO esticar a logo até a borda
       "purpose": "maskable"
     }
   ]
