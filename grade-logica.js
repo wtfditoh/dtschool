@@ -19,7 +19,6 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
-// --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', async () => {
     const selectH = document.getElementById('aula-hora-h');
     if (selectH) {
@@ -35,25 +34,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         gradeHoraria = JSON.parse(local);
         renderizarAulas();
     }
-
     if (userPhone) await carregarDadosNuvem();
     
-    const diasSemana = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
-    const d = diasSemana[new Date().getDay()];
+    const d = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
     
     setInterval(verificarRelogioParaNotificar, 60000);
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- FIREBASE ---
 async function carregarDadosNuvem() {
     try {
         const docRef = doc(db, "grades_horarias", userPhone);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
             gradeHoraria = docSnap.data().grade;
-            localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
             renderizarAulas();
         }
     } catch (e) { console.error(e); }
@@ -63,20 +58,14 @@ async function sincronizar() {
     localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
     if (userPhone) {
         try {
-            await setDoc(doc(db, "grades_horarias", userPhone), {
-                grade: gradeHoraria,
-                atualizadoEm: Date.now()
-            });
+            await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
         } catch (e) { console.error(e); }
     }
 }
 
-// --- INTERFACE ---
 window.selecionarDia = (dia) => {
     diaAtualGrade = dia;
-    document.querySelectorAll('.btn-dia').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-dia') === dia);
-    });
+    document.querySelectorAll('.btn-dia').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-dia') === dia));
     renderizarAulas();
 };
 
@@ -91,36 +80,31 @@ window.renderizarAulas = () => {
         aulas.map((a, i) => `
             <div class="card-aula">
                 <div class="aula-tempo">
-                    <span style="font-size:9px; display:block; opacity:0.6; text-transform:uppercase;">${a.ordem || 'Aula'}</span>
+                    <span style="font-size:9px; display:block; opacity:0.6;">${a.ordem}</span>
                     ${a.hora}
                 </div>
                 <div class="aula-info">
                     <b>${a.materia}</b>
-                    <span>${a.prof || 'Sem prof.'}</span>
+                    <span><i data-lucide="user" style="width:12px;"></i> ${a.prof || 'Sem prof.'}</span>
                 </div>
-                <button onclick="abrirConfirmExcluir(${i})" style="margin-left:auto;background:none;border:none;color:#ff4444;padding:10px;">
+                <button class="btn-deletar-aula" onclick="abrirConfirmExcluir(${i})">
                     <i data-lucide="trash-2" style="width:18px;"></i>
                 </button>
             </div>
         `).join('');
-    if(typeof lucide !== 'undefined') lucide.createIcons();
+    lucide.createIcons();
 };
 
-// --- MODAL AULA ---
 window.abrirModalAula = () => {
-    // 1. Limpa os campos
     document.getElementById('aula-materia-custom').value = "";
     document.getElementById('aula-prof').value = "";
     document.getElementById('aula-hora-h').value = "07";
     document.getElementById('aula-hora-m').value = "00";
-    
-    // 2. Esconde o erro se ele estiver aparecendo de uma tentativa anterior
-    const erroMsg = document.getElementById('erro-modal');
-    if(erroMsg) erroMsg.style.display = 'none';
+    document.getElementById('erro-modal').style.display = 'none';
 
     const select = document.getElementById('aula-materia-select');
     const dadosNotas = JSON.parse(localStorage.getItem('materias')) || [];
-    select.innerHTML = '<option value="">Selecionar matéria...</option>';
+    select.innerHTML = '<option value="">Selecionar...</option>';
     dadosNotas.forEach(mat => {
         const opt = document.createElement('option');
         opt.value = mat.nome; opt.textContent = mat.nome;
@@ -129,13 +113,11 @@ window.abrirModalAula = () => {
     document.getElementById('modal-aula').style.display = 'flex';
 };
 
-window.fecharModalAula = () => {
-    document.getElementById('modal-aula').style.display = 'none';
-};
+window.fecharModalAula = () => document.getElementById('modal-aula').style.display = 'none';
 
 window.salvarAula = async () => {
     const btn = document.getElementById('btn-salvar-aula');
-    const erroMsg = document.getElementById('erro-modal');
+    const erro = document.getElementById('erro-modal');
     const o = document.getElementById('aula-ordem').value;
     const s = document.getElementById('aula-materia-select').value;
     const c = document.getElementById('aula-materia-custom').value.trim();
@@ -143,19 +125,10 @@ window.salvarAula = async () => {
     const p = document.getElementById('aula-prof').value.trim();
     const mat = s || c;
 
-    // Lógica de Erro: Botão treme e mensagem aparece por 2 segundos
     if(!mat) {
-        if(erroMsg) erroMsg.style.display = 'block';
-        if(btn) {
-            const originalText = btn.innerText;
-            btn.classList.add('erro');
-            btn.innerText = "PREENCHA TUDO!";
-            setTimeout(() => {
-                btn.classList.remove('erro');
-                btn.innerText = originalText;
-                if(erroMsg) erroMsg.style.display = 'none';
-            }, 2000);
-        }
+        erro.style.display = 'block';
+        btn.classList.add('erro');
+        setTimeout(() => { btn.classList.remove('erro'); }, 300);
         return;
     }
 
@@ -167,29 +140,30 @@ window.salvarAula = async () => {
     await sincronizar();
 };
 
-// --- EXCLUSÃO ---
 window.abrirConfirmExcluir = (i) => {
     indexParaExcluir = i;
     document.getElementById('modal-confirm-excluir').style.display = 'flex';
-    if(typeof lucide !== 'undefined') lucide.createIcons();
+    lucide.createIcons();
 };
 
 window.fecharModalExcluir = () => document.getElementById('modal-confirm-excluir').style.display = 'none';
 
 document.getElementById('btn-confirmar-delete').onclick = async () => {
-    if(indexParaExcluir !== null) {
-        gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
-        renderizarAulas();
-        await sincronizar();
-        fecharModalExcluir();
-    }
+    gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
+    renderizarAulas();
+    await sincronizar();
+    fecharModalExcluir();
 };
 
-// --- NOTIFICAÇÕES ---
+window.ativarNotificacoesReal = () => {
+    Notification.requestPermission().then(p => { 
+        if(p==='granted') alert("Notificações ativadas! ✅");
+    });
+};
+
 function verificarRelogioParaNotificar() {
-    const dias = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
-    const hoje = dias[new Date().getDay()];
-    const aulas = gradeHoraria[hoje] || [];
+    const d = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][new Date().getDay()];
+    const aulas = gradeHoraria[d] || [];
     const agora = new Date();
     const minAgora = (agora.getHours() * 60) + agora.getMinutes();
 
@@ -197,35 +171,10 @@ function verificarRelogioParaNotificar() {
         const [h, m] = aula.hora.split(':').map(Number);
         const minAula = (h * 60) + m;
         const diff = minAula - minAgora;
-
-        if (diff === 30) dispararAviso(aula.materia, aula.hora, "30_MIN");
-        if (diff === 5) dispararAviso(aula.materia, aula.hora, "5_MIN");
-    });
-}
-
-function dispararAviso(materia, hora, tipo) {
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-            type: 'NOTIFICAR_AULA',
-            materia: materia,
-            hora: hora,
-            tempoRestante: tipo
-        });
-    }
-}
-
-window.ativarNotificacoesReal = () => {
-    if (!("Notification" in window)) {
-        alert("Navegador não suporta notificações.");
-        return;
-    }
-    Notification.requestPermission().then(p => { 
-        if(p==='granted') {
-            alert("Notificações ativadas! ✅");
-            const modalBoasVindas = document.getElementById('modal-notif-boasvindas');
-            if(modalBoasVindas) modalBoasVindas.style.display = 'none';
-        } else {
-            alert("Você negou as notificações. Ative nas configurações do navegador.");
+        if (diff === 30 || diff === 5) {
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({ type: 'NOTIFICAR_AULA', materia: aula.materia, hora: aula.hora, tempoRestante: diff });
+            }
         }
     });
-};
+      }
