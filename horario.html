@@ -18,20 +18,24 @@
         .hub-logo-text.purple { color: #8a2be2; }
         .btn-notif { background: none; border: none; color: #8a2be2; cursor: pointer; padding: 10px; }
         
-        /* Estilo para o aviso de bateria */
-        .btn-bateria-ajuda {
+        /* Botão de Ajuda Geral */
+        .btn-ajuda-geral {
             background: rgba(138, 43, 226, 0.1);
-            border: 1px solid #8a2be2;
-            color: #8a2be2;
-            padding: 10px;
-            border-radius: 12px;
-            margin: 10px 15px;
+            border: 1px solid rgba(138, 43, 226, 0.4);
+            color: #b388ff;
+            padding: 12px;
+            border-radius: 15px;
+            margin: 15px;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
         }
+        .btn-ajuda-geral:active { transform: scale(0.95); background: rgba(138, 43, 226, 0.2); }
     </style>
 </head>
 <body class="bg-dark">
@@ -45,15 +49,18 @@
             <i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i>
             <span class="hub-logo-text purple">Brain</span>
         </div>
-        <button onclick="ativarNotificacoesReal()" class="btn-notif"><i data-lucide="bell"></i></button>
+        <button onclick="ativarNotificacoesReal()" class="btn-notif">
+            <i data-lucide="bell"></i>
+        </button>
     </header>
 
-    <div class="btn-bateria-ajuda" onclick="abrirAjudaBateria()">
-        <i data-lucide="battery-warning"></i>
-        Notificações não chegam? Toque aqui.
-    </div>
-
     <div class="grade-container">
+        
+        <div class="btn-ajuda-geral" onclick="abrirAjudaBateria()">
+            <i data-lucide="help-circle" style="width:18px;"></i>
+            Notificações não chegam? Toque aqui.
+        </div>
+
         <div class="dias-scroll">
             <button class="btn-dia active" data-dia="segunda" onclick="selecionarDia('segunda')">SEG</button>
             <button class="btn-dia" data-dia="terca" onclick="selecionarDia('terca')">TER</button>
@@ -62,7 +69,8 @@
             <button class="btn-dia" data-dia="sexta" onclick="selecionarDia('sexta')">SEX</button>
         </div>
 
-        <div id="lista-aulas" class="lista-aulas"></div>
+        <div id="lista-aulas" class="lista-aulas">
+            </div>
 
         <button class="fab-add-aula" onclick="abrirModalAula()">
             <i data-lucide="plus"></i>
@@ -71,7 +79,7 @@
 
     <div id="modal-aula" class="modal-grade" style="display: none;">
         <div class="modal-content-grade">
-            <h3 style="margin:0 0 10px 0; color:#8a2be2; text-align:center;">Agendar Aula</h3>
+            <h3 style="margin:0 0 20px 0; color:#8a2be2; text-align:center; font-weight:800;">Agendar Aula</h3>
             
             <label class="label-input">TURNO</label>
             <select id="aula-turno" class="input-grade">
@@ -81,41 +89,51 @@
 
             <label class="label-input">QUAL AULA?</label>
             <select id="aula-numero" class="input-grade">
-                <option value="0">1ª Aula</option>
+                <option value="0">1ª Aula (Início)</option>
                 <option value="1">2ª Aula</option>
                 <option value="2">3ª Aula</option>
-                <option value="3">4ª Aula</option>
+                <option value="3">4ª Aula (Pós-Intervalo)</option>
                 <option value="4">5ª Aula</option>
-                <option value="5">6ª Aula</option>
+                <option value="5">6ª Aula (Final)</option>
             </select>
 
-            <label class="label-input">MATÉRIA</label>
+            <label class="label-input">MATÉRIA DAS NOTAS</label>
             <select id="aula-materia-select" class="input-grade"></select>
-            <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Ou digite outra...">
+            
+            <label class="label-input">OU DIGITE O NOME</label>
+            <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Nome da matéria...">
 
-            <label class="label-input">PROFESSOR</label>
-            <input type="text" id="aula-prof" class="input-grade" placeholder="Nome do Professor">
+            <label class="label-input">PROFESSOR (OPCIONAL)</label>
+            <input type="text" id="aula-prof" class="input-grade" placeholder="Ex: Prof. Silva">
 
-            <div id="erro-modal" style="display:none; color:#ff4444; font-size:11px; text-align:center; font-weight:bold; margin-bottom:10px;">⚠️ Preencha a matéria!</div>
+            <div id="erro-modal" style="display:none; color:#ff4444; font-size:11px; text-align:center; font-weight:bold; margin-bottom:15px;">
+                ⚠️ Escolha ou digite uma matéria!
+            </div>
 
             <div class="modal-btns">
-                <button onclick="fecharModalAula()" class="btn-cancelar">Sair</button>
-                <button id="btn-salvar-aula" onclick="salvarAula()" class="btn-salvar">Confirmar</button>
+                <button onclick="fecharModalAula()" class="btn-cancelar">Cancelar</button>
+                <button id="btn-salvar-aula" onclick="salvarAula()" class="btn-salvar">Agendar</button>
             </div>
         </div>
     </div>
 
     <div id="modal-ajuda-bateria" class="modal-grade" style="display: none;">
         <div class="modal-content-grade">
-            <h3 style="color:#8a2be2; text-align:center;">Ajuste de Notificação</h3>
-            <p style="color:white; font-size:13px; line-height:1.5;">Para receber avisos com o celular bloqueado:</p>
-            <ul style="color:#bbb; font-size:12px; text-align:left; padding-left:20px;">
-                <li>Segure o ícone do App > <b>Informações</b>.</li>
-                <li>Ative <b>Início Automático</b>.</li>
-                <li>Economia de Bateria: <b>Sem Restrições</b>.</li>
-                <li>Outras Permissões: Ative <b>Janelas Pop-up em segundo plano</b>.</li>
-            </ul>
-            <button onclick="fecharAjudaBateria()" class="btn-salvar" style="width:100%; margin-top:15px;">Entendido!</button>
+            <h3 style="color:#8a2be2; text-align:center; margin-bottom:15px;">Dicas de Notificação 🔔</h3>
+            <p style="color:white; font-size:13px; line-height:1.6; margin-bottom:15px;">Para o Hub Brain te avisar mesmo com o app fechado:</p>
+            
+            <div style="text-align:left; background:rgba(255,255,255,0.05); padding:15px; border-radius:12px;">
+                <p style="color:#b388ff; font-size:12px; font-weight:bold; margin-bottom:5px;">No Android (Geral):</p>
+                <p style="color:#bbb; font-size:11px; margin-bottom:10px;">Vá em Configurações > Apps > Hub Brain > Bateria > <b>Sem Restrições</b>.</p>
+                
+                <p style="color:#b388ff; font-size:12px; font-weight:bold; margin-bottom:5px;">No iPhone:</p>
+                <p style="color:#bbb; font-size:11px; margin-bottom:10px;">Toque no ícone de "Compartilhar" e selecione <b>"Adicionar à Tela de Início"</b>.</p>
+                
+                <p style="color:#b388ff; font-size:12px; font-weight:bold; margin-bottom:5px;">Permissão:</p>
+                <p style="color:#bbb; font-size:11px;">Certifique-se de que o <b>sino</b> no topo da página foi clicado e aceito.</p>
+            </div>
+
+            <button onclick="fecharAjudaBateria()" class="btn-salvar" style="width:100%; margin-top:20px;">Entendi, valeu!</button>
         </div>
     </div>
 
@@ -127,7 +145,7 @@
             <h3 style="margin:0 0 10px 0; color:white;">Remover aula?</h3>
             <div class="modal-btns">
                 <button onclick="fecharModalExcluir()" class="btn-cancelar">Não</button>
-                <button id="btn-confirmar-delete" class="btn-salvar" style="background:#ff4444 !important;">Sim, Apagar</button>
+                <button id="btn-confirmar-delete" class="btn-salvar" style="background:#ff4444 !important;">Apagar</button>
             </div>
         </div>
     </div>
