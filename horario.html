@@ -7,27 +7,30 @@
     <link rel="stylesheet" href="grade-estilo.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* CSS Rápido para o Header Padronizado */
         .glass-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
             backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+            position: sticky; top: 0; z-index: 100;
         }
         .hub-logo-container { display: flex; align-items: center; gap: 10px; }
         .hub-logo-text { font-weight: 900; font-size: 19px; color: white; text-transform: uppercase; }
         .hub-logo-text.purple { color: #8a2be2; }
+        .btn-notif { background: none; border: none; color: #8a2be2; cursor: pointer; }
     </style>
 </head>
 <body class="bg-dark">
 
     <header class="glass-header">
-        <button onclick="window.location.href='index.html'" class="btn-icon" style="background:none; border:none; color:white;"><i data-lucide="chevron-left"></i></button>
+        <button onclick="window.location.href='index.html'" style="background:none; border:none; color:white; cursor:pointer;">
+            <i data-lucide="chevron-left"></i>
+        </button>
         <div class="hub-logo-container">
             <span class="hub-logo-text">Hub</span>
             <i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i>
             <span class="hub-logo-text purple">Brain</span>
         </div>
-        <button onclick="abrirModalNotif()" class="btn-notif" style="background:none; border:none; color:#8a2be2;"><i data-lucide="bell"></i></button>
+        <button onclick="abrirModalNotif()" class="btn-notif"><i data-lucide="bell"></i></button>
     </header>
 
     <div class="grade-container">
@@ -39,7 +42,8 @@
             <button class="btn-dia" data-dia="sexta" onclick="selecionarDia('sexta')">SEX</button>
         </div>
 
-        <div id="lista-aulas" class="lista-aulas"></div>
+        <div id="lista-aulas" class="lista-aulas">
+            </div>
 
         <button class="fab-add-aula" onclick="abrirModalAula()">
             <i data-lucide="plus"></i>
@@ -48,7 +52,9 @@
 
     <div id="modal-aula" class="modal-grade" style="display: none;">
         <div class="modal-content-grade">
-            <h3>Nova Aula</h3>
+            <h3 style="margin-top:0;">Agendar Aula</h3>
+            
+            <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">QUAL AULA?</label>
             <select id="aula-ordem" class="input-grade">
                 <option value="1ª Aula">1ª Aula</option>
                 <option value="2ª Aula">2ª Aula</option>
@@ -57,12 +63,27 @@
                 <option value="5ª Aula">5ª Aula</option>
                 <option value="6ª Aula">6ª Aula</option>
             </select>
-            <input type="text" id="aula-materia" class="input-grade" placeholder="Matéria">
-            <input type="time" id="aula-hora" class="input-grade">
-            <input type="text" id="aula-prof" class="input-grade" placeholder="Professor">
+
+            <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">MATÉRIA</label>
+            <select id="aula-materia-select" class="input-grade">
+                <option value="">Carregando matérias...</option>
+            </select>
+            <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Ou digite outra (ex: Intervalo)" style="margin-top:-10px; font-size:13px;">
+
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 11px; color: #888;">HORÁRIO</label>
+                    <input type="time" id="aula-hora" class="input-grade">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 11px; color: #888;">PROFESSOR</label>
+                    <input type="text" id="aula-prof" class="input-grade" placeholder="Nome">
+                </div>
+            </div>
+
             <div class="modal-btns">
                 <button onclick="fecharModalAula()" class="btn-cancelar">Sair</button>
-                <button onclick="salvarAula()" class="btn-salvar">Salvar</button>
+                <button onclick="salvarAula()" class="btn-salvar">Confirmar</button>
             </div>
         </div>
     </div>
@@ -70,10 +91,9 @@
     <div id="modal-confirm-excluir" class="modal-grade" style="display: none;">
         <div class="modal-content-grade" style="text-align:center;">
             <i data-lucide="trash-2" style="color:#ff4444; width:40px; margin-bottom:15px;"></i>
-            <h3>Remover Aula?</h3>
-            <p style="color:#888;">Essa ação não pode ser desfeita.</p>
+            <h3>Remover esta aula?</h3>
             <div class="modal-btns">
-                <button onclick="fecharModalExcluir()" class="btn-cancelar">Voltar</button>
+                <button onclick="fecharModalExcluir()" class="btn-cancelar">Cancelar</button>
                 <button id="btn-confirmar-delete" class="btn-salvar" style="background:#ff4444;">Apagar</button>
             </div>
         </div>
@@ -81,13 +101,11 @@
 
     <div id="modal-notif-boasvindas" class="modal-grade" style="display: none;">
         <div class="modal-content-grade" style="text-align:center;">
-            <div style="background:rgba(138,43,226,0.1); width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 15px;">
-                <i data-lucide="bell-ring" style="color:#8a2be2;"></i>
-            </div>
-            <h3>Alertas Inteligentes</h3>
-            <p style="color:#888; font-size:14px;">O Hub Brain vai te avisar 5 minutos antes de cada aula começar para você nunca se atrasar.</p>
-            <button onclick="ativarNotificacoesReal()" class="btn-salvar" style="width:100%;">Ativar Agora</button>
-            <button onclick="document.getElementById('modal-notif-boasvindas').style.display='none'" style="background:none; border:none; color:#555; margin-top:15px; cursor:pointer;">Talvez depois</button>
+            <i data-lucide="bell-ring" style="color:#8a2be2; width:45px; margin-bottom:15px;"></i>
+            <h3>Alertas Ativos</h3>
+            <p style="color:#888; font-size:14px;">Avisaremos 5 minutos antes de cada aula começar.</p>
+            <button onclick="ativarNotificacoesReal()" class="btn-salvar" style="width:100%;">Ativar Notificações</button>
+            <button onclick="document.getElementById('modal-notif-boasvindas').style.display='none'" style="background:none; border:none; color:#555; margin-top:15px;">Agora não</button>
         </div>
     </div>
 
