@@ -19,7 +19,9 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="estilo.css?v=12.0">
     <style>
-        /* Topo Padrão Hub Brain */
+        /* =========================================
+           TOPO PADRÃO HUB BRAIN (CLICÁVEL)
+        ========================================= */
         .glass-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
@@ -27,40 +29,81 @@
             position: sticky; top: 0; z-index: 1000;
         }
         
-        /* AJUSTE DITOH: Logo agora é clicável e tem efeito de toque */
+        /* Ajuste DITOH: Logo clicável com feedback de toque */
         .hub-logo-container { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            cursor: pointer; 
-            transition: transform 0.1s;
-            -webkit-tap-highlight-color: transparent;
+            display: flex; align-items: center; gap: 10px; cursor: pointer; 
+            transition: transform 0.1s; -webkit-tap-highlight-color: transparent;
         }
         .hub-logo-container:active { transform: scale(0.92); }
         
         .hub-logo-text { font-weight: 900; font-size: 19px; letter-spacing: 1px; color: white; text-transform: uppercase; }
         .hub-logo-text.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138, 43, 226, 0.3); }
-        .hub-symbol { background: rgba(138, 43, 226, 0.1); padding: 6px; border-radius: 10px; border: 1px solid rgba(138, 43, 226, 0.3); display: flex; align-items: center; justify-content: center; animation: pulse-glow 3s infinite ease-in-out; }
         
+        .hub-symbol { 
+            background: rgba(138, 43, 226, 0.1); padding: 6px; border-radius: 10px; 
+            border: 1px solid rgba(138, 43, 226, 0.3); display: flex; align-items: center; 
+            justify-content: center; animation: pulse-glow 3s infinite ease-in-out; 
+        }
+
         @keyframes pulse-glow {
             0% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
             50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.4); transform: scale(1.05); }
             100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
         }
-        
-        .btn-add-main { background: #8a2be2 !important; width: 38px !important; height: 38px !important; border-radius: 12px !important; font-size: 24px !important; color: white; border: none; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-instalar-pwa { background: rgba(138, 43, 226, 0.1); border: 1px solid #8a2be2; color: white; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; cursor: pointer; width: 90%; margin: 20px auto 10px auto; transition: 0.3s; font-size: 13px; }
+
+        .btn-add-main { 
+            background: #8a2be2 !important; width: 38px !important; height: 38px !important; 
+            border-radius: 12px !important; font-size: 24px !important; color: white; 
+            border: none; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3); cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; 
+        }
+
+        .btn-instalar-pwa { 
+            background: rgba(138, 43, 226, 0.1); border: 1px solid #8a2be2; color: white; 
+            padding: 12px; border-radius: 12px; display: flex; align-items: center; 
+            justify-content: center; gap: 10px; font-weight: bold; cursor: pointer; 
+            width: 90%; margin: 20px auto 10px auto; transition: 0.3s; font-size: 13px; 
+        }
+
         #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1001; }
         #overlay.active { display:block; }
 
-        /* Estilo do Modal do Dono */
+        /* =========================================
+           ESTILO PREMIUM DO MODAL DITOH (Glass + Neon)
+        ========================================= */
         .modal-dono-overlay {
             display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
-            backdrop-filter: blur(15px); background: rgba(0,0,0,0.85); z-index: 9999; padding: 20px;
+            backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
+            background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px; perspective: 1000px; 
         }
+
         .modal-dono-card {
-            border: 1px solid #8a2be2; background: #0a0a0a; border-radius: 25px; width: 100%; 
-            max-width: 300px; padding: 30px 20px; text-align: center; box-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
+            border: 1px solid rgba(138, 43, 226, 0.3); background: rgba(20, 20, 20, 0.6); 
+            border-radius: 25px; width: 100%; max-width: 300px; padding: 35px 25px; text-align: center; 
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.2), inset 0 0 10px rgba(138, 43, 226, 0.1);
+            animation: brotarCard 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0; transform: scale(0.5) translateY(50px) rotateX(-15deg);
+        }
+
+        @keyframes brotarCard {
+            to { opacity: 1; transform: scale(1) translateY(0) rotateX(0deg); }
+        }
+
+        /* Novo Ícone Core Neon (Hexágono + Raio) */
+        .ditoh-core-neon {
+            width: 90px; height: 90px; margin: 0 auto 20px; 
+            display: flex; align-items: center; justify-content: center; position: relative;
+        }
+
+        .ditoh-core-neon::before {
+            content: ''; position: absolute; inset: 0; background: rgba(138, 43, 226, 0.1);
+            border: 2px solid #8a2be2; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            animation: neonPulseCore 2s infinite ease-in-out;
+        }
+
+        @keyframes neonPulseCore {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(138, 43, 226, 0.6)); opacity: 0.8; }
+            50% { filter: drop-shadow(0 0 15px rgba(138, 43, 226, 1)); opacity: 1; }
         }
     </style>
 </head>
@@ -92,9 +135,7 @@
         
         <button onclick="toggleMenu();" class="nav-item active"><i data-lucide="layout-grid"></i> Notas</button>
         <button onclick="window.location.href='horario.html'" class="nav-item"><i data-lucide="calendar-clock"></i> Horário das Aulas</button>
-        
         <button onclick="navegar('ranking')" class="nav-item"><i data-lucide="trophy"></i> Ranking</button>
-        
         <button onclick="window.location.href='agenda.html'" class="nav-item"><i data-lucide="calendar"></i> Agenda</button>
         <button onclick="window.location.href='estudos.html'" class="nav-item"><i data-lucide="book-open"></i> Estudar com IA</button>
 
@@ -120,21 +161,21 @@
 
     <div id="modal-dono" class="modal-dono-overlay">
         <div class="modal-dono-card">
-            <div style="width: 85px; height: 85px; background: #8a2be2; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);">
-                <span style="color: white; font-size: 32px; font-weight: 900;">D</span>
+            <div class="ditoh-core-neon">
+                <i data-lucide="zap" style="color: white; width: 45px; height: 45px; position: relative; z-index: 2; filter: drop-shadow(0 0 10px #8a2be2);"></i>
             </div>
-            <h3 style="color: white; margin: 0; font-size: 22px; font-weight: 900;">DITOH</h3>
-            <p style="color: #8a2be2; font-weight: bold; margin: 5px 0 15px 0; font-size: 13px; letter-spacing: 2px;">FOUNDER & DEV</p>
-            <div style="background: rgba(138, 43, 226, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; border-left: 3px solid #8a2be2; text-align: left;">
-                <p style="color: #eee; font-size: 13px; font-style: italic; line-height: 1.5; margin: 0;">
+            <h3 style="color: white; margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.3);">DITOH</h3>
+            <p style="color: #8a2be2; font-weight: bold; margin: 5px 0 20px 0; font-size: 13px; letter-spacing: 3px; text-transform: uppercase;">Founder & Core Dev</p>
+            <div style="background: rgba(138, 43, 226, 0.08); padding: 18px; border-radius: 15px; margin-bottom: 25px; border-left: 3px solid #8a2be2; text-align: left; backdrop-filter: blur(5px);">
+                <p style="color: #eee; font-size: 13px; font-style: italic; line-height: 1.6; margin: 0; font-weight: 300;">
                     "O Hub Brain não é apenas um horário, é a evolução da sua produtividade. Criado para quem foca no topo."
                 </p>
             </div>
-            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; color: white; font-size: 14px; margin-bottom: 25px;">
-                <i data-lucide="instagram" style="width: 16px; color: #8a2be2;"></i>
-                <span>@wtfditoh</span>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; color: white; font-size: 15px; margin-bottom: 30px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px;">
+                <i data-lucide="instagram" style="width: 18px; color: #8a2be2;"></i>
+                <span style="font-weight: 600; letter-spacing: 1px;">@wtfditoh</span>
             </div>
-            <button onclick="fecharSobreDono()" class="btn-modal-acao" style="width: 100%; background: #8a2be2 !important;">Voltar ao App</button>
+            <button onclick="fecharSobreDono()" class="btn-modal-acao" style="width: 100%; background: linear-gradient(45deg, #8a2be2, #4b0082) !important; border-radius: 12px; height: 50px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">Voltar ao App</button>
         </div>
     </div>
 
@@ -185,16 +226,14 @@
             if (e.target === this) fecharSobreDono();
         };
 
-        // MOTOR DE NOTIFICAÇÕES E PWA
+        // PWA E MENU
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(reg => {
-                    console.log('Hub Brain: Service Worker Ativo! ✅');
-                }).catch(err => console.log('Erro ao registrar SW:', err));
+                navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
             });
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
             if(typeof lucide !== 'undefined') lucide.createIcons();
         });
 
