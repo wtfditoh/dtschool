@@ -17,36 +17,6 @@
         .hub-logo-text { font-weight: 900; font-size: 19px; color: white; text-transform: uppercase; }
         .hub-logo-text.purple { color: #8a2be2; }
         .btn-notif { background: none; border: none; color: #8a2be2; cursor: pointer; }
-
-        /* CSS DO SELETOR DE HORA CUSTOMIZADO */
-        .seletor-hora-custom {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            background: rgba(30, 30, 30, 0.6);
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            margin: 10px 0 20px 0;
-        }
-        .seletor-hora-custom select {
-            background: #0a0a0a;
-            color: white;
-            border: 1px solid #8a2be2;
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            outline: none;
-            cursor: pointer;
-            appearance: none;
-            text-align: center;
-            width: 65px;
-        }
-        .seletor-hora-custom select:focus {
-            box-shadow: 0 0 10px rgba(138, 43, 226, 0.4);
-        }
     </style>
 </head>
 <body class="bg-dark">
@@ -81,9 +51,9 @@
 
     <div id="modal-aula" class="modal-grade" style="display: none;">
         <div class="modal-content-grade">
-            <h3 style="margin-top:0; color:#8a2be2;">Agendar Aula</h3>
+            <h3 style="margin-top:0; color:#8a2be2; text-align:center;">Agendar Aula</h3>
             
-            <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">QUAL AULA?</label>
+            <label class="label-input">QUAL AULA?</label>
             <select id="aula-ordem" class="input-grade">
                 <option value="1ª Aula">1ª Aula</option>
                 <option value="2ª Aula">2ª Aula</option>
@@ -93,17 +63,14 @@
                 <option value="6ª Aula">6ª Aula</option>
             </select>
 
-            <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">MATÉRIA</label>
-            <select id="aula-materia-select" class="input-grade">
-                <option value="">Carregando matérias...</option>
-            </select>
-            <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Ou digite outra (ex: Intervalo)" style="margin-top:-10px; font-size:13px;">
+            <label class="label-input">MATÉRIA</label>
+            <select id="aula-materia-select" class="input-grade"></select>
+            <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Ou digite outra (ex: Intervalo)">
 
-            <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">HORÁRIO DA AULA</label>
+            <label class="label-input">HORÁRIO</label>
             <div class="seletor-hora-custom">
-                <select id="aula-hora-h">
-                    </select>
-                <span style="color:white; font-weight:bold;">:</span>
+                <select id="aula-hora-h"></select>
+                <span>:</span>
                 <select id="aula-hora-m">
                     <option value="00">00</option><option value="05">05</option>
                     <option value="10">10</option><option value="15">15</option>
@@ -114,8 +81,10 @@
                 </select>
             </div>
 
-            <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">PROFESSOR</label>
+            <label class="label-input">PROFESSOR</label>
             <input type="text" id="aula-prof" class="input-grade" placeholder="Nome do Professor">
+
+            <div id="erro-modal">⚠️ Preencha a matéria e o horário!</div>
 
             <div class="modal-btns">
                 <button onclick="fecharModalAula()" class="btn-cancelar">Sair</button>
