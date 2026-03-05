@@ -1,0 +1,185 @@
+:root {
+    --primary: #8a2be2;
+    --primary-glow: rgba(138, 43, 226, 0.4);
+    --bg-dark: #0a0a0a;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --border: rgba(255, 255, 255, 0.1);
+    --text: #ffffff;
+    --text-dim: #888;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+.grade-container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Cabeçalho */
+.grade-header {
+    margin-bottom: 25px;
+}
+
+.grade-header h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0;
+}
+
+.btn-notif {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--primary);
+    padding: 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* Scroll de Dias */
+.dias-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 15px 0;
+    scrollbar-width: none;
+}
+
+.dias-scroll::-webkit-scrollbar { display: none; }
+
+.btn-dia {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 10px 20px;
+    border-radius: 12px;
+    white-space: nowrap;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-dia.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+/* Lista de Aulas */
+.lista-aulas {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card-aula {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.aula-tempo {
+    background: rgba(138, 43, 226, 0.1);
+    color: var(--primary);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.aula-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.aula-info b { font-size: 16px; margin-bottom: 2px; }
+.aula-info span { font-size: 12px; color: var(--text-dim); }
+
+/* Botão Flutuante (FAB) */
+.fab-add-aula {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--primary);
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 20px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 20px var(--primary-glow);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.fab-add-aula:active { transform: scale(0.9); }
+
+/* Modal */
+.modal-grade {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content-grade {
+    background: #151515;
+    width: 85%;
+    max-width: 400px;
+    padding: 25px;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+}
+
+.input-grade {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 12px;
+    color: white;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+.modal-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-cancelar, .btn-salvar {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-cancelar { background: #222; color: #888; }
+.btn-salvar { background: var(--primary); color: white; }
