@@ -1,59 +1,73 @@
-/* Hub Brain - Service Worker 
-   Responsável por notificações e funcionamento PWA
-*/
+/* Hub Brain - Service Worker Oficial */
 
-const CACHE_NAME = 'hub-brain-v12';
-
-// 1. Instalação: Força o novo SW a ativar imediatamente
 self.addEventListener('install', (event) => {
     self.skipWaiting();
     console.log('Hub Brain SW: Instalado');
 });
 
-// 2. Ativação: Assume o controle de todas as abas abertas
 self.addEventListener('activate', (event) => {
     event.waitUntil(clients.claim());
-    console.log('Hub Brain SW: Ativado e pronto');
+    console.log('Hub Brain SW: Ativado');
 });
 
-// 3. ESCUTADOR DE MENSAGENS: Recebe o alerta do 'grade-logica.js'
+// ESCUTADOR DE MENSAGENS (Aqui acontece a mágica dos 30 e 5 min)
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'NOTIFICAR_AULA') {
-        const { materia, hora } = event.data;
-        
-        const title = "🔔 Hora da Aula!";
+        const { materia, hora, tempoRestante } = event.data;
+        let frases = [];
+        let titulo = "🔔 Hub Brain";
+
+        // Variações para 30 minutos
+        if (tempoRestante === "30_MIN") {
+            titulo = "⏳ Aula em 30 min!";
+            frases = [
+                `Sua aula de ${materia} começa às ${hora}. Dá tempo de um café! ☕`,
+                `Faltam 30 min para ${materia}. Já separou o material? 📓`,
+                `Em 30 minutos começa ${materia} (${hora}). Fica esperto! ⏰`,
+                `Prepare-se! ${materia} está chegando em 30 min. 🧠`
+            ];
+        } 
+        // Variações para 5 minutos
+        else {
+            titulo = "🚀 Falta pouco!";
+            frases = [
+                `Bora! ${materia} começa em 5 min (${hora}). Já pro lugar! 🏃‍♂️`,
+                `Não se atrasa! ${materia} começa agorinha, às ${hora}. ✍️`,
+                `Foco total! ${materia} em 5 minutos. Tudo pronto? 🧪`,
+                `Última chamada para ${materia} às ${hora}! 🌟`
+            ];
+        }
+
+        // Sorteia uma das frases da lista escolhida
+        const msgSorteada = frases[Math.floor(Math.random() * frases.length)];
+
         const options = {
-            body: `Sua aula de ${materia} começa às ${hora}. Foco total! 🧠`,
-            icon: 'icon-512.png', // Substitua pelo seu ícone se tiver, ou remova
-            badge: 'icon-512.png',
+            body: msgSorteada,
+            icon: '/icon-512.png',  // Seu ícone oficial
+            badge: '/icon-512.png', 
             vibrate: [200, 100, 200, 100, 200],
-            tag: 'aula-notificacao', // Evita empilhar notificações da mesma aula
+            tag: `aula-${materia}-${tempoRestante}`, 
             renotify: true,
-            requireInteraction: true, // A notificação fica na tela até o usuário clicar
-            data: {
-                url: '/horario.html' // Abre direto na grade ao clicar
-            }
+            requireInteraction: true,
+            data: { url: '/horario.html' }
         };
 
         event.waitUntil(
-            self.registration.showNotification(title, options)
+            self.registration.showNotification(titulo, options)
         );
     }
 });
 
-// 4. CLIQUE NA NOTIFICAÇÃO: Abre o app ou foca na aba aberta
+// AÇÃO AO CLICAR NA NOTIFICAÇÃO
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
-
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-            // Se o site já estiver aberto, foca nele
             for (const client of clientList) {
                 if (client.url.includes(event.notification.data.url) && 'focus' in client) {
                     return client.focus();
                 }
             }
-            // Se não estiver aberto, abre uma nova aba
             if (clients.openWindow) {
                 return clients.openWindow(event.notification.data.url);
             }
