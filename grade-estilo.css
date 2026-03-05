@@ -1,68 +1,79 @@
+/* Reset Geral para garantir o fundo preto */
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+}
+
 :root {
     --primary: #8a2be2;
-    --primary-glow: rgba(138, 43, 226, 0.4);
+    --primary-glow: rgba(138, 43, 226, 0.5);
     --bg-dark: #0a0a0a;
-    --card-bg: rgba(255, 255, 255, 0.07);
+    --card-bg: rgba(255, 255, 255, 0.05);
     --border: rgba(138, 43, 226, 0.3);
     --text: #ffffff;
     --text-dim: #888;
-    --danger: #ff4444;
 }
 
-* { box-sizing: border-box; } /* REGRA DE OURO: Nada vaza da tela */
-
-body {
-    background-color: var(--bg-dark);
-    color: var(--text);
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0; padding: 0;
-    width: 100%; overflow-x: hidden;
+body.bg-dark {
+    background-color: var(--bg-dark) !important;
+    color: var(--text) !important;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
 }
 
-.grade-container { padding: 15px; width: 100%; max-width: 600px; margin: 0 auto; }
+/* Header Glass */
+.glass-header {
+    background: rgba(10, 10, 10, 0.8) !important;
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--border);
+}
 
-/* Modais Padronizados - Centralização Total */
+/* Dias da Semana - Neon de volta */
+.dias-scroll {
+    display: flex; gap: 10px; overflow-x: auto; padding: 20px 15px;
+    scrollbar-width: none;
+}
+.btn-dia {
+    background: #1a1a1a !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-dim) !important;
+    padding: 12px 22px; border-radius: 14px;
+    font-weight: bold; cursor: pointer; white-space: nowrap;
+}
+.btn-dia.active {
+    background: var(--primary) !important;
+    color: white !important;
+    box-shadow: 0 0 15px var(--primary-glow) !important;
+}
+
+/* Botão Flutuante + */
+.fab-add-aula {
+    position: fixed; bottom: 30px; right: 25px;
+    background: var(--primary) !important;
+    color: white !important;
+    width: 60px; height: 60px; border-radius: 20px;
+    border: none; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 25px var(--primary-glow) !important;
+    z-index: 999;
+}
+
+/* Modal Consertado */
 .modal-grade {
-    position: fixed; top: 0; left: 0; 
-    width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
-    display: none; align-items: center; justify-content: center;
-    z-index: 2000; padding: 15px;
+    background: rgba(0,0,0,0.95) !important;
 }
 
 .modal-content-grade {
-    background: #121212; width: 100%; max-width: 340px;
-    padding: 20px; border-radius: 25px; border: 1px solid var(--border);
-    display: flex; flex-direction: column; gap: 12px;
+    background: #111 !important;
+    border: 1px solid var(--primary) !important;
+    box-shadow: 0 0 30px rgba(138, 43, 226, 0.2);
 }
 
-/* Inputs */
-.input-grade {
-    width: 100%; background: #1a1a1a; border: 1px solid var(--border);
-    padding: 12px; border-radius: 12px; color: white; outline: none;
-}
-
-/* Seletor de Hora - Ajustado para não empurrar a tela */
-.seletor-hora-custom {
-    display: flex; align-items: center; justify-content: center;
-    gap: 10px; background: #000; padding: 10px;
-    border-radius: 15px; border: 1px solid var(--border);
-}
+/* Seletor de Hora - Visual Dark */
 .seletor-hora-custom select {
-    background: transparent; color: var(--primary); border: 1px solid var(--primary);
-    padding: 5px; border-radius: 8px; font-size: 18px; font-weight: bold;
-    width: 70px; text-align: center; outline: none;
+    background: #000 !important;
+    color: var(--primary) !important;
+    border: 1px solid var(--primary) !important;
 }
-
-/* Erro Vermelho Temporário (Escondido por padrão) */
-#erro-modal {
-    color: var(--danger); font-size: 11px; text-align: center;
-    font-weight: bold; display: none; /* ESSENCIAL: Começa escondido */
-}
-
-.modal-btns { display: flex; gap: 10px; margin-top: 10px; }
-.btn-cancelar, .btn-salvar {
-    flex: 1; padding: 14px; border-radius: 12px; border: none; font-weight: bold;
-}
-.btn-cancelar { background: #222; color: #777; }
-.btn-salvar { background: var(--primary); color: white; }
