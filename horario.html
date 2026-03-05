@@ -30,7 +30,7 @@
             <i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i>
             <span class="hub-logo-text purple">Brain</span>
         </div>
-        <button onclick="abrirModalNotif()" class="btn-notif"><i data-lucide="bell"></i></button>
+        <button onclick="ativarNotificacoesReal()" class="btn-notif"><i data-lucide="bell"></i></button>
     </header>
 
     <div class="grade-container">
@@ -51,7 +51,7 @@
 
     <div id="modal-aula" class="modal-grade" style="display: none;">
         <div class="modal-content-grade">
-            <h3 style="margin-top:0; color:#8a2be2; text-align:center;">Agendar Aula</h3>
+            <h3 style="margin:0; color:#8a2be2; text-align:center;">Agendar Aula</h3>
             
             <label class="label-input">QUAL AULA?</label>
             <select id="aula-ordem" class="input-grade">
@@ -65,12 +65,12 @@
 
             <label class="label-input">MATÉRIA</label>
             <select id="aula-materia-select" class="input-grade"></select>
-            <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Ou digite outra (ex: Intervalo)">
+            <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Ou digite outra">
 
             <label class="label-input">HORÁRIO</label>
             <div class="seletor-hora-custom">
                 <select id="aula-hora-h"></select>
-                <span>:</span>
+                <span style="color:white;">:</span>
                 <select id="aula-hora-m">
                     <option value="00">00</option><option value="05">05</option>
                     <option value="10">10</option><option value="15">15</option>
@@ -84,33 +84,23 @@
             <label class="label-input">PROFESSOR</label>
             <input type="text" id="aula-prof" class="input-grade" placeholder="Nome do Professor">
 
-            <div id="erro-modal">⚠️ Preencha a matéria e o horário!</div>
+            <div id="erro-modal" style="display:none; color:#ff4444; font-size:11px; text-align:center; font-weight:bold;">⚠️ Preencha a matéria!</div>
 
             <div class="modal-btns">
                 <button onclick="fecharModalAula()" class="btn-cancelar">Sair</button>
-                <button onclick="salvarAula()" class="btn-salvar">Confirmar</button>
+                <button id="btn-salvar-aula" onclick="salvarAula()" class="btn-salvar">Confirmar</button>
             </div>
         </div>
     </div>
 
     <div id="modal-confirm-excluir" class="modal-grade" style="display: none;">
         <div class="modal-content-grade" style="text-align:center;">
-            <i data-lucide="trash-2" style="color:#ff4444; width:40px; margin-bottom:15px;"></i>
-            <h3>Remover esta aula?</h3>
+            <i data-lucide="trash-2" style="color:#ff4444; width:40px; margin: 0 auto 15px auto;"></i>
+            <h3 style="margin:0 0 10px 0;">Remover aula?</h3>
             <div class="modal-btns">
-                <button onclick="fecharModalExcluir()" class="btn-cancelar">Cancelar</button>
-                <button id="btn-confirmar-delete" class="btn-salvar" style="background:#ff4444;">Apagar</button>
+                <button onclick="fecharModalExcluir()" class="btn-cancelar">Não</button>
+                <button id="btn-confirmar-delete" class="btn-salvar" style="background:#ff4444;">Sim, Apagar</button>
             </div>
-        </div>
-    </div>
-
-    <div id="modal-notif-boasvindas" class="modal-grade" style="display: none;">
-        <div class="modal-content-grade" style="text-align:center;">
-            <i data-lucide="bell-ring" style="color:#8a2be2; width:45px; margin-bottom:15px;"></i>
-            <h3>Alertas Ativos</h3>
-            <p style="color:#888; font-size:14px;">Avisaremos 30 min e 5 min antes de cada aula começar.</p>
-            <button onclick="ativarNotificacoesReal()" class="btn-salvar" style="width:100%;">Ativar Notificações</button>
-            <button onclick="document.getElementById('modal-notif-boasvindas').style.display='none'" style="background:none; border:none; color:#555; margin-top:15px;">Agora não</button>
         </div>
     </div>
 
