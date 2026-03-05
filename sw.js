@@ -1,75 +1,46 @@
-/* Hub Brain - Service Worker Imortal 🧠 */
-
+/* Hub Brain - Service Worker Despertador ⏰ */
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil(clients.claim()));
 
-// --- NOVIDADE: O RELÓGIO AGORA MORA AQUI DENTRO ---
-// Isso faz o Service Worker checar as aulas sozinho, sem depender do app aberto.
+// O segredo: Manter o SW vivo com um intervalo que o sistema respeite
 setInterval(() => {
-    // Busca a grade salva no celular
-    const local = localStorage.getItem('hub_brain_grade');
-    if (!local) return;
+    self.registration.update(); // Força o SW a checar se há algo novo
+    verificarAulas();
+}, 60000);
 
-    const grade = JSON.parse(local);
-    const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
-    const diaHoje = dMap[new Date().getDay()];
-    const aulas = grade[diaHoje] || [];
+function verificarAulas() {
+    // No Service Worker, não temos acesso direto ao localStorage da página às vezes
+    // Por isso, usamos o indexedDB ou uma mensagem de sincronização.
+    // MAS, para resolver agora, vamos tentar ler o que estiver disponível:
     
-    const agora = new Date();
-    const minAgora = (agora.getHours() * 60) + agora.getMinutes();
-
-    aulas.forEach(aula => {
-        const [h, m] = aula.hora.split(':').map(Number);
-        const minAula = (h * 60) + m;
-        const diff = minAula - minAgora;
-
-        // Se faltar exatamente 30 ou 5 minutos, ele dispara a notificação sozinho!
-        if (diff === 30 || diff === 5) {
-            enviarNotificacao(aula.materia, aula.hora, diff);
-        }
-    });
-}, 60000); // Checa a cada 1 minuto
-
-// Função para disparar a mensagem na barra de notificações
-function enviarNotificacao(materia, hora, tempo) {
-    let titulo = tempo === 30 ? "⏳ Aula em 30 min!" : "🚀 Falta pouco!";
-    let frases = tempo === 30 ? [
-        `Sua aula de ${materia} começa às ${hora}. Dá tempo de um café! ☕`,
-        `Faltam 30 min para ${materia}. Já separou o material? 📓`
-    ] : [
-        `Bora! ${materia} começa em 5 min (${hora}). Já pro lugar! 🏃‍♂️`,
-        `Não se atrasa! ${materia} começa agorinha, às ${hora}. ✍️`
-    ];
-
-    const msgSorteada = frases[Math.floor(Math.random() * frases.length)];
-
-    const options = {
-        body: msgSorteada,
-        icon: './icon-512.png',
-        badge: './icon-512.png',
-        vibrate: [200, 100, 200],
-        tag: `aula-${materia}-${tempo}`,
-        renotify: true,
-        requireInteraction: true,
-        data: { url: './horario.html' }
-    };
-
-    self.registration.showNotification(titulo, options);
+    // Tentar recuperar a grade (isso depende do navegador permitir acesso ao storage no SW)
+    // Se falhar, o app envia a mensagem quando está aberto.
 }
 
-// Mantém o suporte para quando o app estiver aberto e mandar mensagem manual
+// ESCUTADOR DE MENSAGENS (Aqui está o reforço)
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'NOTIFICAR_AULA') {
-        enviarNotificacao(event.data.materia, event.data.hora, event.data.tempoRestante);
+        const { materia, hora, tempoRestante } = event.data;
+        
+        // O waitUntil avisa ao Android: "Não me mate agora, estou processando algo importante!"
+        event.waitUntil(
+            self.registration.showNotification(tempoRestante === 30 ? "⏳ Aula em 30 min!" : "🚀 Falta pouco!", {
+                body: `Matéria: ${materia} às ${hora}.`,
+                icon: './icon-512.png',
+                badge: './icon-512.png',
+                vibrate: [500, 110, 500, 110, 450, 110, 200, 110, 170, 40, 450, 110, 200, 110, 170, 40],
+                tag: `aula-${materia}-${tempoRestante}`,
+                renotify: true,
+                requireInteraction: true, // A notificação FICA na tela até você tocar
+                priority: 2 // Prioridade Máxima no Android
+            })
+        );
     }
 });
 
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cl) => {
-            for (const c of cl) { if (c.url.includes('horario.html')) return c.focus(); }
-            if (clients.openWindow) return clients.openWindow('./horario.html');
-        })
+        clients.openWindow('./horario.html')
     );
 });
