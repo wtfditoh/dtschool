@@ -19,42 +19,69 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
+// --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // Preencher Horas (00-23)
+    // 1. Preencher seletor de horas (00h até 23h)
     const selectH = document.getElementById('aula-hora-h');
     if (selectH) {
+        selectH.innerHTML = "";
         for(let i=0; i<24; i++) {
             let h = i < 10 ? '0'+i : i;
             selectH.innerHTML += `<option value="${h}">${h}h</option>`;
         }
     }
 
+    // 2. Carregar dados locais (Cache)
     const local = localStorage.getItem('hub_brain_grade');
     if (local) {
         gradeHoraria = JSON.parse(local);
         renderizarAulas();
     }
+
+    // 3. Carregar da Nuvem
     if (userPhone) await carregarDadosNuvem();
     
-    const d = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][new Date().getDay()];
+    // 4. Selecionar dia automático
+    const diasSemana = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
+    const d = diasSemana[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
     
+    // 5. Vigilância das notificações
     setInterval(verificarRelogioParaNotificar, 60000);
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
+
+// --- FIREBASE ---
+async function carregarDadosNuvem() {
+    try {
+        const docRef = doc(db, "grades_horarias", userPhone);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            gradeHoraria = docSnap.data().grade;
+            localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
+            renderizarAulas();
+        }
+    } catch (e) { console.error(e); }
+}
 
 async function sincronizar() {
     localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
     if (userPhone) {
         try {
-            await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
+            await setDoc(doc(db, "grades_horarias", userPhone), {
+                grade: gradeHoraria,
+                atualizadoEm: Date.now()
+            });
         } catch (e) { console.error(e); }
     }
 }
 
+// --- INTERFACE ---
 window.selecionarDia = (dia) => {
     diaAtualGrade = dia;
-    document.querySelectorAll('.btn-dia').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-dia') === dia));
+    document.querySelectorAll('.btn-dia').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-dia') === dia);
+    });
     renderizarAulas();
 };
 
@@ -68,18 +95,33 @@ window.renderizarAulas = () => {
         '<p style="text-align:center;color:#444;margin-top:50px;">Nenhuma aula para hoje.</p>' :
         aulas.map((a, i) => `
             <div class="card-aula">
-                <div class="aula-tempo"><span style="font-size:8px;display:block;opacity:0.5;">${a.ordem}</span>${a.hora}</div>
-                <div class="aula-info"><b>${a.materia}</b><span>${a.prof || 'Sem prof.'}</span></div>
-                <button onclick="abrirConfirmExcluir(${i})" style="background:none;border:none;color:#ff4444;"><i data-lucide="trash-2" style="width:18px;"></i></button>
+                <div class="aula-tempo">
+                    <span style="font-size:9px; display:block; opacity:0.6; text-transform:uppercase;">${a.ordem || 'Aula'}</span>
+                    ${a.hora}
+                </div>
+                <div class="aula-info">
+                    <b>${a.materia}</b>
+                    <span>${a.prof || 'Sem prof.'}</span>
+                </div>
+                <button onclick="abrirConfirmExcluir(${i})" style="margin-left:auto;background:none;border:none;color:#ff4444;padding:10px;">
+                    <i data-lucide="trash-2" style="width:18px;"></i>
+                </button>
             </div>
         `).join('');
-    lucide.createIcons();
+    if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
+// --- MODAL AULA ---
 window.abrirModalAula = () => {
+    // Limpa campos para não vir com dados da última vez
+    document.getElementById('aula-materia-custom').value = "";
+    document.getElementById('aula-prof').value = "";
+    document.getElementById('aula-hora-h').value = "07";
+    document.getElementById('aula-hora-m').value = "00";
+
     const select = document.getElementById('aula-materia-select');
     const dadosNotas = JSON.parse(localStorage.getItem('materias')) || [];
-    select.innerHTML = '<option value="">Selecionar...</option>';
+    select.innerHTML = '<option value="">Selecionar matéria...</option>';
     dadosNotas.forEach(mat => {
         const opt = document.createElement('option');
         opt.value = mat.nome; opt.textContent = mat.nome;
@@ -90,10 +132,10 @@ window.abrirModalAula = () => {
 
 window.fecharModalAula = () => {
     document.getElementById('modal-aula').style.display = 'none';
-    document.getElementById('erro-modal').style.display = 'none';
 };
 
 window.salvarAula = async () => {
+    const btn = document.getElementById('btn-salvar-aula');
     const o = document.getElementById('aula-ordem').value;
     const s = document.getElementById('aula-materia-select').value;
     const c = document.getElementById('aula-materia-custom').value.trim();
@@ -101,8 +143,15 @@ window.salvarAula = async () => {
     const p = document.getElementById('aula-prof').value.trim();
     const mat = s || c;
 
+    // Erro Temporário Estilo Agenda
     if(!mat) {
-        document.getElementById('erro-modal').style.display = 'block';
+        const originalText = btn.innerText;
+        btn.classList.add('erro');
+        btn.innerText = "PREENCHA A MATÉRIA!";
+        setTimeout(() => {
+            btn.classList.remove('erro');
+            btn.innerText = originalText;
+        }, 2000);
         return;
     }
 
@@ -114,6 +163,7 @@ window.salvarAula = async () => {
     await sincronizar();
 };
 
+// --- EXCLUSÃO ---
 window.abrirConfirmExcluir = (i) => {
     indexParaExcluir = i;
     document.getElementById('modal-confirm-excluir').style.display = 'flex';
@@ -122,15 +172,19 @@ window.abrirConfirmExcluir = (i) => {
 window.fecharModalExcluir = () => document.getElementById('modal-confirm-excluir').style.display = 'none';
 
 document.getElementById('btn-confirmar-delete').onclick = async () => {
-    gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
-    renderizarAulas();
-    await sincronizar();
-    fecharModalExcluir();
+    if(indexParaExcluir !== null) {
+        gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
+        renderizarAulas();
+        await sincronizar();
+        fecharModalExcluir();
+    }
 };
 
+// --- NOTIFICAÇÕES ---
 function verificarRelogioParaNotificar() {
-    const d = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][new Date().getDay()];
-    const aulas = gradeHoraria[d] || [];
+    const dias = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
+    const hoje = dias[new Date().getDay()];
+    const aulas = gradeHoraria[hoje] || [];
     const agora = new Date();
     const minAgora = (agora.getHours() * 60) + agora.getMinutes();
 
@@ -138,19 +192,29 @@ function verificarRelogioParaNotificar() {
         const [h, m] = aula.hora.split(':').map(Number);
         const minAula = (h * 60) + m;
         const diff = minAula - minAgora;
+
         if (diff === 30) dispararAviso(aula.materia, aula.hora, "30_MIN");
         if (diff === 5) dispararAviso(aula.materia, aula.hora, "5_MIN");
     });
 }
 
-function dispararAviso(m, h, t) {
+function dispararAviso(materia, hora, tipo) {
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({ type: 'NOTIFICAR_AULA', materia: m, hora: h, tempoRestante: t });
+        navigator.serviceWorker.controller.postMessage({
+            type: 'NOTIFICAR_AULA',
+            materia: materia,
+            hora: hora,
+            tempoRestante: tipo
+        });
     }
 }
 
 window.ativarNotificacoesReal = () => {
     Notification.requestPermission().then(p => { 
-        if(p==='granted') { alert("Ativado! ✅"); document.getElementById('modal-notif-boasvindas').style.display = 'none'; }
+        if(p==='granted') {
+            alert("Ativado! ✅");
+            document.getElementById('modal-notif-boasvindas').style.display = 'none';
+        }
     });
 };
+      
