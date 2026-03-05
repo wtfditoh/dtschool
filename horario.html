@@ -6,34 +6,40 @@
     <title>Grade Horária - Hub Brain</title>
     <link rel="stylesheet" href="grade-estilo.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* CSS Rápido para o Header Padronizado */
+        .glass-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
+            backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+        }
+        .hub-logo-container { display: flex; align-items: center; gap: 10px; }
+        .hub-logo-text { font-weight: 900; font-size: 19px; color: white; text-transform: uppercase; }
+        .hub-logo-text.purple { color: #8a2be2; }
+    </style>
 </head>
 <body class="bg-dark">
 
+    <header class="glass-header">
+        <button onclick="window.location.href='index.html'" class="btn-icon" style="background:none; border:none; color:white;"><i data-lucide="chevron-left"></i></button>
+        <div class="hub-logo-container">
+            <span class="hub-logo-text">Hub</span>
+            <i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i>
+            <span class="hub-logo-text purple">Brain</span>
+        </div>
+        <button onclick="abrirModalNotif()" class="btn-notif" style="background:none; border:none; color:#8a2be2;"><i data-lucide="bell"></i></button>
+    </header>
+
     <div class="grade-container">
-        <div class="grade-header">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <button onclick="window.location.href='index.html'" style="background:none; border:none; color:white; padding:0; cursor:pointer;">
-                        <i data-lucide="chevron-left"></i>
-                    </button>
-                    <h2 style="margin:0;">📅 Minha Grade</h2>
-                </div>
-                <button onclick="ativarNotificacoes()" class="btn-notif" title="Ativar Alertas">
-                    <i data-lucide="bell"></i>
-                </button>
-            </div>
-            
-            <div class="dias-scroll">
-                <button class="btn-dia active" data-dia="segunda" onclick="selecionarDia('segunda')">SEG</button>
-                <button class="btn-dia" data-dia="terca" onclick="selecionarDia('terca')">TER</button>
-                <button class="btn-dia" data-dia="quarta" onclick="selecionarDia('quarta')">QUA</button>
-                <button class="btn-dia" data-dia="quinta" onclick="selecionarDia('quinta')">QUI</button>
-                <button class="btn-dia" data-dia="sexta" onclick="selecionarDia('sexta')">SEX</button>
-            </div>
+        <div class="dias-scroll">
+            <button class="btn-dia active" data-dia="segunda" onclick="selecionarDia('segunda')">SEG</button>
+            <button class="btn-dia" data-dia="terca" onclick="selecionarDia('terca')">TER</button>
+            <button class="btn-dia" data-dia="quarta" onclick="selecionarDia('quarta')">QUA</button>
+            <button class="btn-dia" data-dia="quinta" onclick="selecionarDia('quinta')">QUI</button>
+            <button class="btn-dia" data-dia="sexta" onclick="selecionarDia('sexta')">SEX</button>
         </div>
 
-        <div id="lista-aulas" class="lista-aulas">
-            </div>
+        <div id="lista-aulas" class="lista-aulas"></div>
 
         <button class="fab-add-aula" onclick="abrirModalAula()">
             <i data-lucide="plus"></i>
@@ -42,29 +48,49 @@
 
     <div id="modal-aula" class="modal-grade" style="display: none;">
         <div class="modal-content-grade">
-            <h3 style="margin-top:0; color:white;">Nova Aula</h3>
-            <label style="font-size: 12px; color: #888;">NOME DA MATÉRIA</label>
-            <input type="text" id="aula-materia" class="input-grade" placeholder="Ex: Física Quântica">
-            
-            <label style="font-size: 12px; color: #888;">HORÁRIO DE INÍCIO</label>
+            <h3>Nova Aula</h3>
+            <select id="aula-ordem" class="input-grade">
+                <option value="1ª Aula">1ª Aula</option>
+                <option value="2ª Aula">2ª Aula</option>
+                <option value="3ª Aula">3ª Aula</option>
+                <option value="4ª Aula">4ª Aula</option>
+                <option value="5ª Aula">5ª Aula</option>
+                <option value="6ª Aula">6ª Aula</option>
+            </select>
+            <input type="text" id="aula-materia" class="input-grade" placeholder="Matéria">
             <input type="time" id="aula-hora" class="input-grade">
-            
-            <label style="font-size: 12px; color: #888;">PROFESSOR (OPCIONAL)</label>
-            <input type="text" id="aula-prof" class="input-grade" placeholder="Ex: Prof. Albert">
-            
+            <input type="text" id="aula-prof" class="input-grade" placeholder="Professor">
             <div class="modal-btns">
                 <button onclick="fecharModalAula()" class="btn-cancelar">Sair</button>
-                <button onclick="salvarAula()" class="btn-salvar">Salvar Aula</button>
+                <button onclick="salvarAula()" class="btn-salvar">Salvar</button>
             </div>
         </div>
     </div>
 
+    <div id="modal-confirm-excluir" class="modal-grade" style="display: none;">
+        <div class="modal-content-grade" style="text-align:center;">
+            <i data-lucide="trash-2" style="color:#ff4444; width:40px; margin-bottom:15px;"></i>
+            <h3>Remover Aula?</h3>
+            <p style="color:#888;">Essa ação não pode ser desfeita.</p>
+            <div class="modal-btns">
+                <button onclick="fecharModalExcluir()" class="btn-cancelar">Voltar</button>
+                <button id="btn-confirmar-delete" class="btn-salvar" style="background:#ff4444;">Apagar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-notif-boasvindas" class="modal-grade" style="display: none;">
+        <div class="modal-content-grade" style="text-align:center;">
+            <div style="background:rgba(138,43,226,0.1); width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 15px;">
+                <i data-lucide="bell-ring" style="color:#8a2be2;"></i>
+            </div>
+            <h3>Alertas Inteligentes</h3>
+            <p style="color:#888; font-size:14px;">O Hub Brain vai te avisar 5 minutos antes de cada aula começar para você nunca se atrasar.</p>
+            <button onclick="ativarNotificacoesReal()" class="btn-salvar" style="width:100%;">Ativar Agora</button>
+            <button onclick="document.getElementById('modal-notif-boasvindas').style.display='none'" style="background:none; border:none; color:#555; margin-top:15px; cursor:pointer;">Talvez depois</button>
+        </div>
+    </div>
+
     <script type="module" src="grade-logica.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-        });
-    </script>
 </body>
 </html>
