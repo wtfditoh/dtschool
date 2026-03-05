@@ -6,6 +6,7 @@
     --border: rgba(138, 43, 226, 0.2);
     --text: #ffffff;
     --text-dim: #888;
+    --danger: #ff4444;
 }
 
 body {
@@ -19,6 +20,7 @@ body {
 
 .grade-container { padding: 20px; max-width: 600px; margin: 0 auto; }
 
+/* Scroll de Dias */
 .dias-scroll {
     display: flex; gap: 10px; overflow-x: auto; padding: 15px 0;
     scrollbar-width: none;
@@ -35,6 +37,7 @@ body {
     box-shadow: 0 0 15px var(--primary-glow);
 }
 
+/* Cards */
 .card-aula {
     background: var(--card-bg); border: 1px solid var(--border);
     border-radius: 18px; padding: 15px; display: flex; align-items: center;
@@ -43,13 +46,69 @@ body {
 
 .aula-tempo {
     background: rgba(138, 43, 226, 0.15); color: var(--primary);
-    padding: 10px; border-radius: 12px; min-width: 60px;
+    padding: 10px; border-radius: 12px; min-width: 65px;
     text-align: center; font-weight: 800; border: 1px solid rgba(138, 43, 226, 0.3);
 }
 
 .aula-info { flex-grow: 1; }
 .aula-info b { font-size: 16px; display: block; }
 .aula-info span { font-size: 12px; color: var(--text-dim); }
+
+/* MODAIS PADRONIZADOS (Estilo Agenda) */
+.modal-grade {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+}
+
+.modal-content-grade {
+    background: #111; width: 100%; max-width: 350px;
+    padding: 25px; border-radius: 28px; border: 1px solid var(--border);
+    box-sizing: border-box; 
+    display: flex; flex-direction: column; gap: 10px;
+}
+
+.label-input { font-size: 10px; color: var(--primary); font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
+
+.input-grade {
+    width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    padding: 12px; border-radius: 12px; color: white;
+    box-sizing: border-box; outline: none; font-size: 14px;
+}
+
+/* SELETOR HORA AJUSTADO (H dentro do campo) */
+.seletor-hora-custom {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; background: rgba(255, 255, 255, 0.03);
+    padding: 10px; border-radius: 15px; border: 1px solid var(--border);
+}
+.seletor-hora-custom select {
+    background: #000; color: var(--primary); border: 1px solid var(--primary);
+    padding: 8px 5px; border-radius: 10px; font-size: 18px; font-weight: bold;
+    width: 75px; text-align: center; outline: none;
+}
+.seletor-hora-custom span { color: white; font-weight: bold; font-size: 20px; }
+
+/* ERRO DINÂMICO */
+#btn-salvar-aula.erro {
+    background: var(--danger) !important;
+    animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.modal-btns { display: flex; gap: 10px; margin-top: 15px; }
+.btn-cancelar, .btn-salvar {
+    flex: 1; padding: 15px; border-radius: 15px; border: none;
+    font-weight: bold; cursor: pointer; transition: 0.3s;
+}
+.btn-cancelar { background: #1a1a1a; color: #666; }
+.btn-salvar { background: var(--primary); color: white; }
 
 .fab-add-aula {
     position: fixed; bottom: 30px; right: 30px;
@@ -58,53 +117,3 @@ body {
     align-items: center; justify-content: center;
     box-shadow: 0 8px 25px var(--primary-glow); cursor: pointer;
 }
-
-/* MODAL AJUSTADO */
-.modal-grade {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
-    display: none; align-items: center; justify-content: center;
-    z-index: 1000; padding: 15px;
-}
-
-.modal-content-grade {
-    background: #111; width: 100%; max-width: 340px;
-    padding: 20px; border-radius: 24px; border: 1px solid var(--primary);
-    box-sizing: border-box; /* IMPEDE DE SAIR DA TELA */
-}
-
-.label-input { font-size: 10px; color: var(--primary); font-weight: bold; margin-bottom: 5px; display: block; }
-
-.input-grade {
-    width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-    padding: 12px; border-radius: 12px; color: white; margin-bottom: 12px;
-    box-sizing: border-box; outline: none;
-}
-
-/* SELETOR HORA NEON */
-.seletor-hora-custom {
-    display: flex; align-items: center; justify-content: center;
-    gap: 8px; background: rgba(255, 255, 255, 0.03);
-    padding: 10px; border-radius: 12px; border: 1px solid var(--border);
-    margin-bottom: 15px;
-}
-.seletor-hora-custom select {
-    background: #000; color: var(--primary); border: 1px solid var(--primary);
-    padding: 8px; border-radius: 8px; font-size: 18px; font-weight: bold;
-    width: 65px; text-align: center;
-}
-.seletor-hora-custom span { color: white; font-weight: bold; font-size: 20px; }
-
-/* ERRO NEON */
-#erro-modal {
-    color: #ff4444; font-size: 11px; text-align: center;
-    margin-bottom: 15px; display: none; font-weight: bold;
-}
-
-.modal-btns { display: flex; gap: 10px; }
-.btn-cancelar, .btn-salvar {
-    flex: 1; padding: 14px; border-radius: 12px; border: none;
-    font-weight: bold; cursor: pointer;
-}
-.btn-cancelar { background: #1a1a1a; color: #666; }
-.btn-salvar { background: var(--primary); color: white; }
