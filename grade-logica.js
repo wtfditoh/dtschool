@@ -21,7 +21,6 @@ const userPhone = localStorage.getItem('dt_user_phone');
 
 // --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Preencher seletor de horas (00h até 23h)
     const selectH = document.getElementById('aula-hora-h');
     if (selectH) {
         selectH.innerHTML = "";
@@ -31,22 +30,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 2. Carregar dados locais (Cache)
     const local = localStorage.getItem('hub_brain_grade');
     if (local) {
         gradeHoraria = JSON.parse(local);
         renderizarAulas();
     }
 
-    // 3. Carregar da Nuvem
     if (userPhone) await carregarDadosNuvem();
     
-    // 4. Selecionar dia automático
     const diasSemana = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
     const d = diasSemana[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
     
-    // 5. Vigilância das notificações
     setInterval(verificarRelogioParaNotificar, 60000);
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
@@ -113,11 +108,15 @@ window.renderizarAulas = () => {
 
 // --- MODAL AULA ---
 window.abrirModalAula = () => {
-    // Limpa campos para não vir com dados da última vez
+    // 1. Limpa os campos
     document.getElementById('aula-materia-custom').value = "";
     document.getElementById('aula-prof').value = "";
     document.getElementById('aula-hora-h').value = "07";
     document.getElementById('aula-hora-m').value = "00";
+    
+    // 2. Esconde o erro se ele estiver aparecendo de uma tentativa anterior
+    const erroMsg = document.getElementById('erro-modal');
+    if(erroMsg) erroMsg.style.display = 'none';
 
     const select = document.getElementById('aula-materia-select');
     const dadosNotas = JSON.parse(localStorage.getItem('materias')) || [];
@@ -136,6 +135,7 @@ window.fecharModalAula = () => {
 
 window.salvarAula = async () => {
     const btn = document.getElementById('btn-salvar-aula');
+    const erroMsg = document.getElementById('erro-modal');
     const o = document.getElementById('aula-ordem').value;
     const s = document.getElementById('aula-materia-select').value;
     const c = document.getElementById('aula-materia-custom').value.trim();
@@ -143,15 +143,19 @@ window.salvarAula = async () => {
     const p = document.getElementById('aula-prof').value.trim();
     const mat = s || c;
 
-    // Erro Temporário Estilo Agenda
+    // Lógica de Erro: Botão treme e mensagem aparece por 2 segundos
     if(!mat) {
-        const originalText = btn.innerText;
-        btn.classList.add('erro');
-        btn.innerText = "PREENCHA A MATÉRIA!";
-        setTimeout(() => {
-            btn.classList.remove('erro');
-            btn.innerText = originalText;
-        }, 2000);
+        if(erroMsg) erroMsg.style.display = 'block';
+        if(btn) {
+            const originalText = btn.innerText;
+            btn.classList.add('erro');
+            btn.innerText = "PREENCHA TUDO!";
+            setTimeout(() => {
+                btn.classList.remove('erro');
+                btn.innerText = originalText;
+                if(erroMsg) erroMsg.style.display = 'none';
+            }, 2000);
+        }
         return;
     }
 
@@ -167,6 +171,7 @@ window.salvarAula = async () => {
 window.abrirConfirmExcluir = (i) => {
     indexParaExcluir = i;
     document.getElementById('modal-confirm-excluir').style.display = 'flex';
+    if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
 window.fecharModalExcluir = () => document.getElementById('modal-confirm-excluir').style.display = 'none';
@@ -210,11 +215,17 @@ function dispararAviso(materia, hora, tipo) {
 }
 
 window.ativarNotificacoesReal = () => {
+    if (!("Notification" in window)) {
+        alert("Navegador não suporta notificações.");
+        return;
+    }
     Notification.requestPermission().then(p => { 
         if(p==='granted') {
-            alert("Ativado! ✅");
-            document.getElementById('modal-notif-boasvindas').style.display = 'none';
+            alert("Notificações ativadas! ✅");
+            const modalBoasVindas = document.getElementById('modal-notif-boasvindas');
+            if(modalBoasVindas) modalBoasVindas.style.display = 'none';
+        } else {
+            alert("Você negou as notificações. Ative nas configurações do navegador.");
         }
     });
 };
-      
