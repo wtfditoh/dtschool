@@ -2,6 +2,7 @@
 <html lang="pt-br">
 <head>
     <script>
+    // Bloqueio de acesso se não estiver logado
     if (!localStorage.getItem('dt_user_phone')) {
         window.location.href = 'login.html';
     }
@@ -18,90 +19,33 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="estilo.css?v=12.0">
     <style>
-        /* CSS Específico para o novo topo atraente */
+        /* Topo Padrão Hub Brain */
         .glass-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            height: 70px;
-            background: rgba(10, 10, 10, 0.8) !important;
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
+            backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+            position: sticky; top: 0; z-index: 1000;
         }
-
-        .hub-logo-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            pointer-events: none;
-        }
-
-        .hub-logo-text {
-            font-weight: 900;
-            font-size: 19px;
-            letter-spacing: 1px;
-            color: white;
-            text-transform: uppercase;
-        }
-
-        .hub-logo-text.purple {
-            color: #8a2be2;
-            text-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
-        }
-
-        .hub-symbol {
-            background: rgba(138, 43, 226, 0.1);
-            padding: 6px;
-            border-radius: 10px;
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: pulse-glow 3s infinite ease-in-out;
-        }
-
+        .hub-logo-container { display: flex; align-items: center; gap: 10px; pointer-events: none; }
+        .hub-logo-text { font-weight: 900; font-size: 19px; letter-spacing: 1px; color: white; text-transform: uppercase; }
+        .hub-logo-text.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138, 43, 226, 0.3); }
+        .hub-symbol { background: rgba(138, 43, 226, 0.1); padding: 6px; border-radius: 10px; border: 1px solid rgba(138, 43, 226, 0.3); display: flex; align-items: center; justify-content: center; animation: pulse-glow 3s infinite ease-in-out; }
         @keyframes pulse-glow {
             0% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
             50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.4); transform: scale(1.05); }
             100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
         }
-
-        .btn-add-main {
-            background: #8a2be2 !important;
-            width: 38px !important;
-            height: 38px !important;
-            border-radius: 12px !important;
-            font-size: 24px !important;
-            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
-        }
-
-        /* Estilo do Botão de Baixar App */
-        .btn-instalar-pwa {
-            background: rgba(138, 43, 226, 0.1);
-            border: 1px solid #8a2be2;
-            color: white;
-            padding: 12px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 90%;
-            margin: 20px auto 10px auto;
-            transition: 0.3s;
-            font-size: 13px;
-        }
-        .btn-instalar-pwa:active { transform: scale(0.95); background: #8a2be2; }
+        .btn-add-main { background: #8a2be2 !important; width: 38px !important; height: 38px !important; border-radius: 12px !important; font-size: 24px !important; color: white; border: none; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-instalar-pwa { background: rgba(138, 43, 226, 0.1); border: 1px solid #8a2be2; color: white; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; cursor: pointer; width: 90%; margin: 20px auto 10px auto; transition: 0.3s; font-size: 13px; }
+        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1001; }
+        #overlay.active { display:block; }
     </style>
 </head>
 <body>
     <div id="overlay" onclick="toggleMenu()"></div>
 
     <header class="glass-header">
-        <button onclick="toggleMenu()" class="btn-icon"><i data-lucide="menu"></i></button>
+        <button onclick="toggleMenu()" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;"><i data-lucide="menu"></i></button>
         
         <div class="hub-logo-container">
             <span class="hub-logo-text">Hub</span>
@@ -114,35 +58,26 @@
         <button onclick="abrirModal()" class="btn-add-main">+</button>
     </header>
 
-    <nav id="menu-lateral" class="drawer">
+    <nav id="menu-lateral" class="drawer" style="z-index: 1002;">
         <div class="drawer-header">
             <div class="logo-box">
                 <i data-lucide="brain-circuit" style="color: #8a2be2; width: 18px; margin-right: 5px;"></i>
                 <span class="logo-text" style="letter-spacing: 1px;">HUB <span style="color: #8a2be2;">BRAIN</span></span>
             </div>
-            <button onclick="toggleMenu()" class="btn-close-box"><i data-lucide="x"></i></button>
+            <button onclick="toggleMenu()" class="btn-close-box" style="background:none; border:none; color:white;"><i data-lucide="x"></i></button>
         </div>
         
-        <button onclick="navegar('notas')" class="nav-item active"><i data-lucide="layout-grid"></i> Notas</button>
+        <button onclick="toggleMenu();" class="nav-item active"><i data-lucide="layout-grid"></i> Notas</button>
+        <button onclick="window.location.href='horario.html'" class="nav-item"><i data-lucide="calendar-clock"></i> Horário das Aulas</button>
         
-        <button onclick="window.location.href='horario.html'" class="nav-item">
-            <i data-lucide="calendar-clock"></i> Horário das Aulas
-        </button>
-
         <button onclick="navegar('ranking')" class="nav-item"><i data-lucide="trophy"></i> Ranking</button>
         
-        <button onclick="window.location.href='agenda.html'" class="nav-item">
-            <i data-lucide="calendar"></i> Agenda
-        </button>
-
-        <button onclick="window.location.href='estudos.html'" class="nav-item">
-            <i data-lucide="book-open"></i> Estudar com IA
-        </button>
+        <button onclick="window.location.href='agenda.html'" class="nav-item"><i data-lucide="calendar"></i> Agenda</button>
+        <button onclick="window.location.href='estudos.html'" class="nav-item"><i data-lucide="book-open"></i> Estudar com IA</button>
 
         <div id="pwa-install-container" style="display: none;">
             <button onclick="instalarApp()" class="btn-instalar-pwa">
-                <i data-lucide="download-cloud" style="width: 18px;"></i>
-                Baixar App Hub Brain
+                <i data-lucide="download-cloud" style="width: 18px;"></i> Baixar App Hub Brain
             </button>
         </div>
 
@@ -153,7 +88,6 @@
 
     <main class="container">
         <div id="alerta-dashboard"></div>
-
         <div class="stats-row">
             <div class="stat-card"><span id="media-geral">0.0</span><label>Média Geral</label></div>
             <div class="stat-card"><span id="aprov-count">0/0</span><label>Aprovadas</label></div>
@@ -164,7 +98,7 @@
     <div id="modal-materia" class="modal">
         <div class="modal-content">
             <h3>Nova Disciplina</h3>
-            <input type="text" id="nome-materia-input" placeholder="Ex: Matemática">
+            <input type="text" id="nome-materia-input" placeholder="Ex: Matemática" style="width:100%; padding:10px; margin:10px 0; border-radius:10px; background:#222; border:1px solid #444; color:white; box-sizing: border-box;">
             <div class="area-botoes-modal">
                 <button onclick="fecharModal()" class="btn-modal-voltar">Sair</button>
                 <button onclick="confirmarNovaMateria()" class="btn-modal-acao">Criar</button>
@@ -172,26 +106,22 @@
         </div>
     </div>
 
-    <div id="modal-aviso-container" class="modal-custom">
+    <div id="modal-aviso-container" class="modal-custom" style="display:none;">
         <div class="modal-content">
-            <div id="aviso-icon" style="margin-bottom:15px;"></div>
+            <div id="aviso-icon" style="margin-bottom:15px; text-align:center;"></div>
             <h3 id="aviso-titulo"></h3>
-            <p id="aviso-texto" style="margin: 10px 0 20px; color: #888;"></p>
-            <div class="area-botoes-modal">
-                <button onclick="fecharAviso()" class="btn-modal-acao" style="width:100%">Entendido</button>
-            </div>
+            <p id="aviso-texto" style="margin: 10px 0 20px; color: #888; text-align:center;"></p>
+            <button onclick="fecharAviso()" class="btn-modal-acao" style="width:100%">Entendido</button>
         </div>
     </div>
 
-    <div id="modal-excluir-container" class="modal-custom">
+    <div id="modal-excluir-container" class="modal-custom" style="display:none;">
         <div class="modal-content">
-            <div style="text-align: center;">
-                <i data-lucide="alert-triangle" style="color:#ff4444; width:40px; margin-bottom:10px;"></i>
-            </div>
-            <h3>Apagar Disciplina?</h3>
+            <div style="text-align: center;"><i data-lucide="alert-triangle" style="color:#ff4444; width:40px; margin-bottom:10px;"></i></div>
+            <h3 style="text-align:center;">Apagar Disciplina?</h3>
             <div class="area-botoes-modal">
                 <button onclick="fecharModalExcluir()" class="btn-modal-voltar">Voltar</button>
-                <button onclick="confirmarExclusao()" class="btn-modal-acao btn-danger-fix">Apagar</button>
+                <button onclick="confirmarExclusao()" class="btn-modal-acao btn-danger-fix" style="background:#ff4444;">Apagar</button>
             </div>
         </div>
     </div>
@@ -200,20 +130,25 @@
     <script type="module" src="funcoes.js?v=12.0"></script>
     
     <script>
-        // ATIVAÇÃO DO SERVICE WORKER (PARA NOTIFICAÇÕES E PWA)
+        // MOTOR DE NOTIFICAÇÕES E PWA (CORRIGIDO)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js').then(reg => {
-                    console.log('Service Worker registrado com sucesso!');
+                    console.log('Hub Brain: Service Worker Ativo! ✅');
+                    // Garante que o SW controle a aba atual imediatamente
+                    if (!navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.ready.then(() => {
+                           // Opcional: reload apenas se necessário
+                        });
+                    }
                 }).catch(err => console.log('Erro ao registrar SW:', err));
             });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
+            if(typeof lucide !== 'undefined') lucide.createIcons();
         });
 
-        // Função de Toggle Menu (Caso não esteja no funcoes.js)
         window.toggleMenu = function() {
             const menu = document.getElementById('menu-lateral');
             const overlay = document.getElementById('overlay');
