@@ -17,6 +17,21 @@
         .hub-logo-text { font-weight: 900; font-size: 19px; color: white; text-transform: uppercase; }
         .hub-logo-text.purple { color: #8a2be2; }
         .btn-notif { background: none; border: none; color: #8a2be2; cursor: pointer; padding: 10px; }
+        
+        /* Estilo para o aviso de bateria */
+        .btn-bateria-ajuda {
+            background: rgba(138, 43, 226, 0.1);
+            border: 1px solid #8a2be2;
+            color: #8a2be2;
+            padding: 10px;
+            border-radius: 12px;
+            margin: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -32,6 +47,11 @@
         </div>
         <button onclick="ativarNotificacoesReal()" class="btn-notif"><i data-lucide="bell"></i></button>
     </header>
+
+    <div class="btn-bateria-ajuda" onclick="abrirAjudaBateria()">
+        <i data-lucide="battery-warning"></i>
+        Notificações não chegam? Toque aqui.
+    </div>
 
     <div class="grade-container">
         <div class="dias-scroll">
@@ -53,33 +73,25 @@
         <div class="modal-content-grade">
             <h3 style="margin:0 0 10px 0; color:#8a2be2; text-align:center;">Agendar Aula</h3>
             
+            <label class="label-input">TURNO</label>
+            <select id="aula-turno" class="input-grade">
+                <option value="matutino">Manhã (Matutino)</option>
+                <option value="vespertino" selected>Tarde (Vespertino)</option>
+            </select>
+
             <label class="label-input">QUAL AULA?</label>
-            <select id="aula-ordem" class="input-grade">
-                <option value="1ª Aula">1ª Aula</option>
-                <option value="2ª Aula">2ª Aula</option>
-                <option value="3ª Aula">3ª Aula</option>
-                <option value="4ª Aula">4ª Aula</option>
-                <option value="5ª Aula">5ª Aula</option>
-                <option value="6ª Aula">6ª Aula</option>
+            <select id="aula-numero" class="input-grade">
+                <option value="0">1ª Aula</option>
+                <option value="1">2ª Aula</option>
+                <option value="2">3ª Aula</option>
+                <option value="3">4ª Aula</option>
+                <option value="4">5ª Aula</option>
+                <option value="5">6ª Aula</option>
             </select>
 
             <label class="label-input">MATÉRIA</label>
             <select id="aula-materia-select" class="input-grade"></select>
             <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Ou digite outra...">
-
-            <label class="label-input">HORÁRIO</label>
-            <div class="seletor-hora-custom">
-                <select id="aula-hora-h"></select>
-                <span style="color:white; font-weight:bold;">:</span>
-                <select id="aula-hora-m">
-                    <option value="00">00</option><option value="05">05</option>
-                    <option value="10">10</option><option value="15">15</option>
-                    <option value="20">20</option><option value="25">25</option>
-                    <option value="30">30</option><option value="35">35</option>
-                    <option value="40">40</option><option value="45">45</option>
-                    <option value="50">50</option><option value="55">55</option>
-                </select>
-            </div>
 
             <label class="label-input">PROFESSOR</label>
             <input type="text" id="aula-prof" class="input-grade" placeholder="Nome do Professor">
@@ -90,6 +102,20 @@
                 <button onclick="fecharModalAula()" class="btn-cancelar">Sair</button>
                 <button id="btn-salvar-aula" onclick="salvarAula()" class="btn-salvar">Confirmar</button>
             </div>
+        </div>
+    </div>
+
+    <div id="modal-ajuda-bateria" class="modal-grade" style="display: none;">
+        <div class="modal-content-grade">
+            <h3 style="color:#8a2be2; text-align:center;">Ajuste de Notificação</h3>
+            <p style="color:white; font-size:13px; line-height:1.5;">Para receber avisos com o celular bloqueado:</p>
+            <ul style="color:#bbb; font-size:12px; text-align:left; padding-left:20px;">
+                <li>Segure o ícone do App > <b>Informações</b>.</li>
+                <li>Ative <b>Início Automático</b>.</li>
+                <li>Economia de Bateria: <b>Sem Restrições</b>.</li>
+                <li>Outras Permissões: Ative <b>Janelas Pop-up em segundo plano</b>.</li>
+            </ul>
+            <button onclick="fecharAjudaBateria()" class="btn-salvar" style="width:100%; margin-top:15px;">Entendido!</button>
         </div>
     </div>
 
