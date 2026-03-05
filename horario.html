@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Horária - Hub Brain</title>
+    <link rel="stylesheet" href="grade-estilo.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-dark">
+
+    <div class="grade-container">
+        <div class="grade-header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>📅 Minha Grade</h2>
+                <button onclick="ativarNotificacoes()" class="btn-notif">
+                    <i data-lucide="bell"></i>
+                </button>
+            </div>
+            
+            <div class="dias-scroll">
+                <button class="btn-dia" data-dia="segunda" onclick="selecionarDia('segunda')">SEG</button>
+                <button class="btn-dia" data-dia="terca" onclick="selecionarDia('terca')">TER</button>
+                <button class="btn-dia" data-dia="quarta" onclick="selecionarDia('quarta')">QUA</button>
+                <button class="btn-dia" data-dia="quinta" onclick="selecionarDia('quinta')">QUI</button>
+                <button class="btn-dia" data-dia="sexta" onclick="selecionarDia('sexta')">SEX</button>
+            </div>
+        </div>
+
+        <div id="lista-aulas" class="lista-aulas"></div>
+
+        <button class="fab-add-aula" onclick="abrirModalAula()">
+            <i data-lucide="plus"></i>
+        </button>
+    </div>
+
+    <div id="modal-aula" class="modal-grade">
+        <div class="modal-content-grade">
+            <h3>Nova Aula</h3>
+            <input type="text" id="aula-materia" class="input-grade" placeholder="Matéria">
+            <input type="time" id="aula-hora" class="input-grade">
+            <input type="text" id="aula-prof" class="input-grade" placeholder="Professor (Opcional)">
+            <div class="modal-btns">
+                <button onclick="fecharModalAula()" class="btn-cancelar">Sair</button>
+                <button onclick="salvarAula()" class="btn-salvar">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="grade-logica.js"></script>
+</body>
+</html>
