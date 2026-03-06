@@ -5,44 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ranking Global - Hub Brain</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="ranking-estilo.css">
+    <link rel="stylesheet" href="ranking.css">
 </head>
-<body class="dark-mode">
+<body>
 
-    <button class="btn-help-floating" onclick="abrirAjudaXP()" aria-label="Ver regras de XP">
+    <button class="btn-help-floating" onclick="abrirAjudaXP()">
         <i data-lucide="help-circle"></i>
     </button>
 
     <div id="modal-xp" class="modal-xp-overlay" style="display:none;">
         <div class="modal-xp-card">
             <div class="xp-header">
-                <i data-lucide="scroll-text" class="xp-icon-main"></i>
+                <i data-lucide="scroll-text" class="purple"></i>
                 <h3>MANUAL DE <span class="purple">XP</span></h3>
-                <p>O caminho para a patente de Lenda.</p>
             </div>
             
             <div class="xp-rules-scroll">
-                <div class="xp-tag">📈 DESEMPENHO EM NOTAS</div>
+                <div class="xp-tag">📊 NOTAS</div>
                 <div class="rule-box pos"><span>+100</span> <p>Nota 10 (Gabarito)</p></div>
                 <div class="rule-box pos"><span>+50</span> <p>Nota 8.0 a 9.9</p></div>
                 <div class="rule-box pos"><span>+20</span> <p>Nota 6.0 a 7.9</p></div>
                 <div class="rule-box neg"><span>-20</span> <p>Nota 4.0 a 5.9</p></div>
                 <div class="rule-box neg"><span>-50</span> <p>Nota 0.1 a 3.9</p></div>
-                <div class="rule-box neg"><span>-100</span> <p>Nota 0 (Abandono)</p></div>
-
-                <div class="xp-tag">🤖 SIMULADOS (IA)</div>
-                <div class="rule-box pos"><span>+150</span> <p>Gabaritar Simulado (10/10)</p></div>
-                <div class="rule-box pos"><span>+60</span> <p>7 a 9 acertos</p></div>
-                <div class="rule-box neg"><span>-30</span> <p>3 a 4 acertos</p></div>
-                <div class="rule-box neg"><span>-80</span> <p>0 a 2 acertos</p></div>
-
-                <div class="xp-tag">📅 ORGANIZAÇÃO</div>
-                <div class="rule-box pos"><span>+15</span> <p>Concluir Atividade</p></div>
-                <div class="rule-box pos"><span>+40</span> <p>Montar Horário Semanal</p></div>
-                <div class="rule-box neg"><span>-25</span> <p>Atividade Atrasada</p></div>
+                <div class="rule-item-spacer"></div>
+                <div class="xp-tag">🤖 SIMULADOS IA</div>
+                <div class="rule-box pos"><span>+150</span> <p>Gabaritar (10/10)</p></div>
+                <div class="rule-box neg"><span>-80</span> <p>Errar Quase Tudo</p></div>
             </div>
 
-            <button onclick="fecharAjudaXP()" class="btn-close-modal">ENTENDIDO</button>
+            <button onclick="fecharAjudaXP()" class="btn-close-modal">FECHAR</button>
         </div>
     </div>
 
@@ -79,19 +70,14 @@
         </div>
 
         <div class="ranking-list-container" id="lista-ranking">
-            <div class="loading">Sincronizando banco de dados...</div>
+            <div class="loading">Sincronizando...</div>
         </div>
     </div>
 
     <script type="module" src="ranking-logica.js"></script>
     <script>
-        function abrirAjudaXP() {
-            document.getElementById('modal-xp').style.display = 'flex';
-            lucide.createIcons();
-        }
-        function fecharAjudaXP() {
-            document.getElementById('modal-xp').style.display = 'none';
-        }
+        window.abrirAjudaXP = () => { document.getElementById('modal-xp').style.display = 'flex'; lucide.createIcons(); }
+        window.fecharAjudaXP = () => { document.getElementById('modal-xp').style.display = 'none'; }
     </script>
 </body>
 </html>
