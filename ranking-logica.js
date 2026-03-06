@@ -1,94 +1,92 @@
-import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const db = getFirestore();
-const userPhone = localStorage.getItem('dt_user_phone');
+// Configuração do Firebase (A mesma que você já usa)
+const firebaseConfig = {
+  apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+  authDomain: "dt-scho0l.firebaseapp.com",
+  projectId: "dt-scho0l",
+  storageBucket: "dt-scho0l.firebasestorage.app",
+  messagingSenderId: "78578509391",
+  appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+};
 
-// 1. CARREGAR O RANKING GERAL
-export async function carregarRankingReal() {
-    const listaGeral = document.getElementById('lista-ranking-geral');
-    const podioContainer = document.getElementById('podio-container');
-    if (!listaGeral || !podioContainer) return;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    listaGeral.innerHTML = "<p style='text-align:center; opacity:0.5;'>Buscando campeões...</p>";
-
+async function carregarRankingGlobal() {
     try {
-        const q = query(collection(db, "usuarios"), orderBy("pontos", "desc"), limit(20));
-        const snap = await getDocs(q);
-        
-        let users = [];
-        snap.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+        const querySnapshot = await getDocs(collection(db, "notas"));
+        let rankingData = [];
 
-        podioContainer.innerHTML = "";
-        listaGeral.innerHTML = "";
+        querySnapshot.forEach((doc) => {
+            const dados = doc.data();
+            const materias = dados.materias || [];
+            
+            if (materias.length > 0) {
+                // Calcula a média de todas as matérias do usuário
+                const somaDasMedias = materias.reduce((acc, m) => {
+                    const somaNotas = (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0);
+                    return acc + (somaNotas / 4);
+                }, 0);
 
-        users.forEach((user, index) => {
-            const pos = index + 1;
-            const nome = user.nome || "Estudante";
-            const pontos = user.pontos || 0;
+                const mediaFinal = (somaDasMedias / materias.length).toFixed(1);
 
-            if (pos <= 3) {
-                podioContainer.innerHTML += `
-                    <div class="podio-item pos-${pos}">
-                        <div style="font-size: 24px;">${pos === 1 ? '🥇' : pos === 2 ? '🥈' : '🥉'}</div>
-                        <div style="font-weight:bold; font-size:12px; margin-top:5px; color:white;">${nome.split(' ')[0]}</div>
-                        <div style="color:#8a2be2; font-size:11px;">${pontos} XP</div>
-                    </div>
-                `;
-            } else {
-                listaGeral.innerHTML += `
-                    <div class="card-rank">
-                        <span class="rank-num">${pos}</span>
-                        <span class="rank-name">${nome}</span>
-                        <span class="rank-score">${pontos}<span>XP</span></span>
-                    </div>
-                `;
+                rankingData.push({
+                    nome: dados.nome || "Estudante",
+                    media: parseFloat(mediaFinal),
+                    foto: dados.fotoPerfil || null // Caso você adicione fotos depois
+                });
             }
         });
-    } catch (e) {
-        console.error("Erro no ranking:", e);
-        listaGeral.innerHTML = "<p>Erro ao carregar dados.</p>";
+
+        // Ordena do maior para o menor
+        rankingData.sort((a, b) => b.media - a.media);
+
+        renderizarRanking(rankingData);
+
+    } catch (error) {
+        console.error("Erro ao buscar ranking:", error);
+        document.getElementById('ranking-geral').innerHTML = `<p style="color:red; text-align:center;">Erro ao carregar dados.</p>`;
     }
 }
 
-// 2. CARREGAR DADOS DO PERFIL (POSIÇÃO E XP)
-export async function carregarDadosPessoaisRanking() {
-    if (!userPhone) return;
+function renderizarRanking(lista) {
+    // 1. Preencher o Top 3 (Podium)
+    if (lista[0]) atualizarPodio('p1', lista[0]);
+    if (lista[1]) atualizarPodio('p2', lista[1]);
+    if (lista[2]) atualizarPodio('p3', lista[2]);
 
-    try {
-        const q = query(collection(db, "usuarios"), orderBy("pontos", "desc"));
-        const snap = await getDocs(q);
-        
-        let rankingGeral = [];
-        snap.forEach(d => rankingGeral.push({ id: d.id, ...d.data() }));
-
-        const index = rankingGeral.findIndex(u => u.id === userPhone);
-        const dadosUser = rankingGeral[index] || { nome: "", pontos: 0 };
-
-        if (document.getElementById('input-nome-usuario')) {
-            document.getElementById('input-nome-usuario').value = dadosUser.nome || "";
-            document.getElementById('user-rank-xp').innerText = dadosUser.pontos || 0;
-            document.getElementById('user-rank-pos').innerText = index !== -1 ? `#${index + 1}` : "--";
-        }
-    } catch (e) {
-        console.error("Erro ao carregar perfil:", e);
+    // 2. Preencher o restante da lista (do 4º em diante)
+    const listaGeral = document.getElementById('ranking-geral');
+    if (lista.length > 3) {
+        listaGeral.innerHTML = lista.slice(3).map((user, index) => `
+            <div class="ranking-item">
+                <span class="pos">${index + 4}º</span>
+                <div class="user-info">
+                    <span class="user-name">${user.nome}</span>
+                    <span class="user-points">Média Geral: ${user.media}</span>
+                </div>
+                <div class="trend-icon">
+                    <i data-lucide="trending-up" style="width:14px; color:#444;"></i>
+                </div>
+            </div>
+        `).join('');
+    } else if (lista.length <= 3) {
+        listaGeral.innerHTML = `<p style="text-align:center; color:#555; padding:20px;">A disputa está apenas começando!</p>`;
     }
+
+    // Reinicia os ícones do Lucide para os novos elementos
+    if (window.lucide) lucide.createIcons();
 }
 
-// 3. SALVAR NOME
-export async function salvarNomePerfil() {
-    const novoNome = document.getElementById('input-nome-usuario').value.trim();
-    if (!novoNome || !userPhone) return alert("Digite um nome válido!");
-
-    try {
-        await setDoc(doc(db, "usuarios", userPhone), { nome: novoNome }, { merge: true });
-        alert("Nome atualizado com sucesso!");
-        carregarDadosPessoaisRanking();
-    } catch (e) {
-        alert("Erro ao salvar nome.");
-    }
+function atualizarPodio(idPrefix, usuario) {
+    const nomeEl = document.getElementById(`${idPrefix}-name`);
+    const scoreEl = document.getElementById(`${idPrefix}-score`);
+    
+    if (nomeEl) nomeEl.innerText = usuario.nome;
+    if (scoreEl) scoreEl.innerText = usuario.media.toFixed(1);
 }
 
-// --- ESSENCIAL: EXPOR PARA O WINDOW (PARA OS BOTÕES FUNCIONAREM) ---
-window.carregarRankingReal = carregarRankingReal;
-window.carregarDadosPessoaisRanking = carregarDadosPessoaisRanking;
-window.salvarNomePerfil = salvarNomePerfil;
+// Inicia a busca assim que o script carrega
+document.addEventListener('DOMContentLoaded', carregarRankingGlobal);
