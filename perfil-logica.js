@@ -15,24 +15,32 @@ const db = getFirestore(app);
 const userPhone = localStorage.getItem('dt_user_phone');
 const userType = localStorage.getItem('dt_user_type'); // 'local' ou 'cloud'
 
-// FUNÇÃO TOAST PREMIUM
+// FUNÇÃO TOAST PREMIUM - CORRIGIDA
 window.showToast = (msg, type = "success") => {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
-    toast.className = `toast ${type === "error" ? "error" : ""}`;
-    toast.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}"></i> <span>${msg}</span>`;
+    toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+    toast.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}" style="flex-shrink:0;"></i> <span>${msg}</span>`;
+    
     container.appendChild(toast);
     if(window.lucide) lucide.createIcons();
-    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
+    
+    setTimeout(() => { 
+        toast.style.transition = "0.5s";
+        toast.style.opacity = '0'; 
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 500); 
+    }, 3000);
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!userPhone) return window.location.href = 'login.html';
     
-    document.getElementById('display-phone').innerText = `ESTUDANTE ID: ${userPhone}`;
+    document.getElementById('display-phone').innerText = `ID: ${userPhone}`;
     
+    // Alerta inicial se for visitante
     if (userType === 'local') {
-        showToast("Estás como Visitante. Teu nome não irá para o Ranking!", "error");
+        setTimeout(() => showToast("Modo Visitante: Nickname desativado.", "error"), 500);
     }
 
     await carregarPerfil();
@@ -48,7 +56,6 @@ async function carregarPerfil() {
             const dados = docSnap.data();
             document.getElementById('user-name-input').value = dados.nome || "";
             
-            // Carrega o avatar salvo
             if(dados.avatar) {
                 document.getElementById('avatar-icon').setAttribute('data-lucide', dados.avatar);
             }
@@ -60,18 +67,18 @@ async function carregarPerfil() {
                 document.getElementById('stat-media').innerText = (soma / materias.length).toFixed(1);
             }
         }
-    } catch (e) { console.error("Erro ao carregar:", e); }
+    } catch (e) { console.error(e); }
 }
 
 document.getElementById('btn-salvar-perfil').onclick = async () => {
     const novoNome = document.getElementById('user-name-input').value.trim();
     const btn = document.getElementById('btn-salvar-perfil');
 
-    if (!novoNome) return showToast("Escolha um nickname brabo!", "error");
+    if (!novoNome) return showToast("Nickname vazio? Escolha um!", "error");
 
-    // BLOQUEIO DE VISITANTE
+    // BLOQUEIO DE VISITANTE - O MOTIVO DO SEU ANTIGO ERRO
     if (userType === 'local') {
-        showToast("Visitantes não podem salvar dados na nuvem. Crie uma conta!", "error");
+        showToast("Crie uma conta para entrar no Ranking Global!", "error");
         return;
     }
 
@@ -87,10 +94,10 @@ document.getElementById('btn-salvar-perfil').onclick = async () => {
             avatar: avatarAtual 
         }, { merge: true });
 
-        showToast("Perfil atualizado! Já estás no Ranking.");
-        setTimeout(() => window.location.href = 'index.html', 1200);
+        showToast("Perfil atualizado com sucesso! 🔥");
+        setTimeout(() => window.location.href = 'index.html', 1500);
     } catch (e) {
-        showToast("Erro ao conectar com o servidor.", "error");
+        showToast("Falha ao salvar. Verifique a rede.", "error");
     } finally {
         btn.innerHTML = '<i data-lucide="check-circle"></i> SALVAR ALTERAÇÕES';
         btn.disabled = false;
@@ -98,13 +105,14 @@ document.getElementById('btn-salvar-perfil').onclick = async () => {
     }
 };
 
-// GALERIA
+// CONTROLO DA GALERIA
 window.abrirGaleria = () => document.getElementById('modal-avatar').style.display = 'flex';
 window.fecharGaleria = () => document.getElementById('modal-avatar').style.display = 'none';
 window.selecionarAvatar = (icon) => {
     document.getElementById('avatar-icon').setAttribute('data-lucide', icon);
     lucide.createIcons();
     fecharGaleria();
+    showToast("Ícone selecionado!");
 };
 
 window.logout = () => {
