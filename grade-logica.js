@@ -42,7 +42,8 @@ const userPhone = localStorage.getItem('dt_user_phone');
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
-        document.getElementById('toast-message').innerText = msg;
+        const msgEl = document.getElementById('toast-message');
+        if(msgEl) msgEl.innerText = msg;
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
@@ -67,12 +68,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (local) { gradeHoraria = JSON.parse(local); renderizarAulas(); }
     if (userPhone) await carregarDadosNuvem();
     
-    const d = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][new Date().getDay()];
+    const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
+    const d = dMap[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
     
+    // Inicia o OneSignal e vincula ao telefone do usuário
+    sincronizarUsuarioOneSignal();
+
     setInterval(verificarRelogioParaNotificar, 60000);
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
+
+// --- INTEGRAÇÃO ONESIGNAL (NOVO) ---
+function sincronizarUsuarioOneSignal() {
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+        if (userPhone) {
+            // Vincula o ID do OneSignal ao número de telefone no banco deles
+            // Isso permite que você envie notificações via painel usando o telefone se quiser
+            OneSignal.User.addAlias("external_id", userPhone);
+            console.log("OneSignal vinculado ao usuário:", userPhone);
+        }
+    });
+}
 
 // --- LOGICA DE DADOS (FIREBASE) ---
 async function carregarDadosNuvem() {
@@ -91,7 +109,11 @@ async function sincronizar() {
     localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
     if (userPhone) {
         try {
-            await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
+            await setDoc(doc(db, "grades_horarias", userPhone), { 
+                grade: gradeHoraria, 
+                atualizadoEm: Date.now(),
+                onesignal_ready: true 
+            });
         } catch (e) { console.error(e); }
     }
 }
@@ -167,7 +189,8 @@ window.salvarAula = async () => {
     
     const materiaFinal = matSelect || matCustom;
     if(!materiaFinal) { 
-        document.getElementById('erro-modal').style.display = 'block';
+        const erro = document.getElementById('erro-modal');
+        if(erro) erro.style.display = 'block';
         return; 
     }
 
@@ -197,15 +220,15 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
     renderizarAulas(); await sincronizar(); fecharModalExcluir();
 };
 
-// --- NOTIFICAÇÕES (PARA TODOS OS CELULARES) ---
+// --- NOTIFICAÇÕES ---
 window.ativarNotificacoesReal = () => {
-    if(!("Notification" in window)) { 
-        alert("Este navegador não suporta notificações."); 
-        return; 
-    }
-    Notification.requestPermission().then(p => { 
-        if(p==='granted') window.mostrarAvisoCustom("Notificações Ativas! ✅");
-        else alert("Você precisa permitir as notificações nas configurações do site/navegador.");
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.Notifications.requestPermission().then(() => {
+            if (OneSignal.Notifications.permission) {
+                window.mostrarAvisoCustom("Notificações Ativas! ✅");
+            }
+        });
     });
 };
 
@@ -221,7 +244,8 @@ function verificarRelogioParaNotificar() {
         const minAula = (h * 60) + m;
         const diff = minAula - minAgora;
         
-        if (diff === 30 || diff === 5) {
+        // Mantém o alerta local para quem está com o app aberto
+        if (diff === 10 || diff === 5) {
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.controller.postMessage({ 
                     type: 'NOTIFICAR_AULA', 
