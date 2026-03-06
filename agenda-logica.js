@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, updateDoc, increment, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -21,7 +21,31 @@ let dataSelecionada = "";
 let imagemBase64 = "";
 let agendaGlobal = [];
 
-// FUNÇÃO AUXILIAR: Pega "hoje" no formato YYYY-MM-DD sem erro de fuso
+// ==========================================
+// MOTOR DE XP DA AGENDA (LÓGICA DE PREFIXOS)
+// ==========================================
+function identificarXPTarefa(nome) {
+    const n = nome.toLowerCase().trim();
+    if (n.startsWith('(p)') || n.startsWith('(e)')) return 30; // Prova ou Exame
+    if (n.startsWith('(t)')) return 20; // Trabalho / Teste
+    return 10; // Atividade comum / Estudo
+}
+
+async function atualizarXPRanking(valorXP) {
+    if (userType === 'local' || !userPhone) return;
+    try {
+        const userRef = doc(db, "notas", userPhone);
+        // Usa o increment para somar ou subtrair (estorno) no ranking global
+        await updateDoc(userRef, { 
+            xp: increment(valorXP) 
+        });
+        console.log(`⭐ Ranking atualizado: ${valorXP > 0 ? '+' : ''}${valorXP} XP`);
+    } catch (e) {
+        console.error("Erro ao atualizar XP no ranking:", e);
+    }
+}
+
+// FUNÇÃO AUXILIAR: Pega "hoje" no formato YYYY-MM-DD
 const getHojeLocal = () => {
     const d = new Date();
     return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
@@ -136,32 +160,22 @@ window.renderizarCalendario = function() {
 
     for (let dia = 1; dia <= diasNoMes; dia++) {
         const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-        
-        // Filtra todas as tarefas que englobam esse dia
         const tarefasDoDia = agendaGlobal.filter(t => dataStr >= t.dataInicio && dataStr <= t.dataFim);
         
         let htmlDot = "";
-        
         if (tarefasDoDia.length > 0) {
-            // Separa as que não estão concluídas para calcular a urgência real
             const tarefasAtivas = tarefasDoDia.filter(t => !t.concluida);
-            
             if (tarefasAtivas.length === 0) {
-                // Se todas do dia estão concluídas, bolinha azul
                 htmlDot = '<div class="dot status-concluido"></div>';
             } else {
-                // Mapeia os pesos de urgência
                 const pesos = tarefasAtivas.map(t => {
                     const fim = new Date(t.dataFim + "T00:00:00");
                     const hoje = new Date(hojeLocal + "T00:00:00");
                     const diff = Math.ceil((fim - hoje) / (1000 * 60 * 60 * 24));
-                    
-                    if (diff <= 3) return { classe: 'status-urgente', peso: 3 }; // Vermelho
-                    if (diff <= 7) return { classe: 'status-alerta', peso: 2 };  // Amarelo
-                    return { classe: 'status-tranquilo', peso: 1 };             // Verde
+                    if (diff <= 3) return { classe: 'status-urgente', peso: 3 }; 
+                    if (diff <= 7) return { classe: 'status-alerta', peso: 2 };  
+                    return { classe: 'status-tranquilo', peso: 1 };             
                 });
-
-                // Pega a de maior peso (mais urgente)
                 const maiorUrgencia = pesos.sort((a, b) => b.peso - a.peso)[0];
                 htmlDot = `<div class="dot ${maiorUrgencia.classe}"></div>`;
             }
@@ -169,12 +183,7 @@ window.renderizarCalendario = function() {
         
         const hojeClass = hojeLocal === dataStr ? 'hoje' : '';
         const selClass = dataSelecionada === dataStr ? 'selecionado' : '';
-        
-        grid.innerHTML += `
-            <div class="dia-numero ${hojeClass} ${selClass}" onclick="selecionarDia('${dataStr}')">
-                ${dia}
-                ${htmlDot}
-            </div>`;
+        grid.innerHTML += `<div class="dia-numero ${hojeClass} ${selClass}" onclick="selecionarDia('${dataStr}')">${dia}${htmlDot}</div>`;
     }
     lucide.createIcons();
 };
@@ -200,12 +209,19 @@ window.adicionarTarefa = async function() {
     } else {
         await addDoc(collection(db, "agenda"), nova);
     }
-
     window.fecharModalAgenda();
     window.buscarDadosNuvem();
 };
 
 window.removerTarefa = async function(idFirebase, idLocal) {
+    const tarefa = agendaGlobal.find(t => userType === 'local' ? t.criadoEm === idLocal : t.id_firebase === idFirebase);
+    
+    // Se remover uma tarefa que estava concluída, estornamos o XP
+    if (tarefa && tarefa.concluida) {
+        const xpEstorno = identificarXPTarefa(tarefa.nome) * -1;
+        await atualizarXPRanking(xpEstorno);
+    }
+
     if (userType === 'local') {
         agendaGlobal = agendaGlobal.filter(t => t.criadoEm !== idLocal);
         localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
@@ -215,29 +231,34 @@ window.removerTarefa = async function(idFirebase, idLocal) {
     window.buscarDadosNuvem();
 };
 
-window.fecharModalAgenda = () => { 
-    document.getElementById('modal-agenda').style.display = 'none'; 
-    document.getElementById('tarefa-nome').value = ""; 
-    document.getElementById('tarefa-desc').value = ""; 
-    document.getElementById('tarefa-materia').value = "Geral";
-    document.getElementById('preview-container').innerHTML = "";
-    imagemBase64 = ""; 
-};
-
 window.alternarConcluida = async function(idFirebase, idLocal) {
+    let tarefa;
     if (userType === 'local') {
         const index = agendaGlobal.findIndex(t => t.criadoEm === idLocal);
         if (index !== -1) {
-            agendaGlobal[index].concluida = !agendaGlobal[index].concluida;
+            tarefa = agendaGlobal[index];
+            tarefa.concluida = !tarefa.concluida;
             localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
         }
     } else {
-        const tarefa = agendaGlobal.find(t => t.id_firebase === idFirebase);
-        await updateDoc(doc(db, "agenda", idFirebase), { concluida: !tarefa.concluida });
+        tarefa = agendaGlobal.find(t => t.id_firebase === idFirebase);
+        const novoStatus = !tarefa.concluida;
+        await updateDoc(doc(db, "agenda", idFirebase), { concluida: novoStatus });
+        tarefa.concluida = novoStatus; // Atualiza localmente para o cálculo de XP
     }
+
+    // DISPARO DO XP
+    if (tarefa) {
+        const baseXP = identificarXPTarefa(tarefa.nome);
+        // Se concluiu: ganha XP. Se desmarcou: perde (estorno).
+        const xpFinal = tarefa.concluida ? baseXP : (baseXP * -1);
+        await atualizarXPRanking(xpFinal);
+    }
+
     window.buscarDadosNuvem();
 };
 
+// ... Restante das funções (previewImg, carregarMateriasNoSelect, selecionarDia, mudarMes, abrirModalAgendaHoje) continuam iguais ...
 window.previewImg = (input) => {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -271,3 +292,13 @@ window.abrirModalAgendaHoje = () => {
     document.getElementById('tarefa-data-fim').value = dataSelecionada || hoje;
     document.getElementById('modal-agenda').style.display = 'flex'; 
 };
+
+window.fecharModalAgenda = () => { 
+    document.getElementById('modal-agenda').style.display = 'none'; 
+    document.getElementById('tarefa-nome').value = ""; 
+    document.getElementById('tarefa-desc').value = ""; 
+    document.getElementById('tarefa-materia').value = "Geral";
+    document.getElementById('preview-container').innerHTML = "";
+    imagemBase64 = ""; 
+};
+          
