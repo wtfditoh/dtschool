@@ -43,20 +43,12 @@ window.mostrarAvisoCustom = (msg) => {
     }
 };
 
-window.abrirAjudaBateria = () => {
-    const modal = document.getElementById('modal-ajuda-bateria');
-    if(modal) modal.style.display = 'flex';
-};
-
-window.fecharAjudaBateria = () => {
-    const modal = document.getElementById('modal-ajuda-bateria');
-    if(modal) modal.style.display = 'none';
-};
-
+window.abrirAjudaBateria = () => { document.getElementById('modal-ajuda-bateria').style.display = 'flex'; };
+window.fecharAjudaBateria = () => { document.getElementById('modal-ajuda-bateria').style.display = 'none'; };
 window.fecharModalAula = () => document.getElementById('modal-aula').style.display = 'none';
 window.fecharModalExcluir = () => document.getElementById('modal-confirm-excluir').style.display = 'none';
 
-// --- INICIALIZAÇÃO ---
+// --- INICIALIZAÇÃO E ONESIGNAL ---
 document.addEventListener('DOMContentLoaded', async () => {
     const local = localStorage.getItem('hub_brain_grade');
     if (local) { gradeHoraria = JSON.parse(local); renderizarAulas(); }
@@ -66,9 +58,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const d = dMap[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
 
+    // CONFIGURAÇÃO FORÇADA ONESIGNAL
     window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.init({ appId: "f73275cd-17ad-4963-a25b-321ce2def2ba" });
+    OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({ appId: "f73275cd-17ad-4963-a25b-321ce2def2ba" });
+        // Força a subscrição se ainda não estiver ativa
+        if (!OneSignal.Notifications.permission) {
+            await OneSignal.Notifications.requestPermission();
+        }
     });
     
     if(typeof lucide !== 'undefined') lucide.createIcons();
@@ -160,8 +157,8 @@ window.salvarAula = async () => {
         ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
     });
 
-    // CHAMADA ONESIGNAL (MODO SEGURO)
-    await agendarNoServidorOneSignal(materiaFinal);
+    // DISPARAR NOTIFICAÇÃO
+    await dispararNotificacao(materiaFinal);
 
     renderizarAulas();
     fecharModalAula();
@@ -171,36 +168,33 @@ window.salvarAula = async () => {
     }
 };
 
-// --- ENVIO ONESIGNAL (TENTATIVA DE BYPASS DO BLOQUEIO) ---
-async function agendarNoServidorOneSignal(materia) {
+// --- ENVIO REAL ONESIGNAL ---
+async function dispararNotificacao(materia) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
 
-    const corpo = {
+    const data = {
         app_id: appId,
         contents: { "pt": `🚀 Aula de ${materia} salva com sucesso! 🧠` },
         headings: { "pt": "Hub Brain" },
-        included_segments: ["Subscribed Users"]
+        included_segments: ["Total Subscriptions"]
     };
 
     try {
-        // Usando o modo 'no-cors' para evitar que o navegador trave a saída
-        // Nota: no-cors não permite ler a resposta, mas deixa o pacote sair
-        fetch("https://onesignal.com/api/v1/notifications", {
+        // Mudança para 'cors' mas com headers simplificados para aceitação máxima
+        await fetch("https://onesignal.com/api/v1/notifications", {
             method: "POST",
-            mode: "no-cors", 
             headers: { 
-                "Content-Type": "application/json", 
-                "Authorization": "Basic " + restKey 
+                "Content-Type": "application/json; charset=utf-8", 
+                "Authorization": `Basic ${restKey}` 
             },
-            body: JSON.stringify(corpo)
+            body: JSON.stringify(data)
         });
 
-        // Como usamos no-cors, assumimos que o sinal saiu
         window.mostrarAvisoCustom("🚀 Sinal enviado!");
-
     } catch (e) { 
-        window.mostrarAvisoCustom("❌ Erro ao disparar sinal.");
+        console.error(e);
+        window.mostrarAvisoCustom("❌ Falha no sinal.");
     }
 }
 
@@ -214,11 +208,4 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
     renderizarAulas();
     if(userPhone) await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria });
     fecharModalExcluir();
-};
-
-window.ativarNotificacoesReal = () => {
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.Notifications.requestPermission();
-    });
 };
