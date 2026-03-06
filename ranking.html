@@ -1,14 +1,190 @@
-<div class="aba-ranking">
-    <div class="ranking-header">
-        <i data-lucide="trophy" style="color: #ffd700; width: 32px; height: 32px;"></i>
-        <h2>Ranking de Alunos</h2>
-        <p>Os mais dedicados da semana 🧠</p>
-    </div>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ranking Global - Hub Brain</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="estilo.css?v=1.0">
+    <style>
+        .ranking-container {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
 
-    <div id="podio-container" class="podio">
+        .podium-section {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        .podium-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .podium-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #222;
+            border: 3px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .first .podium-avatar { width: 85px; height: 85px; border-color: #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        .second .podium-avatar { border-color: #c0c0c0; }
+        .third .podium-avatar { border-color: #cd7f32; }
+
+        .crown { position: absolute; top: -15px; color: #ffd700; }
+
+        .podium-name { font-weight: 800; font-size: 14px; color: white; margin-top: 5px; }
+        .podium-score { color: #8a2be2; font-weight: 900; font-size: 16px; }
+
+        /* LISTA DOS DEMAIS */
+        .ranking-list {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+            overflow: hidden;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 15px;
+        }
+
+        .pos { width: 30px; font-weight: 900; color: #555; font-size: 14px; }
+        .user-info { flex: 1; }
+        .user-name { display: block; font-weight: 700; color: #eee; font-size: 15px; }
+        .user-points { font-size: 12px; color: #8a2be2; font-weight: 800; }
+        
+        .btn-voltar {
+            background: none; border: 1px solid rgba(138, 43, 226, 0.3);
+            color: white; padding: 10px 20px; border-radius: 12px;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            margin-bottom: 20px; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ranking-container">
+        <button onclick="window.location.href='index.html'" class="btn-voltar">
+            <i data-lucide="arrow-left" style="width:18px;"></i> Voltar
+        </button>
+
+        <h2 style="text-align: center; color: white; font-weight: 900; margin-bottom: 30px;">
+            RANKING <span style="color: #8a2be2;">GLOBAL</span>
+        </h2>
+
+        <div class="podium-section">
+            <div class="podium-item second">
+                <div class="podium-avatar"><i data-lucide="user" style="color:#c0c0c0"></i></div>
+                <span class="podium-name" id="p2-name">---</span>
+                <span class="podium-score" id="p2-score">0.0</span>
+            </div>
+            <div class="podium-item first">
+                <div class="podium-avatar">
+                    <i data-lucide="crown" class="crown"></i>
+                    <i data-lucide="user" style="color:#ffd700; width:40px; height:40px;"></i>
+                </div>
+                <span class="podium-name" id="p1-name">---</span>
+                <span class="podium-score" id="p1-score">0.0</span>
+            </div>
+            <div class="podium-item third">
+                <div class="podium-avatar"><i data-lucide="user" style="color:#cd7f32"></i></div>
+                <span class="podium-name" id="p3-name">---</span>
+                <span class="podium-score" id="p3-score">0.0</span>
+            </div>
         </div>
 
-    <div id="lista-ranking-geral" class="lista-ranking">
-        <p class="loading">Carregando competidores...</p>
+        <div class="ranking-list" id="ranking-geral">
+            <div style="padding: 20px; text-align: center; color: #555;">Carregando lendas...</div>
+        </div>
     </div>
-</div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js" type="module"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // CONFIG (Mesma do seu funcoes.js)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+            authDomain: "dt-scho0l.firebaseapp.com",
+            projectId: "dt-scho0l",
+            storageBucket: "dt-scho0l.firebasestorage.app",
+            messagingSenderId: "78578509391",
+            appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function carregarRanking() {
+            const querySnapshot = await getDocs(collection(db, "notas"));
+            let todosUsuarios = [];
+
+            querySnapshot.forEach((doc) => {
+                const dados = doc.data();
+                const materias = dados.materias || [];
+                
+                if(materias.length > 0) {
+                    const somaMedias = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
+                    const mediaGeral = (somaMedias / materias.length).toFixed(1);
+                    
+                    todosUsuarios.push({
+                        nome: dados.nome || "Estudante Anônimo",
+                        media: parseFloat(mediaGeral)
+                    });
+                }
+            });
+
+            // Ordenar por maior média
+            todosUsuarios.sort((a, b) => b.media - a.media);
+
+            exibirRanking(todosUsuarios);
+        }
+
+        function exibirRanking(lista) {
+            // Preencher Top 3
+            if(lista[0]) { document.getElementById('p1-name').innerText = lista[0].nome; document.getElementById('p1-score').innerText = lista[0].media; }
+            if(lista[1]) { document.getElementById('p2-name').innerText = lista[1].nome; document.getElementById('p2-score').innerText = lista[1].media; }
+            if(lista[2]) { document.getElementById('p3-name').innerText = lista[2].nome; document.getElementById('p3-score').innerText = lista[2].media; }
+
+            // Preencher o resto
+            const container = document.getElementById('ranking-geral');
+            container.innerHTML = lista.slice(3).map((u, i) => `
+                <div class="ranking-item">
+                    <span class="pos">${i + 4}º</span>
+                    <div class="user-info">
+                        <span class="user-name">${u.nome}</span>
+                        <span class="user-points">Média Geral: ${u.media}</span>
+                    </div>
+                    <i data-lucide="trending-up" style="width:16px; color:#444;"></i>
+                </div>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        carregarRanking();
+        lucide.createIcons();
+    </script>
+</body>
+</html>
