@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -12,64 +12,110 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const userPhone = localStorage.getItem('dt_user_phone');
+const userType = localStorage.getItem('dt_user_type'); // 'local' ou 'cloud'
 
-function getPatente(xp) {
-    if (xp >= 8000) return "Lenda do Hub 🏆";
-    if (xp >= 4000) return "Cérebro de Elite ⚡";
-    if (xp >= 1500) return "Veterano 🟣";
-    if (xp >= 500) return "Estudioso 🔵";
-    return "Novato 🟢";
-}
+// FUNÇÃO TOAST PREMIUM - CORRIGIDA
+window.showToast = (msg, type = "success") => {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+    toast.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}" style="flex-shrink:0;"></i> <span>${msg}</span>`;
+    
+    container.appendChild(toast);
+    if(window.lucide) lucide.createIcons();
+    
+    setTimeout(() => { 
+        toast.style.transition = "0.5s";
+        toast.style.opacity = '0'; 
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 500); 
+    }, 3000);
+};
 
-async function carregarRanking() {
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!userPhone) return window.location.href = 'login.html';
+    
+    document.getElementById('display-phone').innerText = `ID: ${userPhone}`;
+    
+    // Alerta inicial se for visitante
+    if (userType === 'local') {
+        setTimeout(() => showToast("Modo Visitante: Nickname desativado.", "error"), 500);
+    }
+
+    await carregarPerfil();
+    lucide.createIcons();
+});
+
+async function carregarPerfil() {
     try {
-        const querySnapshot = await getDocs(collection(db, "notas"));
-        let lista = [];
+        const docRef = doc(db, "notas", userPhone);
+        const docSnap = await getDoc(docRef);
 
-        querySnapshot.forEach((doc) => {
-            const d = doc.data();
-            // Se não tiver o campo xp ainda, usamos 0 como padrão
-            const xpTotal = d.xp || 0;
-            lista.push({
-                nome: d.nome || "Estudante",
-                xp: xpTotal,
-                avatar: d.avatar || "user",
-                patente: getPatente(xpTotal)
-            });
-        });
+        if (docSnap.exists()) {
+            const dados = docSnap.data();
+            document.getElementById('user-name-input').value = dados.nome || "";
+            
+            if(dados.avatar) {
+                document.getElementById('avatar-icon').setAttribute('data-lucide', dados.avatar);
+            }
 
-        lista.sort((a, b) => b.xp - a.xp);
-        renderizar(lista);
+            const materias = dados.materias || [];
+            document.getElementById('stat-materias').innerText = materias.length;
+            if (materias.length > 0) {
+                const soma = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
+                document.getElementById('stat-media').innerText = (soma / materias.length).toFixed(1);
+            }
+        }
     } catch (e) { console.error(e); }
 }
 
-function renderizar(lista) {
-    // Top 3
-    for(let i=0; i<3; i++) {
-        const user = lista[i];
-        if(user) {
-            document.getElementById(`p${i+1}-name`).innerText = user.nome;
-            document.getElementById(`p${i+1}-score`).innerText = user.xp;
-            // Atualiza ícone do avatar se disponível
-            const avatarBox = document.getElementById(`avatar-p${i+1}`);
-            avatarBox.innerHTML = i === 0 ? `<i data-lucide="crown" class="crown"></i><i data-lucide="${user.avatar}"></i>` : `<i data-lucide="${user.avatar}"></i>`;
-        }
+document.getElementById('btn-salvar-perfil').onclick = async () => {
+    const novoNome = document.getElementById('user-name-input').value.trim();
+    const btn = document.getElementById('btn-salvar-perfil');
+
+    if (!novoNome) return showToast("Nickname vazio? Escolha um!", "error");
+
+    // BLOQUEIO DE VISITANTE - O MOTIVO DO SEU ANTIGO ERRO
+    if (userType === 'local') {
+        showToast("Crie uma conta para entrar no Ranking Global!", "error");
+        return;
     }
 
-    // Restante
-    const container = document.getElementById('ranking-geral');
-    container.innerHTML = lista.slice(3).map((u, i) => `
-        <div class="ranking-item">
-            <span class="pos">${i + 4}º</span>
-            <div class="user-info">
-                <span class="user-name">${u.nome}</span>
-                <span class="patente">${u.patente} • ${u.xp} XP</span>
-            </div>
-            <i data-lucide="${u.avatar}" style="width:16px; color:#333;"></i>
-        </div>
-    `).join('');
-    
-    if(window.lucide) lucide.createIcons();
-}
+    btn.innerText = "SINCRONIZANDO...";
+    btn.disabled = true;
 
-document.addEventListener('DOMContentLoaded', carregarRanking);
+    try {
+        const userRef = doc(db, "notas", userPhone);
+        const avatarAtual = document.getElementById('avatar-icon').getAttribute('data-lucide');
+
+        await setDoc(userRef, { 
+            nome: novoNome,
+            avatar: avatarAtual 
+        }, { merge: true });
+
+        showToast("Perfil atualizado com sucesso! 🔥");
+        setTimeout(() => window.location.href = 'index.html', 1500);
+    } catch (e) {
+        showToast("Falha ao salvar. Verifique a rede.", "error");
+    } finally {
+        btn.innerHTML = '<i data-lucide="check-circle"></i> SALVAR ALTERAÇÕES';
+        btn.disabled = false;
+        lucide.createIcons();
+    }
+};
+
+// CONTROLO DA GALERIA
+window.abrirGaleria = () => document.getElementById('modal-avatar').style.display = 'flex';
+window.fecharGaleria = () => document.getElementById('modal-avatar').style.display = 'none';
+window.selecionarAvatar = (icon) => {
+    document.getElementById('avatar-icon').setAttribute('data-lucide', icon);
+    lucide.createIcons();
+    fecharGaleria();
+    showToast("Ícone selecionado!");
+};
+
+window.logout = () => {
+    localStorage.clear();
+    window.location.href = 'login.html';
+};
