@@ -51,7 +51,6 @@ async function atualizarXPGlobal() {
         const nomeUsuario = localStorage.getItem('dt_user_name') || "Estudante";
         const avatarUsuario = localStorage.getItem('dt_user_avatar') || "user";
 
-        // Salva XP, Nome e Avatar para o Ranking ficar sempre atualizado
         await setDoc(userRef, { 
             xp: xpTotal, 
             nome: nomeUsuario,
@@ -93,7 +92,6 @@ async function carregarDados() {
 
 async function salvarNaNuvem() {
     if (userType !== 'local' && userPhone) {
-        // O atualizarXPGlobal já faz o setDoc com merge das matérias
         await atualizarXPGlobal();
     }
 }
@@ -148,13 +146,11 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
 
         canvas.toBlob(async (blob) => {
             const file = new File([blob], `HubBrain_${nomeMateria}.png`, { type: 'image/png' });
-            
             const shareData = {
                 title: 'Hub Brain - Alta Performance',
                 text: `Passei em ${nomeMateria}!🚀 Venha você também cuidar dos seus estudos com a Hub Brain: https://hubbrain.netlify.app/`,
                 files: [file]
             };
-
             try {
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share(shareData);
@@ -164,9 +160,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
                     link.download = `HubBrain_Vitoria_${nomeMateria}.png`;
                     link.click();
                 }
-            } catch (err) {
-                console.log('Compartilhamento cancelado');
-            }
+            } catch (err) { console.log('Compartilhamento cancelado'); }
             container.innerHTML = '';
         }, 'image/png');
     }, 400);
@@ -220,12 +214,7 @@ window.atualizarLista = function() {
     const lista = document.getElementById('lista-materias');
     if(!lista) return;
 
-    // Ordenar: Maior soma de notas primeiro
-    materias.sort((a, b) => {
-        const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
-        const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
-        return somaB - somaA;
-    });
+    materias.sort((a, b) => b.id - a.id); // Ordem de criação
 
     lista.innerHTML = materias.map(m => {
         const soma = (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0);
@@ -245,11 +234,17 @@ window.atualizarLista = function() {
             <div class="progress-bg"><div class="progress-fill" style="width:${percent}%;"></div></div>
             
             <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
-                ${[1,2,3,4].map(n => `
-                    <input type="number" step="0.1" value="${(m['n'+n] === 0 || m['n'+n]) ? m['n'+n] : ''}" placeholder="${n}º"
+                ${[1,2,3,4].map(n => {
+                    const valorNota = m['n'+n];
+                    // Aqui está o segredo: Se for 0, mostra 0. Se for vazio ou null, deixa branco para mostrar o placeholder.
+                    const displayValue = (valorNota === 0 || (valorNota && valorNota !== "")) ? valorNota : "";
+                    
+                    return `
+                    <input type="number" step="0.1" value="${displayValue}" placeholder="${n}º"
                         style="width:100%; background:rgba(0,0,0,0.3); border:1px solid #222; color:white; padding:10px; border-radius:10px; text-align:center; font-size:13px; font-weight:bold;"
                         onchange="salvarNota(${m.id}, ${n}, this.value)">
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
 
             <div class="card-bottom">
@@ -300,7 +295,6 @@ window.confirmarNovaMateria = async function() {
 // PWA E INSTALAÇÃO
 // ==========================================
 let instaladorPWA = null;
-
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     instaladorPWA = e;
