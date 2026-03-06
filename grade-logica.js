@@ -72,21 +72,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const d = dMap[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
     
-    // Inicia o OneSignal e vincula ao telefone do usuário
     sincronizarUsuarioOneSignal();
 
     setInterval(verificarRelogioParaNotificar, 60000);
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- INTEGRAÇÃO ONESIGNAL (NOVO) ---
+// --- INTEGRAÇÃO ONESIGNAL (LOGIN E SYNC) ---
 function sincronizarUsuarioOneSignal() {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         if (userPhone) {
-            // Vincula o ID do OneSignal ao número de telefone no banco deles
-            // Isso permite que você envie notificações via painel usando o telefone se quiser
-            OneSignal.User.addAlias("external_id", userPhone);
+            // Usa login para garantir que o External ID seja o número do telefone
+            OneSignal.login(userPhone);
             console.log("OneSignal vinculado ao usuário:", userPhone);
         }
     });
@@ -197,18 +195,61 @@ window.salvarAula = async () => {
     const infoHorario = TABELA_HORARIOS[turno][nAula];
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
     
-    gradeHoraria[diaAtualGrade].push({ 
+    const novaAula = { 
         ordem: infoHorario.ordem, 
         materia: materiaFinal, 
         hora: infoHorario.inicio, 
         prof: prof 
-    });
+    };
+
+    gradeHoraria[diaAtualGrade].push(novaAula);
+
+    // Agendamento Remoto (OneSignal Cloud)
+    await agendarNoServidorOneSignal(materiaFinal, infoHorario.inicio);
 
     renderizarAulas();
     fecharModalAula();
     await sincronizar();
     window.mostrarAvisoCustom("Aula Agendada! 🚀");
 };
+
+// --- FUNÇÃO DE AGENDAMENTO REMOTO (ONESIGNAL API) ---
+async function agendarNoServidorOneSignal(materia, horaInicio) {
+    const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
+    const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
+
+    const [h, m] = horaInicio.split(':').map(Number);
+    let dataAlerta = new Date();
+    dataAlerta.setHours(h, m, 0);
+    dataAlerta.setMinutes(dataAlerta.getMinutes() - 10); // 10 minutos antes
+
+    // Se o horário de 10 min antes já passou hoje, agenda para 1 min a partir de agora (para teste/imediato)
+    if (dataAlerta < new Date()) {
+        dataAlerta = new Date(new Date().getTime() + 60000); 
+    }
+
+    const corpo = {
+        app_id: appId,
+        contents: { "pt": `Sua aula de ${materia} começa em 10 minutos! 🧠` },
+        headings: { "pt": "Hub Brain - Alerta" },
+        include_external_user_ids: [userPhone],
+        send_after: dataAlerta.toISOString() 
+    };
+
+    try {
+        await fetch("https://onesignal.com/api/v1/notifications", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                "Authorization": `Basic ${restKey}`
+            },
+            body: JSON.stringify(corpo)
+        });
+        console.log("Agendamento em nuvem concluído!");
+    } catch (e) {
+        console.error("Erro OneSignal Cloud:", e);
+    }
+}
 
 window.abrirConfirmExcluir = (i) => { 
     indexParaExcluir = i; 
@@ -220,7 +261,7 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
     renderizarAulas(); await sincronizar(); fecharModalExcluir();
 };
 
-// --- NOTIFICAÇÕES ---
+// --- NOTIFICAÇÕES (SOLICITAÇÃO) ---
 window.ativarNotificacoesReal = () => {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
@@ -244,7 +285,7 @@ function verificarRelogioParaNotificar() {
         const minAula = (h * 60) + m;
         const diff = minAula - minAgora;
         
-        // Mantém o alerta local para quem está com o app aberto
+        // Alerta local (caso o app esteja aberto no momento)
         if (diff === 10 || diff === 5) {
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.controller.postMessage({ 
