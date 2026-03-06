@@ -29,56 +29,33 @@ const TABELA_HORARIOS = {
 
 let diaAtualGrade = 'segunda';
 let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] };
-let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
-// --- INTERFACE ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
-        const msgEl = document.getElementById('toast-message');
-        if(msgEl) msgEl.innerText = msg;
+        document.getElementById('toast-message').innerText = msg;
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 };
 
-window.abrirAjudaBateria = () => { document.getElementById('modal-ajuda-bateria').style.display = 'flex'; };
-window.fecharAjudaBateria = () => { document.getElementById('modal-ajuda-bateria').style.display = 'none'; };
-window.fecharModalAula = () => { document.getElementById('modal-aula').style.display = 'none'; };
-window.fecharModalExcluir = () => { document.getElementById('modal-confirm-excluir').style.display = 'none'; };
-
-// --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', async () => {
     const local = localStorage.getItem('hub_brain_grade');
     if (local) { gradeHoraria = JSON.parse(local); renderizarAulas(); }
-    if (userPhone) await carregarDadosNuvem();
     
-    const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
-    const d = dMap[new Date().getDay()];
-    selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
-
-    // Inicialização segura do OneSignal
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.init({ appId: "f73275cd-17ad-4963-a25b-321ce2def2ba" });
+        OneSignal.init({ 
+            appId: "f73275cd-17ad-4963-a25b-321ce2def2ba",
+            allowLocalhostAsSecureOrigin: true 
+        });
     });
     
+    selecionarDia('segunda');
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- FIREBASE ---
-async function carregarDadosNuvem() {
-    try {
-        const docSnap = await getDoc(doc(db, "grades_horarias", userPhone));
-        if (docSnap.exists()) { 
-            gradeHoraria = docSnap.data().grade; 
-            renderizarAulas(); 
-        }
-    } catch (e) { console.error("Erro Firebase:", e); }
-}
-
-// --- LÓGICA DA GRADE ---
 window.selecionarDia = (dia) => {
     diaAtualGrade = dia;
     document.querySelectorAll('.btn-dia').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-dia') === dia));
@@ -89,135 +66,65 @@ window.renderizarAulas = () => {
     const lista = document.getElementById('lista-aulas');
     if(!lista) return;
     const aulas = gradeHoraria[diaAtualGrade] || [];
-    aulas.sort((a, b) => a.hora.localeCompare(b.hora));
-
-    lista.innerHTML = aulas.length === 0 ? 
-        '<p style="text-align:center;color:#444;margin-top:50px;">Nenhuma aula para hoje.</p>' :
-        aulas.map((a, i) => `
-            <div class="card-aula">
-                <div class="aula-tempo">
-                    <span style="font-size:10px; display:block; color:#8a2be2; font-weight:bold;">${a.ordem}</span>
-                    ${a.hora}
-                </div>
-                <div class="aula-info">
-                    <b>${a.materia}</b>
-                    <span><i data-lucide="user" style="width:12px;"></i> ${a.prof || 'Sem prof.'}</span>
-                </div>
-                <button class="btn-deletar-aula" onclick="abrirConfirmExcluir(${i})">
-                    <i data-lucide="trash-2" style="width:18px;"></i>
-                </button>
-            </div>
-        `).join('');
-    lucide.createIcons();
+    lista.innerHTML = aulas.map((a, i) => `
+        <div class="card-aula">
+            <div class="aula-tempo"><b>${a.hora}</b></div>
+            <div class="aula-info"><b>${a.materia}</b></div>
+        </div>
+    `).join('');
 };
 
-// --- MODAL DE AULA ---
-window.abrirModalAula = async () => {
-    document.getElementById('aula-prof').value = "";
-    const selectMat = document.getElementById('aula-materia-select');
-    selectMat.innerHTML = '<option value="">Carregando matérias...</option>';
-    document.getElementById('modal-aula').style.display = 'flex';
-
-    try {
-        const docSnap = await getDoc(doc(db, "notas", userPhone));
-        let materias = [];
-        if (docSnap.exists()) materias = docSnap.data().materias || [];
-        
-        selectMat.innerHTML = '<option value="">Selecionar...</option>';
-        materias.forEach(m => {
-            const nome = m.nome || m;
-            const opt = document.createElement('option');
-            opt.value = nome; opt.textContent = nome;
-            selectMat.appendChild(opt);
-        });
-    } catch (e) { 
-        selectMat.innerHTML = '<option value="">Erro ao carregar</option>'; 
-    }
-};
+window.abrirModalAula = () => { document.getElementById('modal-aula').style.display = 'flex'; };
+window.fecharModalAula = () => { document.getElementById('modal-aula').style.display = 'none'; };
 
 window.salvarAula = async () => {
     const turno = document.getElementById('aula-turno').value;
     const nAula = document.getElementById('aula-numero').value;
     const matSelect = document.getElementById('aula-materia-select').value;
-    const matCustom = document.getElementById('aula-materia-custom').value.trim();
-    const prof = document.getElementById('aula-prof').value.trim();
+    const matCustom = document.getElementById('aula-materia-custom').value;
     const materiaFinal = matSelect || matCustom;
-    
-    if(!materiaFinal) {
-        window.mostrarAvisoCustom("⚠️ Preencha a matéria!");
-        return;
-    }
 
-    const infoHorario = TABELA_HORARIOS[turno][nAula];
+    if(!materiaFinal) return alert("Escolha a matéria");
+
+    const info = TABELA_HORARIOS[turno][nAula];
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
-    
-    gradeHoraria[diaAtualGrade].push({ 
-        ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
-    });
+    gradeHoraria[diaAtualGrade].push({ materia: materiaFinal, hora: info.inicio });
 
-    // Tentativa de envio silenciosa
-    enviarAlertaOneSignal(materiaFinal);
-
-    renderizarAulas();
-    fecharModalAula();
-    
-    if(userPhone) {
-        localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-        await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
-    }
-    window.mostrarAvisoCustom("🚀 Aula salva!");
-};
-
-// --- FUNÇÃO DE ALERTA ---
-async function enviarAlertaOneSignal(materia) {
+    // TENTATIVA DE ENVIO (FORMATO COMPATÍVEL)
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
-
-    const data = {
-        app_id: appId,
-        contents: { "pt": `🚀 Aula de ${materia} salva com sucesso! 🧠` },
-        headings: { "pt": "Hub Brain" },
-        included_segments: ["Total Subscriptions"]
-    };
 
     try {
         await fetch("https://onesignal.com/api/v1/notifications", {
             method: "POST",
             headers: { 
-                "Content-Type": "application/json; charset=utf-8", 
-                "Authorization": `Basic ${restKey}` 
+                "Authorization": `Basic ${restKey}`,
+                "Content-Type": "application/json"
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({
+                app_id: appId,
+                included_segments: ["Total Subscriptions"],
+                contents: { "pt": `Sua aula de ${materiaFinal} foi salva!` },
+                headings: { "pt": "Hub Brain" }
+            })
         });
     } catch (e) {
-        console.warn("Falha ao enviar sinal de fundo.");
+        console.log("Erro no disparo, mas salvando localmente...");
     }
-}
 
-// --- BOTÃO DE NOTIFICAÇÃO (CORRIGIDO) ---
-window.ativarNotificacoesReal = () => {
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.Notifications.requestPermission().then(() => {
-            window.mostrarAvisoCustom("Sino ativado! 🔔");
-        }).catch(err => {
-            console.error(err);
-            window.mostrarAvisoCustom("Erro ao ativar sino.");
-        });
-    });
-};
-
-window.abrirConfirmExcluir = (i) => { 
-    indexParaExcluir = i; 
-    document.getElementById('modal-confirm-excluir').style.display = 'flex'; 
-};
-
-document.getElementById('btn-confirmar-delete').onclick = async () => {
-    gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
     renderizarAulas();
+    fecharModalAula();
+    
+    // Salva no Firebase
     if(userPhone) {
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
         await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria });
     }
-    fecharModalExcluir();
+    window.mostrarAvisoCustom("🚀 Aula salva!");
+};
+
+window.ativarNotificacoesReal = () => {
+    OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.Notifications.requestPermission();
+    });
 };
