@@ -32,13 +32,13 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
-// --- INTERFACE (MODAIS E AVISOS) ---
+// --- INTERFACE ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
         document.getElementById('toast-message').innerText = msg;
         toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+        setTimeout(() => toast.classList.remove('show'), 4000);
     }
 };
 
@@ -65,19 +65,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- FIREBASE ---
 async function carregarDadosNuvem() {
     try {
         const docSnap = await getDoc(doc(db, "grades_horarias", userPhone));
         if (docSnap.exists()) { 
             gradeHoraria = docSnap.data().grade; 
-            localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
             renderizarAulas(); 
         }
     } catch (e) { console.error(e); }
 }
 
-// --- LÓGICA DA GRADE ---
 window.selecionarDia = (dia) => {
     diaAtualGrade = dia;
     document.querySelectorAll('.btn-dia').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-dia') === dia));
@@ -94,42 +91,16 @@ window.renderizarAulas = () => {
         '<p style="text-align:center;color:#444;margin-top:50px;">Nenhuma aula para hoje.</p>' :
         aulas.map((a, i) => `
             <div class="card-aula">
-                <div class="aula-tempo">
-                    <span style="font-size:10px; display:block; color:#8a2be2; font-weight:bold;">${a.ordem}</span>
-                    ${a.hora}
-                </div>
-                <div class="aula-info">
-                    <b>${a.materia}</b>
-                    <span><i data-lucide="user" style="width:12px;"></i> ${a.prof || 'Sem prof.'}</span>
-                </div>
-                <button class="btn-deletar-aula" onclick="abrirConfirmExcluir(${i})">
-                    <i data-lucide="trash-2" style="width:18px;"></i>
-                </button>
+                <div class="aula-tempo"><span style="font-size:10px; display:block; color:#8a2be2;">${a.ordem}</span>${a.hora}</div>
+                <div class="aula-info"><b>${a.materia}</b><span>${a.prof || 'Sem prof.'}</span></div>
+                <button class="btn-deletar-aula" onclick="abrirConfirmExcluir(${i})">X</button>
             </div>
         `).join('');
-    if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
-// --- MODAL DE AULA ---
 window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
-    const selectMat = document.getElementById('aula-materia-select');
-    selectMat.innerHTML = '<option value="">Carregando matérias...</option>';
     document.getElementById('modal-aula').style.display = 'flex';
-
-    try {
-        const docSnap = await getDoc(doc(db, "notas", userPhone));
-        let materias = [];
-        if (docSnap.exists()) materias = docSnap.data().materias || [];
-        
-        selectMat.innerHTML = '<option value="">Selecionar...</option>';
-        materias.forEach(m => {
-            const nome = m.nome || m;
-            const opt = document.createElement('option');
-            opt.value = nome; opt.textContent = nome;
-            selectMat.appendChild(opt);
-        });
-    } catch (e) { selectMat.innerHTML = '<option value="">Erro ao carregar</option>'; }
 };
 
 window.salvarAula = async () => {
@@ -140,66 +111,52 @@ window.salvarAula = async () => {
     const prof = document.getElementById('aula-prof').value.trim();
     const materiaFinal = matSelect || matCustom;
     
-    if(!materiaFinal) {
-        window.mostrarAvisoCustom("⚠️ Preencha a matéria!");
-        return;
-    }
+    if(!materiaFinal) return window.mostrarAvisoCustom("⚠️ Nome da matéria?");
 
-    const infoHorario = TABELA_HORARIOS[turno][nAula];
+    const info = TABELA_HORARIOS[turno][nAula];
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
-    
-    gradeHoraria[diaAtualGrade].push({ 
-        ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
-    });
+    gradeHoraria[diaAtualGrade].push({ ordem: info.ordem, materia: materiaFinal, hora: info.inicio, prof: prof });
 
-    // DISPARO DA NOTIFICAÇÃO
-    enviarAlertaOneSignal(materiaFinal);
+    // TENTAR ENVIAR E MOSTRAR O ERRO SE HOUVER
+    await enviarNotificacaoTest(materiaFinal);
 
     renderizarAulas();
     fecharModalAula();
-    
-    if(userPhone) {
-        localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-        await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
-    }
-    window.mostrarAvisoCustom("🚀 Aula e Alerta salvos!");
-};
-
-// --- ONESIGNAL (MOTOR CORRIGIDO) ---
-async function enviarAlertaOneSignal(materia) {
-    const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
-    const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
-
-    try {
-        fetch("https://onesignal.com/api/v1/notifications", {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json", 
-                "Authorization": "Basic " + restKey 
-            },
-            body: JSON.stringify({
-                app_id: appId,
-                contents: { "pt": `Aula de ${materia} salva! 🧠` },
-                included_segments: ["Total Subscriptions"]
-            })
-        });
-    } catch (e) { console.warn("Erro ao enviar sinal."); }
-}
-
-window.abrirConfirmExcluir = (i) => { 
-    indexParaExcluir = i; 
-    document.getElementById('modal-confirm-excluir').style.display = 'flex'; 
-};
-
-document.getElementById('btn-confirmar-delete').onclick = async () => {
-    gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
-    renderizarAulas();
     if(userPhone) {
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
         await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria });
     }
-    fecharModalExcluir();
 };
+
+async function enviarNotificacaoTest(materia) {
+    const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
+    const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
+
+    try {
+        const response = await fetch("https://onesignal.com/api/v1/notifications", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json; charset=utf-8", 
+                "Authorization": `Basic ${restKey}` 
+            },
+            body: JSON.stringify({
+                app_id: appId,
+                contents: { "pt": `Aula de ${materia} salva!` },
+                included_segments: ["Total Subscriptions"]
+            })
+        });
+
+        const resData = await response.json();
+        if (resData.id) {
+            window.mostrarAvisoCustom("✅ SINAL ENVIADO AO ONESIGNAL!");
+        } else {
+            // Isso vai aparecer no seu celular se o OneSignal recusar a chave
+            alert("Erro OneSignal: " + (resData.errors ? resData.errors[0] : "Chave Inválida"));
+        }
+    } catch (e) {
+        window.mostrarAvisoCustom("❌ Erro de Rede: O Chrome bloqueou o sinal.");
+    }
+}
 
 window.ativarNotificacoesReal = () => {
     OneSignalDeferred.push(function(OneSignal) {
