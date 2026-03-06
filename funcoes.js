@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -19,6 +19,55 @@ const userType = localStorage.getItem('dt_user_type');
 let materias = [];
 let idParaExcluir = null;
 
+// ==========================================
+// MOTOR DE XP BRUTAL - HUB BRAIN
+// ==========================================
+function calcularXP(nota) {
+    const n = parseFloat(nota);
+    if (isNaN(n) || nota === "" || nota === null) return 0;
+    if (n === 10) return 100;
+    if (n >= 8.0) return 50;
+    if (n >= 6.0) return 20;
+    if (n >= 4.0) return -20;
+    if (n >= 0.1) return -50;
+    if (n === 0) return -100;
+    return 0;
+}
+
+async function atualizarXPGlobal() {
+    if (userType === 'local' || !userPhone) return;
+
+    let xpTotal = 0;
+    materias.forEach(m => {
+        [m.n1, m.n2, m.n3, m.n4].forEach(nota => {
+            if (nota !== undefined && nota !== null && nota !== "") {
+                xpTotal += calcularXP(nota);
+            }
+        });
+    });
+
+    try {
+        const userRef = doc(db, "notas", userPhone);
+        const nomeUsuario = localStorage.getItem('dt_user_name') || "Estudante";
+        const avatarUsuario = localStorage.getItem('dt_user_avatar') || "user";
+
+        // Salva XP, Nome e Avatar para o Ranking ficar sempre atualizado
+        await setDoc(userRef, { 
+            xp: xpTotal, 
+            nome: nomeUsuario,
+            avatar: avatarUsuario,
+            materias: materias 
+        }, { merge: true });
+        
+        console.log(`🏆 XP Sincronizado: ${xpTotal}`);
+    } catch (e) { 
+        console.error("Erro ao sincronizar XP:", e); 
+    }
+}
+
+// ==========================================
+// CARREGAMENTO INICIAL
+// ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
     await carregarDados();
     lucide.createIcons();
@@ -44,14 +93,13 @@ async function carregarDados() {
 
 async function salvarNaNuvem() {
     if (userType !== 'local' && userPhone) {
-        try {
-            await setDoc(doc(db, "notas", userPhone), { materias: materias });
-        } catch (e) { console.error("Erro ao salvar:", e); }
+        // O atualizarXPGlobal já faz o setDoc com merge das matérias
+        await atualizarXPGlobal();
     }
 }
 
 // ==========================================
-// GERADOR DE CARD E COMPARTILHAMENTO NATIVO
+// CARD DE VITÓRIA E COMPARTILHAMENTO
 // ==========================================
 window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     let container = document.getElementById('compartilhamento-container');
@@ -124,6 +172,9 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     }, 400);
 };
 
+// ==========================================
+// NAVEGAÇÃO E MODAIS
+// ==========================================
 window.toggleMenu = function() {
     document.getElementById('menu-lateral').classList.toggle('open');
     document.getElementById('overlay').classList.toggle('active');
@@ -132,6 +183,8 @@ window.toggleMenu = function() {
 window.navegar = function(p) {
     window.toggleMenu();
     if(p === 'notas') return;
+    if(p === 'ranking') { window.location.href = 'ranking.html'; return; }
+    
     const msg = p === 'agenda' ? 'Em breve poderás marcar teus testes aqui!' : 'Em breve verás quem é o melhor da HUB BRAIN!';
     document.getElementById('aviso-titulo').innerText = p.charAt(0).toUpperCase() + p.slice(1);
     document.getElementById('aviso-texto').innerText = msg;
@@ -152,18 +205,22 @@ window.fecharModalExcluir = function() {
     document.getElementById('modal-excluir-container').style.display = 'none'; 
 };
 
-window.confirmarExclusao = function() {
+window.confirmarExclusao = async function() {
     materias = materias.filter(m => m.id !== idParaExcluir);
     localStorage.setItem('materias', JSON.stringify(materias));
-    salvarNaNuvem();
+    await salvarNaNuvem();
     atualizarLista();
     fecharModalExcluir();
 };
 
+// ==========================================
+// GESTÃO DE NOTAS E LISTA
+// ==========================================
 window.atualizarLista = function() {
     const lista = document.getElementById('lista-materias');
     if(!lista) return;
 
+    // Ordenar: Maior soma de notas primeiro
     materias.sort((a, b) => {
         const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
         const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
@@ -189,7 +246,7 @@ window.atualizarLista = function() {
             
             <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
                 ${[1,2,3,4].map(n => `
-                    <input type="number" value="${m['n'+n] || ''}" placeholder="${n}º"
+                    <input type="number" step="0.1" value="${(m['n'+n] === 0 || m['n'+n]) ? m['n'+n] : ''}" placeholder="${n}º"
                         style="width:100%; background:rgba(0,0,0,0.3); border:1px solid #222; color:white; padding:10px; border-radius:10px; text-align:center; font-size:13px; font-weight:bold;"
                         onchange="salvarNota(${m.id}, ${n}, this.value)">
                 `).join('')}
@@ -216,12 +273,12 @@ window.atualizarLista = function() {
     lucide.createIcons();
 };
 
-window.salvarNota = function(id, b, val) {
+window.salvarNota = async function(id, b, val) {
     const i = materias.findIndex(m => m.id === id);
     if(i !== -1) {
-        materias[i]['n'+b] = parseFloat(val) || 0;
+        materias[i]['n'+b] = val === "" ? "" : parseFloat(val);
         localStorage.setItem('materias', JSON.stringify(materias));
-        salvarNaNuvem();
+        await salvarNaNuvem();
         atualizarLista();
     }
 };
@@ -229,89 +286,35 @@ window.salvarNota = function(id, b, val) {
 window.abrirModal = function() { document.getElementById('modal-materia').style.display = 'flex'; };
 window.fecharModal = function() { document.getElementById('modal-materia').style.display = 'none'; };
 
-window.confirmarNovaMateria = function() {
+window.confirmarNovaMateria = async function() {
     const input = document.getElementById('nome-materia-input');
     if(input.value) {
-        materias.push({ id: Date.now(), nome: input.value, n1:0, n2:0, n3:0, n4:0 });
+        materias.push({ id: Date.now(), nome: input.value, n1:"", n2:"", n3:"", n4:"" });
         localStorage.setItem('materias', JSON.stringify(materias));
-        salvarNaNuvem();
+        await salvarNaNuvem();
         input.value = ''; fecharModal(); atualizarLista();
     }
 };
       
-/* ==========================================
-   LÓGICA PWA: INSTALAÇÃO E ALERTAS
-   ========================================== */
+// ==========================================
+// PWA E INSTALAÇÃO
+// ==========================================
 let instaladorPWA = null;
 
-// 1. Escuta o evento que o navegador dispara quando o site PODE ser instalado
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Impede o Chrome de mostrar aquele banner automático feio
     e.preventDefault();
-    // Guarda o evento para usar quando o aluno clicar no botão
     instaladorPWA = e;
-    
-    // Faz o botão "Baixar App" aparecer no menu lateral
     const containerBotao = document.getElementById('pwa-install-container');
-    if (containerBotao) {
-        containerBotao.style.display = 'block';
-    }
-    
-    console.log("Hub Brain pronto para decolar (PWA)! 🚀");
+    if (containerBotao) containerBotao.style.display = 'block';
 });
 
-// 2. Função disparada pelo botão "Baixar App Hub Brain"
 window.instalarApp = async function() {
     if (!instaladorPWA) {
-        // Se não houver instalador, pode ser iPhone ou já instalado
-        alert("Para instalar no iPhone: Toque no ícone de 'Compartilhar' (setinha) e depois em 'Adicionar à Tela de Início' 📲");
+        alert("Para instalar no iPhone: Toque no ícone de 'Compartilhar' e depois em 'Adicionar à Tela de Início' 📲");
         return;
     }
-
-    // Mostra o prompt de instalação do sistema
     instaladorPWA.prompt();
-    
     const { outcome } = await instaladorPWA.userChoice;
-    if (outcome === 'accepted') {
-        console.log('O aluno aceitou a instalação! 🎉');
-        document.getElementById('pwa-install-container').style.display = 'none';
-    }
+    if (outcome === 'accepted') document.getElementById('pwa-install-container').style.display = 'none';
     instaladorPWA = null;
-};
-
-// 3. Detecta se o app já está rodando como "Aplicativo Instalado"
-window.addEventListener('appinstalled', () => {
-    console.log('Hub Brain instalado com sucesso!');
-    document.getElementById('pwa-install-container').style.display = 'none';
-});
-
-/* ==========================================
-   EXEMPLO DE NOTIFICAÇÃO NO DASHBOARD
-   ========================================== */
-// Chame essa função dentro do seu carregarDados() ou DOMContentLoaded
-window.verificarAlertasHoje = function(materias) {
-    const alertaArea = document.getElementById('alerta-dashboard');
-    if (!alertaArea) return;
-
-    // Exemplo: Se tiver matéria com média baixa ou atividade próxima
-    // Aqui você pode adaptar para a sua lógica da Agenda!
-    const precisaFocar = materias.filter(m => {
-        const soma = (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0);
-        return soma > 0 && soma < 12; // Exemplo: notas baixas
-    });
-
-    if (precisaFocar.length > 0) {
-        alertaArea.innerHTML = `
-            <div class="alerta-neon-topo">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <i data-lucide="alert-circle" style="color:#8a2be2;"></i>
-                    <span>Foco total! Tens ${precisaFocar.length} matérias que precisam de atenção.</span>
-                </div>
-                <button onclick="this.parentElement.remove()" style="background:none; border:none; color:white; cursor:pointer;">
-                    <i data-lucide="x" style="width:16px;"></i>
-                </button>
-            </div>
-        `;
-        lucide.createIcons();
-    }
 };
