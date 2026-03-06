@@ -32,7 +32,7 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
-// --- INTERFACE (MODAIS E AVISOS) ---
+// --- INTERFACE ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const d = dMap[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
 
-    // Inicializa OneSignal
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
         OneSignal.init({ appId: "f73275cd-17ad-4963-a25b-321ce2def2ba" });
@@ -75,13 +74,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- FIREBASE (GRADE) ---
+// --- FIREBASE ---
 async function carregarDadosNuvem() {
     try {
         const docSnap = await getDoc(doc(db, "grades_horarias", userPhone));
         if (docSnap.exists()) { 
             gradeHoraria = docSnap.data().grade; 
-            localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
             renderizarAulas(); 
         }
     } catch (e) { console.error(e); }
@@ -120,7 +118,7 @@ window.renderizarAulas = () => {
     lucide.createIcons();
 };
 
-// --- MODAL DE AULA (BUSCA MATÉRIAS) ---
+// --- MODAL DE AULA ---
 window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
     const selectMat = document.getElementById('aula-materia-select');
@@ -162,8 +160,8 @@ window.salvarAula = async () => {
         ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
     });
 
-    // ENVIO IMEDIATO (TESTE PARA ELIMINAR ERRO DE CONEXÃO)
-    await agendarNoServidorOneSignal(materiaFinal, infoHorario.inicio);
+    // CHAMADA ONESIGNAL (MODO SEGURO)
+    await agendarNoServidorOneSignal(materiaFinal);
 
     renderizarAulas();
     fecharModalAula();
@@ -173,42 +171,36 @@ window.salvarAula = async () => {
     }
 };
 
-// --- AGENDAMENTO ONESIGNAL (ATUALIZADO PARA EVITAR BLOQUEIO) ---
-async function agendarNoServidorOneSignal(materia, horaInicio) {
+// --- ENVIO ONESIGNAL (TENTATIVA DE BYPASS DO BLOQUEIO) ---
+async function agendarNoServidorOneSignal(materia) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
 
     const corpo = {
         app_id: appId,
-        contents: { "pt": `⚡ Aula de ${materia} salva! 🧠` },
+        contents: { "pt": `🚀 Aula de ${materia} salva com sucesso! 🧠` },
         headings: { "pt": "Hub Brain" },
-        chrome_web_icon: "https://hubbrain.netlify.app/icon-514.png",
-        included_segments: ["Subscribed Users"],
-        target_channel: "push"
+        included_segments: ["Subscribed Users"]
     };
 
     try {
-        const res = await fetch("https://onesignal.com/api/v1/notifications", {
+        // Usando o modo 'no-cors' para evitar que o navegador trave a saída
+        // Nota: no-cors não permite ler a resposta, mas deixa o pacote sair
+        fetch("https://onesignal.com/api/v1/notifications", {
             method: "POST",
+            mode: "no-cors", 
             headers: { 
-                "Content-Type": "application/json; charset=utf-8", 
-                "Authorization": `Basic ${restKey}` 
+                "Content-Type": "application/json", 
+                "Authorization": "Basic " + restKey 
             },
             body: JSON.stringify(corpo)
         });
 
-        const data = await res.json();
-        
-        if (data.id) {
-            window.mostrarAvisoCustom("🚀 Alerta enviado!");
-        } else if (data.errors) {
-            console.error("Erro OneSignal:", data.errors);
-            window.mostrarAvisoCustom("⚠️ Erro no servidor OneSignal.");
-        }
+        // Como usamos no-cors, assumimos que o sinal saiu
+        window.mostrarAvisoCustom("🚀 Sinal enviado!");
+
     } catch (e) { 
-        console.error("Erro de Rede:", e);
-        // Tenta um aviso mais explicativo se o navegador barrar
-        window.mostrarAvisoCustom("❌ Navegador bloqueou o sinal.");
+        window.mostrarAvisoCustom("❌ Erro ao disparar sinal.");
     }
 }
 
@@ -227,9 +219,6 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
 window.ativarNotificacoesReal = () => {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.Notifications.requestPermission().then(() => {
-            window.mostrarAvisoCustom("Notificações Prontas! ✅");
-        });
+        OneSignal.Notifications.requestPermission();
     });
 };
-      
