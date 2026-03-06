@@ -2,314 +2,265 @@
 <html lang="pt-br">
 <head>
     <script>
-        // Trava de Segurança PWA
-        if (!localStorage.getItem('dt_user_phone')) {
-            window.location.href = 'login.html';
-        }
+    if (!localStorage.getItem('dt_user_phone')) {
+        window.location.href = 'login.html';
+    }
     </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Hub Brain - Inteligência Estudantil</title> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Brain - Inteligência Escolar</title> 
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0a0a0a">
+    <meta name="theme-color" content="#8a2be2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="estilo.css?v=200.0">
+    <link rel="stylesheet" href="estilo.css?v=12.0">
+    <link rel="stylesheet" href="ranking.css">
 
     <style>
-        /* --- RESET E VARIÁVEIS DE ELITE --- */
-        :root {
-            --roxo-vivido: #8a2be2;
-            --roxo-glow: rgba(138, 43, 226, 0.5);
-            --bg-dark: #050505;
-            --card-bg: #0d0d0d;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border-white: rgba(255, 255, 255, 0.08);
-            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background-color: var(--bg-dark); 
-            color: white; 
-            font-family: 'Inter', -apple-system, system-ui, sans-serif;
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        /* --- HEADER COM DESIGN DE APP NATIVO --- */
         .glass-header {
-            display: grid; 
-            grid-template-columns: 60px 1fr 60px; 
-            align-items: center;
-            padding: 0 15px; 
-            height: 85px; 
-            background: rgba(10, 10, 10, 0.92) !important;
-            backdrop-filter: blur(30px); 
-            border-bottom: 1px solid rgba(138, 43, 226, 0.25);
-            position: sticky; 
-            top: 0; 
-            z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
+            backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        
+        .hub-logo-container { 
+            display: flex; align-items: center; gap: 10px; cursor: pointer; 
+            transition: transform 0.1s; -webkit-tap-highlight-color: transparent;
+        }
+        .hub-logo-container:active { transform: scale(0.92); }
+        
+        .hub-logo-text { font-weight: 900; font-size: 19px; letter-spacing: 1px; color: white; text-transform: uppercase; }
+        .hub-logo-text.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138, 43, 226, 0.3); }
+        
+        .hub-symbol { 
+            background: rgba(138, 43, 226, 0.1); padding: 6px; border-radius: 10px; 
+            border: 1px solid rgba(138, 43, 226, 0.3); display: flex; align-items: center; 
+            justify-content: center; animation: pulse-glow 3s infinite ease-in-out; 
         }
 
-        .brand-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .brand-container:active { transform: scale(0.96); opacity: 0.8; }
-
-        .logo-text { 
-            font-weight: 900; 
-            font-size: 20px; 
-            letter-spacing: 1.5px; 
-            text-transform: uppercase; 
-        }
-        .logo-text.purple { 
-            color: var(--roxo-vivido); 
-            text-shadow: 0 0 20px var(--roxo-glow); 
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
+            50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.4); transform: scale(1.05); }
+            100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
         }
 
-        .icon-shield {
-            background: rgba(138, 43, 226, 0.15);
-            padding: 8px;
-            border-radius: 14px;
-            border: 1.5px solid rgba(138, 43, 226, 0.4);
-            display: flex;
-            box-shadow: inset 0 0 10px rgba(138, 43, 226, 0.2);
-            animation: pulse-icon 4s infinite ease-in-out;
+        .btn-add-main { 
+            background: #8a2be2 !important; width: 38px !important; height: 38px !important; 
+            border-radius: 12px !important; font-size: 24px !important; color: white; 
+            border: none; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3); cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; 
         }
 
-        @keyframes pulse-icon {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 0px var(--roxo-glow); }
-            50% { transform: scale(1.08); box-shadow: 0 0 25px var(--roxo-glow); }
+        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1001; }
+        #overlay.active { display:block; }
+
+        .modal-dono-overlay {
+            display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
+            backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
+            background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px; perspective: 1000px; 
         }
 
-        /* BOTÃO + (IDENTIDADE ORIGINAL) */
-        #btn-add {
-            background: var(--roxo-vivido);
-            color: white;
-            border: none;
-            width: 46px;
-            height: 46px;
-            border-radius: 15px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
-            transition: var(--transition);
-        }
-        #btn-add:hover { filter: brightness(1.2); transform: translateY(-2px); }
-        #btn-add:active { transform: scale(0.9); }
-
-        /* --- MENU LATERAL (DRAWER PREMIUM) --- */
-        #menu-lateral {
-            position: fixed; top: 0; left: -310px; width: 300px; height: 100%;
-            background: rgba(8, 8, 8, 0.98); backdrop-filter: blur(40px);
-            z-index: 2000; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            border-right: 1px solid rgba(138, 43, 226, 0.2);
-            padding: 40px 25px;
-            display: flex; flex-direction: column;
-        }
-        #menu-lateral.open { left: 0; box-shadow: 40px 0 80px rgba(0,0,0,0.9); }
-
-        .drawer-item {
-            display: flex; align-items: center; gap: 18px; width: 100%;
-            padding: 18px; margin-bottom: 12px; border: none; background: transparent;
-            color: #777; font-size: 16px; font-weight: 600; border-radius: 20px;
-            cursor: pointer; transition: 0.3s; text-align: left;
-        }
-        .drawer-item.active { background: rgba(138, 43, 226, 0.15); color: #fff; border: 1px solid var(--roxo-vivido); }
-        .drawer-item:hover:not(.active) { background: rgba(255,255,255,0.03); color: #ccc; }
-
-        /* --- MODAL DO DONO / DEV (ESTILO APPLE) --- */
-        .modal-overlay {
-            display: none; position: fixed; inset: 0; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.94); z-index: 9999; padding: 25px;
-            backdrop-filter: blur(10px);
-        }
-        .dev-card {
-            background: linear-gradient(145deg, #111111, #050505);
-            border: 1px solid rgba(138, 43, 226, 0.4); border-radius: 45px;
-            padding: 50px 30px; width: 100%; max-width: 350px; text-align: center;
-            position: relative; box-shadow: 0 25px 60px rgba(0,0,0,0.8);
-            animation: slideUp 0.5s ease;
-        }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        /* ÓRBITA CINÉTICA */
-        .orb-master { 
-            width: 130px; height: 130px; margin: 0 auto 35px; 
-            position: relative; display: flex; align-items: center; justify-content: center; 
-        }
-        .ring-orb { position: absolute; border: 3.5px solid transparent; border-radius: 50%; }
-        .ring-outer { width: 100%; height: 100%; border-top-color: var(--roxo-vivido); border-bottom-color: var(--roxo-vivido); animation: spin-r 3.5s linear infinite; }
-        .ring-inner { width: 75%; height: 75%; border-left-color: #ffffff; border-right-color: var(--roxo-vivido); animation: spin-r 2.2s linear infinite reverse; }
-        @keyframes spin-r { to { transform: rotate(360deg); } }
-
-        .dev-phrase {
-            color: #999; font-size: 15px; font-style: italic; line-height: 1.7;
-            margin: 25px 0; padding: 0 10px; border-left: 2px solid var(--roxo-vivido);
+        .modal-dono-card {
+            border: 1px solid rgba(138, 43, 226, 0.3); background: rgba(15, 15, 15, 0.8); 
+            border-radius: 30px; width: 100%; max-width: 320px; padding: 40px 25px; text-align: center; 
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.2);
+            animation: brotarCard 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0; transform: scale(0.8) translateY(30px);
         }
 
-        /* --- INPUTS COM VALIDAÇÃO VISUAL --- */
-        .input-premium {
-            width: 100%; padding: 20px; border-radius: 20px; background: #151515;
-            border: 2px solid #252525; color: white; font-size: 16px; outline: none;
-            transition: var(--transition); margin-top: 15px;
-        }
-        .input-premium:focus { border-color: var(--roxo-vivido); box-shadow: 0 0 20px rgba(138, 43, 226, 0.2); }
-        .input-error { border-color: #ff4444 !important; animation: shake-error 0.4s; }
-        @keyframes shake-error { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+        @keyframes brotarCard { to { opacity: 1; transform: scale(1) translateY(0); } }
 
-        /* BOTÕES DE MATÉRIA */
-        .btn-confirm { width: 100%; background: var(--roxo-vivido); color: white; border: none; padding: 20px; border-radius: 20px; font-weight: 900; cursor: pointer; font-size: 16px; margin-top: 25px; box-shadow: 0 10px 20px rgba(138, 43, 226, 0.3); }
+        .ditoh-core-orbital { width: 100px; height: 100px; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .orbital-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; border-top-color: #8a2be2; border-bottom-color: #8a2be2; }
+        .ring-1 { width: 100%; height: 100%; animation: spin 2s linear infinite; opacity: 0.6; }
+        .ring-2 { width: 80%; height: 80%; animation: spin-reverse 1.5s linear infinite; opacity: 0.8; border-left-color: #8a2be2; border-right-color: #8a2be2; border-top-color: transparent; border-bottom-color: transparent; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin-reverse { to { transform: rotate(-360deg); } }
+        .core-glow { width: 50px; height: 50px; background: rgba(138, 43, 226, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(138, 43, 226, 0.6); }
+
+        /* Estilo da aba ativa no menu */
+        .nav-item.active { background: rgba(138, 43, 226, 0.2); border-left: 4px solid #8a2be2; color: white; }
     </style>
 </head>
-<body onclick="handleGlobalClick(event)">
-
-    <div id="overlay-bg" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1500;"></div>
+<body>
+    <div id="overlay" onclick="toggleMenu()"></div>
 
     <header class="glass-header">
-        <button onclick="toggleMenu(event)" style="background:none; border:none; color:white; cursor:pointer; display:flex;">
-            <i data-lucide="menu" style="width: 30px; height: 30px;"></i>
-        </button>
+        <button onclick="toggleMenu()" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;"><i data-lucide="menu"></i></button>
         
-        <div class="brand-container" onclick="abrirDevModal()">
-            <span class="logo-text">Hub</span>
-            <div class="icon-shield"><i data-lucide="brain-circuit" style="color:var(--roxo-vivido); width:24px;"></i></div>
-            <span class="logo-text purple">Brain</span>
+        <div class="hub-logo-container" onclick="abrirSobreDono()">
+            <span class="hub-logo-text">Hub</span>
+            <div class="hub-symbol">
+                <i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px; height: 22px;"></i>
+            </div>
+            <span class="hub-logo-text purple">Brain</span>
         </div>
 
-        <button id="btn-add" onclick="abrirModal()">+</button>
+        <button onclick="abrirModal()" class="btn-add-main">+</button>
     </header>
 
-    <nav id="menu-lateral">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:45px;">
-            <div style="display:flex; gap:10px; align-items:center;">
-                <div style="width:12px; height:12px; border-radius:50%; background:var(--roxo-vivido); box-shadow:0 0 10px var(--roxo-vivido);"></div>
-                <span style="font-weight:900; letter-spacing:2px; font-size:13px; color:#555;">DASHBOARD</span>
+    <nav id="menu-lateral" class="drawer" style="z-index: 1002;">
+        <div class="drawer-header">
+            <div class="logo-box">
+                <i data-lucide="brain-circuit" style="color: #8a2be2; width: 18px; margin-right: 5px;"></i>
+                <span class="logo-text">HUB <span style="color: #8a2be2;">BRAIN</span></span>
             </div>
-            <i data-lucide="x" onclick="toggleMenu(event)" style="color:#444; cursor:pointer;"></i>
+            <button onclick="toggleMenu()" class="btn-close-box" style="background:none; border:none; color:white;"><i data-lucide="x"></i></button>
         </div>
-
-        <button onclick="window.location.href='index.html'" class="drawer-item active"><i data-lucide="layout-grid"></i> Minhas Notas</button>
-        <button onclick="window.location.href='ranking.html'" class="drawer-item"><i data-lucide="trophy"></i> Ranking Global</button>
-        <button onclick="window.location.href='perfil.html'" class="drawer-item"><i data-lucide="user"></i> Meu Perfil</button>
         
-        <div style="height:1px; background:rgba(255,255,255,0.05); margin:25px 0;"></div>
+        <button onclick="mudarAba('notas')" class="nav-item active" id="nav-notas"><i data-lucide="layout-grid"></i> Notas</button>
+        <button onclick="mudarAba('ranking')" class="nav-item" id="nav-ranking"><i data-lucide="trophy"></i> Ranking Global</button>
+        <button onclick="mudarAba('perfil')" class="nav-item" id="nav-perfil"><i data-lucide="user"></i> Meu Perfil</button>
         
-        <button onclick="window.location.href='horario.html'" class="drawer-item"><i data-lucide="calendar-clock"></i> Quadro de Horários</button>
-        <button onclick="window.location.href='agenda.html'" class="drawer-item"><i data-lucide="calendar"></i> Agenda de Provas</button>
-        <button onclick="window.location.href='estudos.html'" class="drawer-item"><i data-lucide="sparkles"></i> Estudar com IA</button>
-
-        <button onclick="localStorage.clear(); window.location.href='login.html';" class="drawer-item" style="color:#ff4444; margin-top:auto;">
-            <i data-lucide="log-out"></i> Sair do Hub
+        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;">
+        
+        <button onclick="window.location.href='horario.html'" class="nav-item"><i data-lucide="calendar-clock"></i> Horário das Aulas</button>
+        <button onclick="window.location.href='agenda.html'" class="nav-item"><i data-lucide="calendar"></i> Agenda</button>
+        <button onclick="window.location.href='estudos.html'" class="nav-item"><i data-lucide="book-open"></i> Estudar com IA</button>
+        <button onclick="localStorage.clear(); window.location.href='login.html';" class="nav-item" style="color: #ff4444; margin-top: 20px;">
+            <i data-lucide="log-out"></i> Sair
         </button>
     </nav>
 
-    <main class="container" style="padding: 20px;">
-        <div class="stats-row" style="display: flex; gap: 15px; margin-bottom: 30px;">
-            <div class="stat-card" style="flex:1; background:var(--card-bg); padding:25px; border-radius:28px; border:1px solid var(--border-white); text-align:center;">
-                <span id="media-geral" style="display:block; font-size:32px; font-weight:900; color:var(--roxo-vivido);">0.0</span>
-                <label style="font-size:12px; color:#555; text-transform:uppercase; font-weight:bold; letter-spacing:1px;">Média Geral</label>
+    <main class="container">
+        <section id="aba-notas">
+            <div class="stats-row">
+                <div class="stat-card"><span id="media-geral">0.0</span><label>Média Geral</label></div>
+                <div class="stat-card"><span id="aprov-count">0/0</span><label>Aprovadas</label></div>
             </div>
-            <div class="stat-card" style="flex:1; background:var(--card-bg); padding:25px; border-radius:28px; border:1px solid var(--border-white); text-align:center;">
-                <span id="aprov-count" style="display:block; font-size:32px; font-weight:900; color:#fff;">0/0</span>
-                <label style="font-size:12px; color:#555; text-transform:uppercase; font-weight:bold; letter-spacing:1px;">Aprovadas</label>
-            </div>
-        </div>
+            <div id="lista-materias"></div>
+        </section>
 
-        <div id="lista-materias"></div>
+        <section id="aba-ranking" style="display: none;">
+            <div class="aba-ranking">
+                <div class="ranking-header">
+                    <i data-lucide="trophy" style="color: #ffd700; width: 32px; height: 32px;"></i>
+                    <h2>Ranking de Alunos</h2>
+                    <p>Os mais dedicados da semana 🧠</p>
+                </div>
+                <div id="podio-container" class="podio"></div>
+                <div id="lista-ranking-geral" class="lista-ranking"></div>
+            </div>
+        </section>
+
+        <section id="aba-perfil" style="display: none;">
+            <div class="card-perfil-status" style="background: rgba(20,20,20,0.8); padding: 25px; border-radius: 20px; border: 1px solid #8a2be2; margin-top: 20px;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                    <div style="font-size: 40px; background: #333; padding: 15px; border-radius: 50%;">👤</div>
+                    <div style="flex: 1;">
+                        <input type="text" id="input-nome-usuario" placeholder="Seu Nome no Ranking" style="background:none; border:none; border-bottom: 2px solid #8a2be2; color:white; font-size: 20px; font-weight: bold; width: 100%;">
+                        <button onclick="salvarNomePerfil()" style="background:#8a2be2; border:none; color:white; padding: 8px 15px; border-radius: 10px; margin-top: 10px; font-weight: bold; cursor: pointer;">Salvar Nome</button>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                        <label style="display:block; font-size:11px; color:#aaa; margin-bottom: 5px;">POSIÇÃO</label>
+                        <span id="user-rank-pos" style="font-size: 26px; font-weight: 900; color: #ffd700;">--</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                        <label style="display:block; font-size:11px; color:#aaa; margin-bottom: 5px;">PONTOS XP</label>
+                        <span id="user-rank-xp" style="font-size: 26px; font-weight: 900; color: #8a2be2;">0</span>
+                    </div>
+                </div>
+                <button onclick="abrirModalAjudaXP()" style="width: 100%; margin-top: 20px; padding: 15px; background: none; border: 1px dashed #8a2be2; color: #8a2be2; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold;">
+                    <i data-lucide="help-circle" style="width:18px;"></i> Como ganhar pontos?
+                </button>
+            </div>
+        </section>
     </main>
 
-    <div id="modal-dono" class="modal-overlay">
-        <div class="dev-card">
-            <div class="orb-master">
-                <div class="ring-orb ring-outer"></div>
-                <div class="ring-orb ring-inner"></div>
-                <i data-lucide="zap" style="color:white; width:40px; height:40px; z-index:10;"></i>
+    <div id="modal-dono" class="modal-dono-overlay">
+        <div class="modal-dono-card">
+            <div class="ditoh-core-orbital">
+                <div class="orbital-ring ring-1"></div>
+                <div class="orbital-ring ring-2"></div>
+                <div class="core-glow">
+                    <i data-lucide="zap" style="color: white; width: 28px; height: 28px; filter: drop-shadow(0 0 8px #8a2be2);"></i>
+                </div>
             </div>
-            
-            <h3 style="font-size:36px; font-weight:900; letter-spacing:3px; margin:0;">DITOH</h3>
-            <p style="color:var(--roxo-vivido); font-weight:900; letter-spacing:5px; font-size:11px; margin-bottom:15px;">FOUNDER & DEVELOPER</p>
-            
-            <p class="dev-phrase">
-                "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Teve uma ideia ou achou um bug? Me chama na DM!"
-            </p>
-
-            <a href="https://instagram.com/wtfditoh" target="_blank" style="text-decoration:none; color:white; background:rgba(255,255,255,0.05); padding:20px; border-radius:25px; border:1px solid rgba(138,43,226,0.3); display:flex; align-items:center; justify-content:center; gap:12px; margin:30px 0; font-weight:bold;">
-                <i data-lucide="instagram" style="color:var(--roxo-vivido);"></i> @wtfditoh
+            <h3 style="color: white; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 2px;">DITOH</h3>
+            <p style="color: #8a2be2; font-weight: bold; margin: 5px 0 20px 0; font-size: 12px; letter-spacing: 4px; text-transform: uppercase;">Founder & Dev</p>
+            <div style="background: rgba(138, 43, 226, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border-left: 4px solid #8a2be2; text-align: left;">
+                <p style="color: #eee; font-size: 13px; font-style: italic; line-height: 1.6; margin: 0;">
+                    "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."
+                </p>
+            </div>
+            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; color: white; font-size: 15px; margin-bottom: 30px; background: rgba(255,255,255,0.05); padding: 14px; border-radius: 15px; border: 1px solid rgba(138, 43, 226, 0.2); transition: 0.3s;">
+                <i data-lucide="instagram" style="width: 18px; color: #8a2be2;"></i>
+                <span style="font-weight: 600;">@wtfditoh</span>
             </a>
-
-            <button onclick="fecharDevModal()" style="width:100%; background:#222; color:white; border:none; padding:20px; border-radius:20px; font-weight:bold; cursor:pointer;">FECHAR</button>
+            <button onclick="fecharSobreDono()" style="width: 100%; background: #8a2be2; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase;">Voltar</button>
         </div>
     </div>
 
-    <div id="modal-materia" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; padding:20px;">
-        <div style="background:var(--card-bg); border:1.5px solid var(--roxo-vivido); border-radius:40px; padding:40px; width:100%; max-width:340px;">
-            <h3 style="margin:0; font-size:24px; font-weight:900;">Nova Disciplina</h3>
-            <p style="color:#666; font-size:14px; margin-bottom:15px;">Dê um nome para a sua nova jornada.</p>
-            
-            <input type="text" id="nome-materia-input" class="input-premium" placeholder="Ex: Física Quântica">
-            <p id="error-msg" style="display:none; color:#ff4444; font-size:12px; font-weight:bold; margin-top:10px; margin-left:5px;">⚠️ Digite o nome da matéria!</p>
-            
-            <div style="display:flex; gap:12px; margin-top:10px;">
-                <button onclick="fecharModal()" style="flex:1; background:#1a1a1a; color:white; border:none; padding:18px; border-radius:20px; font-weight:bold; cursor:pointer; margin-top:25px;">Sair</button>
-                <button onclick="validarEProcessar()" class="btn-confirm">Criar</button>
+    <div id="modal-materia" class="modal">
+        <div class="modal-content">
+            <h3>Nova Disciplina</h3>
+            <input type="text" id="nome-materia-input" placeholder="Ex: Matemática" style="width:100%; padding:10px; margin:10px 0; border-radius:10px; background:#222; border:1px solid #444; color:white; box-sizing: border-box;">
+            <div class="area-botoes-modal">
+                <button onclick="fecharModal()" class="btn-modal-voltar">Sair</button>
+                <button onclick="confirmarNovaMateria()" class="btn-modal-acao">Criar</button>
             </div>
         </div>
     </div>
 
-    <script type="module" src="funcoes.js?v=200.0"></script>
+    <div id="modal-ajuda-xp" class="modal-dono-overlay">
+        <div class="modal-dono-card" style="text-align: left;">
+            <h3 style="color:#8a2be2; margin-top:0;">Guia de XP 🎮</h3>
+            <p style="font-size:14px; color:#ccc;">Suba no ranking estudando:</p>
+            <ul style="list-style:none; padding:0; font-size:14px; line-height:2.2;">
+                <li>🔥 <b>Nota 10:</b> +100 XP</li>
+                <li>🚀 <b>Nota 7-9:</b> +50 XP</li>
+                <li>✅ <b>Atividade feita:</b> +15 XP</li>
+                <li>📅 <b>Aula salva:</b> +5 XP</li>
+                <li>💀 <b>Nota < 5:</b> Perde XP</li>
+            </ul>
+            <button onclick="fecharModalAjudaXP()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; margin-top:20px; font-weight:bold; cursor:pointer;">ENTENDI</button>
+        </div>
+    </div>
+
+    <script type="module" src="funcoes.js?v=12.0"></script>
+    <script type="module">
+        import { carregarRankingReal, carregarDadosPessoaisRanking, salvarNomePerfil } from './ranking-logica.js';
+        
+        window.salvarNomePerfil = salvarNomePerfil;
+        window.carregarRankingReal = carregarRankingReal;
+        window.carregarDadosPessoaisRanking = carregarDadosPessoaisRanking;
+
+        window.mudarAba = function(aba) {
+            document.getElementById('aba-notas').style.display = 'none';
+            document.getElementById('aba-ranking').style.display = 'none';
+            document.getElementById('aba-perfil').style.display = 'none';
+            
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById('aba-' + aba).style.display = 'block';
+            document.getElementById('nav-' + aba).classList.add('active');
+
+            if(aba === 'ranking') carregarRankingReal();
+            if(aba === 'perfil') carregarDadosPessoaisRanking();
+            
+            toggleMenu();
+        };
+
+        window.abrirModalAjudaXP = () => document.getElementById('modal-ajuda-xp').style.display = 'flex';
+        window.fecharModalAjudaXP = () => document.getElementById('modal-ajuda-xp').style.display = 'none';
+    </script>
+
     <script>
-        // Lógica de Interface
-        function toggleMenu(e) {
-            if(e) e.stopPropagation();
-            const m = document.getElementById('menu-lateral');
-            const o = document.getElementById('overlay-bg');
-            m.classList.toggle('open');
-            o.style.display = m.classList.contains('open') ? 'block' : 'none';
-        }
+        function abrirSobreDono() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
+        function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
+        
+        window.toggleMenu = function() {
+            document.getElementById('menu-lateral').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('active');
+        };
 
-        function handleGlobalClick(e) {
-            const m = document.getElementById('menu-lateral');
-            if(m.classList.contains('open') && !m.contains(e.target)) toggleMenu();
-        }
-
-        function abrirDevModal() {
-            document.getElementById('modal-dono').style.display = 'flex';
-            lucide.createIcons();
-        }
-
-        function fecharDevModal() {
-            document.getElementById('modal-dono').style.display = 'none';
-        }
-
-        function validarEProcessar() {
-            const input = document.getElementById('nome-materia-input');
-            const err = document.getElementById('error-msg');
-            if(!input.value.trim()) {
-                input.classList.add('input-error');
-                err.style.display = 'block';
-                setTimeout(() => input.classList.remove('input-error'), 400);
-            } else {
-                err.style.display = 'none';
-                confirmarNovaMateria(); // Sua função no funcoes.js
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+        document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
     </script>
 </body>
 </html>
