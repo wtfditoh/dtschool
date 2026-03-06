@@ -4,68 +4,88 @@
 html, body {
     width: 100%;
     min-height: 100vh;
-    background-color: #050505 !important;
+    /* FUNDO ATUALIZADO: Gradiente Radial para dar profundidade */
+    background: radial-gradient(circle at center, #1a0b2e 0%, #050505 70%, #020202 100%) no-repeat fixed !important;
     color: #ffffff;
     font-family: 'Inter', sans-serif;
 }
 
-.purple { color: #8a2be2; }
+.purple { color: #8a2be2; text-shadow: 0 0 8px rgba(138, 43, 226, 0.4); }
 .ranking-wrapper { padding: 20px; max-width: 500px; margin: 0 auto; }
 
 /* HEADER */
 .ranking-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
-.ranking-header h1 { font-size: 18px; font-weight: 900; letter-spacing: 2px; }
-.back-btn { background: #111; border: 1px solid #222; color: white; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.ranking-header h1 { font-size: 18px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+.back-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
 
-/* BOTÃO HELP */
+/* BOTÃO HELP FLUTUANTE */
 .btn-help-floating {
     position: fixed; top: 25px; right: 20px; width: 48px; height: 48px;
-    background: rgba(138, 43, 226, 0.2); border: 1px solid #8a2be2; border-radius: 50%;
+    background: rgba(138, 43, 226, 0.25); border: 1px solid #8a2be2; border-radius: 50%;
     color: white; display: flex; align-items: center; justify-content: center; z-index: 1000;
-    box-shadow: 0 0 15px rgba(138, 43, 226, 0.3); animation: float 3s infinite ease-in-out;
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.5); animation: float 3s infinite ease-in-out;
+    backdrop-filter: blur(8px);
 }
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-/* PODIUM */
+/* PODIUM (Ajustado para brilhar no novo fundo) */
 .podium-container { display: flex; align-items: flex-end; justify-content: center; gap: 10px; margin-bottom: 30px; height: 160px; }
 .podium-slot { display: flex; flex-direction: column; align-items: center; width: 32%; }
-.avatar-frame { width: 60px; height: 60px; border-radius: 50%; background: #0a0a0a; border: 2px solid #222; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 8px; }
-.first .avatar-frame { width: 85px; height: 85px; border-color: #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.2); }
-.crown-icon { position: absolute; top: -18px; color: #ffd700; width: 22px; }
+.avatar-frame { 
+    width: 60px; height: 60px; border-radius: 50%; 
+    background: rgba(0,0,0,0.6); border: 2px solid rgba(138, 43, 226, 0.3); 
+    display: flex; align-items: center; justify-content: center; 
+    position: relative; margin-bottom: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+.first .avatar-frame { 
+    width: 85px; height: 85px; border-color: #ffd700; 
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); 
+}
+.crown-icon { position: absolute; top: -18px; color: #ffd700; width: 22px; filter: drop-shadow(0 0 5px rgba(255,215,0,0.5)); }
 .p-name { font-size: 11px; font-weight: 800; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; }
-.p-xp { background: rgba(138,43,226,0.15); border: 1px solid rgba(138,43,226,0.3); padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 900; color: #a855f7; }
-.p-xp.gold { border-color: #ffd700; color: #ffd700; }
+.p-xp { background: rgba(138,43,226,0.2); border: 1px solid rgba(138,43,226,0.4); padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 900; color: #a855f7; }
+.p-xp.gold { border-color: #ffd700; color: #ffd700; background: rgba(255, 215, 0, 0.1); }
 
-/* LISTA RANKING */
-.ranking-list-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 25px; padding: 10px; }
-.rank-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.02); }
-.rank-pos { width: 35px; font-weight: 900; color: #444; }
+/* LISTA RANKING (Estilo Card Transparente) */
+.ranking-list-container { 
+    background: rgba(255,255,255,0.03); 
+    border: 1px solid rgba(255,255,255,0.08); 
+    border-radius: 25px; padding: 10px; 
+    backdrop-filter: blur(10px);
+}
+.rank-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.rank-pos { width: 35px; font-weight: 900; color: rgba(255,255,255,0.2); font-style: italic; }
 .rank-info { flex: 1; margin-left: 10px; }
 .rank-name { display: block; font-weight: 800; font-size: 14px; }
-.rank-patente { font-size: 10px; font-weight: 900; text-transform: uppercase; color: #8a2be2; }
+.rank-patente { font-size: 10px; font-weight: 900; text-transform: uppercase; color: #8a2be2; opacity: 0.8; }
 
-/* MODAL XP DETALHADO */
-.modal-xp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.97); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.modal-xp-card { background: #0a0a0a; border: 1px solid #8a2be2; padding: 25px; border-radius: 30px; width: 100%; max-width: 380px; text-align: center; max-height: 90vh; display: flex; flex-direction: column; }
+/* MODAL XP (Mais escuro para contraste) */
+.modal-xp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(15px); }
+.modal-xp-card { 
+    background: #0d0d0d; border: 1px solid #8a2be2; 
+    padding: 25px; border-radius: 30px; width: 100%; max-width: 380px; 
+    text-align: center; max-height: 85vh; display: flex; flex-direction: column;
+    box-shadow: 0 0 40px rgba(138, 43, 226, 0.3);
+}
+
 .xp-rules-scroll { text-align: left; overflow-y: auto; margin: 20px 0; padding-right: 10px; flex: 1; }
-
-/* Estilização da Scrollbar */
 .xp-rules-scroll::-webkit-scrollbar { width: 4px; }
 .xp-rules-scroll::-webkit-scrollbar-thumb { background: #8a2be2; border-radius: 10px; }
 
 .xp-section { margin-bottom: 25px; }
 .xp-tag { font-size: 10px; font-weight: 900; color: #8a2be2; margin-bottom: 5px; letter-spacing: 1px; text-transform: uppercase; }
-.section-desc { font-size: 11px; color: #666; margin-bottom: 12px; line-height: 1.4; }
+.section-desc { font-size: 11px; color: #888; margin-bottom: 12px; line-height: 1.4; }
 
-.rule-box { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px; margin-bottom: 6px; }
+.rule-box { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.05); }
 .rule-box span { font-weight: 900; font-size: 10px; min-width: 45px; text-align: center; padding: 4px; border-radius: 6px; }
-.rule-box.pos span { background: #8a2be233; color: #a855f7; border: 1px solid #8a2be2; }
-.rule-box.neg span { background: #ff444422; color: #ff4444; border: 1px solid #ff4444; }
+.rule-box.pos span { background: rgba(138, 43, 226, 0.2); color: #a855f7; border: 1px solid #8a2be2; }
+.rule-box.neg span { background: rgba(255, 68, 68, 0.15); color: #ff4444; border: 1px solid #ff4444; }
 .rule-box p { font-size: 12px; color: #ccc; margin: 0; }
 .rule-box p strong { color: #fff; }
 
-.patente-item { display: flex; justify-content: space-between; padding: 8px 10px; background: rgba(138,43,226,0.05); border-radius: 10px; margin-bottom: 5px; }
-.patente-item span { font-size: 10px; font-weight: 900; color: #666; }
+.patente-item { display: flex; justify-content: space-between; padding: 10px; background: rgba(138,43,226,0.08); border-radius: 12px; margin-bottom: 6px; border: 1px solid rgba(138, 43, 226, 0.1); }
+.patente-item span { font-size: 10px; font-weight: 900; color: #888; }
 .patente-item p { font-size: 12px; font-weight: 900; color: #fff; }
 
-.btn-close-modal { width: 100%; background: #8a2be2; border: none; color: white; padding: 16px; border-radius: 15px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(138,43,226,0.2); }
+.btn-close-modal { width: 100%; background: #8a2be2; border: none; color: white; padding: 16px; border-radius: 15px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px rgba(138,43,226,0.3); transition: 0.3s; }
+.btn-close-modal:active { transform: scale(0.95); }
