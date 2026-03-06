@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Grade Horária - Hub Brain</title>
     <link rel="stylesheet" href="grade-estilo.css">
+    
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "f73275cd-17ad-4963-a25b-321ce2def2ba",
+        });
+      });
+    </script>
+
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .glass-header {
@@ -16,7 +27,8 @@
         .hub-logo-container { display: flex; align-items: center; gap: 10px; }
         .hub-logo-text { font-weight: 900; font-size: 19px; color: white; text-transform: uppercase; }
         .hub-logo-text.purple { color: #8a2be2; }
-        .btn-notif { background: none; border: none; color: #8a2be2; cursor: pointer; padding: 10px; }
+        .btn-notif { background: none; border: none; color: #8a2be2; cursor: pointer; padding: 10px; transition: 0.3s; }
+        .btn-notif:active { transform: scale(0.8); color: white; }
         
         /* Botão de Ajuda Geral */
         .btn-ajuda-geral {
@@ -49,7 +61,7 @@
             <i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i>
             <span class="hub-logo-text purple">Brain</span>
         </div>
-        <button onclick="ativarNotificacoesReal()" class="btn-notif">
+        <button onclick="ativarNotificacoesReal()" class="btn-notif" title="Ativar Notificações">
             <i data-lucide="bell"></i>
         </button>
     </header>
@@ -69,8 +81,7 @@
             <button class="btn-dia" data-dia="sexta" onclick="selecionarDia('sexta')">SEX</button>
         </div>
 
-        <div id="lista-aulas" class="lista-aulas">
-            </div>
+        <div id="lista-aulas" class="lista-aulas"></div>
 
         <button class="fab-add-aula" onclick="abrirModalAula()">
             <i data-lucide="plus"></i>
@@ -156,5 +167,15 @@
     </div>
 
     <script type="module" src="grade-logica.js"></script>
+    <script>
+        // Garante que as funções exportadas via 'window' no grade-logica.js funcionem
+        function ativarNotificacoesReal() {
+            if (typeof window.ativarNotificacoesReal === 'function') {
+                window.ativarNotificacoesReal();
+            } else {
+                console.log("Aguardando carregamento da lógica...");
+            }
+        }
+    </script>
 </body>
 </html>
