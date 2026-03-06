@@ -32,7 +32,7 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
-// --- INTERFACE (AVISOS E MODAIS) ---
+// --- INTERFACE (MODAIS E AVISOS) ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
@@ -64,11 +64,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
     const d = dMap[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
+
+    // Inicializa OneSignal para garantir que o usuário seja visto
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.init({ appId: "f73275cd-17ad-4963-a25b-321ce2def2ba" });
+    });
     
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- FIREBASE ---
+// --- FIREBASE (GRADE) ---
 async function carregarDadosNuvem() {
     try {
         const docSnap = await getDoc(doc(db, "grades_horarias", userPhone));
@@ -113,7 +119,7 @@ window.renderizarAulas = () => {
     lucide.createIcons();
 };
 
-// --- MODAL DE AULA (BUSCA MATÉRIAS DAS NOTAS) ---
+// --- MODAL DE AULA (BUSCA MATÉRIAS) ---
 window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
     const selectMat = document.getElementById('aula-materia-select');
@@ -123,9 +129,7 @@ window.abrirModalAula = async () => {
     try {
         const docSnap = await getDoc(doc(db, "notas", userPhone));
         let materias = [];
-        if (docSnap.exists()) {
-            materias = docSnap.data().materias || [];
-        }
+        if (docSnap.exists()) materias = docSnap.data().materias || [];
         
         selectMat.innerHTML = '<option value="">Selecionar...</option>';
         materias.forEach(m => {
@@ -134,9 +138,7 @@ window.abrirModalAula = async () => {
             opt.value = nome; opt.textContent = nome;
             selectMat.appendChild(opt);
         });
-    } catch (e) {
-        selectMat.innerHTML = '<option value="">Erro ao carregar</option>';
-    }
+    } catch (e) { selectMat.innerHTML = '<option value="">Erro ao carregar</option>'; }
 };
 
 window.salvarAula = async () => {
@@ -145,7 +147,6 @@ window.salvarAula = async () => {
     const matSelect = document.getElementById('aula-materia-select').value;
     const matCustom = document.getElementById('aula-materia-custom').value.trim();
     const prof = document.getElementById('aula-prof').value.trim();
-    
     const materiaFinal = matSelect || matCustom;
     
     if(!materiaFinal) {
@@ -160,7 +161,7 @@ window.salvarAula = async () => {
         ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
     });
 
-    // AGENDAMENTO (TESTE 1 MINUTO)
+    // AGENDAMENTO (TESTE 70 SEGUNDOS)
     await agendarNoServidorOneSignal(materiaFinal, infoHorario.inicio);
 
     renderizarAulas();
@@ -172,12 +173,11 @@ window.salvarAula = async () => {
     window.mostrarAvisoCustom("🚀 Aula e Alerta salvos!");
 };
 
-// --- AGENDAMENTO ONESIGNAL (CORREÇÃO FAILED TO FETCH) ---
+// --- AGENDAMENTO ONESIGNAL (MOTOR ATUALIZADO) ---
 async function agendarNoServidorOneSignal(materia, horaInicio) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
 
-    // TESTE: Agenda para daqui a 70 segundos
     let dataAlerta = new Date(new Date().getTime() + 70000); 
 
     const corpo = {
@@ -186,11 +186,12 @@ async function agendarNoServidorOneSignal(materia, horaInicio) {
         headings: { "pt": "Hub Brain" },
         chrome_web_icon: "https://hubbrain.netlify.app/icon-514.png",
         send_after: dataAlerta.toISOString(),
-        included_segments: ["Total Subscriptions"]
+        included_segments: ["Subscribed Users"],
+        target_channel: "push"
     };
 
     try {
-        await fetch("https://onesignal.com/api/v1/notifications", {
+        const res = await fetch("https://onesignal.com/api/v1/notifications", {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json; charset=utf-8", 
@@ -198,14 +199,9 @@ async function agendarNoServidorOneSignal(materia, horaInicio) {
             },
             body: JSON.stringify(corpo)
         });
-        
-        // Se o código chegou aqui, o comando saiu do celular
-        console.log("Comando enviado ao OneSignal");
-    } catch (e) { 
-        console.error("Erro no fetch:", e);
-        // Se der erro de rede, avisamos na tela
-        window.mostrarAvisoCustom("⚠️ Erro de conexão com alerta.");
-    }
+        const data = await res.json();
+        if (data.id) console.log("Notificação Agendada ID:", data.id);
+    } catch (e) { console.error("Erro OneSignal:", e); }
 }
 
 window.abrirConfirmExcluir = (i) => { 
