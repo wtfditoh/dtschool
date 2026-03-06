@@ -1,92 +1,75 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Configuração do Firebase (A mesma que você já usa)
 const firebaseConfig = {
-  apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
-  authDomain: "dt-scho0l.firebaseapp.com",
-  projectId: "dt-scho0l",
-  storageBucket: "dt-scho0l.firebasestorage.app",
-  messagingSenderId: "78578509391",
-  appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+    apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+    authDomain: "dt-scho0l.firebaseapp.com",
+    projectId: "dt-scho0l",
+    storageBucket: "dt-scho0l.firebasestorage.app",
+    messagingSenderId: "78578509391",
+    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-async function carregarRankingGlobal() {
+function getPatente(xp) {
+    if (xp >= 8000) return "Lenda do Hub 🏆";
+    if (xp >= 4000) return "Cérebro de Elite ⚡";
+    if (xp >= 1500) return "Veterano 🟣";
+    if (xp >= 500) return "Estudioso 🔵";
+    return "Novato 🟢";
+}
+
+async function carregarRanking() {
     try {
         const querySnapshot = await getDocs(collection(db, "notas"));
-        let rankingData = [];
+        let lista = [];
 
         querySnapshot.forEach((doc) => {
-            const dados = doc.data();
-            const materias = dados.materias || [];
-            
-            if (materias.length > 0) {
-                // Calcula a média de todas as matérias do usuário
-                const somaDasMedias = materias.reduce((acc, m) => {
-                    const somaNotas = (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0);
-                    return acc + (somaNotas / 4);
-                }, 0);
-
-                const mediaFinal = (somaDasMedias / materias.length).toFixed(1);
-
-                rankingData.push({
-                    nome: dados.nome || "Estudante",
-                    media: parseFloat(mediaFinal),
-                    foto: dados.fotoPerfil || null // Caso você adicione fotos depois
-                });
-            }
+            const d = doc.data();
+            // Se não tiver o campo xp ainda, usamos 0 como padrão
+            const xpTotal = d.xp || 0;
+            lista.push({
+                nome: d.nome || "Estudante",
+                xp: xpTotal,
+                avatar: d.avatar || "user",
+                patente: getPatente(xpTotal)
+            });
         });
 
-        // Ordena do maior para o menor
-        rankingData.sort((a, b) => b.media - a.media);
-
-        renderizarRanking(rankingData);
-
-    } catch (error) {
-        console.error("Erro ao buscar ranking:", error);
-        document.getElementById('ranking-geral').innerHTML = `<p style="color:red; text-align:center;">Erro ao carregar dados.</p>`;
-    }
+        lista.sort((a, b) => b.xp - a.xp);
+        renderizar(lista);
+    } catch (e) { console.error(e); }
 }
 
-function renderizarRanking(lista) {
-    // 1. Preencher o Top 3 (Podium)
-    if (lista[0]) atualizarPodio('p1', lista[0]);
-    if (lista[1]) atualizarPodio('p2', lista[1]);
-    if (lista[2]) atualizarPodio('p3', lista[2]);
+function renderizar(lista) {
+    // Top 3
+    for(let i=0; i<3; i++) {
+        const user = lista[i];
+        if(user) {
+            document.getElementById(`p${i+1}-name`).innerText = user.nome;
+            document.getElementById(`p${i+1}-score`).innerText = user.xp;
+            // Atualiza ícone do avatar se disponível
+            const avatarBox = document.getElementById(`avatar-p${i+1}`);
+            avatarBox.innerHTML = i === 0 ? `<i data-lucide="crown" class="crown"></i><i data-lucide="${user.avatar}"></i>` : `<i data-lucide="${user.avatar}"></i>`;
+        }
+    }
 
-    // 2. Preencher o restante da lista (do 4º em diante)
-    const listaGeral = document.getElementById('ranking-geral');
-    if (lista.length > 3) {
-        listaGeral.innerHTML = lista.slice(3).map((user, index) => `
-            <div class="ranking-item">
-                <span class="pos">${index + 4}º</span>
-                <div class="user-info">
-                    <span class="user-name">${user.nome}</span>
-                    <span class="user-points">Média Geral: ${user.media}</span>
-                </div>
-                <div class="trend-icon">
-                    <i data-lucide="trending-up" style="width:14px; color:#444;"></i>
-                </div>
+    // Restante
+    const container = document.getElementById('ranking-geral');
+    container.innerHTML = lista.slice(3).map((u, i) => `
+        <div class="ranking-item">
+            <span class="pos">${i + 4}º</span>
+            <div class="user-info">
+                <span class="user-name">${u.nome}</span>
+                <span class="patente">${u.patente} • ${u.xp} XP</span>
             </div>
-        `).join('');
-    } else if (lista.length <= 3) {
-        listaGeral.innerHTML = `<p style="text-align:center; color:#555; padding:20px;">A disputa está apenas começando!</p>`;
-    }
-
-    // Reinicia os ícones do Lucide para os novos elementos
-    if (window.lucide) lucide.createIcons();
-}
-
-function atualizarPodio(idPrefix, usuario) {
-    const nomeEl = document.getElementById(`${idPrefix}-name`);
-    const scoreEl = document.getElementById(`${idPrefix}-score`);
+            <i data-lucide="${u.avatar}" style="width:16px; color:#333;"></i>
+        </div>
+    `).join('');
     
-    if (nomeEl) nomeEl.innerText = usuario.nome;
-    if (scoreEl) scoreEl.innerText = usuario.media.toFixed(1);
+    if(window.lucide) lucide.createIcons();
 }
 
-// Inicia a busca assim que o script carrega
-document.addEventListener('DOMContentLoaded', carregarRankingGlobal);
+document.addEventListener('DOMContentLoaded', carregarRanking);
