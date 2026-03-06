@@ -2,9 +2,10 @@
 <html lang="pt-br">
 <head>
     <script>
-    if (!localStorage.getItem('dt_user_phone')) {
-        window.location.href = 'login.html';
-    }
+        // Bloqueio de segurança: se não houver telefone, volta pro login
+        if (!localStorage.getItem('dt_user_phone')) {
+            window.location.href = 'login.html';
+        }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -13,100 +14,245 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#8a2be2">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="estilo.css?v=13.0">
+    <link rel="stylesheet" href="estilo.css?v=15.0">
     <link rel="stylesheet" href="ranking.css">
 
     <style>
-        /* HEADER CENTRALIZADO */
+        /* --- ESTILOS DO CABEÇALHO (HEADER) --- */
         .glass-header {
-            display: grid; grid-template-columns: 60px 1fr 60px; align-items: center;
-            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.9) !important;
-            backdrop-filter: blur(20px); border-bottom: 1px solid rgba(138, 43, 226, 0.3);
-            position: sticky; top: 0; z-index: 1000;
+            display: grid; 
+            grid-template-columns: 60px 1fr 60px; 
+            align-items: center;
+            padding: 0 15px; 
+            height: 75px; 
+            background: rgba(10, 10, 10, 0.95) !important;
+            backdrop-filter: blur(25px); 
+            border-bottom: 2px solid rgba(138, 43, 226, 0.4);
+            position: sticky; 
+            top: 0; 
+            z-index: 1000;
         }
         
-        .hub-logo-container { display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
-        .hub-logo-text { font-weight: 900; font-size: 19px; letter-spacing: 1px; color: white; text-transform: uppercase; }
-        .hub-logo-text.purple { color: #8a2be2; text-shadow: 0 0 15px rgba(138, 43, 226, 0.5); }
+        .hub-logo-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 12px; 
+            cursor: pointer; 
+        }
+        
+        .hub-logo-text { 
+            font-weight: 900; 
+            font-size: 20px; 
+            letter-spacing: 1.5px; 
+            color: #ffffff; 
+            text-transform: uppercase; 
+        }
+        
+        .hub-logo-text.purple { 
+            color: #8a2be2; 
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.6); 
+        }
         
         .hub-symbol { 
-            background: rgba(138, 43, 226, 0.15); padding: 7px; border-radius: 12px; 
-            border: 1px solid rgba(138, 43, 226, 0.4); display: flex; align-items: center; 
-            animation: pulse-glow-v2 2.5s infinite ease-in-out; 
+            background: rgba(138, 43, 226, 0.2); 
+            padding: 8px; 
+            border-radius: 14px; 
+            border: 1px solid rgba(138, 43, 226, 0.5); 
+            display: flex; 
+            align-items: center; 
+            animation: pulse-glow-v3 3s infinite ease-in-out; 
         }
 
-        @keyframes pulse-glow-v2 {
-            0% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
-            50% { box-shadow: 0 0 20px rgba(138, 43, 226, 0.6); transform: scale(1.1); }
-            100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
+        @keyframes pulse-glow-v3 {
+            0%, 100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
+            50% { box-shadow: 0 0 25px rgba(138, 43, 226, 0.7); transform: scale(1.08); }
         }
 
-        .btn-add-main { 
-            background: #8a2be2 !important; width: 40px; height: 40px; border-radius: 14px; 
-            font-size: 26px; color: white; border: none; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); 
-            cursor: pointer; justify-self: end; display: flex; align-items: center; justify-content: center;
+        /* --- ESTILOS DA ABA DEV (DITOH) --- */
+        .ditoh-orbital-container { 
+            width: 120px; 
+            height: 120px; 
+            margin: 0 auto 30px; 
+            position: relative; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        
+        .ring-dev { 
+            position: absolute; 
+            border-radius: 50%; 
+            border: 3px solid transparent; 
+        }
+        
+        .ring-dev.r1 { 
+            width: 100%; 
+            height: 100%; 
+            border-top-color: #8a2be2; 
+            border-bottom-color: #8a2be2; 
+            animation: spin-dev 2.5s linear infinite; 
+        }
+        
+        .ring-dev.r2 { 
+            width: 75%; 
+            height: 75%; 
+            border-left-color: #ffffff; 
+            border-right-color: #8a2be2; 
+            animation: spin-dev-reverse 2s linear infinite; 
+        }
+        
+        @keyframes spin-dev { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spin-dev-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+
+        /* --- PERFIL PREMIUM --- */
+        .perfil-card-main {
+            background: linear-gradient(145deg, rgba(30,30,30,0.9), rgba(10,10,10,0.95));
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 35px; 
+            padding: 40px 20px; 
+            text-align: center; 
+            margin-top: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .avatar-main-box {
+            width: 120px; 
+            height: 120px; 
+            margin: 0 auto 25px; 
+            position: relative; 
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .avatar-main-box:active { transform: scale(0.9); }
+        
+        .avatar-img-circle { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 4px solid #8a2be2; 
+            background: #1a1a1a;
+            box-shadow: 0 0 25px rgba(138, 43, 226, 0.4);
         }
 
-        /* MODAIS */
-        .modal-full-screen {
-            display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
-            backdrop-filter: blur(20px); background: rgba(0, 0, 0, 0.8); z-index: 9999; padding: 20px;
+        .edit-icon-badge {
+            position: absolute; 
+            bottom: 5px; 
+            right: 5px; 
+            background: #8a2be2; 
+            width: 35px; 
+            height: 35px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            border: 3px solid #0a0a0a; 
+            color: white;
         }
 
-        .modal-dono-card {
-            border: 1px solid rgba(138, 43, 226, 0.3); background: rgba(15, 15, 15, 0.95); 
-            border-radius: 35px; width: 100%; max-width: 340px; padding: 35px 25px; text-align: center;
+        /* --- MANUAL DE XP (LISTA) --- */
+        .xp-guide-box {
+            background: rgba(255,255,255,0.03); 
+            padding: 18px; 
+            border-radius: 20px; 
+            margin-bottom: 12px;
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .xp-value-tag { 
+            background: #8a2be2; 
+            color: white; 
+            padding: 5px 12px; 
+            border-radius: 10px; 
+            font-weight: 900; 
+            font-size: 13px; 
+        }
+        
+        .xp-value-tag.red { background: #ff4444; }
+
+        /* --- MODAIS FULLSCREEN --- */
+        .modal-overlay-fix {
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            align-items: center; 
+            justify-content: center; 
+            backdrop-filter: blur(20px); 
+            background: rgba(0, 0, 0, 0.85); 
+            z-index: 9999; 
+            padding: 20px;
         }
 
-        /* PERFIL */
-        .avatar-wrapper { width: 110px; height: 110px; margin: 0 auto 20px; position: relative; cursor: pointer; }
-        .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #8a2be2; background: #111; }
-        .edit-badge { position: absolute; bottom: 5px; right: 5px; background: #8a2be2; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #111; color: white; }
-
-        /* LISTA DE XP CUSTOM */
-        .xp-list-item {
-            display: flex; align-items: center; justify-content: space-between;
-            background: rgba(255,255,255,0.03); padding: 12px 15px; border-radius: 15px;
-            margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05);
+        /* --- BOTAO ADD MATERIA --- */
+        .btn-plus-style {
+            background: #8a2be2 !important; 
+            width: 45px; 
+            height: 45px; 
+            border-radius: 15px; 
+            font-size: 28px; 
+            color: white; 
+            border: none; 
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4); 
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .xp-tag { background: #8a2be2; color: white; padding: 3px 10px; border-radius: 8px; font-weight: 900; font-size: 12px; }
-        .xp-tag.negativo { background: #ff4444; }
-
-        .drawer-item { display: flex; align-items: center; gap: 15px; width: 100%; padding: 15px; background: none; border: none; color: #ccc; font-size: 16px; border-radius: 12px; margin-bottom: 5px; transition: 0.3s; text-align: left;}
-        .drawer-item.active { background: rgba(138, 43, 226, 0.15); color: white; border-left: 4px solid #8a2be2; }
     </style>
 </head>
 <body>
-    <div id="overlay" onclick="toggleMenu()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1001;"></div>
+    <div id="overlay" onclick="toggleMenu()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1001;"></div>
 
     <header class="glass-header">
-        <button onclick="toggleMenu()" style="background:none; border:none; color:white;"><i data-lucide="menu"></i></button>
-        <div class="hub-logo-container" onclick="abrirSobreDono()">
+        <button onclick="toggleMenu()" style="background:none; border:none; color:white; cursor:pointer;">
+            <i data-lucide="menu" style="width: 28px; height: 28px;"></i>
+        </button>
+        
+        <div class="hub-logo-container" onclick="abrirModalDev()">
             <span class="hub-logo-text">Hub</span>
-            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i></div>
+            <div class="hub-symbol">
+                <i data-lucide="brain-circuit" style="color: #8a2be2; width: 24px; height: 24px;"></i>
+            </div>
             <span class="hub-logo-text purple">Brain</span>
         </div>
-        <button id="btn-add-main" onclick="abrirModal()" class="btn-add-main">+</button>
+
+        <button id="btn-add-global" onclick="abrirModal()" class="btn-plus-style" style="visibility: visible;">+</button>
     </header>
 
     <nav id="menu-lateral" class="drawer" style="z-index: 1002;">
         <div class="drawer-header">
-            <div class="logo-box"><i data-lucide="brain-circuit" style="color: #8a2be2;"></i> <span>HUB BRAIN</span></div>
+            <div class="logo-box">
+                <i data-lucide="brain-circuit" style="color: #8a2be2;"></i> 
+                <span style="font-weight: 900; letter-spacing: 1px;">HUB BRAIN</span>
+            </div>
             <button onclick="toggleMenu()" style="background:none; border:none; color:white;"><i data-lucide="x"></i></button>
         </div>
-        <button onclick="mudarAba('notas')" class="drawer-item active" id="nav-notas"><i data-lucide="layout-grid"></i> Notas</button>
+        
+        <button onclick="mudarAba('notas')" class="drawer-item active" id="nav-notas"><i data-lucide="layout-grid"></i> Minhas Notas</button>
         <button onclick="mudarAba('ranking')" class="drawer-item" id="nav-ranking"><i data-lucide="trophy"></i> Ranking Global</button>
         <button onclick="mudarAba('perfil')" class="drawer-item" id="nav-perfil"><i data-lucide="user"></i> Meu Perfil</button>
-        <hr style="opacity:0.1; margin:15px 0;">
-        <button onclick="window.location.href='horario.html'" class="drawer-item"><i data-lucide="calendar-clock"></i> Horário das Aulas</button>
-        <button onclick="window.location.href='agenda.html'" class="drawer-item"><i data-lucide="calendar"></i> Agenda Escolar</button>
+        
+        <hr style="opacity:0.1; margin:15px 10px;">
+        
+        <button onclick="window.location.href='horario.html'" class="drawer-item"><i data-lucide="calendar-clock"></i> Quadro de Horários</button>
+        <button onclick="window.location.href='agenda.html'" class="drawer-item"><i data-lucide="calendar"></i> Agenda de Provas</button>
         <button onclick="window.location.href='estudos.html'" class="drawer-item"><i data-lucide="sparkles"></i> Estudar com IA</button>
-        <button onclick="localStorage.clear(); window.location.href='login.html';" class="drawer-item" style="color: #ff4444; margin-top: 20px;"><i data-lucide="log-out"></i> Sair</button>
+        
+        <button onclick="localStorage.clear(); window.location.href='login.html';" class="drawer-item" style="color: #ff4444; margin-top: 30px;">
+            <i data-lucide="log-out"></i> Encerrar Sessão
+        </button>
     </nav>
 
     <main class="container">
+        
         <section id="aba-notas">
             <div class="stats-row">
                 <div class="stat-card"><span id="media-geral">0.0</span><label>Média Geral</label></div>
@@ -116,154 +262,166 @@
         </section>
 
         <section id="aba-ranking" style="display: none;">
-            <div style="text-align:center; padding: 30px 0;">
-                <i data-lucide="trophy" style="color: #ffd700; width: 40px; height: 40px; margin-bottom: 10px;"></i>
-                <h2 style="margin:0; font-weight: 900; letter-spacing: 2px;">RANKING GLOBAL</h2>
-                <p style="color: #8a2be2; font-size: 11px; font-weight: bold; letter-spacing: 3px;">OS MESTRES DO HUB BRAIN</p>
+            <div style="text-align:center; padding: 40px 0;">
+                <i data-lucide="trophy" style="color: #ffd700; width: 45px; height: 45px; margin-bottom: 15px;"></i>
+                <h2 style="margin:0; font-weight: 900; letter-spacing: 2px; color: #fff;">HALL DA FAMA</h2>
+                <p style="color: #8a2be2; font-size: 12px; font-weight: bold; letter-spacing: 4px;">RANKING ATUALIZADO</p>
             </div>
             <div id="podio-container" class="podio"></div>
             <div id="lista-ranking-geral"></div>
         </section>
 
         <section id="aba-perfil" style="display: none;">
-            <div class="perfil-hero" style="background: rgba(20,20,20,0.6); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 30px; padding: 35px 20px; text-align: center; margin-top: 20px;">
-                <div class="avatar-wrapper" onclick="document.getElementById('input-foto-perfil').click()">
-                    <img id="img-perfil-display" src="https://via.placeholder.com/150" class="avatar-img">
-                    <div class="edit-badge"><i data-lucide="camera" style="width:14px;"></i></div>
-                    <input type="file" id="input-foto-perfil" hidden accept="image/*" onchange="processarFoto(this)">
+            <div class="perfil-card-main">
+                <div class="avatar-main-box" onclick="document.getElementById('input-foto-upload').click()">
+                    <img id="img-perfil-tag" src="https://via.placeholder.com/150" class="avatar-img-circle">
+                    <div class="edit-icon-badge"><i data-lucide="camera" style="width:16px;"></i></div>
+                    <input type="file" id="input-foto-upload" hidden accept="image/*" onchange="salvarFotoLocal(this)">
                 </div>
-                <input type="text" id="input-nome-usuario" placeholder="Seu Nome no Ranking" style="background:rgba(0,0,0,0.3); border:1px solid #444; color:white; padding:15px; border-radius:15px; width:100%; text-align:center; font-size:18px; font-weight:800; margin-bottom:15px; outline:none;">
-                <button onclick="acaoSalvarPerfil(event)" style="background:#8a2be2; color:white; border:none; padding:15px; border-radius:15px; width:100%; font-weight:900; cursor:pointer;">SALVAR ALTERAÇÕES</button>
-                
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:30px;">
-                    <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:20px; border:1px solid rgba(255,255,255,0.05);">
-                        <span id="user-rank-pos" style="font-size:28px; font-weight:900; color:#ffd700; display:block;">--</span>
-                        <label style="font-size:11px; color:#888;">POSIÇÃO</label>
+
+                <div style="padding: 0 10px;">
+                    <input type="text" id="input-nome-perfil" placeholder="Como quer ser chamado?" 
+                           style="background:rgba(0,0,0,0.4); border:2px solid #333; color:white; padding:18px; border-radius:18px; width:100%; text-align:center; font-size:18px; font-weight:800; margin-bottom:15px; outline:none; box-sizing: border-box;">
+                    
+                    <button type="button" onclick="salvarNomeDefinitivo()" 
+                            style="background:#8a2be2; color:white; border:none; padding:18px; border-radius:18px; width:100%; font-weight:900; cursor:pointer; font-size:16px; box-shadow: 0 5px 20px rgba(138, 43, 226, 0.4);">
+                        SALVAR ALTERAÇÕES
+                    </button>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:35px;">
+                    <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:25px; border:1px solid rgba(255,255,255,0.05);">
+                        <span id="user-rank-pos" style="font-size:30px; font-weight:900; color:#ffd700; display:block;">--</span>
+                        <label style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Posição</label>
                     </div>
-                    <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:20px; border:1px solid rgba(255,255,255,0.05);">
-                        <span id="user-rank-xp" style="font-size:28px; font-weight:900; color:#8a2be2; display:block;">0</span>
-                        <label style="font-size:11px; color:#888;">PONTOS XP</label>
+                    <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:25px; border:1px solid rgba(255,255,255,0.05);">
+                        <span id="user-rank-xp" style="font-size:30px; font-weight:900; color:#8a2be2; display:block;">0</span>
+                        <label style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Total XP</label>
                     </div>
                 </div>
             </div>
-            <button onclick="abrirAjudaXP()" style="width:100%; margin-top:20px; background:none; border:1px dashed #444; color:#888; padding:20px; border-radius:20px; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer;">
-                <i data-lucide="info"></i> COMO GANHAR PONTOS?
+
+            <button onclick="abrirModalXP()" style="width:100%; margin-top:25px; background:none; border:2px dashed #444; color:#aaa; padding:22px; border-radius:25px; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:12px; cursor:pointer; transition:0.3s;">
+                <i data-lucide="zap" style="color: #8a2be2;"></i> MANUAL DE PONTUAÇÃO
             </button>
         </section>
     </main>
 
-    <div id="modal-dono" class="modal-full-screen">
-        <div class="modal-dono-card">
-            <div style="width: 100px; height: 100px; margin: 0 auto 25px; position: relative; display: flex; align-items: center; justify-content: center;">
-                <div class="ring-o r1" style="position: absolute; border-radius: 50%; border: 2px solid transparent; border-top-color: #8a2be2; width: 100%; height: 100%; animation: spin 2s linear infinite;"></div>
-                <div class="ring-o r2" style="position: absolute; border-radius: 50%; border: 2px solid transparent; border-bottom-color: #8a2be2; width: 75%; height: 75%; animation: spin 1.5s linear infinite reverse;"></div>
-                <i data-lucide="zap" style="color:white; width:30px;"></i>
+    <div id="modal-dev" class="modal-overlay-fix">
+        <div style="border: 2px solid rgba(138, 43, 226, 0.4); background: rgba(10, 10, 10, 0.98); border-radius: 40px; width: 100%; max-width: 350px; padding: 45px 30px; text-align: center; position: relative; overflow: hidden;">
+            <div class="ditoh-orbital-container">
+                <div class="ring-dev r1"></div>
+                <div class="ring-dev r2"></div>
+                <i data-lucide="cpu" style="color:#ffffff; width:35px; height:35px; z-index: 10;"></i>
             </div>
-            <h3 style="color:white; margin:0; font-size:28px; font-weight:900; letter-spacing:2px;">DITOH</h3>
-            <p style="color:#8a2be2; font-weight:bold; letter-spacing:4px; margin-bottom:20px; font-size:12px;">FOUNDER & DEV</p>
-            <div style="background:rgba(138,43,226,0.1); padding:20px; border-radius:20px; border-left:4px solid #8a2be2; text-align:left; margin-bottom:25px;">
-                <p style="color:#eee; font-size:14px; font-style:italic; line-height:1.6;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Teve uma ideia? Me chama na DM!"</p>
+            
+            <h3 style="color:white; margin:0; font-size:32px; font-weight:900; letter-spacing:3px;">DITOH</h3>
+            <p style="color:#8a2be2; font-weight:bold; letter-spacing:5px; margin-bottom:25px; font-size:12px; text-transform: uppercase;">Founder & Developer</p>
+            
+            <div style="background:rgba(138,43,226,0.1); padding:25px; border-radius:25px; border-left:5px solid #8a2be2; text-align:left; margin-bottom:30px;">
+                <p style="color:#ddd; font-size:15px; font-style:italic; line-height:1.6; margin:0;">
+                    "O Hub Brain nasceu para organizar o caos. Se você encontrou um bug ou tem uma sugestão insana, minha DM está sempre aberta."
+                </p>
             </div>
-            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:12px; color:white; background:rgba(255,255,255,0.05); padding:15px; border-radius:18px; border:1px solid rgba(138,43,226,0.2); margin-bottom:20px;">
-                <i data-lucide="instagram" style="color:#8a2be2;"></i> <b>@wtfditoh</b>
+            
+            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:12px; color:white; background:rgba(255,255,255,0.05); padding:18px; border-radius:20px; border:1px solid rgba(138, 43, 226, 0.3); margin-bottom:25px; font-weight:bold;">
+                <i data-lucide="instagram" style="color:#8a2be2;"></i> @wtfditoh
             </a>
-            <button onclick="fecharTodosModais()" style="width:100%; background:#8a2be2; color:white; border:none; padding:18px; border-radius:15px; font-weight:900; cursor:pointer;">VOLTAR</button>
+            
+            <button onclick="fecharTodosModais()" style="width:100%; background:#8a2be2; color:white; border:none; padding:20px; border-radius:20px; font-weight:900; font-size:16px; cursor:pointer;">FECHAR</button>
         </div>
     </div>
 
-    <div id="modal-ajuda-xp" class="modal-full-screen">
-        <div class="modal-dono-card" style="text-align:left; max-width:360px;">
-            <h3 style="color:#8a2be2; margin:0 0 20px 0; font-size:22px;">Manual de XP 🎮</h3>
-            <div class="xp-list-item"><span>💎 Nota 10</span> <span class="xp-tag">+100 XP</span></div>
-            <div class="xp-list-item"><span>🚀 Nota 7-9</span> <span class="xp-tag">+50 XP</span></div>
-            <div class="xp-list-item"><span>🎯 Acerto Simulado</span> <span class="xp-tag">+10 XP</span></div>
-            <div class="xp-list-item"><span>✅ Atividade feita</span> <span class="xp-tag">+15 XP</span></div>
-            <div class="xp-list-item"><span>📅 Aula salva</span> <span class="xp-tag">+5 XP</span></div>
-            <hr style="opacity:0.1; margin: 10px 0;">
-            <div class="xp-list-item"><span>❌ Erro Simulado</span> <span class="xp-tag negativo">-5 XP</span></div>
-            <div class="xp-list-item"><span>💀 Nota < 5</span> <span class="xp-tag negativo">-30 XP</span></div>
-            <button onclick="fecharTodosModais()" style="width:100%; background:#333; color:white; border:none; padding:15px; border-radius:12px; margin-top:20px; font-weight:bold; cursor:pointer;">ENTENDI</button>
+    <div id="modal-xp-manual" class="modal-overlay-fix">
+        <div style="background: rgba(15, 15, 15, 0.98); border-radius: 40px; border: 1px solid #333; width: 100%; max-width: 360px; padding: 35px; text-align: left;">
+            <h2 style="color:#8a2be2; margin:0 0 25px 0; font-size:26px; display:flex; align-items:center; gap:10px;">
+                Manual de XP <i data-lucide="award"></i>
+            </h2>
+            
+            <div class="xp-guide-box"><span>💎 Nota Máxima (10)</span> <span class="xp-value-tag">+100 XP</span></div>
+            <div class="xp-guide-box"><span>🚀 Média (7.0 a 9.9)</span> <span class="xp-value-tag">+50 XP</span></div>
+            <div class="xp-guide-box"><span>🎯 Acerto em Simulado</span> <span class="xp-value-tag">+10 XP</span></div>
+            <div class="xp-guide-box"><span>📝 Atividade Concluída</span> <span class="xp-tag">+15 XP</span></div>
+            
+            <hr style="opacity:0.05; margin:15px 0;">
+            
+            <div class="xp-guide-box"><span>❌ Erro em Simulado</span> <span class="xp-value-tag red">-5 XP</span></div>
+            <div class="xp-guide-box"><span>💀 Nota Abaixo de 5</span> <span class="xp-value-tag red">-30 XP</span></div>
+            
+            <button onclick="fecharTodosModais()" style="width:100%; background:#333; color:white; border:none; padding:18px; border-radius:15px; margin-top:20px; font-weight:bold; cursor:pointer;">ENTENDI</button>
         </div>
     </div>
 
     <div id="modal-materia" class="modal">
         <div class="modal-content">
-            <h3>Nova Disciplina</h3>
-            <input type="text" id="nome-materia-input" placeholder="Ex: Matemática" style="width:100%; padding:15px; margin:15px 0; border-radius:12px; background:#1a1a1a; border:1px solid #333; color:white; box-sizing:border-box;">
-            <div class="area-botoes-modal" style="display:flex; gap:10px;">
-                <button onclick="fecharModal()" style="flex:1; padding:15px; border-radius:12px; background:#333; color:white; border:none;">Sair</button>
-                <button onclick="confirmarNovaMateria()" style="flex:1; padding:15px; border-radius:12px; background:#8a2be2; color:white; border:none; font-weight:bold;">Criar</button>
+            <h3 style="margin-top:0;">Nova Disciplina</h3>
+            <input type="text" id="nome-materia-input" placeholder="Ex: Física Quântica" style="width:100%; padding:15px; margin:20px 0; border-radius:15px; background:#111; border:1px solid #444; color:white; box-sizing:border-box; outline:none;">
+            <div style="display:flex; gap:12px;">
+                <button onclick="fecharModal()" style="flex:1; padding:15px; border-radius:15px; background:#222; color:white; border:none; cursor:pointer;">Cancelar</button>
+                <button onclick="confirmarNovaMateria()" style="flex:1; padding:15px; border-radius:15px; background:#8a2be2; color:white; border:none; font-weight:bold; cursor:pointer;">Criar</button>
             </div>
         </div>
     </div>
 
-    <script type="module" src="funcoes.js?v=13.0"></script>
+    <script type="module" src="funcoes.js?v=15.0"></script>
     <script type="module">
         import { carregarRankingReal, carregarDadosPessoaisRanking, salvarNomePerfil } from './ranking-logica.js';
         
-        window.acaoSalvarPerfil = (e) => {
-            if(e) e.preventDefault();
-            const nome = document.getElementById('input-nome-usuario').value;
-            if(nome.trim() !== ""){
-                salvarNomePerfil();
-                localStorage.setItem('hub_user_name', nome);
-                alert("Perfil salvo! 🚀");
+        // Função de salvar perfil sem dar refresh na página
+        window.salvarNomeDefinitivo = () => {
+            const nomeInput = document.getElementById('input-nome-perfil');
+            const novoNome = nomeInput.value.trim();
+            
+            if (novoNome !== "") {
+                localStorage.setItem('hub_user_name', novoNome);
+                // Chama a função do seu Firebase/Backend
+                salvarNomePerfil(); 
+                alert("Perfil Atualizado com Sucesso! 🚀");
+            } else {
+                alert("Por favor, digite um nome válido.");
             }
         };
 
+        // Gerenciamento de Abas
         window.mudarAba = (aba) => {
-            const abas = ['notas', 'ranking', 'perfil'];
-            abas.forEach(a => document.getElementById('aba-' + a).style.display = 'none');
-            document.querySelectorAll('.drawer-item').forEach(i => i.classList.remove('active'));
+            const listaAbas = ['notas', 'ranking', 'perfil'];
+            listaAbas.forEach(a => {
+                document.getElementById('aba-' + a).style.display = 'none';
+                document.getElementById('nav-' + a).classList.remove('active');
+            });
             
             document.getElementById('aba-' + aba).style.display = 'block';
             document.getElementById('nav-' + aba).classList.add('active');
-            document.getElementById('btn-add-main').style.visibility = (aba === 'notas') ? 'visible' : 'hidden';
+            
+            // Exibir/Esconder botão de adicionar matéria
+            document.getElementById('btn-add-global').style.visibility = (aba === 'notas') ? 'visible' : 'hidden';
 
             if(aba === 'ranking') carregarRankingReal();
-            if(aba === 'perfil') {
-                carregarDadosPessoaisRanking();
-                const savedName = localStorage.getItem('hub_user_name');
-                if(savedName) document.getElementById('input-nome-usuario').value = savedName;
-            }
+            if(aba === 'perfil') carregarDadosDoUsuario();
+
             if(window.lucide) lucide.createIcons();
             toggleMenu();
         };
     </script>
 
     <script>
-        const toggleMenu = () => {
+        // Funções de UI
+        function toggleMenu() {
             const menu = document.getElementById('menu-lateral');
             const overlay = document.getElementById('overlay');
             menu.classList.toggle('open');
             overlay.style.display = menu.classList.contains('open') ? 'block' : 'none';
-        };
-
-        const abrirSobreDono = () => { document.getElementById('modal-dono').style.display = 'flex'; lucide.createIcons(); };
-        const abrirAjudaXP = () => { document.getElementById('modal-ajuda-xp').style.display = 'flex'; lucide.createIcons(); };
-        const fecharTodosModais = () => { 
-            document.getElementById('modal-dono').style.display = 'none'; 
-            document.getElementById('modal-ajuda-xp').style.display = 'none'; 
-        };
-
-        function processarFoto(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('img-perfil-display').src = e.target.result;
-                    localStorage.setItem('hub_user_photo', e.target.result);
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
         }
 
-        document.addEventListener('DOMContentLoaded', () => { 
-            lucide.createIcons(); 
-            const savedPhoto = localStorage.getItem('hub_user_photo');
-            if(savedPhoto) document.getElementById('img-perfil-display').src = savedPhoto;
-            const savedName = localStorage.getItem('hub_user_name');
-            if(savedName) document.getElementById('input-nome-usuario').value = savedName;
-        });
-    </script>
-</body>
-</html>
+        const abrirModalDev = () => { document.getElementById('modal-dev').style.display = 'flex'; lucide.createIcons(); };
+        const abrirModalXP = () => { document.getElementById('modal-xp-manual').style.display = 'flex'; lucide.createIcons(); };
+        const fecharTodosModais = () => { 
+            document.getElementById('modal-dev').style.display = 'none'; 
+            document.getElementById('modal-xp-manual').style.display = 'none'; 
+        };
+
+        // Lógica de Foto de Perfil
+        function salvarFotoLocal(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.
