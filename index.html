@@ -2,34 +2,42 @@
 <html lang="pt-br">
 <head>
     <script>
-        // Bloqueio de segurança
+        // Trava de segurança: Se não tiver o login, ele nem renderiza a página
         if (!localStorage.getItem('dt_user_phone')) {
             window.location.href = 'login.html';
         }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain - Inteligência Escolar</title> 
+    <title>Hub Brain - Oficial Premium</title> 
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#8a2be2">
+    <meta name="theme-color" content="#0a0a0a">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="estilo.css?v=30.0">
+    <link rel="stylesheet" href="estilo.css?v=50.0">
 
     <style>
-        /* --- DESIGN DE ELITE (O QUE TINHA SUMIDO) --- */
+        /* --- DESIGN DE ALTA FIDELIDADE (O QUE TINHA SUMIDO) --- */
         :root {
-            --roxo: #8a2be2;
-            --bg-deep: #050505;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border-glass: rgba(138, 43, 226, 0.3);
+            --p: #8a2be2;
+            --p-glow: rgba(138, 43, 226, 0.4);
+            --bg: #050505;
+            --surface: #0f0f0f;
+            --text-sec: #888;
         }
 
-        body { background-color: var(--bg-deep); color: white; overflow-x: hidden; }
+        body { 
+            background-color: var(--bg); 
+            color: white; 
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
 
-        /* HEADER PREMIUM */
+        /* HEADER COM GRID SIMÉTRICO */
         .glass-header {
             display: grid; 
             grid-template-columns: 60px 1fr 60px; 
@@ -38,57 +46,67 @@
             height: 75px; 
             background: rgba(10, 10, 10, 0.9) !important;
             backdrop-filter: blur(25px); 
-            border-bottom: 1px solid var(--border-glass);
+            border-bottom: 1px solid rgba(138, 43, 226, 0.25);
             position: sticky; 
             top: 0; 
             z-index: 1000;
         }
 
-        .hub-logo-container { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px; 
-            cursor: pointer; 
-        }
-        
-        .hub-logo-text { 
-            font-weight: 900; 
-            font-size: 20px; 
-            color: white; 
-            text-transform: uppercase; 
-            letter-spacing: 1.5px; 
-        }
-        
-        .hub-logo-text.purple { 
-            color: var(--roxo); 
-            text-shadow: 0 0 20px rgba(138, 43, 226, 0.6); 
-        }
-
-        .hub-symbol {
-            background: rgba(138, 43, 226, 0.15);
-            padding: 7px;
-            border-radius: 12px;
-            border: 1px solid var(--border-glass);
+        /* LOGO COM GLOW ANIMADO */
+        .hub-logo-box {
             display: flex;
             align-items: center;
-            animation: pulse-glow 3s infinite ease-in-out;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .hub-logo-box:active { transform: scale(0.95); }
+        
+        .logo-text { font-weight: 900; font-size: 19px; letter-spacing: 1px; text-transform: uppercase; }
+        .logo-text.purple { color: var(--p); text-shadow: 0 0 15px var(--p-glow); }
+
+        .logo-icon-bg {
+            background: rgba(138, 43, 226, 0.15);
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(138, 43, 226, 0.4);
+            display: flex;
+            animation: pulse-logo 3s infinite;
         }
 
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
-            50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.5); transform: scale(1.05); }
+        @keyframes pulse-logo {
+            0%, 100% { box-shadow: 0 0 0px var(--p-glow); }
+            50% { box-shadow: 0 0 20px var(--p-glow); }
         }
 
-        /* MENU LATERAL DRAWER GIGANTE */
+        /* BOTÃO + (AJUSTADO E BONITO) */
+        .btn-plus-top {
+            background: var(--p);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.3);
+            transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-plus-top:active { transform: scale(0.85); }
+
+        /* MENU LATERAL (DRAWER) - DESIGN DE APP NATIVO */
         .drawer {
             position: fixed; top: 0; left: -290px; width: 280px; height: 100%;
             background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(30px);
-            z-index: 2000; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            border-right: 1px solid var(--border-glass); padding: 30px 20px;
+            z-index: 2000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid rgba(138, 43, 226, 0.2); padding: 35px 20px;
         }
-        
-        .drawer.open { left: 0; box-shadow: 20px 0 60px rgba(0,0,0,0.9); }
+        .drawer.open { left: 0; box-shadow: 30px 0 60px rgba(0,0,0,0.8); }
 
         .drawer-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -99,203 +117,88 @@
         .drawer-item {
             display: flex; align-items: center; gap: 15px; width: 100%;
             padding: 16px; margin-bottom: 10px; border: none; background: transparent;
-            color: #888; font-size: 15px; font-weight: 600; border-radius: 16px;
+            color: #777; font-size: 15px; font-weight: 600; border-radius: 16px;
             cursor: pointer; transition: 0.3s;
         }
-
-        .drawer-item.active { background: rgba(138, 43, 226, 0.15); color: #fff; border: 1px solid var(--roxo); }
+        .drawer-item.active { background: rgba(138, 43, 226, 0.12); color: #fff; border: 1px solid var(--p); }
         .drawer-item i { width: 22px; }
 
-        /* MODAIS CENTRALIZADOS E BONITOS */
-        .modal-full-screen {
+        /* MODAL DEV (DITOH) - COM VIDA E IDENTIDADE */
+        .modal-overlay-full {
             display: none; position: fixed; inset: 0; 
             align-items: center; justify-content: center; 
-            background: rgba(0, 0, 0, 0.92); z-index: 9999; padding: 20px;
+            background: rgba(0, 0, 0, 0.9); z-index: 9999; padding: 25px;
         }
 
-        .card-modal {
-            background: #0d0d0d; border: 1px solid var(--border-glass);
-            border-radius: 40px; padding: 40px 30px; width: 100%; max-width: 340px; 
-            text-align: center; position: relative; overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        .card-dev-premium {
+            background: linear-gradient(145deg, #0d0d0d, #050505);
+            border: 1px solid rgba(138, 43, 226, 0.4);
+            border-radius: 40px; padding: 45px 30px; width: 100%; max-width: 330px;
+            text-align: center; position: relative;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
         }
 
-        /* ANIMAÇÃO ÓRBITA DEV (O ORGULHO DO DESIGN) */
-        .orbital-box { 
-            width: 110px; height: 110px; margin: 0 auto 25px; 
+        /* ÓRBITA DEV (CENTRALIZADA E LINDA) */
+        .orbital-wrap { 
+            width: 120px; height: 120px; margin: 0 auto 30px; 
             position: relative; display: flex; align-items: center; justify-content: center; 
         }
         
-        .ring-dev { 
-            position: absolute; border-radius: 50%; border: 3px solid transparent; 
-        }
+        .ring { position: absolute; border-radius: 50%; border: 3px solid transparent; }
+        .ring-1 { width: 100%; height: 100%; border-top-color: var(--p); border-bottom-color: var(--p); animation: spin 2.8s linear infinite; }
+        .ring-2 { width: 75%; height: 75%; border-left-color: #fff; border-right-color: var(--p); animation: spin 2s linear infinite reverse; }
         
-        .ring-dev.r1 { 
-            width: 100%; height: 100%; border-top-color: var(--roxo); 
-            border-bottom-color: var(--roxo); animation: spin-dev 2.5s linear infinite; 
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* INPUTS E AVISOS */
+        .input-brain {
+            width: 100%; padding: 18px; border-radius: 18px; background: #151515;
+            border: 2px solid #222; color: white; outline: none; transition: 0.3s;
+            font-size: 16px; box-sizing: border-box;
         }
+        .input-brain:focus { border-color: var(--p); box-shadow: 0 0 15px rgba(138, 43, 226, 0.2); }
         
-        .ring-dev.r2 { 
-            width: 70%; height: 70%; border-left-color: #fff; 
-            border-right-color: var(--roxo); animation: spin-dev-rev 2s linear infinite; 
-        }
-        
-        @keyframes spin-dev { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes spin-dev-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
-
-        /* BOTÃO + (COM FUNÇÃO REAL) */
-        .btn-add-action {
-            background: var(--roxo); color: white; border: none; 
-            width: 48px; height: 48px; border-radius: 16px; 
-            font-size: 28px; font-weight: bold; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 8px 20px rgba(138, 43, 226, 0.4);
-            transition: 0.3s;
+        .error-shake { border-color: #ff4444 !important; animation: shake-ani 0.4s; }
+        @keyframes shake-ani {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
         }
 
-        .btn-add-action:active { transform: scale(0.9); }
-
-        /* TEXTOS */
-        .phrase-dev {
-            color: #aaa; font-size: 14px; line-height: 1.6;
-            font-style: italic; margin: 20px 0; padding: 0 10px;
+        .text-phrase {
+            color: #888; font-size: 14px; font-style: italic; line-height: 1.6;
+            margin: 20px 0; padding: 0 10px;
         }
-
     </style>
 </head>
-<body>
-    <div id="overlay" onclick="toggleMenu()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1500;"></div>
+<body onclick="checkClickOutside(event)">
+    <div id="overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1500;"></div>
 
     <header class="glass-header">
-        <button onclick="toggleMenu()" style="background:none; border:none; color:white; cursor:pointer;">
-            <i data-lucide="menu" style="width: 28px; height: 28px;"></i>
+        <button onclick="toggleMenu(event)" style="background:none; border:none; color:white; cursor:pointer;">
+            <i data-lucide="menu" style="width: 28px;"></i>
         </button>
         
-        <div class="hub-logo-container" onclick="abrirDono()">
-            <span class="hub-logo-text">Hub</span>
-            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i></div>
-            <span class="hub-logo-text purple">Brain</span>
+        <div class="hub-logo-box" onclick="abrirDev()">
+            <span class="logo-text">Hub</span>
+            <div class="logo-icon-bg"><i data-lucide="brain-circuit" style="color:var(--p); width:22px;"></i></div>
+            <span class="logo-text purple">Brain</span>
         </div>
 
-        <button onclick="abrirModal()" class="btn-add-action">+</button>
+        <button onclick="abrirModal()" class="btn-plus-top">+</button>
     </header>
 
     <nav id="menu-lateral" class="drawer">
         <div class="drawer-header">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <i data-lucide="brain-circuit" style="color: var(--roxo); width: 24px;"></i>
-                <span style="font-weight: 900; letter-spacing: 1px;">HUB BRAIN</span>
-            </div>
-            <i data-lucide="x" onclick="toggleMenu()" style="color: #444; cursor: pointer;"></i>
+            <span style="font-weight: 900; color: var(--p); font-size: 11px; letter-spacing: 3px;">CENTRAL DE COMANDO</span>
+            <i data-lucide="x" onclick="toggleMenu(event)" style="color: #444; cursor: pointer;"></i>
         </div>
         
-        <button onclick="window.location.href='index.html'" class="drawer-item active">
-            <i data-lucide="layout-grid"></i> Minhas Notas
-        </button>
+        <button onclick="window.location.href='index.html'" class="drawer-item active"><i data-lucide="layout-grid"></i> Minhas Notas</button>
+        <button onclick="window.location.href='ranking.html'" class="drawer-item"><i data-lucide="trophy"></i> Ranking Global</button>
+        <button onclick="window.location.href='perfil.html'" class="drawer-item"><i data-lucide="user"></i> Meu Perfil</button>
         
-        <button onclick="window.location.href='ranking.html'" class="drawer-item">
-            <i data-lucide="trophy"></i> Ranking Global
-        </button>
+        <div style="height:1px; background:rgba(255,255,255,0.05); margin:25px 0;"></div>
         
-        <button onclick="window.location.href='perfil.html'" class="drawer-item">
-            <i data-lucide="user"></i> Meu Perfil
-        </button>
-        
-        <hr style="opacity:0.05; margin:20px 0;">
-        
-        <button onclick="window.location.href='horario.html'" class="drawer-item">
-            <i data-lucide="calendar-clock"></i> Quadro de Horários
-        </button>
-        
-        <button onclick="window.location.href='agenda.html'" class="drawer-item">
-            <i data-lucide="calendar"></i> Agenda de Provas
-        </button>
-        
-        <button onclick="window.location.href='estudos.html'" class="drawer-item">
-            <i data-lucide="sparkles"></i> Estudar com IA
-        </button>
-
-        <button onclick="localStorage.clear(); window.location.href='login.html';" class="drawer-item" style="color: #ff4444; margin-top: 40px;">
-            <i data-lucide="log-out"></i> Sair do Hub
-        </button>
-    </nav>
-
-    <main class="container">
-        <div class="stats-row">
-            <div class="stat-card">
-                <span id="media-geral">0.0</span>
-                <label>Média Geral</label>
-            </div>
-            <div class="stat-card">
-                <span id="aprov-count">0/0</span>
-                <label>Matérias Aprovadas</label>
-            </div>
-        </div>
-
-        <div id="lista-materias" style="margin-top: 20px;"></div>
-    </main>
-
-    <div id="modal-dono" class="modal-full-screen">
-        <div class="card-modal">
-            <div class="orbital-box">
-                <div class="ring-dev r1"></div>
-                <div class="ring-dev r2"></div>
-                <i data-lucide="zap" style="color:white; width:35px; height:35px; z-index: 10;"></i>
-            </div>
-            
-            <h3 style="color:white; margin:0; font-size:30px; font-weight:900; letter-spacing:2px;">DITOH</h3>
-            <p style="color:var(--roxo); font-weight:bold; letter-spacing:4px; margin-bottom:15px; font-size:12px; text-transform: uppercase;">Founder & Developer</p>
-            
-            <p class="phrase-dev">
-                "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Teve uma ideia ou achou um bug? Me chama na DM!"
-            </p>
-            
-            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:12px; color:white; background:rgba(255,255,255,0.05); padding:18px; border-radius:22px; border:1px solid rgba(138, 43, 226, 0.3); margin-bottom:20px; font-weight:bold;">
-                <i data-lucide="instagram" style="color:var(--roxo);"></i> @wtfditoh
-            </a>
-            
-            <button onclick="fecharDono()" style="width:100%; background:var(--roxo); color:white; border:none; padding:18px; border-radius:18px; font-weight:900; cursor:pointer;">FECHAR</button>
-        </div>
-    </div>
-
-    <div id="modal-materia" class="modal">
-        <div class="modal-content" style="background:#0f0f0f; border:1px solid var(--roxo); border-radius:30px; padding:30px;">
-            <h3 style="color:white; margin-top:0;">Nova Disciplina</h3>
-            <p style="color:#666; font-size:13px;">Adicione uma matéria para organizar suas notas.</p>
-            
-            <input type="text" id="nome-materia-input" placeholder="Ex: Matemática, História..." 
-                   style="width:100%; padding:18px; margin:20px 0; border-radius:15px; background:#1a1a1a; border:1px solid #333; color:white; box-sizing:border-box; outline:none; font-size:16px;">
-            
-            <div style="display:flex; gap:12px;">
-                <button onclick="fecharModal()" style="flex:1; padding:15px; border-radius:15px; background:#222; color:white; border:none; font-weight:bold; cursor:pointer;">Cancelar</button>
-                <button onclick="confirmarNovaMateria()" style="flex:1; padding:15px; border-radius:15px; background:var(--roxo); color:white; border:none; font-weight:bold; cursor:pointer;">Criar Matéria</button>
-            </div>
-        </div>
-    </div>
-
-    <script type="module" src="funcoes.js?v=30.0"></script>
-    <script>
-        // Funções de Interface (UI) que precisam estar no HTML
-        function toggleMenu() {
-            const menu = document.getElementById('menu-lateral');
-            const overlay = document.getElementById('overlay');
-            menu.classList.toggle('open');
-            overlay.style.display = menu.classList.contains('open') ? 'block' : 'none';
-        }
-
-        function abrirDono() {
-            document.getElementById('modal-dono').style.display = 'flex';
-            if(window.lucide) lucide.createIcons();
-        }
-
-        function fecharDono() {
-            document.getElementById('modal-dono').style.display = 'none';
-        }
-
-        // Garante que os ícones carreguem ao iniciar
-        document.addEventListener('DOMContentLoaded', () => {
-            if(window.lucide) lucide.createIcons();
-        });
-    </script>
-</body>
-</html>
+        <button onclick="window.location.href='horario.html'" class="drawer-item"><i data-lucide
+                                                                                      
