@@ -16,24 +16,52 @@
     <div id="modal-xp" class="modal-xp-overlay" style="display:none;">
         <div class="modal-xp-card">
             <div class="xp-header">
-                <i data-lucide="scroll-text" class="purple"></i>
-                <h3>MANUAL DE <span class="purple">XP</span></h3>
+                <i data-lucide="zap" class="purple" style="width: 32px; height: 32px;"></i>
+                <h3>SISTEMA DE <span class="purple">PONTUAÇÃO</span></h3>
+                <p>Entenda como subir (e cair) no ranking global.</p>
             </div>
             
             <div class="xp-rules-scroll">
-                <div class="xp-tag">📊 NOTAS</div>
-                <div class="rule-box pos"><span>+100</span> <p>Nota 10 (Gabarito)</p></div>
-                <div class="rule-box pos"><span>+50</span> <p>Nota 8.0 a 9.9</p></div>
-                <div class="rule-box pos"><span>+20</span> <p>Nota 6.0 a 7.9</p></div>
-                <div class="rule-box neg"><span>-20</span> <p>Nota 4.0 a 5.9</p></div>
-                <div class="rule-box neg"><span>-50</span> <p>Nota 0.1 a 3.9</p></div>
-                <div class="rule-item-spacer"></div>
-                <div class="xp-tag">🤖 SIMULADOS IA</div>
-                <div class="rule-box pos"><span>+150</span> <p>Gabaritar (10/10)</p></div>
-                <div class="rule-box neg"><span>-80</span> <p>Errar Quase Tudo</p></div>
+                <div class="xp-section">
+                    <div class="xp-tag">📊 DESEMPENHO ACADÊMICO</div>
+                    <p class="section-desc">Suas notas definem sua base. Notas altas garantem bônus massivos, notas baixas punem severamente.</p>
+                    <div class="rule-box pos"><span>+100</span> <p><strong>Nota 10:</strong> Excelência máxima.</p></div>
+                    <div class="rule-box pos"><span>+50</span> <p><strong>Nota 8.0 a 9.9:</strong> Aluno de Elite.</p></div>
+                    <div class="rule-box pos"><span>+20</span> <p><strong>Nota 6.0 a 7.9:</strong> Dever cumprido.</p></div>
+                    <div class="rule-box neg"><span>-20</span> <p><strong>Nota 4.0 a 5.9:</strong> Zona de risco.</p></div>
+                    <div class="rule-box neg"><span>-50</span> <p><strong>Nota 0.1 a 3.9:</strong> Crise acadêmica.</p></div>
+                    <div class="rule-box neg"><span>-100</span> <p><strong>Nota 0:</strong> Desistência ou erro grave.</p></div>
+                </div>
+
+                <div class="xp-section">
+                    <div class="xp-tag">🤖 SIMULADOS COM IA</div>
+                    <p class="section-desc">Testes de 10 questões gerados por inteligência artificial. O maior multiplicador de XP.</p>
+                    <div class="rule-box pos"><span>+150</span> <p><strong>Gabarito (10/10):</strong> Mestre do Conhecimento.</p></div>
+                    <div class="rule-box pos"><span>+60</span> <p><strong>7 a 9 acertos:</strong> Ótimo desempenho.</p></div>
+                    <div class="rule-box neg"><span>-30</span> <p><strong>3 a 4 acertos:</strong> Falta de estudo.</p></div>
+                    <div class="rule-box neg"><span>-80</span> <p><strong>0 a 2 acertos:</strong> Chute ou falta de base.</p></div>
+                </div>
+
+                <div class="xp-section">
+                    <div class="xp-tag">📅 AGENDA E ROTINA</div>
+                    <p class="section-desc">Ser organizado também dá pontos. A inatividade remove sua glória.</p>
+                    <div class="rule-box pos"><span>+15</span> <p><strong>Atividade Concluída:</strong> Foco total.</p></div>
+                    <div class="rule-box pos"><span>+40</span> <p><strong>Horário Montado:</strong> Planejamento semanal.</p></div>
+                    <div class="rule-box neg"><span>-25</span> <p><strong>Atraso:</strong> Procrastinação detectada.</p></div>
+                    <div class="rule-box pos"><span>+5</span> <p><strong>Check-in Diário:</strong> Constância no app.</p></div>
+                </div>
+
+                <div class="xp-section">
+                    <div class="xp-tag">🎖️ AS PATENTES</div>
+                    <div class="patente-item"><span>0 - 500</span> <p>Novato 🟢</p></div>
+                    <div class="patente-item"><span>501 - 1500</span> <p>Estudioso 🔵</p></div>
+                    <div class="patente-item"><span>1501 - 4000</span> <p>Veterano 🟣</p></div>
+                    <div class="patente-item"><span>4001 - 8000</span> <p>Cérebro de Elite ⚡</p></div>
+                    <div class="patente-item"><span>+8000</span> <p>Lenda do Hub 🏆</p></div>
+                </div>
             </div>
 
-            <button onclick="fecharAjudaXP()" class="btn-close-modal">FECHAR</button>
+            <button onclick="fecharAjudaXP()" class="btn-close-modal">ENTENDIDO, VOU AO TOPO!</button>
         </div>
     </div>
 
