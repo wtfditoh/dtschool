@@ -2,7 +2,6 @@
 <html lang="pt-br">
 <head>
     <script>
-    // Bloqueio de acesso se não estiver logado
     if (!localStorage.getItem('dt_user_phone')) {
         window.location.href = 'login.html';
     }
@@ -17,11 +16,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="estilo.css?v=12.0">
+    <link rel="stylesheet" href="estilo.css?v=13.0">
     <style>
-        /* =========================================
-           TOPO PADRÃO HUB BRAIN (CLICÁVEL)
-        ========================================= */
         .glass-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
@@ -60,7 +56,7 @@
         #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1001; }
         #overlay.active { display:block; }
 
-        /* ESTILO DO AVISO DE CAMPO VAZIO */
+        /* AJUSTE DO INPUT E ERRO */
         .input-error { border: 2px solid #ff4444 !important; animation: shake 0.4s; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -68,25 +64,16 @@
             75% { transform: translateX(5px); }
         }
 
-        /* =========================================
-           ESTILO PREMIUM DO MODAL DITOH (ORBITAL DESIGN)
-        ========================================= */
+        /* MODAL DONO ESTILO ORIGINAL */
         .modal-dono-overlay {
             display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
-            backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
-            background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px; perspective: 1000px; 
+            backdrop-filter: blur(25px) saturate(180%); background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px;
         }
 
         .modal-dono-card {
             border: 1px solid rgba(138, 43, 226, 0.3); background: rgba(15, 15, 15, 0.8); 
             border-radius: 30px; width: 100%; max-width: 320px; padding: 40px 25px; text-align: center; 
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.2);
-            animation: brotarCard 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            opacity: 0; transform: scale(0.8) translateY(30px);
-        }
-
-        @keyframes brotarCard {
-            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .ditoh-core-orbital {
@@ -98,17 +85,14 @@
             position: absolute; border-radius: 50%; border: 2px solid transparent;
             border-top-color: #8a2be2; border-bottom-color: #8a2be2;
         }
-
         .ring-1 { width: 100%; height: 100%; animation: spin 2s linear infinite; opacity: 0.6; }
         .ring-2 { width: 80%; height: 80%; animation: spin-reverse 1.5s linear infinite; opacity: 0.8; border-left-color: #8a2be2; border-right-color: #8a2be2; border-top-color: transparent; border-bottom-color: transparent; }
-
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes spin-reverse { to { transform: rotate(-360deg); } }
 
         .core-glow {
             width: 50px; height: 50px; background: rgba(138, 43, 226, 0.2);
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.6);
         }
     </style>
 </head>
@@ -116,13 +100,11 @@
     <div id="overlay" onclick="toggleMenu()"></div>
 
     <header class="glass-header">
-        <button onclick="toggleMenu()" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;"><i data-lucide="menu"></i></button>
+        <button onclick="toggleMenu()" style="background:none; border:none; color:white; cursor:pointer;"><i data-lucide="menu"></i></button>
         
         <div class="hub-logo-container" onclick="abrirSobreDono()">
             <span class="hub-logo-text">Hub</span>
-            <div class="hub-symbol">
-                <i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px; height: 22px;"></i>
-            </div>
+            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i></div>
             <span class="hub-logo-text purple">Brain</span>
         </div>
 
@@ -135,22 +117,17 @@
                 <i data-lucide="brain-circuit" style="color: #8a2be2; width: 18px; margin-right: 5px;"></i>
                 <span class="logo-text">HUB <span style="color: #8a2be2;">BRAIN</span></span>
             </div>
-            <button onclick="toggleMenu()" class="btn-close-box" style="background:none; border:none; color:white;"><i data-lucide="x"></i></button>
+            <button onclick="toggleMenu()" style="background:none; border:none; color:white;"><i data-lucide="x"></i></button>
         </div>
         
         <button onclick="toggleMenu();" class="nav-item active"><i data-lucide="layout-grid"></i> Notas</button>
         <button onclick="window.location.href='ranking.html'" class="nav-item"><i data-lucide="trophy"></i> Ranking Global</button>
         <button onclick="window.location.href='perfil.html'" class="nav-item"><i data-lucide="user"></i> Meu Perfil</button>
-        
-        <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 15px 0;"></div>
-        
-        <button onclick="window.location.href='horario.html'" class="nav-item"><i data-lucide="calendar-clock"></i> Horário das Aulas</button>
+        <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 10px 0;"></div>
+        <button onclick="window.location.href='horario.html'" class="nav-item"><i data-lucide="calendar-clock"></i> Horários</button>
         <button onclick="window.location.href='agenda.html'" class="nav-item"><i data-lucide="calendar"></i> Agenda</button>
-        <button onclick="window.location.href='estudos.html'" class="nav-item"><i data-lucide="book-open"></i> Estudar com IA</button>
-        
-        <button onclick="localStorage.clear(); window.location.href='login.html';" class="nav-item" style="color: #ff4444; margin-top: 20px;">
-            <i data-lucide="log-out"></i> Sair
-        </button>
+        <button onclick="window.location.href='estudos.html'" class="nav-item"><i data-lucide="book-open"></i> IA</button>
+        <button onclick="localStorage.clear(); window.location.href='login.html';" class="nav-item" style="color:#ff4444; margin-top:15px;"><i data-lucide="log-out"></i> Sair</button>
     </nav>
 
     <main class="container">
@@ -166,83 +143,64 @@
             <div class="ditoh-core-orbital">
                 <div class="orbital-ring ring-1"></div>
                 <div class="orbital-ring ring-2"></div>
-                <div class="core-glow">
-                    <i data-lucide="zap" style="color: white; width: 28px; height: 28px; filter: drop-shadow(0 0 8px #8a2be2);"></i>
-                </div>
+                <div class="core-glow"><i data-lucide="zap" style="color:white; width:28px;"></i></div>
             </div>
-
-            <h3 style="color: white; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 2px;">DITOH</h3>
-            <p style="color: #8a2be2; font-weight: bold; margin: 5px 0 20px 0; font-size: 12px; letter-spacing: 4px; text-transform: uppercase;">Founder & Dev</p>
-            
-            <div style="background: rgba(138, 43, 226, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border-left: 4px solid #8a2be2; text-align: left;">
-                <p style="color: #eee; font-size: 13px; font-style: italic; line-height: 1.6; margin: 0;">
-                    "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."
-                </p>
+            <h3 style="color:white; margin:0; font-size:26px; font-weight:900;">DITOH</h3>
+            <p style="color:#8a2be2; font-weight:bold; margin:5px 0 20px; font-size:12px; letter-spacing:4px;">FOUNDER & DEV</p>
+            <div style="background:rgba(138,43,226,0.1); padding:20px; border-radius:20px; margin-bottom:25px; border-left:4px solid #8a2be2; text-align:left;">
+                <p style="color:#eee; font-size:13px; font-style:italic;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Me chama na DM!"</p>
             </div>
-
-            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; color: white; font-size: 15px; margin-bottom: 30px; background: rgba(255,255,255,0.05); padding: 14px; border-radius: 15px; border: 1px solid rgba(138, 43, 226, 0.2); transition: 0.3s;">
-                <i data-lucide="instagram" style="width: 18px; color: #8a2be2;"></i>
-                <span style="font-weight: 600;">@wtfditoh</span>
+            <a href="https://instagram.com/wtfditoh" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; color:white; background:rgba(255,255,255,0.05); padding:14px; border-radius:15px; border:1px solid rgba(138,43,226,0.2); margin-bottom:20px;">
+                <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i> @wtfditoh
             </a>
-
-            <button onclick="fecharSobreDono()" style="width: 100%; background: #8a2be2; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase;">Voltar</button>
+            <button onclick="fecharSobreDono()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; font-weight:900;">VOLTAR</button>
         </div>
     </div>
 
     <div id="modal-materia" class="modal">
         <div class="modal-content">
             <h3>Nova Disciplina</h3>
-            <input type="text" id="nome-materia-input" placeholder="Ex: Matemática" style="width:100%; padding:12px; margin:10px 0; border-radius:12px; background:#222; border:1px solid #444; color:white; box-sizing: border-box; outline: none;">
+            <input type="text" id="nome-materia-input" oninput="limparErro()" placeholder="Ex: Matemática" style="width:100%; padding:12px; margin:10px 0; border-radius:12px; background:#222; border:1px solid #444; color:white; box-sizing:border-box; outline:none;">
             <p id="aviso-vazio" style="display:none; color:#ff4444; font-size:12px; font-weight:bold; margin-bottom:10px;">⚠️ Digite o nome da matéria!</p>
-            
             <div class="area-botoes-modal">
                 <button onclick="fecharModal()" class="btn-modal-voltar">Sair</button>
-                <button onclick="tentarCriarMateria()" class="btn-modal-acao">Criar</button>
+                <button onclick="validarEConfirmar()" class="btn-modal-acao">Criar</button>
             </div>
         </div>
     </div>
 
-    <script type="module" src="funcoes.js?v=12.0"></script>
+    <script type="module" src="funcoes.js?v=13.0"></script>
     <script>
-        // FUNÇÃO DE VALIDAÇÃO DO INPUT
-        function tentarCriarMateria() {
+        // CORREÇÃO: Limpa a mensagem de erro enquanto o usuário digita
+        function limparErro() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
-            
+            input.classList.remove('input-error');
+            aviso.style.display = 'none';
+        }
+
+        // CORREÇÃO: Validação que não quebra a lixeira
+        function validarEConfirmar() {
+            const input = document.getElementById('nome-materia-input');
+            const aviso = document.getElementById('aviso-vazio');
             if (input.value.trim() === "") {
                 input.classList.add('input-error');
                 aviso.style.display = 'block';
-                setTimeout(() => {
-                    input.classList.remove('input-error');
-                }, 400);
             } else {
                 aviso.style.display = 'none';
-                confirmarNovaMateria(); // Chama a sua função original do funcoes.js
+                confirmarNovaMateria(); // Chama sua função no funcoes.js
             }
         }
 
-        function abrirSobreDono() {
-            document.getElementById('modal-dono').style.display = 'flex';
-            if(window.lucide) lucide.createIcons();
-        }
-        function fecharSobreDono() {
-            document.getElementById('modal-dono').style.display = 'none';
-        }
-        document.getElementById('modal-dono').onclick = function(e) {
-            if (e.target === this) fecharSobreDono();
-        };
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
-            });
-        }
-        document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
+        function abrirSobreDono() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
+        function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
         
         window.toggleMenu = function() {
             document.getElementById('menu-lateral').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('active');
         };
+
+        document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
     </script>
 </body>
 </html>
