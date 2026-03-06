@@ -25,52 +25,32 @@ async function carregarRanking() {
     try {
         const querySnapshot = await getDocs(collection(db, "notas"));
         let lista = [];
-
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach(doc => {
             const d = doc.data();
-            const xpTotal = d.xp || 0;
-            lista.push({
-                nome: d.nome || "Estudante",
-                xp: xpTotal,
-                avatar: d.avatar || "user",
-                patente: getPatente(xpTotal)
-            });
+            lista.push({ nome: d.nome || "Anônimo", xp: d.xp || 0, avatar: d.avatar || "user" });
         });
-
         lista.sort((a, b) => b.xp - a.xp);
         renderizar(lista);
-    } catch (e) { 
-        console.error(e); 
-        document.getElementById('ranking-geral').innerHTML = "<p style='color:red; text-align:center;'>Erro ao carregar.</p>";
-    }
+    } catch (e) { console.error(e); }
 }
 
 function renderizar(lista) {
     for(let i=0; i<3; i++) {
-        const user = lista[i];
-        if(user) {
-            document.getElementById(`p${i+1}-name`).innerText = user.nome;
-            document.getElementById(`p${i+1}-score`).innerText = user.xp;
-            const avatarBox = document.getElementById(`avatar-p${i+1}`);
-            const icone = user.avatar || 'user';
-            avatarBox.innerHTML = i === 0 
-                ? `<i data-lucide="crown" class="crown"></i><i data-lucide="${icone}"></i>` 
-                : `<i data-lucide="${icone}"></i>`;
+        const u = lista[i];
+        if(u) {
+            document.getElementById(`p${i+1}-name`).innerText = u.nome;
+            document.getElementById(`p${i+1}-score`).innerText = u.xp;
+            document.getElementById(`avatar-p${i+1}`).innerHTML = i === 0 ? `<i data-lucide="crown" class="crown-icon"></i><i data-lucide="${u.avatar}"></i>` : `<i data-lucide="${u.avatar}"></i>`;
         }
     }
-
-    const container = document.getElementById('ranking-geral');
+    const container = document.getElementById('lista-ranking');
     container.innerHTML = lista.slice(3).map((u, i) => `
-        <div class="ranking-item">
-            <span class="pos">${i + 4}º</span>
-            <div class="user-info">
-                <span class="user-name">${u.nome}</span>
-                <span class="patente">${u.patente} • ${u.xp} XP</span>
-            </div>
-            <i data-lucide="${u.avatar || 'user'}" style="width:16px; color:#444;"></i>
+        <div class="rank-item">
+            <span class="rank-pos">${i + 4}º</span>
+            <div class="rank-info"><span class="rank-name">${u.nome}</span><span class="rank-patente">${getPatente(u.xp)} • ${u.xp} XP</span></div>
+            <i data-lucide="${u.avatar}" style="width:16px; opacity:0.2;"></i>
         </div>
-    `).join('');
-    
+    `).join('') || '<p style="text-align:center; padding:20px; color:#444;">Sem mais competidores.</p>';
     if(window.lucide) lucide.createIcons();
 }
 
