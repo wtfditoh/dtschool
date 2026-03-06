@@ -16,51 +16,20 @@ const db = getFirestore(app);
 
 const TABELA_HORARIOS = {
     matutino: [
-        { ordem: "1ª Aula", inicio: "07:00" },
-        { ordem: "2ª Aula", inicio: "07:50" },
-        { ordem: "3ª Aula", inicio: "08:40" },
-        { ordem: "4ª Aula", inicio: "09:50" },
-        { ordem: "5ª Aula", inicio: "10:40" },
-        { ordem: "6ª Aula", inicio: "11:30" }
+        { ordem: "1ª Aula", inicio: "07:00" }, { ordem: "2ª Aula", inicio: "07:50" },
+        { ordem: "3ª Aula", inicio: "08:40" }, { ordem: "4ª Aula", inicio: "09:50" },
+        { ordem: "5ª Aula", inicio: "10:40" }, { ordem: "6ª Aula", inicio: "11:30" }
     ],
     vespertino: [
-        { ordem: "1ª Aula", inicio: "13:00" },
-        { ordem: "2ª Aula", inicio: "13:50" },
-        { ordem: "3ª Aula", inicio: "14:40" },
-        { ordem: "4ª Aula", inicio: "15:50" },
-        { ordem: "5ª Aula", inicio: "16:40" },
-        { ordem: "6ª Aula", inicio: "17:30" }
+        { ordem: "1ª Aula", inicio: "13:00" }, { ordem: "2ª Aula", inicio: "13:50" },
+        { ordem: "3ª Aula", inicio: "14:40" }, { ordem: "4ª Aula", inicio: "15:50" },
+        { ordem: "5ª Aula", inicio: "16:40" }, { ordem: "6ª Aula", inicio: "17:30" }
     ]
 };
 
 let diaAtualGrade = 'segunda';
 let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] };
-let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
-
-// --- INTERFACE ---
-window.mostrarAvisoCustom = (msg) => {
-    const toast = document.getElementById('custom-toast');
-    if(toast) {
-        const msgEl = document.getElementById('toast-message');
-        if(msgEl) msgEl.innerText = msg;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-};
-
-window.abrirAjudaBateria = () => {
-    const modal = document.getElementById('modal-ajuda-bateria');
-    if(modal) modal.style.display = 'flex';
-};
-
-window.fecharAjudaBateria = () => {
-    const modal = document.getElementById('modal-ajuda-bateria');
-    if(modal) modal.style.display = 'none';
-};
-
-window.fecharModalAula = () => document.getElementById('modal-aula').style.display = 'none';
-window.fecharModalExcluir = () => document.getElementById('modal-confirm-excluir').style.display = 'none';
 
 // --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', async () => {
@@ -71,31 +40,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
     const d = dMap[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
-    
-    sincronizarUsuarioOneSignal();
-    setInterval(verificarRelogioParaNotificar, 60000);
-    if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- ONESIGNAL LOGIN ---
-function sincronizarUsuarioOneSignal() {
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-        if (userPhone) {
-            await OneSignal.login(userPhone);
-            console.log("OneSignal vinculado ao número:", userPhone);
-        }
-    });
-}
-
-// --- FIREBASE SYNC ---
+// --- FIREBASE ---
 async function carregarDadosNuvem() {
     try {
-        const docRef = doc(db, "grades_horarias", userPhone);
-        const docSnap = await getDoc(docRef);
+        const docSnap = await getDoc(doc(db, "grades_horarias", userPhone));
         if (docSnap.exists()) { 
             gradeHoraria = docSnap.data().grade; 
-            localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
             renderizarAulas(); 
         }
     } catch (e) { console.error(e); }
@@ -104,17 +56,11 @@ async function carregarDadosNuvem() {
 async function sincronizar() {
     localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
     if (userPhone) {
-        try {
-            await setDoc(doc(db, "grades_horarias", userPhone), { 
-                grade: gradeHoraria, 
-                atualizadoEm: Date.now(),
-                onesignal_ready: true 
-            });
-        } catch (e) { console.error(e); }
+        await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
     }
 }
 
-// --- GRADE LOGIC ---
+// --- INTERFACE ---
 window.selecionarDia = (dia) => {
     diaAtualGrade = dia;
     document.querySelectorAll('.btn-dia').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-dia') === dia));
@@ -126,40 +72,8 @@ window.renderizarAulas = () => {
     if(!lista) return;
     const aulas = gradeHoraria[diaAtualGrade] || [];
     aulas.sort((a, b) => a.hora.localeCompare(b.hora));
-
-    lista.innerHTML = aulas.length === 0 ? 
-        '<p style="text-align:center;color:#444;margin-top:50px;">Nenhuma aula para hoje.</p>' :
-        aulas.map((a, i) => `
-            <div class="card-aula">
-                <div class="aula-tempo">
-                    <span style="font-size:10px; display:block; color:#8a2be2; font-weight:bold;">${a.ordem}</span>
-                    ${a.hora}
-                </div>
-                <div class="aula-info">
-                    <b>${a.materia}</b>
-                    <span><i data-lucide="user" style="width:12px;"></i> ${a.prof || 'Sem prof.'}</span>
-                </div>
-                <button class="btn-deletar-aula" onclick="abrirConfirmExcluir(${i})">
-                    <i data-lucide="trash-2" style="width:18px;"></i>
-                </button>
-            </div>
-        `).join('');
-    lucide.createIcons();
-};
-
-window.abrirModalAula = async () => {
-    document.getElementById('aula-prof').value = "";
-    const selectMat = document.getElementById('aula-materia-select');
-    selectMat.innerHTML = '<option value="">Carregando...</option>';
-    document.getElementById('modal-aula').style.display = 'flex';
-
-    let materias = JSON.parse(localStorage.getItem('materias')) || [];
-    selectMat.innerHTML = '<option value="">Selecionar...</option>';
-    materias.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m.nome || m; opt.textContent = m.nome || m;
-        selectMat.appendChild(opt);
-    });
+    lista.innerHTML = aulas.length === 0 ? '<p style="text-align:center;margin-top:50px;">Nenhuma aula.</p>' :
+        aulas.map((a, i) => `<div class="card-aula"><div><b>${a.hora}</b> - ${a.materia}</div></div>`).join('');
 };
 
 window.salvarAula = async () => {
@@ -167,77 +81,59 @@ window.salvarAula = async () => {
     const nAula = document.getElementById('aula-numero').value;
     const matSelect = document.getElementById('aula-materia-select').value;
     const matCustom = document.getElementById('aula-materia-custom').value.trim();
-    const prof = document.getElementById('aula-prof').value.trim();
     
     const materiaFinal = matSelect || matCustom;
     if(!materiaFinal) return;
 
     const infoHorario = TABELA_HORARIOS[turno][nAula];
-    if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
-    
-    const novaAula = { ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof };
-    gradeHoraria[diaAtualGrade].push(novaAula);
+    gradeHoraria[diaAtualGrade].push({ materia: materiaFinal, hora: infoHorario.inicio });
 
-    // CHAMA O AGENDAMENTO NA NUVEM
+    // Tenta agendar
     await agendarNoServidorOneSignal(materiaFinal, infoHorario.inicio);
 
     renderizarAulas();
-    fecharModalAula();
+    document.getElementById('modal-aula').style.display = 'none';
     await sincronizar();
-    window.mostrarAvisoCustom("Aula Agendada com Alerta! 🚀");
 };
 
-// --- AGENDAMENTO ONESIGNAL (COMPLETO COM PLANO B) ---
+// --- O CORAÇÃO DO PROBLEMA (AGENDAMENTO) ---
 async function agendarNoServidorOneSignal(materia, horaInicio) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
 
-    const [h, m] = horaInicio.split(':').map(Number);
-    let dataAlerta = new Date();
-    dataAlerta.setHours(h, m, 0, 0);
-    dataAlerta.setMinutes(dataAlerta.getMinutes() - 10); // Alerta 10 min antes
-
-    const agora = new Date();
-    // TESTE DE 1 MINUTO: Se o horário real já passou, agenda para 65s a partir de agora
-    if (dataAlerta <= agora) {
-        dataAlerta = new Date(agora.getTime() + 65000);
-    }
+    // Força para daqui a 70 segundos para o teste ser imediato
+    let dataAlerta = new Date(new Date().getTime() + 70000);
 
     const corpo = {
         app_id: appId,
-        contents: { "pt": `Sua aula de ${materia} começa em 10 minutos! 🧠` },
+        contents: { "pt": `Aula de ${materia} em 10 min! 🧠` },
         headings: { "pt": "Hub Brain" },
         chrome_web_icon: "https://hubbrain.netlify.app/icon-514.png",
-        send_after: dataAlerta.toISOString()
+        send_after: dataAlerta.toISOString(),
+        // AQUI ESTÁ O SEGREDO: Manda para todos que aceitaram notificação no site
+        included_segments: ["Total Subscriptions"] 
     };
-
-    // Tenta mandar via ID do telefone, se falhar, manda para todos os inscritos (Plano B)
-    if (userPhone && userPhone !== "") {
-        corpo.include_external_user_ids = [userPhone];
-    } else {
-        corpo.included_segments = ["Subscribed Users"];
-    }
 
     try {
         const res = await fetch("https://onesignal.com/api/v1/notifications", {
             method: "POST",
-            headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": `Basic ${restKey}` },
+            headers: { 
+                "Content-Type": "application/json; charset=utf-8", 
+                "Authorization": `Basic ${restKey}` 
+            },
             body: JSON.stringify(corpo)
         });
         const data = await res.json();
-        console.log("Status OneSignal:", data);
-    } catch (e) { console.error("Erro API OneSignal:", e); }
+        
+        if (data.id) {
+            alert("✅ AGENDADO NO SERVIDOR! Feche o Chrome agora e espere 1 min.");
+        } else {
+            alert("❌ ERRO NO ONESIGNAL: " + data.errors[0]);
+        }
+    } catch (e) {
+        alert("❌ ERRO DE CONEXÃO: Verifique sua internet.");
+    }
 }
-
-window.abrirConfirmExcluir = (i) => { 
-    indexParaExcluir = i; 
-    document.getElementById('modal-confirm-excluir').style.display = 'flex'; 
-};
-
-document.getElementById('btn-confirmar-delete').onclick = async () => {
-    gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
-    renderizarAulas(); await sincronizar(); fecharModalExcluir();
-};
 
 window.ativarNotificacoesReal = () => {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -245,23 +141,3 @@ window.ativarNotificacoesReal = () => {
         OneSignal.Notifications.requestPermission();
     });
 };
-
-function verificarRelogioParaNotificar() {
-    // Lógica local para se o app estiver aberto
-    const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
-    const d = dMap[new Date().getDay()];
-    const aulas = gradeHoraria[d] || [];
-    const agora = new Date();
-    const minAgora = (agora.getHours() * 60) + agora.getMinutes();
-
-    aulas.forEach(aula => {
-        const [h, m] = aula.hora.split(':').map(Number);
-        const minAula = (h * 60) + m;
-        const diff = minAula - minAgora;
-        if (diff === 10 || diff === 5) {
-            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({ type: 'NOTIFICAR_AULA', materia: aula.materia, hora: aula.hora, tempoRestante: diff });
-            }
-        }
-    });
-}
