@@ -28,7 +28,6 @@ async function carregarRanking() {
 
         querySnapshot.forEach((doc) => {
             const d = doc.data();
-            // Se não tiver o campo xp ainda, usamos 0 como padrão
             const xpTotal = d.xp || 0;
             lista.push({
                 nome: d.nome || "Estudante",
@@ -40,23 +39,26 @@ async function carregarRanking() {
 
         lista.sort((a, b) => b.xp - a.xp);
         renderizar(lista);
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e); 
+        document.getElementById('ranking-geral').innerHTML = "<p style='color:red; text-align:center;'>Erro ao carregar.</p>";
+    }
 }
 
 function renderizar(lista) {
-    // Top 3
     for(let i=0; i<3; i++) {
         const user = lista[i];
         if(user) {
             document.getElementById(`p${i+1}-name`).innerText = user.nome;
             document.getElementById(`p${i+1}-score`).innerText = user.xp;
-            // Atualiza ícone do avatar se disponível
             const avatarBox = document.getElementById(`avatar-p${i+1}`);
-            avatarBox.innerHTML = i === 0 ? `<i data-lucide="crown" class="crown"></i><i data-lucide="${user.avatar}"></i>` : `<i data-lucide="${user.avatar}"></i>`;
+            const icone = user.avatar || 'user';
+            avatarBox.innerHTML = i === 0 
+                ? `<i data-lucide="crown" class="crown"></i><i data-lucide="${icone}"></i>` 
+                : `<i data-lucide="${icone}"></i>`;
         }
     }
 
-    // Restante
     const container = document.getElementById('ranking-geral');
     container.innerHTML = lista.slice(3).map((u, i) => `
         <div class="ranking-item">
@@ -65,7 +67,7 @@ function renderizar(lista) {
                 <span class="user-name">${u.nome}</span>
                 <span class="patente">${u.patente} • ${u.xp} XP</span>
             </div>
-            <i data-lucide="${u.avatar}" style="width:16px; color:#333;"></i>
+            <i data-lucide="${u.avatar || 'user'}" style="width:16px; color:#444;"></i>
         </div>
     `).join('');
     
