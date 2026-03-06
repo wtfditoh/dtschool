@@ -32,7 +32,7 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
-// --- INTERFACE (TOAST E MODAIS) ---
+// --- INTERFACE (AVISOS E MODAIS) ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
@@ -80,7 +80,7 @@ async function carregarDadosNuvem() {
     } catch (e) { console.error(e); }
 }
 
-// --- LOGICA DA GRADE ---
+// --- LÓGICA DA GRADE ---
 window.selecionarDia = (dia) => {
     diaAtualGrade = dia;
     document.querySelectorAll('.btn-dia').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-dia') === dia));
@@ -113,6 +113,7 @@ window.renderizarAulas = () => {
     lucide.createIcons();
 };
 
+// --- MODAL DE AULA (BUSCA MATÉRIAS DAS NOTAS) ---
 window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
     const selectMat = document.getElementById('aula-materia-select');
@@ -122,7 +123,9 @@ window.abrirModalAula = async () => {
     try {
         const docSnap = await getDoc(doc(db, "notas", userPhone));
         let materias = [];
-        if (docSnap.exists()) materias = docSnap.data().materias || [];
+        if (docSnap.exists()) {
+            materias = docSnap.data().materias || [];
+        }
         
         selectMat.innerHTML = '<option value="">Selecionar...</option>';
         materias.forEach(m => {
@@ -145,9 +148,8 @@ window.salvarAula = async () => {
     
     const materiaFinal = matSelect || matCustom;
     
-    // RESTAURADA VALIDAÇÃO
     if(!materiaFinal) {
-        window.mostrarAvisoCustom("⚠️ Escolha uma matéria!");
+        window.mostrarAvisoCustom("⚠️ Preencha a matéria!");
         return;
     }
 
@@ -158,23 +160,24 @@ window.salvarAula = async () => {
         ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
     });
 
+    // AGENDAMENTO (TESTE 1 MINUTO)
     await agendarNoServidorOneSignal(materiaFinal, infoHorario.inicio);
 
     renderizarAulas();
     fecharModalAula();
     
-    // Sincroniza no Firebase
     if(userPhone) {
         await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
     }
     window.mostrarAvisoCustom("🚀 Aula e Alerta salvos!");
 };
 
-// --- AGENDAMENTO ONESIGNAL (TESTE 1 MINUTO) ---
+// --- AGENDAMENTO ONESIGNAL (CORREÇÃO FAILED TO FETCH) ---
 async function agendarNoServidorOneSignal(materia, horaInicio) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
 
+    // TESTE: Agenda para daqui a 70 segundos
     let dataAlerta = new Date(new Date().getTime() + 70000); 
 
     const corpo = {
@@ -187,14 +190,22 @@ async function agendarNoServidorOneSignal(materia, horaInicio) {
     };
 
     try {
-        const res = await fetch("https://onesignal.com/api/v1/notifications", {
+        await fetch("https://onesignal.com/api/v1/notifications", {
             method: "POST",
-            headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": `Basic ${restKey}` },
+            headers: { 
+                "Content-Type": "application/json; charset=utf-8", 
+                "Authorization": `Basic ${restKey}` 
+            },
             body: JSON.stringify(corpo)
         });
-        const data = await res.json();
-        console.log("OneSignal Resposta:", data);
-    } catch (e) { console.error("Erro OneSignal:", e); }
+        
+        // Se o código chegou aqui, o comando saiu do celular
+        console.log("Comando enviado ao OneSignal");
+    } catch (e) { 
+        console.error("Erro no fetch:", e);
+        // Se der erro de rede, avisamos na tela
+        window.mostrarAvisoCustom("⚠️ Erro de conexão com alerta.");
+    }
 }
 
 window.abrirConfirmExcluir = (i) => { 
