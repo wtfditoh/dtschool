@@ -60,7 +60,7 @@
         #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1001; }
         #overlay.active { display:block; }
 
-        /* ESTILO DO AVISO DE CAMPO VAZIO (ADICIONADO) */
+        /* ESTILO DO AVISO DE CAMPO VAZIO */
         .input-error { border: 2px solid #ff4444 !important; animation: shake 0.4s; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -192,39 +192,37 @@
     <div id="modal-materia" class="modal">
         <div class="modal-content">
             <h3>Nova Disciplina</h3>
-            <input type="text" id="nome-materia-input" oninput="limparAviso()" placeholder="Ex: Matemática" style="width:100%; padding:10px; margin:10px 0; border-radius:10px; background:#222; border:1px solid #444; color:white; box-sizing: border-box; outline: none;">
+            <input type="text" id="nome-materia-input" oninput="document.getElementById('aviso-vazio').style.display='none'; this.classList.remove('input-error');" placeholder="Ex: Matemática" style="width:100%; padding:10px; margin:10px 0; border-radius:10px; background:#222; border:1px solid #444; color:white; box-sizing: border-box; outline: none;">
             
             <p id="aviso-vazio" style="display:none; color:#ff4444; font-size:12px; font-weight:bold; margin-bottom:10px;">⚠️ Digite o nome da matéria!</p>
             
             <div class="area-botoes-modal">
                 <button onclick="fecharModal()" class="btn-modal-voltar">Sair</button>
-                <button onclick="validarMatéria()" class="btn-modal-acao">Criar</button>
+                <button id="btn-criar-materia" class="btn-modal-acao">Criar</button>
             </div>
         </div>
     </div>
 
     <script type="module" src="funcoes.js?v=12.0"></script>
     <script>
-        // FUNÇÕES DE CONTROLE DO AVISO
-        function validarMatéria() {
+        // LÓGICA DE VALIDAÇÃO SEM QUEBRAR O FUNCOES.JS
+        document.getElementById('btn-criar-materia').onclick = function() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
+            
             if (input.value.trim() === "") {
                 input.classList.add('input-error');
                 aviso.style.display = 'block';
             } else {
-                confirmarNovaMateria(); // Chama sua função original
+                // Chama a função global do seu funcoes.js
+                if(typeof confirmarNovaMateria === 'function') {
+                    confirmarNovaMateria();
+                } else {
+                    // Fallback caso a função não seja global
+                    window.confirmarNovaMateria();
+                }
             }
-        }
-
-        function limparAviso() {
-            const input = document.getElementById('nome-materia-input');
-            const aviso = document.getElementById('aviso-vazio');
-            if (input.value.trim() !== "") {
-                input.classList.remove('input-error');
-                aviso.style.display = 'none';
-            }
-        }
+        };
 
         function abrirSobreDono() {
             document.getElementById('modal-dono').style.display = 'flex';
