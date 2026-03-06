@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Meu Perfil - Hub Brain</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="estilo.css?v=12.0">
+    <link rel="stylesheet" href="perfil.css">
+</head>
+<body>
+
+    <div class="perfil-container">
+        <header class="perfil-header">
+            <button onclick="window.location.href='index.html'" class="btn-back">
+                <i data-lucide="chevron-left"></i>
+            </button>
+            <h2>MEU <span class="purple">PERFIL</span></h2>
+            <div style="width: 40px;"></div> </header>
+
+        <div class="perfil-card">
+            <div class="avatar-section">
+                <div class="avatar-wrapper">
+                    <i data-lucide="user" id="avatar-icon"></i>
+                </div>
+                <p class="user-phone-display" id="display-phone">---</p>
+            </div>
+
+            <div class="form-group">
+                <label>Como queres ser chamado?</label>
+                <div class="input-wrapper">
+                    <i data-lucide="signature"></i>
+                    <input type="text" id="user-name-input" placeholder="Teu Nickname">
+                </div>
+                <p class="hint">Este nome aparecerá no Ranking Global.</p>
+            </div>
+
+            <button id="btn-salvar-perfil" class="btn-save">
+                <i data-lucide="check-circle"></i> SALVAR ALTERAÇÕES
+            </button>
+        </div>
+
+        <div class="perfil-stats">
+            <div class="stat-box">
+                <span id="stat-materias">0</span>
+                <label>Matérias</label>
+            </div>
+            <div class="stat-box">
+                <span id="stat-media">0.0</span>
+                <label>Média Geral</label>
+            </div>
+        </div>
+
+        <button onclick="logout()" class="btn-logout">
+            <i data-lucide="log-out"></i> SAIR DA CONTA
+        </button>
+    </div>
+
+    <script type="module" src="perfil-logica.js"></script>
+</body>
+</html>
