@@ -32,7 +32,7 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
-// --- INTERFACE ---
+// --- INTERFACE (TOAST E MODAIS) ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
@@ -40,6 +40,16 @@ window.mostrarAvisoCustom = (msg) => {
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
+};
+
+window.abrirAjudaBateria = () => {
+    const modal = document.getElementById('modal-ajuda-bateria');
+    if(modal) modal.style.display = 'flex';
+};
+
+window.fecharAjudaBateria = () => {
+    const modal = document.getElementById('modal-ajuda-bateria');
+    if(modal) modal.style.display = 'none';
 };
 
 window.fecharModalAula = () => document.getElementById('modal-aula').style.display = 'none';
@@ -58,12 +68,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- FIREBASE (BUSCA DE GRADE E MATÉRIAS) ---
+// --- FIREBASE ---
 async function carregarDadosNuvem() {
     try {
         const docSnap = await getDoc(doc(db, "grades_horarias", userPhone));
         if (docSnap.exists()) { 
             gradeHoraria = docSnap.data().grade; 
+            localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
             renderizarAulas(); 
         }
     } catch (e) { console.error(e); }
@@ -102,7 +113,6 @@ window.renderizarAulas = () => {
     lucide.createIcons();
 };
 
-// --- ABRE MODAL E BUSCA MATÉRIAS DAS NOTAS ---
 window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
     const selectMat = document.getElementById('aula-materia-select');
@@ -112,9 +122,7 @@ window.abrirModalAula = async () => {
     try {
         const docSnap = await getDoc(doc(db, "notas", userPhone));
         let materias = [];
-        if (docSnap.exists()) {
-            materias = docSnap.data().materias || [];
-        }
+        if (docSnap.exists()) materias = docSnap.data().materias || [];
         
         selectMat.innerHTML = '<option value="">Selecionar...</option>';
         materias.forEach(m => {
@@ -136,7 +144,12 @@ window.salvarAula = async () => {
     const prof = document.getElementById('aula-prof').value.trim();
     
     const materiaFinal = matSelect || matCustom;
-    if(!materiaFinal) return;
+    
+    // RESTAURADA VALIDAÇÃO
+    if(!materiaFinal) {
+        window.mostrarAvisoCustom("⚠️ Escolha uma matéria!");
+        return;
+    }
 
     const infoHorario = TABELA_HORARIOS[turno][nAula];
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
@@ -149,8 +162,12 @@ window.salvarAula = async () => {
 
     renderizarAulas();
     fecharModalAula();
+    
     // Sincroniza no Firebase
-    await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
+    if(userPhone) {
+        await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
+    }
+    window.mostrarAvisoCustom("🚀 Aula e Alerta salvos!");
 };
 
 // --- AGENDAMENTO ONESIGNAL (TESTE 1 MINUTO) ---
@@ -176,14 +193,8 @@ async function agendarNoServidorOneSignal(materia, horaInicio) {
             body: JSON.stringify(corpo)
         });
         const data = await res.json();
-        if (data.id) {
-            window.mostrarAvisoCustom("✅ Alerta agendado para daqui a 1 min!");
-        } else {
-            alert("Erro OneSignal: " + (data.errors ? data.errors[0] : "Desconhecido"));
-        }
-    } catch (e) { 
-        alert("Erro de Conexão: " + e.message);
-    }
+        console.log("OneSignal Resposta:", data);
+    } catch (e) { console.error("Erro OneSignal:", e); }
 }
 
 window.abrirConfirmExcluir = (i) => { 
@@ -194,7 +205,7 @@ window.abrirConfirmExcluir = (i) => {
 document.getElementById('btn-confirmar-delete').onclick = async () => {
     gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
     renderizarAulas();
-    await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria });
+    if(userPhone) await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria });
     fecharModalExcluir();
 };
 
@@ -204,4 +215,3 @@ window.ativarNotificacoesReal = () => {
         OneSignal.Notifications.requestPermission();
     });
 };
-          
