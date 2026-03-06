@@ -12,64 +12,41 @@
     <link rel="stylesheet" href="ranking.css">
 
     <style>
-        /* CABEÇALHO CENTRALIZADO */
+        /* HEADER CENTRALIZADO */
         .glass-header { 
-            display: grid; grid-template-columns: 50px 1fr 50px; align-items: center; 
-            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important; 
-            backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2); 
+            display: grid; grid-template-columns: 60px 1fr 60px; align-items: center; 
+            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.9) !important; 
+            backdrop-filter: blur(20px); border-bottom: 1px solid rgba(138, 43, 226, 0.2); 
             position: sticky; top: 0; z-index: 1000;
         }
+        .hub-logo-container { display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+        .hub-logo-text { font-weight: 900; font-size: 18px; color: white; text-transform: uppercase; }
+        .hub-logo-text.purple { color: #8a2be2; }
         
-        .hub-logo-container { 
-            display: flex; align-items: center; justify-content: center; gap: 8px; 
-            cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent;
-        }
-        .hub-logo-container:active { transform: scale(0.95); }
-        .hub-logo-text { font-weight: 900; font-size: 18px; letter-spacing: 1px; color: white; text-transform: uppercase; }
-        .hub-logo-text.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138, 43, 226, 0.3); }
-        
-        .hub-symbol { 
-            background: rgba(138, 43, 226, 0.1); padding: 5px; border-radius: 10px; 
-            border: 1px solid rgba(138, 43, 226, 0.3); display: flex; align-items: center; 
-            animation: pulse-glow 3s infinite ease-in-out; 
+        /* FIX DOS MODAIS (PARA NÃO MISTURAR) */
+        .modal-full-screen {
+            display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 9999; padding: 20px;
         }
 
-        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); } 50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.4); } }
-
-        .btn-add-main { 
-            background: #8a2be2 !important; width: 38px; height: 38px; border-radius: 12px; 
-            font-size: 24px; color: white; border: none; cursor: pointer; justify-self: end;
-        }
-
-        /* PERFIL CUSTOM DESIGN */
+        /* PERFIL PREMIUM COM FOTO */
         .perfil-hero {
-            background: linear-gradient(180deg, rgba(138, 43, 226, 0.15) 0%, rgba(0,0,0,0) 100%);
+            background: linear-gradient(180deg, rgba(138, 43, 226, 0.1) 0%, rgba(0,0,0,0.4) 100%);
             border-radius: 30px; padding: 40px 20px; border: 1px solid rgba(138, 43, 226, 0.2);
-            text-align: center; margin-top: 15px; position: relative; overflow: hidden;
+            text-align: center; margin-top: 15px;
         }
-        .avatar-main { 
-            width: 90px; height: 90px; border-radius: 50%; background: #111; 
-            margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;
-            border: 3px solid #8a2be2; box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
-        }
-        .input-perfil-nome {
-            background: rgba(255,255,255,0.05); border: 1px solid #333; color: white;
-            padding: 12px; border-radius: 15px; width: 100%; text-align: center;
-            font-size: 18px; font-weight: 800; margin-bottom: 10px; outline: none;
-        }
-        .input-perfil-nome:focus { border-color: #8a2be2; }
+        .avatar-container { position: relative; width: 100px; height: 100px; margin: 0 auto 20px; cursor: pointer; }
+        .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #8a2be2; background: #222; }
+        .btn-edit-photo { position: absolute; bottom: 0; right: 0; background: #8a2be2; border-radius: 50%; padding: 6px; border: 2px solid #000; }
 
-        /* MODAIS ORBITAIS (DITOH STYLE) */
-        .ditoh-core-orbital { width: 80px; height: 80px; margin: 0 auto 20px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .orbital-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; border-top-color: #8a2be2; border-bottom-color: #8a2be2; }
-        .ring-1 { width: 100%; height: 100%; animation: spin 2s linear infinite; }
-        .ring-2 { width: 70%; height: 70%; animation: spin-reverse 1.5s linear infinite; border-left-color: #8a2be2; border-right-color: #8a2be2; border-top-color: transparent; }
+        /* GUIA DE XP */
+        .guia-row { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; margin-bottom: 10px; border-left: 4px solid #8a2be2; }
+        .xp-val { margin-left: auto; font-weight: 900; color: #8a2be2; }
+
+        /* ORBITAL DITOH */
+        .orbital-box { width: 80px; height: 80px; margin: 0 auto 15px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .ring { position: absolute; border: 2px solid transparent; border-radius: 50%; border-top-color: #8a2be2; animation: spin 2s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes spin-reverse { to { transform: rotate(-360deg); } }
-
-        /* GUIA DE PONTOS ESTILIZADO */
-        .guia-row { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; margin-bottom: 8px; border-left: 3px solid #8a2be2; }
-        .guia-xp-val { margin-left: auto; font-weight: 900; color: #8a2be2; }
     </style>
 </head>
 <body>
@@ -77,19 +54,17 @@
 
     <header class="glass-header">
         <button onclick="toggleMenu()" style="background:none; border:none; color:white;"><i data-lucide="menu"></i></button>
-        
         <div class="hub-logo-container" onclick="abrirSobreDono()">
             <span class="hub-logo-text">Hub</span>
-            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color: #8a2be2; width: 20px;"></i></div>
+            <div style="background:rgba(138,43,226,0.1); padding:5px; border-radius:8px;"><i data-lucide="brain-circuit" style="color:#8a2be2; width:20px;"></i></div>
             <span class="hub-logo-text purple">Brain</span>
         </div>
-
         <button id="btn-add-global" onclick="abrirModal()" class="btn-add-main">+</button>
     </header>
 
     <nav id="menu-lateral" class="drawer" style="z-index: 1002;">
         <div class="drawer-header">
-            <div class="logo-box"><i data-lucide="brain-circuit" style="color: #8a2be2;"></i> <span class="logo-text">HUB BRAIN</span></div>
+            <div class="logo-box"><i data-lucide="brain-circuit" style="color:#8a2be2;"></i> <span>HUB BRAIN</span></div>
             <button onclick="toggleMenu()" style="background:none; border:none; color:white;"><i data-lucide="x"></i></button>
         </div>
         <button onclick="mudarAba('notas')" class="nav-item active" id="nav-notas"><i data-lucide="layout-grid"></i> Notas</button>
@@ -97,9 +72,8 @@
         <button onclick="mudarAba('perfil')" class="nav-item" id="nav-perfil"><i data-lucide="user"></i> Perfil</button>
         <hr style="opacity:0.1; margin:15px 0;">
         <button onclick="window.location.href='horario.html'" class="nav-item"><i data-lucide="calendar-clock"></i> Aulas</button>
-        <button onclick="window.location.href='agenda.html'" class="nav-item"><i data-lucide="calendar"></i> Agenda</button>
         <button onclick="window.location.href='estudos.html'" class="nav-item"><i data-lucide="book-open"></i> IA</button>
-        <button onclick="localStorage.clear(); window.location.href='login.html';" class="nav-item" style="color: #ff4444;"><i data-lucide="log-out"></i> Sair</button>
+        <button onclick="localStorage.clear(); window.location.href='login.html';" class="nav-item" style="color:#ff4444;"><i data-lucide="log-out"></i> Sair</button>
     </nav>
 
     <main class="container">
@@ -112,9 +86,9 @@
         </section>
 
         <section id="aba-ranking" style="display: none;">
-            <div style="text-align:center; padding: 30px 0;">
-                <h2 style="margin:0; font-weight: 900; letter-spacing: 1px;">HALL DA FAMA</h2>
-                <p style="color:#8a2be2; font-size:12px; font-weight:bold; letter-spacing:3px;">OS MELHORES DA SEMANA</p>
+            <div style="text-align:center; padding:30px 0;">
+                <h2 style="margin:0; font-weight:900;">HALL DA FAMA</h2>
+                <p style="color:#8a2be2; font-size:10px; letter-spacing:3px;">OS MELHORES DA SEMANA</p>
             </div>
             <div id="podio-container" class="podio"></div>
             <div id="lista-ranking-geral" class="lista-ranking"></div>
@@ -122,18 +96,22 @@
 
         <section id="aba-perfil" style="display: none;">
             <div class="perfil-hero">
-                <div class="avatar-main"><i data-lucide="user" style="width:40px; color:#8a2be2;"></i></div>
-                <input type="text" id="input-nome-usuario" class="input-perfil-nome" placeholder="Seu Nome">
-                <button onclick="salvarNomePerfil()" style="background:#8a2be2; color:white; border:none; padding:10px 25px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">SALVAR PERFIL</button>
+                <div class="avatar-container" onclick="document.getElementById('input-foto').click()">
+                    <img id="foto-perfil-img" src="https://via.placeholder.com/100" class="avatar-img">
+                    <div class="btn-edit-photo"><i data-lucide="camera" style="width:14px; color:white;"></i></div>
+                    <input type="file" id="input-foto" hidden accept="image/*" onchange="atualizarFoto(this)">
+                </div>
+                <input type="text" id="input-nome-usuario" class="input-perfil-nome" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:white; padding:12px; border-radius:15px; width:100%; text-align:center; font-weight:800; margin-bottom:15px;">
+                <button onclick="salvarNomePerfil()" style="background:#8a2be2; color:white; border:none; padding:12px; border-radius:12px; width:100%; font-weight:bold;">ATUALIZAR DADOS</button>
                 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:25px;">
                     <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:20px; border:1px solid rgba(255,255,255,0.05);">
-                        <span id="user-rank-pos" style="font-size:26px; font-weight:900; color:#ffd700; display:block;">--</span>
-                        <label style="font-size:10px; opacity:0.5; letter-spacing:1px;">POSIÇÃO</label>
+                        <span id="user-rank-pos" style="font-size:24px; font-weight:900; color:#ffd700;">--</span>
+                        <label style="display:block; font-size:10px; opacity:0.5;">RANK</label>
                     </div>
                     <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:20px; border:1px solid rgba(255,255,255,0.05);">
-                        <span id="user-rank-xp" style="font-size:26px; font-weight:900; color:#8a2be2; display:block;">0</span>
-                        <label style="font-size:10px; opacity:0.5; letter-spacing:1px;">XP TOTAL</label>
+                        <span id="user-rank-xp" style="font-size:24px; font-weight:900; color:#8a2be2;">0</span>
+                        <label style="display:block; font-size:10px; opacity:0.5;">XP TOTAL</label>
                     </div>
                 </div>
             </div>
@@ -143,35 +121,28 @@
         </section>
     </main>
 
-    <div id="modal-dono" class="modal-dono-overlay">
+    <div id="modal-dono" class="modal-full-screen">
         <div class="modal-dono-card">
-            <div class="ditoh-core-orbital">
-                <div class="orbital-ring ring-1"></div>
-                <div class="orbital-ring ring-2"></div>
-                <i data-lucide="zap" style="color:#8a2be2;"></i>
-            </div>
-            <h3 style="margin:0; letter-spacing:2px;">DITOH</h3>
-            <p style="color:#8a2be2; font-size:10px; font-weight:bold; letter-spacing:4px; margin-bottom:20px;">FOUNDER & DEV</p>
-            <div style="background:rgba(138,43,226,0.1); padding:15px; border-radius:15px; border-left:4px solid #8a2be2; text-align:left; margin-bottom:20px;">
-                <p style="font-size:13px; color:#eee; font-style:italic;">"O Hub Brain nunca tá pronto. Teve uma ideia? Me chama na DM, bora fazer o sistema mais brabo de todos."</p>
-            </div>
-            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none; color:white; display:flex; align-items:center; justify-content:center; gap:10px; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid rgba(138,43,226,0.2);">
-                <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i> @wtfditoh
+            <div class="orbital-box"><div class="ring" style="width:100%; height:100%;"></div><i data-lucide="zap" style="color:#8a2be2;"></i></div>
+            <h3>DITOH</h3>
+            <p style="color:#8a2be2; font-size:10px; letter-spacing:4px; margin-bottom:15px;">FOUNDER & DEV</p>
+            <p style="font-size:13px; color:#ccc; margin-bottom:20px;">"Teve uma ideia pro Hub? Me chama na DM!"</p>
+            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none; color:white; display:flex; align-items:center; justify-content:center; gap:10px; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid rgba(138,43,226,0.2);">
+                <i data-lucide="instagram" style="color:#8a2be2;"></i> @wtfditoh
             </a>
-            <button onclick="fecharSobreDono()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; font-weight:900;">VOLTAR</button>
+            <button onclick="fecharModais()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; margin-top:15px; font-weight:900;">VOLTAR</button>
         </div>
     </div>
 
-    <div id="modal-ajuda-xp" class="modal-dono-overlay">
-        <div class="modal-dono-card" style="text-align:left; max-width:350px;">
-            <h3 style="color:#8a2be2; margin-bottom:20px;">Manual de Pontos 🎮</h3>
-            <div class="guia-row"><span>💎</span> <b>Nota 10</b> <span class="guia-xp-val">+100 XP</span></div>
-            <div class="guia-row"><span>🚀</span> <b>Média 7-9</b> <span class="guia-xp-val">+50 XP</span></div>
-            <div class="guia-row"><span>📝</span> <b>Simulado (100%)</b> <span class="guia-xp-val">+50 XP</span></div>
-            <div class="guia-row"><span>✅</span> <b>Tarefa Concluída</b> <span class="guia-xp-val">+15 XP</span></div>
-            <div class="guia-row"><span>📅</span> <b>Aula Salva</b> <span class="guia-xp-val">+5 XP</span></div>
-            <div class="guia-row" style="border-color:#ff4444; opacity:0.8;"><span>💀</span> <b>Nota < 5</b> <span class="guia-xp-val" style="color:#ff4444;">-30 XP</span></div>
-            <button onclick="fecharModalAjudaXP()" style="width:100%; background:#333; color:white; border:none; padding:15px; border-radius:12px; margin-top:20px; font-weight:bold;">ENTENDI</button>
+    <div id="modal-ajuda-xp" class="modal-full-screen">
+        <div class="modal-dono-card" style="text-align:left; max-width:340px;">
+            <h3 style="color:#8a2be2; margin-bottom:20px;">Manual de XP 🎮</h3>
+            <div class="guia-row"><span>💎</span> <b>Nota 10</b> <span class="xp-val">+100 XP</span></div>
+            <div class="guia-row"><span>🚀</span> <b>Média 7-9</b> <span class="xp-val">+50 XP</span></div>
+            <div class="guia-row"><span>✅</span> <b>Tarefa</b> <span class="xp-val">+15 XP</span></div>
+            <div class="guia-row"><span>📅</span> <b>Aula</b> <span class="xp-val">+5 XP</span></div>
+            <div class="guia-row" style="border-color:#ff4444;"><span>💀</span> <b>Nota < 5</b> <span class="xp-val" style="color:#ff4444;">-30 XP</span></div>
+            <button onclick="fecharModais()" style="width:100%; background:#333; color:white; border:none; padding:15px; border-radius:12px; margin-top:15px; font-weight:bold;">ENTENDI</button>
         </div>
     </div>
 
@@ -186,18 +157,32 @@
             document.getElementById(`nav-${aba}`).classList.add('active');
             document.getElementById('btn-add-global').style.visibility = aba === 'notas' ? 'visible' : 'hidden';
             if(aba === 'ranking') carregarRankingReal();
-            if(aba === 'perfil') carregarDadosPessoaisRanking();
+            if(aba === 'perfil') { carregarDadosPessoaisRanking(); carregarFotoLocal(); }
             if(window.lucide) lucide.createIcons();
             toggleMenu();
-        }
+        };
     </script>
     <script>
         const toggleMenu = () => { document.getElementById('menu-lateral').classList.toggle('open'); document.getElementById('overlay').classList.toggle('active'); };
         const abrirSobreDono = () => { document.getElementById('modal-dono').style.display = 'flex'; lucide.createIcons(); };
-        const fecharSobreDono = () => document.getElementById('modal-dono').style.display = 'none';
         const abrirModalAjudaXP = () => { document.getElementById('modal-ajuda-xp').style.display = 'flex'; lucide.createIcons(); };
-        const fecharModalAjudaXP = () => document.getElementById('modal-ajuda-xp').style.display = 'none';
-        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+        const fecharModais = () => { document.querySelectorAll('.modal-full-screen').forEach(m => m.style.display = 'none'); };
+        
+        function atualizarFoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('foto-perfil-img').src = e.target.result;
+                    localStorage.setItem('hub_user_photo', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function carregarFotoLocal() {
+            const saved = localStorage.getItem('hub_user_photo');
+            if(saved) document.getElementById('foto-perfil-img').src = saved;
+        }
+        document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); carregarFotoLocal(); });
     </script>
 </body>
 </html>
