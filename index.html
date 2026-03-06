@@ -1,131 +1,105 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <script>
-    if (!localStorage.getItem('dt_user_phone')) {
-        window.location.href = 'login.html';
-    }
-    </script>
+    <script>if (!localStorage.getItem('dt_user_phone')) window.location.href = 'login.html';</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Inteligência Escolar</title> 
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#8a2be2">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="estilo.css?v=12.0">
     <link rel="stylesheet" href="ranking.css">
 
     <style>
-        /* HEADER PADRÃO */
-        .glass-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
-            backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+        /* CABEÇALHO CENTRALIZADO */
+        .glass-header { 
+            display: grid; grid-template-columns: 50px 1fr 50px; align-items: center; 
+            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important; 
+            backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2); 
             position: sticky; top: 0; z-index: 1000;
         }
         
         .hub-logo-container { 
-            display: flex; align-items: center; gap: 10px; cursor: pointer; 
-            transition: transform 0.1s; -webkit-tap-highlight-color: transparent;
+            display: flex; align-items: center; justify-content: center; gap: 8px; 
+            cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent;
         }
-        
-        .hub-logo-text { font-weight: 900; font-size: 19px; letter-spacing: 1px; color: white; text-transform: uppercase; }
+        .hub-logo-container:active { transform: scale(0.95); }
+        .hub-logo-text { font-weight: 900; font-size: 18px; letter-spacing: 1px; color: white; text-transform: uppercase; }
         .hub-logo-text.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138, 43, 226, 0.3); }
         
         .hub-symbol { 
-            background: rgba(138, 43, 226, 0.1); padding: 6px; border-radius: 10px; 
+            background: rgba(138, 43, 226, 0.1); padding: 5px; border-radius: 10px; 
             border: 1px solid rgba(138, 43, 226, 0.3); display: flex; align-items: center; 
-            justify-content: center; animation: pulse-glow 3s infinite ease-in-out; 
+            animation: pulse-glow 3s infinite ease-in-out; 
         }
 
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
-            50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.4); transform: scale(1.05); }
-            100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
-        }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); } 50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.4); } }
 
         .btn-add-main { 
-            background: #8a2be2 !important; width: 38px !important; height: 38px !important; 
-            border-radius: 12px !important; font-size: 24px !important; color: white; 
-            border: none; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3); cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; 
+            background: #8a2be2 !important; width: 38px; height: 38px; border-radius: 12px; 
+            font-size: 24px; color: white; border: none; cursor: pointer; justify-self: end;
         }
 
-        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1001; }
-        #overlay.active { display:block; }
+        /* PERFIL CUSTOM DESIGN */
+        .perfil-hero {
+            background: linear-gradient(180deg, rgba(138, 43, 226, 0.15) 0%, rgba(0,0,0,0) 100%);
+            border-radius: 30px; padding: 40px 20px; border: 1px solid rgba(138, 43, 226, 0.2);
+            text-align: center; margin-top: 15px; position: relative; overflow: hidden;
+        }
+        .avatar-main { 
+            width: 90px; height: 90px; border-radius: 50%; background: #111; 
+            margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;
+            border: 3px solid #8a2be2; box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
+        }
+        .input-perfil-nome {
+            background: rgba(255,255,255,0.05); border: 1px solid #333; color: white;
+            padding: 12px; border-radius: 15px; width: 100%; text-align: center;
+            font-size: 18px; font-weight: 800; margin-bottom: 10px; outline: none;
+        }
+        .input-perfil-nome:focus { border-color: #8a2be2; }
 
-        /* MODAIS DITOH */
-        .modal-dono-overlay {
-            display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
-            backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
-            background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px;
-        }
+        /* MODAIS ORBITAIS (DITOH STYLE) */
+        .ditoh-core-orbital { width: 80px; height: 80px; margin: 0 auto 20px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .orbital-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; border-top-color: #8a2be2; border-bottom-color: #8a2be2; }
+        .ring-1 { width: 100%; height: 100%; animation: spin 2s linear infinite; }
+        .ring-2 { width: 70%; height: 70%; animation: spin-reverse 1.5s linear infinite; border-left-color: #8a2be2; border-right-color: #8a2be2; border-top-color: transparent; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin-reverse { to { transform: rotate(-360deg); } }
 
-        .modal-dono-card {
-            border: 1px solid rgba(138, 43, 226, 0.3); background: rgba(15, 15, 15, 0.8); 
-            border-radius: 30px; width: 100%; max-width: 320px; padding: 40px 25px; text-align: center; 
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.2);
-            animation: brotarCard 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        @keyframes brotarCard { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
-
-        /* ESTILO DO PERFIL PREMIUM */
-        .perfil-card-main {
-            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(138, 43, 226, 0.3);
-            border-radius: 24px; padding: 30px 20px; text-align: center; margin-bottom: 20px;
-        }
-        .user-edit-box input {
-            background: rgba(0,0,0,0.2); border: 1px solid #333; color: white;
-            padding: 12px; border-radius: 12px; width: 100%; text-align: center;
-            font-size: 16px; margin-bottom: 15px; outline: none;
-        }
-        .btn-salvar-custom {
-            background: #8a2be2; color: white; border: none; padding: 12px;
-            border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer;
-        }
-        .stats-grid-premium { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-box-gold, .stat-box-purple {
-            background: rgba(20,20,20,0.6); border-radius: 20px; padding: 20px;
-            display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255,255,255,0.05);
-        }
-        .stat-box-gold span { font-size: 28px; font-weight: 900; color: #ffd700; }
-        .stat-box-purple span { font-size: 28px; font-weight: 900; color: #8a2be2; }
+        /* GUIA DE PONTOS ESTILIZADO */
+        .guia-row { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; margin-bottom: 8px; border-left: 3px solid #8a2be2; }
+        .guia-xp-val { margin-left: auto; font-weight: 900; color: #8a2be2; }
     </style>
 </head>
 <body>
     <div id="overlay" onclick="toggleMenu()"></div>
 
     <header class="glass-header">
-        <button onclick="toggleMenu()" class="btn-icon" style="background:none; border:none; color:white;"><i data-lucide="menu"></i></button>
+        <button onclick="toggleMenu()" style="background:none; border:none; color:white;"><i data-lucide="menu"></i></button>
+        
         <div class="hub-logo-container" onclick="abrirSobreDono()">
             <span class="hub-logo-text">Hub</span>
-            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i></div>
+            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color: #8a2be2; width: 20px;"></i></div>
             <span class="hub-logo-text purple">Brain</span>
         </div>
-        <button onclick="abrirModal()" class="btn-add-main" id="btn-floating-add">+</button>
+
+        <button id="btn-add-global" onclick="abrirModal()" class="btn-add-main">+</button>
     </header>
 
     <nav id="menu-lateral" class="drawer" style="z-index: 1002;">
         <div class="drawer-header">
-            <div class="logo-box">
-                <i data-lucide="brain-circuit" style="color: #8a2be2; width: 18px;"></i>
-                <span class="logo-text">HUB <span style="color: #8a2be2;">BRAIN</span></span>
-            </div>
+            <div class="logo-box"><i data-lucide="brain-circuit" style="color: #8a2be2;"></i> <span class="logo-text">HUB BRAIN</span></div>
             <button onclick="toggleMenu()" style="background:none; border:none; color:white;"><i data-lucide="x"></i></button>
         </div>
         <button onclick="mudarAba('notas')" class="nav-item active" id="nav-notas"><i data-lucide="layout-grid"></i> Notas</button>
-        <button onclick="mudarAba('ranking')" class="nav-item" id="nav-ranking"><i data-lucide="trophy"></i> Ranking Global</button>
-        <button onclick="mudarAba('perfil')" class="nav-item" id="nav-perfil"><i data-lucide="user"></i> Meu Perfil</button>
-        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;">
-        <button onclick="window.location.href='horario.html'" class="nav-item"><i data-lucide="calendar-clock"></i> Horário das Aulas</button>
+        <button onclick="mudarAba('ranking')" class="nav-item" id="nav-ranking"><i data-lucide="trophy"></i> Ranking</button>
+        <button onclick="mudarAba('perfil')" class="nav-item" id="nav-perfil"><i data-lucide="user"></i> Perfil</button>
+        <hr style="opacity:0.1; margin:15px 0;">
+        <button onclick="window.location.href='horario.html'" class="nav-item"><i data-lucide="calendar-clock"></i> Aulas</button>
         <button onclick="window.location.href='agenda.html'" class="nav-item"><i data-lucide="calendar"></i> Agenda</button>
-        <button onclick="window.location.href='estudos.html'" class="nav-item"><i data-lucide="book-open"></i> Estudar com IA</button>
-        <button onclick="localStorage.clear(); window.location.href='login.html';" class="nav-item" style="color: #ff4444; margin-top: 20px;"><i data-lucide="log-out"></i> Sair</button>
+        <button onclick="window.location.href='estudos.html'" class="nav-item"><i data-lucide="book-open"></i> IA</button>
+        <button onclick="localStorage.clear(); window.location.href='login.html';" class="nav-item" style="color: #ff4444;"><i data-lucide="log-out"></i> Sair</button>
     </nav>
 
     <main class="container">
@@ -138,112 +112,92 @@
         </section>
 
         <section id="aba-ranking" style="display: none;">
-            <div class="aba-ranking">
-                <div class="ranking-header">
-                    <i data-lucide="trophy" style="color: #ffd700; width: 32px;"></i>
-                    <h2>Ranking Global</h2>
-                    <p>Os mestres do Hub Brain</p>
-                </div>
-                <div id="podio-container" class="podio"></div>
-                <div id="lista-ranking-geral"></div>
+            <div style="text-align:center; padding: 30px 0;">
+                <h2 style="margin:0; font-weight: 900; letter-spacing: 1px;">HALL DA FAMA</h2>
+                <p style="color:#8a2be2; font-size:12px; font-weight:bold; letter-spacing:3px;">OS MELHORES DA SEMANA</p>
             </div>
+            <div id="podio-container" class="podio"></div>
+            <div id="lista-ranking-geral" class="lista-ranking"></div>
         </section>
 
         <section id="aba-perfil" style="display: none;">
-            <div class="perfil-card-main">
-                <div class="user-edit-box">
-                    <label>NOME NO RANKING</label>
-                    <input type="text" id="input-nome-usuario" placeholder="Seu nome...">
-                    <button onclick="salvarNomePerfil()" class="btn-salvar-custom">ATUALIZAR PERFIL</button>
+            <div class="perfil-hero">
+                <div class="avatar-main"><i data-lucide="user" style="width:40px; color:#8a2be2;"></i></div>
+                <input type="text" id="input-nome-usuario" class="input-perfil-nome" placeholder="Seu Nome">
+                <button onclick="salvarNomePerfil()" style="background:#8a2be2; color:white; border:none; padding:10px 25px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%;">SALVAR PERFIL</button>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:25px;">
+                    <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:20px; border:1px solid rgba(255,255,255,0.05);">
+                        <span id="user-rank-pos" style="font-size:26px; font-weight:900; color:#ffd700; display:block;">--</span>
+                        <label style="font-size:10px; opacity:0.5; letter-spacing:1px;">POSIÇÃO</label>
+                    </div>
+                    <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:20px; border:1px solid rgba(255,255,255,0.05);">
+                        <span id="user-rank-xp" style="font-size:26px; font-weight:900; color:#8a2be2; display:block;">0</span>
+                        <label style="font-size:10px; opacity:0.5; letter-spacing:1px;">XP TOTAL</label>
+                    </div>
                 </div>
             </div>
-            <div class="stats-grid-premium">
-                <div class="stat-box-gold">
-                    <span id="user-rank-pos">--</span>
-                    <label>POSIÇÃO</label>
-                </div>
-                <div class="stat-box-purple">
-                    <span id="user-rank-xp">0</span>
-                    <label>PONTOS XP</label>
-                </div>
-            </div>
-            <button onclick="abrirModalAjudaXP()" style="width:100%; background:none; border:1px dashed #333; color:#888; padding:15px; border-radius:15px; cursor:pointer;">
-                <i data-lucide="info" style="width:16px; vertical-align:middle;"></i> Como ganhar pontos?
+            <button onclick="abrirModalAjudaXP()" style="width:100%; margin-top:20px; background:none; border:1px solid #333; color:#888; padding:18px; border-radius:20px; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px;">
+                <i data-lucide="info"></i> COMO GANHAR XP?
             </button>
         </section>
     </main>
 
     <div id="modal-dono" class="modal-dono-overlay">
         <div class="modal-dono-card">
-            <h3 style="color: white; margin: 0; font-size: 26px; font-weight: 900;">DITOH</h3>
-            <p style="color: #8a2be2; font-weight: bold; margin-bottom: 20px;">Founder & Dev</p>
-            <div style="background: rgba(138, 43, 226, 0.1); padding: 20px; border-radius: 20px; border-left: 4px solid #8a2be2; text-align: left; margin-bottom: 20px;">
-                <p style="color: #eee; font-size: 13px; font-style: italic;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria."</p>
+            <div class="ditoh-core-orbital">
+                <div class="orbital-ring ring-1"></div>
+                <div class="orbital-ring ring-2"></div>
+                <i data-lucide="zap" style="color:#8a2be2;"></i>
             </div>
-            <button onclick="fecharSobreDono()" style="width: 100%; background: #8a2be2; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 900;">Voltar</button>
+            <h3 style="margin:0; letter-spacing:2px;">DITOH</h3>
+            <p style="color:#8a2be2; font-size:10px; font-weight:bold; letter-spacing:4px; margin-bottom:20px;">FOUNDER & DEV</p>
+            <div style="background:rgba(138,43,226,0.1); padding:15px; border-radius:15px; border-left:4px solid #8a2be2; text-align:left; margin-bottom:20px;">
+                <p style="font-size:13px; color:#eee; font-style:italic;">"O Hub Brain nunca tá pronto. Teve uma ideia? Me chama na DM, bora fazer o sistema mais brabo de todos."</p>
+            </div>
+            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none; color:white; display:flex; align-items:center; justify-content:center; gap:10px; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid rgba(138,43,226,0.2);">
+                <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i> @wtfditoh
+            </a>
+            <button onclick="fecharSobreDono()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; font-weight:900;">VOLTAR</button>
         </div>
     </div>
 
     <div id="modal-ajuda-xp" class="modal-dono-overlay">
-        <div class="modal-dono-card" style="text-align: left;">
-            <h3 style="color:#8a2be2; margin:0 0 15px 0;">Guia de XP 🎮</h3>
-            <div style="font-size:14px; color:#ccc; line-height:2;">
-                <div>🌟 <b>Nota 10:</b> +100 XP</div>
-                <div>🚀 <b>Nota 7-9:</b> +50 XP</div>
-                <div>✅ <b>Atividade:</b> +15 XP</div>
-                <div>📅 <b>Aula:</b> +5 XP</div>
-                <div>💀 <b>Nota < 5:</b> -30 XP</div>
-            </div>
-            <button onclick="fecharModalAjudaXP()" style="width:100%; background:#8a2be2; color:white; border:none; padding:12px; border-radius:10px; margin-top:20px; font-weight:bold;">ENTENDI</button>
-        </div>
-    </div>
-
-    <div id="modal-materia" class="modal">
-        <div class="modal-content">
-            <h3>Nova Disciplina</h3>
-            <input type="text" id="nome-materia-input" placeholder="Ex: Matemática" style="width:100%; padding:10px; margin:10px 0; border-radius:10px; background:#222; border:1px solid #444; color:white;">
-            <div class="area-botoes-modal">
-                <button onclick="fecharModal()" class="btn-modal-voltar">Sair</button>
-                <button onclick="confirmarNovaMateria()" class="btn-modal-acao">Criar</button>
-            </div>
+        <div class="modal-dono-card" style="text-align:left; max-width:350px;">
+            <h3 style="color:#8a2be2; margin-bottom:20px;">Manual de Pontos 🎮</h3>
+            <div class="guia-row"><span>💎</span> <b>Nota 10</b> <span class="guia-xp-val">+100 XP</span></div>
+            <div class="guia-row"><span>🚀</span> <b>Média 7-9</b> <span class="guia-xp-val">+50 XP</span></div>
+            <div class="guia-row"><span>📝</span> <b>Simulado (100%)</b> <span class="guia-xp-val">+50 XP</span></div>
+            <div class="guia-row"><span>✅</span> <b>Tarefa Concluída</b> <span class="guia-xp-val">+15 XP</span></div>
+            <div class="guia-row"><span>📅</span> <b>Aula Salva</b> <span class="guia-xp-val">+5 XP</span></div>
+            <div class="guia-row" style="border-color:#ff4444; opacity:0.8;"><span>💀</span> <b>Nota < 5</b> <span class="guia-xp-val" style="color:#ff4444;">-30 XP</span></div>
+            <button onclick="fecharModalAjudaXP()" style="width:100%; background:#333; color:white; border:none; padding:15px; border-radius:12px; margin-top:20px; font-weight:bold;">ENTENDI</button>
         </div>
     </div>
 
     <script type="module" src="funcoes.js?v=12.0"></script>
     <script type="module">
         import { carregarRankingReal, carregarDadosPessoaisRanking, salvarNomePerfil } from './ranking-logica.js';
-        
         window.salvarNomePerfil = salvarNomePerfil;
-        window.mudarAba = function(aba) {
-            document.getElementById('aba-notas').style.display = 'none';
-            document.getElementById('aba-ranking').style.display = 'none';
-            document.getElementById('aba-perfil').style.display = 'none';
+        window.mudarAba = (aba) => {
+            ['notas','ranking','perfil'].forEach(a => document.getElementById(`aba-${a}`).style.display = 'none');
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-
-            // BOTÃO FLOATING +
-            document.getElementById('btn-floating-add').style.display = (aba === 'notas' ? 'flex' : 'none');
-
-            document.getElementById('aba-' + aba).style.display = 'block';
-            document.getElementById('nav-' + aba).classList.add('active');
-
+            document.getElementById(`aba-${aba}`).style.display = 'block';
+            document.getElementById(`nav-${aba}`).classList.add('active');
+            document.getElementById('btn-add-global').style.visibility = aba === 'notas' ? 'visible' : 'hidden';
             if(aba === 'ranking') carregarRankingReal();
             if(aba === 'perfil') carregarDadosPessoaisRanking();
             if(window.lucide) lucide.createIcons();
             toggleMenu();
-        };
-
-        window.abrirModalAjudaXP = () => document.getElementById('modal-ajuda-xp').style.display = 'flex';
-        window.fecharModalAjudaXP = () => document.getElementById('modal-ajuda-xp').style.display = 'none';
+        }
     </script>
-
     <script>
-        function abrirSobreDono() { document.getElementById('modal-dono').style.display = 'flex'; }
-        function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
-        window.toggleMenu = function() {
-            document.getElementById('menu-lateral').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('active');
-        };
-        document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
+        const toggleMenu = () => { document.getElementById('menu-lateral').classList.toggle('open'); document.getElementById('overlay').classList.toggle('active'); };
+        const abrirSobreDono = () => { document.getElementById('modal-dono').style.display = 'flex'; lucide.createIcons(); };
+        const fecharSobreDono = () => document.getElementById('modal-dono').style.display = 'none';
+        const abrirModalAjudaXP = () => { document.getElementById('modal-ajuda-xp').style.display = 'flex'; lucide.createIcons(); };
+        const fecharModalAjudaXP = () => document.getElementById('modal-ajuda-xp').style.display = 'none';
+        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
     </script>
 </body>
 </html>
