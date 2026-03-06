@@ -45,10 +45,10 @@ window.mostrarAvisoCustom = (msg) => {
 
 window.abrirAjudaBateria = () => { document.getElementById('modal-ajuda-bateria').style.display = 'flex'; };
 window.fecharAjudaBateria = () => { document.getElementById('modal-ajuda-bateria').style.display = 'none'; };
-window.fecharModalAula = () => document.getElementById('modal-aula').style.display = 'none';
-window.fecharModalExcluir = () => document.getElementById('modal-confirm-excluir').style.display = 'none';
+window.fecharModalAula = () => { document.getElementById('modal-aula').style.display = 'none'; };
+window.fecharModalExcluir = () => { document.getElementById('modal-confirm-excluir').style.display = 'none'; };
 
-// --- INICIALIZAÇÃO E ONESIGNAL ---
+// --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', async () => {
     const local = localStorage.getItem('hub_brain_grade');
     if (local) { gradeHoraria = JSON.parse(local); renderizarAulas(); }
@@ -58,14 +58,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const d = dMap[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
 
-    // CONFIGURAÇÃO FORÇADA ONESIGNAL
+    // Inicialização segura do OneSignal
     window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({ appId: "f73275cd-17ad-4963-a25b-321ce2def2ba" });
-        // Força a subscrição se ainda não estiver ativa
-        if (!OneSignal.Notifications.permission) {
-            await OneSignal.Notifications.requestPermission();
-        }
+    OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.init({ appId: "f73275cd-17ad-4963-a25b-321ce2def2ba" });
     });
     
     if(typeof lucide !== 'undefined') lucide.createIcons();
@@ -79,7 +75,7 @@ async function carregarDadosNuvem() {
             gradeHoraria = docSnap.data().grade; 
             renderizarAulas(); 
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Erro Firebase:", e); }
 }
 
 // --- LÓGICA DA GRADE ---
@@ -134,7 +130,9 @@ window.abrirModalAula = async () => {
             opt.value = nome; opt.textContent = nome;
             selectMat.appendChild(opt);
         });
-    } catch (e) { selectMat.innerHTML = '<option value="">Erro ao carregar</option>'; }
+    } catch (e) { 
+        selectMat.innerHTML = '<option value="">Erro ao carregar</option>'; 
+    }
 };
 
 window.salvarAula = async () => {
@@ -157,19 +155,21 @@ window.salvarAula = async () => {
         ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
     });
 
-    // DISPARAR NOTIFICAÇÃO
-    await dispararNotificacao(materiaFinal);
+    // Tentativa de envio silenciosa
+    enviarAlertaOneSignal(materiaFinal);
 
     renderizarAulas();
     fecharModalAula();
     
     if(userPhone) {
+        localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
         await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
     }
+    window.mostrarAvisoCustom("🚀 Aula salva!");
 };
 
-// --- ENVIO REAL ONESIGNAL ---
-async function dispararNotificacao(materia) {
+// --- FUNÇÃO DE ALERTA ---
+async function enviarAlertaOneSignal(materia) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
 
@@ -181,7 +181,6 @@ async function dispararNotificacao(materia) {
     };
 
     try {
-        // Mudança para 'cors' mas com headers simplificados para aceitação máxima
         await fetch("https://onesignal.com/api/v1/notifications", {
             method: "POST",
             headers: { 
@@ -190,13 +189,23 @@ async function dispararNotificacao(materia) {
             },
             body: JSON.stringify(data)
         });
-
-        window.mostrarAvisoCustom("🚀 Sinal enviado!");
-    } catch (e) { 
-        console.error(e);
-        window.mostrarAvisoCustom("❌ Falha no sinal.");
+    } catch (e) {
+        console.warn("Falha ao enviar sinal de fundo.");
     }
 }
+
+// --- BOTÃO DE NOTIFICAÇÃO (CORRIGIDO) ---
+window.ativarNotificacoesReal = () => {
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.Notifications.requestPermission().then(() => {
+            window.mostrarAvisoCustom("Sino ativado! 🔔");
+        }).catch(err => {
+            console.error(err);
+            window.mostrarAvisoCustom("Erro ao ativar sino.");
+        });
+    });
+};
 
 window.abrirConfirmExcluir = (i) => { 
     indexParaExcluir = i; 
@@ -206,6 +215,9 @@ window.abrirConfirmExcluir = (i) => {
 document.getElementById('btn-confirmar-delete').onclick = async () => {
     gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
     renderizarAulas();
-    if(userPhone) await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria });
+    if(userPhone) {
+        localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
+        await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria });
+    }
     fecharModalExcluir();
 };
