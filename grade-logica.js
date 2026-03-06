@@ -38,7 +38,7 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
-// --- FUNÇÕES DE INTERFACE (MODAIS E TOAST) ---
+// --- FUNÇÕES DE INTERFACE ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
@@ -73,24 +73,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
     
     sincronizarUsuarioOneSignal();
-
     setInterval(verificarRelogioParaNotificar, 60000);
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- INTEGRAÇÃO ONESIGNAL (LOGIN E SYNC) ---
+// --- INTEGRAÇÃO ONESIGNAL (LOGIN ROBUSTO) ---
 function sincronizarUsuarioOneSignal() {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         if (userPhone) {
-            // Usa login para garantir que o External ID seja o número do telefone
-            OneSignal.login(userPhone);
-            console.log("OneSignal vinculado ao usuário:", userPhone);
+            // Garante que o ID externo seja vinculado agora
+            await OneSignal.login(userPhone);
+            console.log("OneSignal: Usuário logado com sucesso:", userPhone);
         }
     });
 }
 
-// --- LOGICA DE DADOS (FIREBASE) ---
+// --- FIREBASE ---
 async function carregarDadosNuvem() {
     try {
         const docRef = doc(db, "grades_horarias", userPhone);
@@ -204,7 +203,7 @@ window.salvarAula = async () => {
 
     gradeHoraria[diaAtualGrade].push(novaAula);
 
-    // Agendamento Remoto (OneSignal Cloud)
+    // Envia para o OneSignal (Passamos o horário escolhido)
     await agendarNoServidorOneSignal(materiaFinal, infoHorario.inicio);
 
     renderizarAulas();
@@ -213,31 +212,36 @@ window.salvarAula = async () => {
     window.mostrarAvisoCustom("Aula Agendada! 🚀");
 };
 
-// --- FUNÇÃO DE AGENDAMENTO REMOTO (ONESIGNAL API) ---
+// --- AGENDAMENTO ONESIGNAL (VERSÃO CORRIGIDA) ---
 async function agendarNoServidorOneSignal(materia, horaInicio) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
 
     const [h, m] = horaInicio.split(':').map(Number);
     let dataAlerta = new Date();
-    dataAlerta.setHours(h, m, 0);
+    dataAlerta.setHours(h, m, 0, 0);
     dataAlerta.setMinutes(dataAlerta.getMinutes() - 10); // 10 minutos antes
 
-    // Se o horário de 10 min antes já passou hoje, agenda para 1 min a partir de agora (para teste/imediato)
-    if (dataAlerta < new Date()) {
-        dataAlerta = new Date(new Date().getTime() + 60000); 
+    const agora = new Date();
+
+    // REGRA DE TESTE: Se o horário de 10 min antes já passou (como no seu teste),
+    // agenda para daqui a exatos 60 segundos para validar o funcionamento.
+    if (dataAlerta <= agora) {
+        dataAlerta = new Date(agora.getTime() + 60000); 
     }
 
     const corpo = {
         app_id: appId,
         contents: { "pt": `Sua aula de ${materia} começa em 10 minutos! 🧠` },
         headings: { "pt": "Hub Brain - Alerta" },
+        chrome_web_icon: "https://hubbrain.netlify.app/icon-514.png",
         include_external_user_ids: [userPhone],
+        // O OneSignal entende melhor o ISO para agendamentos
         send_after: dataAlerta.toISOString() 
     };
 
     try {
-        await fetch("https://onesignal.com/api/v1/notifications", {
+        const response = await fetch("https://onesignal.com/api/v1/notifications", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json; charset=utf-8",
@@ -245,7 +249,8 @@ async function agendarNoServidorOneSignal(materia, horaInicio) {
             },
             body: JSON.stringify(corpo)
         });
-        console.log("Agendamento em nuvem concluído!");
+        const respData = await response.json();
+        console.log("Resposta OneSignal:", respData);
     } catch (e) {
         console.error("Erro OneSignal Cloud:", e);
     }
@@ -261,7 +266,7 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
     renderizarAulas(); await sincronizar(); fecharModalExcluir();
 };
 
-// --- NOTIFICAÇÕES (SOLICITAÇÃO) ---
+// --- NOTIFICAÇÕES ---
 window.ativarNotificacoesReal = () => {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
@@ -285,7 +290,6 @@ function verificarRelogioParaNotificar() {
         const minAula = (h * 60) + m;
         const diff = minAula - minAgora;
         
-        // Alerta local (caso o app esteja aberto no momento)
         if (diff === 10 || diff === 5) {
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.controller.postMessage({ 
