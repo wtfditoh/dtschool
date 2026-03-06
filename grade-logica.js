@@ -38,7 +38,7 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
-// --- FUNÇÕES DE INTERFACE ---
+// --- INTERFACE ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
@@ -77,19 +77,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- INTEGRAÇÃO ONESIGNAL (LOGIN ROBUSTO) ---
+// --- ONESIGNAL LOGIN ---
 function sincronizarUsuarioOneSignal() {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         if (userPhone) {
-            // Garante que o ID externo seja vinculado agora
             await OneSignal.login(userPhone);
-            console.log("OneSignal: Usuário logado com sucesso:", userPhone);
+            console.log("OneSignal vinculado ao número:", userPhone);
         }
     });
 }
 
-// --- FIREBASE ---
+// --- FIREBASE SYNC ---
 async function carregarDadosNuvem() {
     try {
         const docRef = doc(db, "grades_horarias", userPhone);
@@ -115,7 +114,7 @@ async function sincronizar() {
     }
 }
 
-// --- LOGICA DA GRADE ---
+// --- GRADE LOGIC ---
 window.selecionarDia = (dia) => {
     diaAtualGrade = dia;
     document.querySelectorAll('.btn-dia').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-dia') === dia));
@@ -151,26 +150,12 @@ window.renderizarAulas = () => {
 window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
     const selectMat = document.getElementById('aula-materia-select');
-    selectMat.innerHTML = '<option value="">Carregando matérias...</option>';
+    selectMat.innerHTML = '<option value="">Carregando...</option>';
     document.getElementById('modal-aula').style.display = 'flex';
 
-    let listaMaterias = [];
-    if (userPhone) {
-        try {
-            const docSnap = await getDoc(doc(db, "notas", userPhone));
-            if (docSnap.exists()) {
-                listaMaterias = docSnap.data().materias || [];
-                localStorage.setItem('materias', JSON.stringify(listaMaterias));
-            } else {
-                listaMaterias = JSON.parse(localStorage.getItem('materias')) || [];
-            }
-        } catch (e) { 
-            listaMaterias = JSON.parse(localStorage.getItem('materias')) || [];
-        }
-    }
-
+    let materias = JSON.parse(localStorage.getItem('materias')) || [];
     selectMat.innerHTML = '<option value="">Selecionar...</option>';
-    listaMaterias.forEach(m => {
+    materias.forEach(m => {
         const opt = document.createElement('option');
         opt.value = m.nome || m; opt.textContent = m.nome || m;
         selectMat.appendChild(opt);
@@ -185,34 +170,24 @@ window.salvarAula = async () => {
     const prof = document.getElementById('aula-prof').value.trim();
     
     const materiaFinal = matSelect || matCustom;
-    if(!materiaFinal) { 
-        const erro = document.getElementById('erro-modal');
-        if(erro) erro.style.display = 'block';
-        return; 
-    }
+    if(!materiaFinal) return;
 
     const infoHorario = TABELA_HORARIOS[turno][nAula];
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
     
-    const novaAula = { 
-        ordem: infoHorario.ordem, 
-        materia: materiaFinal, 
-        hora: infoHorario.inicio, 
-        prof: prof 
-    };
-
+    const novaAula = { ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof };
     gradeHoraria[diaAtualGrade].push(novaAula);
 
-    // Envia para o OneSignal (Passamos o horário escolhido)
+    // CHAMA O AGENDAMENTO NA NUVEM
     await agendarNoServidorOneSignal(materiaFinal, infoHorario.inicio);
 
     renderizarAulas();
     fecharModalAula();
     await sincronizar();
-    window.mostrarAvisoCustom("Aula Agendada! 🚀");
+    window.mostrarAvisoCustom("Aula Agendada com Alerta! 🚀");
 };
 
-// --- AGENDAMENTO ONESIGNAL (VERSÃO CORRIGIDA) ---
+// --- AGENDAMENTO ONESIGNAL (COMPLETO COM PLANO B) ---
 async function agendarNoServidorOneSignal(materia, horaInicio) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
@@ -220,40 +195,38 @@ async function agendarNoServidorOneSignal(materia, horaInicio) {
     const [h, m] = horaInicio.split(':').map(Number);
     let dataAlerta = new Date();
     dataAlerta.setHours(h, m, 0, 0);
-    dataAlerta.setMinutes(dataAlerta.getMinutes() - 10); // 10 minutos antes
+    dataAlerta.setMinutes(dataAlerta.getMinutes() - 10); // Alerta 10 min antes
 
     const agora = new Date();
-
-    // REGRA DE TESTE: Se o horário de 10 min antes já passou (como no seu teste),
-    // agenda para daqui a exatos 60 segundos para validar o funcionamento.
+    // TESTE DE 1 MINUTO: Se o horário real já passou, agenda para 65s a partir de agora
     if (dataAlerta <= agora) {
-        dataAlerta = new Date(agora.getTime() + 60000); 
+        dataAlerta = new Date(agora.getTime() + 65000);
     }
 
     const corpo = {
         app_id: appId,
         contents: { "pt": `Sua aula de ${materia} começa em 10 minutos! 🧠` },
-        headings: { "pt": "Hub Brain - Alerta" },
+        headings: { "pt": "Hub Brain" },
         chrome_web_icon: "https://hubbrain.netlify.app/icon-514.png",
-        include_external_user_ids: [userPhone],
-        // O OneSignal entende melhor o ISO para agendamentos
-        send_after: dataAlerta.toISOString() 
+        send_after: dataAlerta.toISOString()
     };
 
+    // Tenta mandar via ID do telefone, se falhar, manda para todos os inscritos (Plano B)
+    if (userPhone && userPhone !== "") {
+        corpo.include_external_user_ids = [userPhone];
+    } else {
+        corpo.included_segments = ["Subscribed Users"];
+    }
+
     try {
-        const response = await fetch("https://onesignal.com/api/v1/notifications", {
+        const res = await fetch("https://onesignal.com/api/v1/notifications", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json; charset=utf-8",
-                "Authorization": `Basic ${restKey}`
-            },
+            headers: { "Content-Type": "application/json; charset=utf-8", "Authorization": `Basic ${restKey}` },
             body: JSON.stringify(corpo)
         });
-        const respData = await response.json();
-        console.log("Resposta OneSignal:", respData);
-    } catch (e) {
-        console.error("Erro OneSignal Cloud:", e);
-    }
+        const data = await res.json();
+        console.log("Status OneSignal:", data);
+    } catch (e) { console.error("Erro API OneSignal:", e); }
 }
 
 window.abrirConfirmExcluir = (i) => { 
@@ -266,19 +239,15 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
     renderizarAulas(); await sincronizar(); fecharModalExcluir();
 };
 
-// --- NOTIFICAÇÕES ---
 window.ativarNotificacoesReal = () => {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.Notifications.requestPermission().then(() => {
-            if (OneSignal.Notifications.permission) {
-                window.mostrarAvisoCustom("Notificações Ativas! ✅");
-            }
-        });
+        OneSignal.Notifications.requestPermission();
     });
 };
 
 function verificarRelogioParaNotificar() {
+    // Lógica local para se o app estiver aberto
     const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
     const d = dMap[new Date().getDay()];
     const aulas = gradeHoraria[d] || [];
@@ -289,15 +258,9 @@ function verificarRelogioParaNotificar() {
         const [h, m] = aula.hora.split(':').map(Number);
         const minAula = (h * 60) + m;
         const diff = minAula - minAgora;
-        
         if (diff === 10 || diff === 5) {
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({ 
-                    type: 'NOTIFICAR_AULA', 
-                    materia: aula.materia, 
-                    hora: aula.hora, 
-                    tempoRestante: diff 
-                });
+                navigator.serviceWorker.controller.postMessage({ type: 'NOTIFICAR_AULA', materia: aula.materia, hora: aula.hora, tempoRestante: diff });
             }
         }
     });
