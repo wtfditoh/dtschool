@@ -36,7 +36,8 @@ const userPhone = localStorage.getItem('dt_user_phone');
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
-        document.getElementById('toast-message').innerText = msg;
+        const msgEl = document.getElementById('toast-message');
+        if(msgEl) msgEl.innerText = msg;
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
@@ -161,7 +162,7 @@ window.salvarAula = async () => {
         ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
     });
 
-    // ENVIO IMEDIATO (TESTE)
+    // ENVIO IMEDIATO (TESTE PARA ELIMINAR ERRO DE CONEXÃO)
     await agendarNoServidorOneSignal(materiaFinal, infoHorario.inicio);
 
     renderizarAulas();
@@ -172,14 +173,14 @@ window.salvarAula = async () => {
     }
 };
 
-// --- AGENDAMENTO ONESIGNAL (ENVIO IMEDIATO) ---
+// --- AGENDAMENTO ONESIGNAL (ATUALIZADO PARA EVITAR BLOQUEIO) ---
 async function agendarNoServidorOneSignal(materia, horaInicio) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
 
     const corpo = {
         app_id: appId,
-        contents: { "pt": `⚡ Aula de ${materia} salva com sucesso! 🧠` },
+        contents: { "pt": `⚡ Aula de ${materia} salva! 🧠` },
         headings: { "pt": "Hub Brain" },
         chrome_web_icon: "https://hubbrain.netlify.app/icon-514.png",
         included_segments: ["Subscribed Users"],
@@ -195,17 +196,19 @@ async function agendarNoServidorOneSignal(materia, horaInicio) {
             },
             body: JSON.stringify(corpo)
         });
+
         const data = await res.json();
         
         if (data.id) {
-            window.mostrarAvisoCustom("⚡ Alerta Enviado AGORA!");
-            console.log("Sucesso OneSignal:", data.id);
+            window.mostrarAvisoCustom("🚀 Alerta enviado!");
         } else if (data.errors) {
-            alert("Erro OneSignal: " + data.errors[0]);
+            console.error("Erro OneSignal:", data.errors);
+            window.mostrarAvisoCustom("⚠️ Erro no servidor OneSignal.");
         }
     } catch (e) { 
-        console.error("Erro OneSignal:", e);
-        window.mostrarAvisoCustom("⚠️ Erro de conexão.");
+        console.error("Erro de Rede:", e);
+        // Tenta um aviso mais explicativo se o navegador barrar
+        window.mostrarAvisoCustom("❌ Navegador bloqueou o sinal.");
     }
 }
 
@@ -229,3 +232,4 @@ window.ativarNotificacoesReal = () => {
         });
     });
 };
+      
