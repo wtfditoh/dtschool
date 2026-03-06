@@ -1,102 +1,208 @@
-.aba-ranking {
-    padding: 20px;
+/* =========================================
+   ESTILO DO RANKING - HUB BRAIN
+========================================= */
+
+body {
+    background-color: #050505; /* Fundo bem escuro para o neon brilhar */
     color: white;
     font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
+.ranking-container {
+    padding: 20px;
+    max-width: 450px;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+/* BOTÃO VOLTAR */
+.btn-voltar {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    font-weight: 800;
+    font-size: 13px;
+    text-transform: uppercase;
+    transition: 0.3s;
+}
+
+.btn-voltar:active {
+    transform: scale(0.95);
+    background: rgba(138, 43, 226, 0.1);
+}
+
+/* TÍTULO */
 .ranking-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
-.ranking-header h2 { font-size: 24px; margin: 10px 0 5px; }
-.ranking-header p { color: #888; font-size: 14px; }
+.ranking-header h2 {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin: 0;
+}
 
-/* Estilo do Pódio */
-.podio {
+.text-purple {
+    color: #8a2be2;
+    text-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+}
+
+/* =========================================
+   PÓDIO (TOP 3)
+========================================= */
+.podium-section {
     display: flex;
-    justify-content: center;
     align-items: flex-end;
+    justify-content: center;
     gap: 10px;
-    margin-bottom: 40px;
+    margin-bottom: 50px;
     padding-top: 20px;
 }
 
-.podio-item {
-    background: #1e1e1e;
-    border-radius: 15px 15px 5px 5px;
-    padding: 15px;
-    text-align: center;
-    flex: 1;
-    border-top: 4px solid #444;
+.podium-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 30%;
 }
 
-.pos-1 { height: 140px; border-color: #ffd700; order: 2; transform: scale(1.1); z-index: 2; }
-.pos-2 { height: 110px; border-color: #c0c0c0; order: 1; }
-.pos-3 { height: 100px; border-color: #cd7f32; order: 3; }
-
-/* Lista Geral */
-.card-rank {
+/* AVATARES DO PÓDIO */
+.podium-avatar {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: #111;
+    border: 3px solid #333;
     display: flex;
     align-items: center;
-    background: #1a1a1a;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    border: 1px solid #222;
+    justify-content: center;
+    margin-bottom: 12px;
+    position: relative;
+    transition: 0.5s ease;
 }
 
-.rank-num { width: 30px; font-weight: bold; color: #8a2be2; }
-.rank-name { flex: 1; font-weight: 500; }
-.rank-score { font-weight: bold; color: #fff; }
-.rank-score span { font-size: 10px; color: #8a2be2; margin-left: 4px; }
+/* DESTAQUE 1º LUGAR */
+.first { order: 2; width: 40%; }
+.first .podium-avatar {
+    width: 95px;
+    height: 95px;
+    border-color: #ffd700;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+    background: linear-gradient(45deg, #111, #222);
+}
 
-/* Container de Perfil */
-.perfil-container { padding: 10px; animation: fadeIn 0.5s ease; }
+.crown {
+    position: absolute;
+    top: -22px;
+    color: #ffd700;
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+    animation: floating 2s infinite ease-in-out;
+}
 
-.perfil-card-main {
-    background: rgba(255, 255, 255, 0.03);
+/* 2º E 3º LUGAR */
+.second { order: 1; }
+.second .podium-avatar { border-color: #c0c0c0; box-shadow: 0 0 15px rgba(192, 192, 192, 0.1); }
+
+.third { order: 3; }
+.third .podium-avatar { border-color: #cd7f32; box-shadow: 0 0 15px rgba(205, 127, 50, 0.1); }
+
+/* NOMES E NOTAS NO PÓDIO */
+.podium-name {
+    font-weight: 800;
+    font-size: 13px;
+    color: #eee;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+}
+
+.podium-score {
+    background: rgba(138, 43, 226, 0.15);
+    color: #a855f7;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 900;
+    font-size: 14px;
     border: 1px solid rgba(138, 43, 226, 0.3);
-    border-radius: 24px;
-    padding: 30px 20px;
-    text-align: center;
-    margin-bottom: 20px;
 }
 
-.avatar-wrapper { position: relative; width: 80px; height: 80px; margin: 0 auto 20px; }
-.avatar-icon { font-size: 40px; background: #222; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid #8a2be2; }
-.avatar-ring { position: absolute; inset: -5px; border: 2px dashed #8a2be2; border-radius: 50%; animation: spin 10s linear infinite; opacity: 0.3; }
-
-.user-edit-box label { display: block; font-size: 10px; letter-spacing: 2px; color: #8a2be2; margin-bottom: 8px; font-weight: 800; }
-.user-edit-box input {
-    background: rgba(0,0,0,0.2); border: 1px solid #333; color: white;
-    padding: 12px; border-radius: 12px; width: 100%; text-align: center;
-    font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s;
-}
-.user-edit-box input:focus { border-color: #8a2be2; box-shadow: 0 0 10px rgba(138, 43, 226, 0.2); }
-
-.btn-salvar-custom {
-    background: #8a2be2; color: white; border: none; padding: 12px 20px;
-    border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+/* =========================================
+   LISTA GERAL (4º AO FIM)
+========================================= */
+.ranking-list {
+    background: rgba(15, 15, 15, 0.6);
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    padding: 10px;
+    margin-bottom: 40px;
 }
 
-/* Stats Grid */
-.stats-grid-premium { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-.stat-box-gold, .stat-box-purple {
-    background: rgba(20,20,20,0.6); border-radius: 20px; padding: 20px;
-    display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255,255,255,0.05);
-}
-.stat-box-gold span { font-size: 28px; font-weight: 900; color: #ffd700; }
-.stat-box-purple span { font-size: 28px; font-weight: 900; color: #8a2be2; }
-.stat-box-gold label, .stat-box-purple label { font-size: 10px; font-weight: bold; opacity: 0.6; margin-top: 5px; }
-
-/* Botão Guia */
-.btn-guia-xp {
-    width: 100%; background: none; border: 1px solid #333; color: #888;
-    padding: 15px; border-radius: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;
+.ranking-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-radius: 18px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: 0.2s;
 }
 
-/* Itens do Guia no Modal */
-.guia-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px; }
-.btn-entendi-guia { width: 100%; background: #333; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 10px; cursor: pointer; font-weight: bold; }
+.ranking-item:last-child { margin-bottom: 0; }
+
+.pos {
+    width: 35px;
+    font-weight: 900;
+    color: #444;
+    font-size: 14px;
+    font-style: italic;
+}
+
+.user-info { flex: 1; padding-left: 10px; }
+
+.user-name {
+    display: block;
+    font-weight: 800;
+    color: #fff;
+    font-size: 15px;
+    margin-bottom: 2px;
+}
+
+.user-points {
+    font-size: 11px;
+    color: #888;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user-points b { color: #8a2be2; font-size: 13px; }
+
+.trend-icon { opacity: 0.3; }
+
+/* ANIMAÇÕES */
+@keyframes floating {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-5px) rotate(5deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ranking-item { animation: fadeIn 0.4s ease forwards; }
