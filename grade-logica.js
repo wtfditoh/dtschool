@@ -31,7 +31,6 @@ let diaAtualGrade = 'segunda';
 let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] };
 const userPhone = localStorage.getItem('dt_user_phone');
 
-// --- INTERFACE ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
@@ -41,9 +40,6 @@ window.mostrarAvisoCustom = (msg) => {
     }
 };
 
-window.fecharModalAula = () => { document.getElementById('modal-aula').style.display = 'none'; };
-
-// --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', async () => {
     const local = localStorage.getItem('hub_brain_grade');
     if (local) { gradeHoraria = JSON.parse(local); renderizarAulas(); }
@@ -66,7 +62,7 @@ window.renderizarAulas = () => {
     const lista = document.getElementById('lista-aulas');
     if(!lista) return;
     const aulas = gradeHoraria[diaAtualGrade] || [];
-    lista.innerHTML = aulas.map((a, i) => `
+    lista.innerHTML = aulas.map(a => `
         <div class="card-aula">
             <div class="aula-tempo"><b>${a.hora}</b></div>
             <div class="aula-info"><b>${a.materia}</b></div>
@@ -75,6 +71,7 @@ window.renderizarAulas = () => {
 };
 
 window.abrirModalAula = () => { document.getElementById('modal-aula').style.display = 'flex'; };
+window.fecharModalAula = () => { document.getElementById('modal-aula').style.display = 'none'; };
 
 window.salvarAula = async () => {
     const turno = document.getElementById('aula-turno').value;
@@ -89,14 +86,7 @@ window.salvarAula = async () => {
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
     gradeHoraria[diaAtualGrade].push({ materia: materiaFinal, hora: info.inicio });
 
-    // --- NOVA TÉCNICA: USAR O SDK PARA NOTIFICAR (SEM BLOQUEIO DO CHROME) ---
-    OneSignalDeferred.push(function(OneSignal) {
-        // Isto regista um evento no painel do OneSignal que dispara a mensagem
-        OneSignal.User.addTag("ultima_aula", materiaFinal);
-        window.mostrarAvisoCustom("🚀 Aula Guardada! A verificar sinal...");
-    });
-
-    // Envio de emergência via API interna (Modo Seguro)
+    // EXECUÇÃO DO SINAL
     enviarEmergencia(materiaFinal);
 
     renderizarAulas();
@@ -106,21 +96,28 @@ window.salvarAula = async () => {
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
         await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria });
     }
+    window.mostrarAvisoCustom("🚀 Aula Guardada! Verifique as Notificações.");
 };
 
 async function enviarEmergencia(materia) {
+    const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
+
     try {
-        // Usamos o beacon do navegador (mais difícil de bloquear que o fetch comum)
-        const url = "https://onesignal.com/api/v1/notifications";
-        const body = JSON.stringify({
-            app_id: "f73275cd-17ad-4963-a25b-321ce2def2ba",
-            contents: { "pt": `Aula de ${materia} guardada! 🧠` },
-            included_segments: ["Total Subscriptions"]
+        await fetch("https://onesignal.com/api/v1/notifications", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json; charset=utf-8", 
+                "Authorization": `Basic ${restKey}` 
+            },
+            body: JSON.stringify({
+                app_id: appId,
+                contents: { "pt": `🚀 Sua aula de ${materia} foi salva!` },
+                headings: { "pt": "Hub Brain" },
+                included_segments: ["Total Subscriptions"]
+            })
         });
-        
-        navigator.sendBeacon(url, body); // Técnica avançada de envio "silencioso"
-    } catch (e) { console.log("Erro silencioso"); }
+    } catch (e) { console.log("Erro de disparo."); }
 }
 
 window.ativarNotificacoesReal = () => {
