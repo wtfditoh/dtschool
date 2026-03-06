@@ -2,211 +2,300 @@
 <html lang="pt-br">
 <head>
     <script>
-        if (!localStorage.getItem('dt_user_phone')) window.location.href = 'login.html';
+        // Bloqueio de segurança
+        if (!localStorage.getItem('dt_user_phone')) {
+            window.location.href = 'login.html';
+        }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain - Premium</title> 
+    <title>Hub Brain - Inteligência Escolar</title> 
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0a0a0a">
+    <meta name="theme-color" content="#8a2be2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="estilo.css?v=21.0">
-    <link rel="stylesheet" href="ranking.css">
+    <link rel="stylesheet" href="estilo.css?v=30.0">
 
     <style>
-        :root { --p: #8a2be2; --bg: #050505; --glass: rgba(255, 255, 255, 0.03); }
+        /* --- DESIGN DE ELITE (O QUE TINHA SUMIDO) --- */
+        :root {
+            --roxo: #8a2be2;
+            --bg-deep: #050505;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border-glass: rgba(138, 43, 226, 0.3);
+        }
 
-        /* HEADER ALINHADO */
+        body { background-color: var(--bg-deep); color: white; overflow-x: hidden; }
+
+        /* HEADER PREMIUM */
         .glass-header {
-            display: grid; grid-template-columns: 60px 1fr 60px; align-items: center;
-            padding: 0 15px; height: 80px; background: rgba(5, 5, 5, 0.9) !important;
-            backdrop-filter: blur(20px); border-bottom: 1px solid rgba(138, 43, 226, 0.3);
-            position: sticky; top: 0; z-index: 1000;
+            display: grid; 
+            grid-template-columns: 60px 1fr 60px; 
+            align-items: center;
+            padding: 0 15px; 
+            height: 75px; 
+            background: rgba(10, 10, 10, 0.9) !important;
+            backdrop-filter: blur(25px); 
+            border-bottom: 1px solid var(--border-glass);
+            position: sticky; 
+            top: 0; 
+            z-index: 1000;
         }
 
-        /* MENU LATERAL MODERNO */
+        .hub-logo-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+            cursor: pointer; 
+        }
+        
+        .hub-logo-text { 
+            font-weight: 900; 
+            font-size: 20px; 
+            color: white; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+        }
+        
+        .hub-logo-text.purple { 
+            color: var(--roxo); 
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.6); 
+        }
+
+        .hub-symbol {
+            background: rgba(138, 43, 226, 0.15);
+            padding: 7px;
+            border-radius: 12px;
+            border: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
+            50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.5); transform: scale(1.05); }
+        }
+
+        /* MENU LATERAL DRAWER GIGANTE */
         .drawer {
-            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
-            background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(25px);
-            z-index: 2000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border-right: 1px solid rgba(138, 43, 226, 0.2); padding: 30px 20px;
+            position: fixed; top: 0; left: -290px; width: 280px; height: 100%;
+            background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(30px);
+            z-index: 2000; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid var(--border-glass); padding: 30px 20px;
         }
-        .drawer.open { left: 0; }
-        .nav-btn {
-            display: flex; align-items: center; gap: 15px; width: 100%; padding: 15px;
-            margin-bottom: 8px; border: none; background: transparent; color: #888;
-            font-size: 15px; font-weight: 600; border-radius: 14px; cursor: pointer;
-        }
-        .nav-btn.active { background: rgba(138, 43, 226, 0.15); color: #fff; border: 1px solid var(--p); }
+        
+        .drawer.open { left: 0; box-shadow: 20px 0 60px rgba(0,0,0,0.9); }
 
-        /* MODAIS CENTRALIZADOS (O QUE ESTAVA SOLTO) */
+        .drawer-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 20px;
+        }
+
+        .drawer-item {
+            display: flex; align-items: center; gap: 15px; width: 100%;
+            padding: 16px; margin-bottom: 10px; border: none; background: transparent;
+            color: #888; font-size: 15px; font-weight: 600; border-radius: 16px;
+            cursor: pointer; transition: 0.3s;
+        }
+
+        .drawer-item.active { background: rgba(138, 43, 226, 0.15); color: #fff; border: 1px solid var(--roxo); }
+        .drawer-item i { width: 22px; }
+
+        /* MODAIS CENTRALIZADOS E BONITOS */
         .modal-full-screen {
             display: none; position: fixed; inset: 0; 
             align-items: center; justify-content: center; 
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px);
-            z-index: 9999; padding: 20px;
+            background: rgba(0, 0, 0, 0.92); z-index: 9999; padding: 20px;
         }
 
-        /* ANIMAÇÃO ÓRBITA DEV */
-        .orbital-wrap { width: 110px; height: 110px; margin: 0 auto 20px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .ring { position: absolute; border: 3px solid transparent; border-radius: 50%; }
-        .ring-1 { width: 100%; height: 100%; border-top-color: var(--p); border-bottom-color: var(--p); animation: spin 2.5s linear infinite; }
-        .ring-2 { width: 70%; height: 70%; border-left-color: #fff; border-right-color: #fff; animation: spin 1.8s linear infinite reverse; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* LISTA XP MANUAL */
-        .xp-item {
-            background: rgba(255,255,255,0.03); padding: 12px 15px; border-radius: 15px;
-            margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid rgba(255,255,255,0.05);
+        .card-modal {
+            background: #0d0d0d; border: 1px solid var(--border-glass);
+            border-radius: 40px; padding: 40px 30px; width: 100%; max-width: 340px; 
+            text-align: center; position: relative; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .xp-val { color: var(--p); font-weight: 900; }
-        .xp-val.neg { color: #ff4444; }
 
-        .btn-plus {
-            background: var(--p); color: white; border: none; width: 45px; height: 45px;
-            border-radius: 15px; font-size: 24px; cursor: pointer; display: flex;
-            align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(138,43,226,0.4);
+        /* ANIMAÇÃO ÓRBITA DEV (O ORGULHO DO DESIGN) */
+        .orbital-box { 
+            width: 110px; height: 110px; margin: 0 auto 25px; 
+            position: relative; display: flex; align-items: center; justify-content: center; 
         }
+        
+        .ring-dev { 
+            position: absolute; border-radius: 50%; border: 3px solid transparent; 
+        }
+        
+        .ring-dev.r1 { 
+            width: 100%; height: 100%; border-top-color: var(--roxo); 
+            border-bottom-color: var(--roxo); animation: spin-dev 2.5s linear infinite; 
+        }
+        
+        .ring-dev.r2 { 
+            width: 70%; height: 70%; border-left-color: #fff; 
+            border-right-color: var(--roxo); animation: spin-dev-rev 2s linear infinite; 
+        }
+        
+        @keyframes spin-dev { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spin-dev-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+
+        /* BOTÃO + (COM FUNÇÃO REAL) */
+        .btn-add-action {
+            background: var(--roxo); color: white; border: none; 
+            width: 48px; height: 48px; border-radius: 16px; 
+            font-size: 28px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 20px rgba(138, 43, 226, 0.4);
+            transition: 0.3s;
+        }
+
+        .btn-add-action:active { transform: scale(0.9); }
+
+        /* TEXTOS */
+        .phrase-dev {
+            color: #aaa; font-size: 14px; line-height: 1.6;
+            font-style: italic; margin: 20px 0; padding: 0 10px;
+        }
+
     </style>
 </head>
 <body>
-    <div id="overlay" onclick="toggleMenu()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1500;"></div>
+    <div id="overlay" onclick="toggleMenu()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1500;"></div>
 
     <header class="glass-header">
-        <button onclick="toggleMenu()" style="background:none; border:none; color:white;"><i data-lucide="menu"></i></button>
-        <div style="display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer;" onclick="abrirDev()">
-            <span style="font-weight:900; color:#fff; font-size:20px;">HUB</span>
-            <div style="background:var(--p); padding:6px; border-radius:10px;"><i data-lucide="brain-circuit" style="color:#fff; width:22px;"></i></div>
-            <span style="font-weight:900; color:var(--p); font-size:20px;">BRAIN</span>
+        <button onclick="toggleMenu()" style="background:none; border:none; color:white; cursor:pointer;">
+            <i data-lucide="menu" style="width: 28px; height: 28px;"></i>
+        </button>
+        
+        <div class="hub-logo-container" onclick="abrirDono()">
+            <span class="hub-logo-text">Hub</span>
+            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i></div>
+            <span class="hub-logo-text purple">Brain</span>
         </div>
-        <button id="btn-add-main" onclick="abrirModal()" class="btn-plus">+</button>
+
+        <button onclick="abrirModal()" class="btn-add-action">+</button>
     </header>
 
     <nav id="menu-lateral" class="drawer">
-        <div style="margin-bottom:40px; display:flex; justify-content:space-between;">
-            <span style="font-weight:900; color:var(--p); letter-spacing:2px;">HUB MENU</span>
-            <i data-lucide="x" onclick="toggleMenu()" style="color:#444;"></i>
+        <div class="drawer-header">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i data-lucide="brain-circuit" style="color: var(--roxo); width: 24px;"></i>
+                <span style="font-weight: 900; letter-spacing: 1px;">HUB BRAIN</span>
+            </div>
+            <i data-lucide="x" onclick="toggleMenu()" style="color: #444; cursor: pointer;"></i>
         </div>
-        <button onclick="mudarAba('notas')" class="nav-btn active" id="b-notas"><i data-lucide="layout-grid"></i> Notas</button>
-        <button onclick="mudarAba('ranking')" class="nav-btn" id="b-ranking"><i data-lucide="trophy"></i> Ranking dos Mestres</button>
-        <button onclick="mudarAba('perfil')" class="nav-btn" id="b-perfil"><i data-lucide="user"></i> Meu Perfil</button>
+        
+        <button onclick="window.location.href='index.html'" class="drawer-item active">
+            <i data-lucide="layout-grid"></i> Minhas Notas
+        </button>
+        
+        <button onclick="window.location.href='ranking.html'" class="drawer-item">
+            <i data-lucide="trophy"></i> Ranking Global
+        </button>
+        
+        <button onclick="window.location.href='perfil.html'" class="drawer-item">
+            <i data-lucide="user"></i> Meu Perfil
+        </button>
+        
         <hr style="opacity:0.05; margin:20px 0;">
-        <button onclick="window.location.href='horario.html'" class="nav-btn"><i data-lucide="calendar-clock"></i> Horários</button>
-        <button onclick="window.location.href='agenda.html'" class="nav-btn"><i data-lucide="calendar"></i> Agenda</button>
-        <button onclick="window.location.href='estudos.html'" class="nav-btn"><i data-lucide="sparkles"></i> Inteligência IA</button>
+        
+        <button onclick="window.location.href='horario.html'" class="drawer-item">
+            <i data-lucide="calendar-clock"></i> Quadro de Horários
+        </button>
+        
+        <button onclick="window.location.href='agenda.html'" class="drawer-item">
+            <i data-lucide="calendar"></i> Agenda de Provas
+        </button>
+        
+        <button onclick="window.location.href='estudos.html'" class="drawer-item">
+            <i data-lucide="sparkles"></i> Estudar com IA
+        </button>
+
+        <button onclick="localStorage.clear(); window.location.href='login.html';" class="drawer-item" style="color: #ff4444; margin-top: 40px;">
+            <i data-lucide="log-out"></i> Sair do Hub
+        </button>
     </nav>
 
     <main class="container">
-        <section id="aba-notas">
-            <div class="stats-row">
-                <div class="stat-card"><span id="media-geral">0.0</span><label>Média</label></div>
-                <div class="stat-card"><span id="aprov-count">0/0</span><label>Aprovadas</label></div>
+        <div class="stats-row">
+            <div class="stat-card">
+                <span id="media-geral">0.0</span>
+                <label>Média Geral</label>
             </div>
-            <div id="lista-materias"></div>
-        </section>
+            <div class="stat-card">
+                <span id="aprov-count">0/0</span>
+                <label>Matérias Aprovadas</label>
+            </div>
+        </div>
 
-        <section id="aba-ranking" style="display:none;">
-            <div style="text-align:center; padding:30px 0;">
-                <h2 style="font-weight:900; letter-spacing:1px;">RANKING DOS MESTRES</h2>
-                <p style="color:var(--p); font-size:10px; font-weight:bold; letter-spacing:3px;">TOP PLAYERS</p>
-            </div>
-            <div id="podio-container" class="podio"></div>
-            <div id="lista-ranking-geral"></div>
-        </section>
-
-        <section id="aba-perfil" style="display:none;">
-            <div style="background:var(--glass); border-radius:35px; padding:35px 20px; text-align:center; border:1px solid rgba(138,43,226,0.2);">
-                <div style="width:115px; height:115px; margin:0 auto 20px; position:relative;" onclick="document.getElementById('in-f').click()">
-                    <img id="u-img" src="https://via.placeholder.com/150" style="width:100%; height:100%; border-radius:50%; border:4px solid var(--p); object-fit:cover;">
-                    <input type="file" id="in-f" hidden onchange="uFoto(this)">
-                </div>
-                <input type="text" id="u-name" placeholder="Seu apelido..." style="background:rgba(0,0,0,0.3); border:1px solid #333; color:white; padding:18px; border-radius:18px; width:100%; text-align:center; font-weight:800; margin-bottom:15px; outline:none;">
-                <button onclick="salvarP()" style="background:var(--p); color:white; border:none; padding:18px; border-radius:18px; width:100%; font-weight:900;">SALVAR ALTERAÇÕES</button>
-            </div>
-            <button onclick="abrirXP()" style="width:100%; margin-top:20px; background:none; border:1px dashed #444; color:#777; padding:20px; border-radius:20px; font-weight:bold;">MANUAL DE XP</button>
-        </section>
+        <div id="lista-materias" style="margin-top: 20px;"></div>
     </main>
 
-    <div id="m-dev" class="modal-full-screen">
-        <div style="background:#0a0a0a; border:1px solid var(--p); border-radius:35px; padding:35px; width:100%; max-width:320px; text-align:center;">
-            <div class="orbital-wrap"><div class="ring ring-1"></div><div class="ring ring-2"></div><i data-lucide="zap" style="color:white;"></i></div>
-            <h3 style="margin:0; font-weight:900;">DITOH</h3>
-            <p style="color:var(--p); font-size:11px; font-weight:bold; margin-bottom:20px;">FOUNDER & DEV</p>
-            <p style="font-size:14px; color:#777; font-style:italic; margin-bottom:25px;">"Hub Brain: O seu aliado nos estudos."</p>
-            <button onclick="fM()" style="width:100%; background:var(--p); color:white; border:none; padding:15px; border-radius:15px; font-weight:900;">VOLTAR</button>
+    <div id="modal-dono" class="modal-full-screen">
+        <div class="card-modal">
+            <div class="orbital-box">
+                <div class="ring-dev r1"></div>
+                <div class="ring-dev r2"></div>
+                <i data-lucide="zap" style="color:white; width:35px; height:35px; z-index: 10;"></i>
+            </div>
+            
+            <h3 style="color:white; margin:0; font-size:30px; font-weight:900; letter-spacing:2px;">DITOH</h3>
+            <p style="color:var(--roxo); font-weight:bold; letter-spacing:4px; margin-bottom:15px; font-size:12px; text-transform: uppercase;">Founder & Developer</p>
+            
+            <p class="phrase-dev">
+                "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Teve uma ideia ou achou um bug? Me chama na DM!"
+            </p>
+            
+            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:12px; color:white; background:rgba(255,255,255,0.05); padding:18px; border-radius:22px; border:1px solid rgba(138, 43, 226, 0.3); margin-bottom:20px; font-weight:bold;">
+                <i data-lucide="instagram" style="color:var(--roxo);"></i> @wtfditoh
+            </a>
+            
+            <button onclick="fecharDono()" style="width:100%; background:var(--roxo); color:white; border:none; padding:18px; border-radius:18px; font-weight:900; cursor:pointer;">FECHAR</button>
         </div>
     </div>
 
-    <div id="m-xp" class="modal-full-screen">
-        <div style="background:#0a0a0a; border-radius:35px; padding:30px; width:100%; max-width:320px;">
-            <h3 style="color:var(--p); margin-bottom:20px;">Manual de XP 🎮</h3>
-            <div class="xp-item"><span>💎 Nota 10</span><span class="xp-val">+100</span></div>
-            <div class="xp-item"><span>🚀 Média (7-9)</span><span class="xp-val">+50</span></div>
-            <div class="xp-item"><span>🎯 Acerto Simulado</span><span class="xp-val">+10</span></div>
-            <div class="xp-item"><span>✅ Agenda Concluída</span><span class="xp-val">+20</span></div>
-            <div class="xp-item"><span>📅 Aula Assistida</span><span class="xp-val">+5</span></div>
-            <div class="xp-item"><span>❌ Erro Simulado</span><span class="xp-val neg">-5</span></div>
-            <div class="xp-item"><span>💀 Nota < 5</span><span class="xp-val neg">-30</span></div>
-            <button onclick="fM()" style="width:100%; background:#222; color:white; border:none; padding:15px; border-radius:15px; margin-top:20px; font-weight:bold;">ENTENDI</button>
+    <div id="modal-materia" class="modal">
+        <div class="modal-content" style="background:#0f0f0f; border:1px solid var(--roxo); border-radius:30px; padding:30px;">
+            <h3 style="color:white; margin-top:0;">Nova Disciplina</h3>
+            <p style="color:#666; font-size:13px;">Adicione uma matéria para organizar suas notas.</p>
+            
+            <input type="text" id="nome-materia-input" placeholder="Ex: Matemática, História..." 
+                   style="width:100%; padding:18px; margin:20px 0; border-radius:15px; background:#1a1a1a; border:1px solid #333; color:white; box-sizing:border-box; outline:none; font-size:16px;">
+            
+            <div style="display:flex; gap:12px;">
+                <button onclick="fecharModal()" style="flex:1; padding:15px; border-radius:15px; background:#222; color:white; border:none; font-weight:bold; cursor:pointer;">Cancelar</button>
+                <button onclick="confirmarNovaMateria()" style="flex:1; padding:15px; border-radius:15px; background:var(--roxo); color:white; border:none; font-weight:bold; cursor:pointer;">Criar Matéria</button>
+            </div>
         </div>
     </div>
 
-    <script type="module" src="funcoes.js?v=21.0"></script>
-    <script type="module">
-        import { carregarRankingReal, carregarDadosPessoaisRanking, salvarNomePerfil } from './ranking-logica.js';
-        
-        window.salvarP = () => {
-            const n = document.getElementById('u-name').value;
-            if(n.trim()){
-                localStorage.setItem('hub_user_name', n);
-                salvarNomePerfil();
-                alert("Salvo com sucesso! 🚀");
-            }
-        };
-
-        window.mudarAba = (aba) => {
-            ['notas','ranking','perfil'].forEach(a => document.getElementById('aba-'+a).style.display = 'none');
-            ['b-notas','b-ranking','b-perfil'].forEach(b => document.getElementById(b).classList.remove('active'));
-            document.getElementById('aba-'+aba).style.display = 'block';
-            document.getElementById('b-'+aba).classList.add('active');
-            document.getElementById('btn-add-main').style.visibility = (aba === 'notas') ? 'visible' : 'hidden';
-            if(aba === 'ranking') carregarRankingReal();
-            if(aba === 'perfil') carregarL();
-            lucide.createIcons();
-            toggleMenu();
-        };
-    </script>
+    <script type="module" src="funcoes.js?v=30.0"></script>
     <script>
-        const toggleMenu = () => {
-            const m = document.getElementById('menu-lateral'), o = document.getElementById('overlay');
-            m.classList.toggle('open');
-            o.style.display = m.classList.contains('open') ? 'block' : 'none';
-        };
-        const abrirDev = () => { document.getElementById('m-dev').style.display='flex'; lucide.createIcons(); };
-        const abrirXP = () => { document.getElementById('m-xp').style.display='flex'; lucide.createIcons(); };
-        const fM = () => { document.querySelectorAll('.modal-full-screen').forEach(m => m.style.display='none'); };
-        
-        function uFoto(input) {
-            if (input.files && input.files[0]) {
-                const r = new FileReader();
-                r.onload = (e) => {
-                    document.getElementById('u-img').src = e.target.result;
-                    localStorage.setItem('hub_user_photo', e.target.result);
-                };
-                r.readAsDataURL(input.files[0]);
-            }
+        // Funções de Interface (UI) que precisam estar no HTML
+        function toggleMenu() {
+            const menu = document.getElementById('menu-lateral');
+            const overlay = document.getElementById('overlay');
+            menu.classList.toggle('open');
+            overlay.style.display = menu.classList.contains('open') ? 'block' : 'none';
         }
 
-        function carregarL() {
-            const n = localStorage.getItem('hub_user_name'), f = localStorage.getItem('hub_user_photo');
-            if(n) document.getElementById('u-name').value = n;
-            if(f) document.getElementById('u-img').src = f;
+        function abrirDono() {
+            document.getElementById('modal-dono').style.display = 'flex';
+            if(window.lucide) lucide.createIcons();
         }
 
-        document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); carregarL(); });
+        function fecharDono() {
+            document.getElementById('modal-dono').style.display = 'none';
+        }
+
+        // Garante que os ícones carreguem ao iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) lucide.createIcons();
+        });
     </script>
 </body>
-                    </html>
-                    
+</html>
