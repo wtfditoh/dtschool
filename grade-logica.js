@@ -36,7 +36,7 @@ window.mostrarAvisoCustom = (msg) => {
     if(toast) {
         document.getElementById('toast-message').innerText = msg;
         toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 4000);
+        setTimeout(() => toast.classList.remove('show'), 3000);
     }
 };
 
@@ -46,7 +46,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.init({ appId: "f73275cd-17ad-4963-a25b-321ce2def2ba" });
+        OneSignal.init({ 
+            appId: "f73275cd-17ad-4963-a25b-321ce2def2ba"
+        });
     });
     
     selecionarDia('segunda');
@@ -86,8 +88,12 @@ window.salvarAula = async () => {
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
     gradeHoraria[diaAtualGrade].push({ materia: materiaFinal, hora: info.inicio });
 
-    // EXECUÇÃO DO SINAL
-    enviarEmergencia(materiaFinal);
+    // --- DISPARO VIA SDK (SEM API KEY NO NAVEGADOR) ---
+    OneSignalDeferred.push(function(OneSignal) {
+        // Marcamos o usuário com a matéria salva
+        OneSignal.User.addTag("aula_atual", materiaFinal);
+        window.mostrarAvisoCustom("🚀 Aula salva no sistema!");
+    });
 
     renderizarAulas();
     fecharModalAula();
@@ -96,29 +102,7 @@ window.salvarAula = async () => {
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
         await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria });
     }
-    window.mostrarAvisoCustom("🚀 Aula Guardada! Verifique as Notificações.");
 };
-
-async function enviarEmergencia(materia) {
-    const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
-    const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
-
-    try {
-        await fetch("https://onesignal.com/api/v1/notifications", {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json; charset=utf-8", 
-                "Authorization": `Basic ${restKey}` 
-            },
-            body: JSON.stringify({
-                app_id: appId,
-                contents: { "pt": `🚀 Sua aula de ${materia} foi salva!` },
-                headings: { "pt": "Hub Brain" },
-                included_segments: ["Total Subscriptions"]
-            })
-        });
-    } catch (e) { console.log("Erro de disparo."); }
-}
 
 window.ativarNotificacoesReal = () => {
     OneSignalDeferred.push(function(OneSignal) {
