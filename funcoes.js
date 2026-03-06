@@ -48,17 +48,24 @@ async function atualizarXPGlobal() {
 
     try {
         const userRef = doc(db, "notas", userPhone);
-        const nomeUsuario = localStorage.getItem('dt_user_name') || "Estudante";
-        const avatarUsuario = localStorage.getItem('dt_user_avatar') || "user";
-
-        await setDoc(userRef, { 
-            xp: xpTotal, 
-            nome: nomeUsuario,
-            avatar: avatarUsuario,
-            materias: materias 
-        }, { merge: true });
         
-        console.log(`🏆 XP Sincronizado: ${xpTotal}`);
+        // Pega os dados do perfil salvos no navegador
+        const nomeLocal = localStorage.getItem('dt_user_name');
+        const avatarLocal = localStorage.getItem('dt_user_avatar');
+
+        const dadosParaAtualizar = { 
+            xp: xpTotal, 
+            materias: materias 
+        };
+
+        // Só envia nome/avatar se eles existirem, evitando o bug de virar "Estudante"
+        if (nomeLocal) dadosParaAtualizar.nome = nomeLocal;
+        if (avatarLocal) dadosParaAtualizar.avatar = avatarLocal;
+
+        // Merge true garante que o que já está lá (como o nome) não suma
+        await setDoc(userRef, dadosParaAtualizar, { merge: true });
+        
+        console.log(`🏆 XP Sincronizado para ${nomeLocal || 'Usuário'}: ${xpTotal}`);
     } catch (e) { 
         console.error("Erro ao sincronizar XP:", e); 
     }
@@ -214,7 +221,7 @@ window.atualizarLista = function() {
     const lista = document.getElementById('lista-materias');
     if(!lista) return;
 
-    materias.sort((a, b) => b.id - a.id); // Ordem de criação
+    materias.sort((a, b) => b.id - a.id);
 
     lista.innerHTML = materias.map(m => {
         const soma = (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0);
@@ -235,10 +242,8 @@ window.atualizarLista = function() {
             
             <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
                 ${[1,2,3,4].map(n => {
-                    const valorNota = m['n'+n];
-                    // Aqui está o segredo: Se for 0, mostra 0. Se for vazio ou null, deixa branco para mostrar o placeholder.
-                    const displayValue = (valorNota === 0 || (valorNota && valorNota !== "")) ? valorNota : "";
-                    
+                    const val = m['n'+n];
+                    const displayValue = (val === 0 || (val && val !== "")) ? val : "";
                     return `
                     <input type="number" step="0.1" value="${displayValue}" placeholder="${n}º"
                         style="width:100%; background:rgba(0,0,0,0.3); border:1px solid #222; color:white; padding:10px; border-radius:10px; text-align:center; font-size:13px; font-weight:bold;"
@@ -290,7 +295,7 @@ window.confirmarNovaMateria = async function() {
         input.value = ''; fecharModal(); atualizarLista();
     }
 };
-      
+
 // ==========================================
 // PWA E INSTALAÇÃO
 // ==========================================
