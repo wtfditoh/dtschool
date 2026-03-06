@@ -22,30 +22,38 @@ let imagemBase64 = "";
 let agendaGlobal = [];
 
 // ==========================================
-// MOTOR DE XP DA AGENDA (LÓGICA DE PREFIXOS)
+// MOTOR DE XP DA AGENDA (LEITURA INTELIGENTE)
 // ==========================================
 function identificarXPTarefa(nome) {
     const n = nome.toLowerCase().trim();
-    if (n.startsWith('(p)') || n.startsWith('(e)')) return 30; // Prova ou Exame
-    if (n.startsWith('(t)')) return 20; // Trabalho / Teste
-    return 10; // Atividade comum / Estudo
+    
+    // Agora ele verifica se a palavra existe em QUALQUER lugar do título
+    if (n.includes('prova') || n.includes('exame') || n.includes('(p)') || n.includes('(e)')) {
+        return 30; // Prova/Exame: +30 XP
+    }
+    if (n.includes('trabalho') || n.includes('teste') || n.includes('(t)')) {
+        return 20; // Trabalho/Teste: +20 XP
+    }
+    
+    return 10; // Atividade/Estudo comum: +10 XP
 }
 
 async function atualizarXPRanking(valorXP) {
     if (userType === 'local' || !userPhone) return;
     try {
         const userRef = doc(db, "notas", userPhone);
-        // Usa o increment para somar ou subtrair (estorno) no ranking global
         await updateDoc(userRef, { 
             xp: increment(valorXP) 
         });
         console.log(`⭐ Ranking atualizado: ${valorXP > 0 ? '+' : ''}${valorXP} XP`);
     } catch (e) {
-        console.error("Erro ao atualizar XP no ranking:", e);
+        console.error("Erro ao atualizar XP:", e);
     }
 }
 
-// FUNÇÃO AUXILIAR: Pega "hoje" no formato YYYY-MM-DD
+// ==========================================
+// LÓGICA DE CARREGAMENTO E EXIBIÇÃO
+// ==========================================
 const getHojeLocal = () => {
     const d = new Date();
     return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
@@ -132,7 +140,7 @@ window.carregarTarefas = (filtroData = null) => {
                     </button>
                 </div>
             </div>
-            ${t.imagem ? `<img src="${t.imagem}" style="width:100%; border-radius:12px; margin-top:15px; border: 1px solid rgba(255,255,255,0.1);">` : ''}
+            ${t.imagem ? `<img src="${t.imagem}" style="width:100%; border-radius:12px; margin-top:15px;">` : ''}
         </div>`;
     }).join('');
     lucide.createIcons();
@@ -216,7 +224,7 @@ window.adicionarTarefa = async function() {
 window.removerTarefa = async function(idFirebase, idLocal) {
     const tarefa = agendaGlobal.find(t => userType === 'local' ? t.criadoEm === idLocal : t.id_firebase === idFirebase);
     
-    // Se remover uma tarefa que estava concluída, estornamos o XP
+    // Estorno de XP se deletar algo já concluído
     if (tarefa && tarefa.concluida) {
         const xpEstorno = identificarXPTarefa(tarefa.nome) * -1;
         await atualizarXPRanking(xpEstorno);
@@ -244,13 +252,11 @@ window.alternarConcluida = async function(idFirebase, idLocal) {
         tarefa = agendaGlobal.find(t => t.id_firebase === idFirebase);
         const novoStatus = !tarefa.concluida;
         await updateDoc(doc(db, "agenda", idFirebase), { concluida: novoStatus });
-        tarefa.concluida = novoStatus; // Atualiza localmente para o cálculo de XP
+        tarefa.concluida = novoStatus; 
     }
 
-    // DISPARO DO XP
     if (tarefa) {
         const baseXP = identificarXPTarefa(tarefa.nome);
-        // Se concluiu: ganha XP. Se desmarcou: perde (estorno).
         const xpFinal = tarefa.concluida ? baseXP : (baseXP * -1);
         await atualizarXPRanking(xpFinal);
     }
@@ -258,7 +264,6 @@ window.alternarConcluida = async function(idFirebase, idLocal) {
     window.buscarDadosNuvem();
 };
 
-// ... Restante das funções (previewImg, carregarMateriasNoSelect, selecionarDia, mudarMes, abrirModalAgendaHoje) continuam iguais ...
 window.previewImg = (input) => {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -301,4 +306,4 @@ window.fecharModalAgenda = () => {
     document.getElementById('preview-container').innerHTML = "";
     imagemBase64 = ""; 
 };
-          
+  
