@@ -16,20 +16,14 @@ const db = getFirestore(app);
 
 const TABELA_HORARIOS = {
     matutino: [
-        { ordem: "1ª Aula", inicio: "07:00" },
-        { ordem: "2ª Aula", inicio: "07:50" },
-        { ordem: "3ª Aula", inicio: "08:40" },
-        { ordem: "4ª Aula", inicio: "09:50" },
-        { ordem: "5ª Aula", inicio: "10:40" },
-        { ordem: "6ª Aula", inicio: "11:30" }
+        { ordem: "1ª Aula", inicio: "07:00" }, { ordem: "2ª Aula", inicio: "07:50" },
+        { ordem: "3ª Aula", inicio: "08:40" }, { ordem: "4ª Aula", inicio: "09:50" },
+        { ordem: "5ª Aula", inicio: "10:40" }, { ordem: "6ª Aula", inicio: "11:30" }
     ],
     vespertino: [
-        { ordem: "1ª Aula", inicio: "13:00" },
-        { ordem: "2ª Aula", inicio: "13:50" },
-        { ordem: "3ª Aula", inicio: "14:40" },
-        { ordem: "4ª Aula", inicio: "15:50" },
-        { ordem: "5ª Aula", inicio: "16:40" },
-        { ordem: "6ª Aula", inicio: "17:30" }
+        { ordem: "1ª Aula", inicio: "13:00" }, { ordem: "2ª Aula", inicio: "13:50" },
+        { ordem: "3ª Aula", inicio: "14:40" }, { ordem: "4ª Aula", inicio: "15:50" },
+        { ordem: "5ª Aula", inicio: "16:40" }, { ordem: "6ª Aula", inicio: "17:30" }
     ]
 };
 
@@ -38,12 +32,11 @@ let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] }
 let indexParaExcluir = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 
-// --- INTERFACE (TOAST E MODAIS) ---
+// --- INTERFACE ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
-        const msgEl = document.getElementById('toast-message');
-        if(msgEl) msgEl.innerText = msg;
+        document.getElementById('toast-message').innerText = msg;
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
@@ -62,38 +55,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const d = dMap[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
     
-    // Sincroniza OneSignal
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) {
-        if (userPhone) OneSignal.login(userPhone);
-    });
-
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- FIREBASE ---
+// --- FIREBASE (BUSCA DE GRADE E MATÉRIAS) ---
 async function carregarDadosNuvem() {
     try {
-        const docRef = doc(db, "grades_horarias", userPhone);
-        const docSnap = await getDoc(docRef);
+        const docSnap = await getDoc(doc(db, "grades_horarias", userPhone));
         if (docSnap.exists()) { 
             gradeHoraria = docSnap.data().grade; 
-            localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
             renderizarAulas(); 
         }
     } catch (e) { console.error(e); }
-}
-
-async function sincronizar() {
-    localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-    if (userPhone) {
-        try {
-            await setDoc(doc(db, "grades_horarias", userPhone), { 
-                grade: gradeHoraria, 
-                atualizadoEm: Date.now() 
-            });
-        } catch (e) { console.error(e); }
-    }
 }
 
 // --- LOGICA DA GRADE ---
@@ -129,18 +102,30 @@ window.renderizarAulas = () => {
     lucide.createIcons();
 };
 
+// --- ABRE MODAL E BUSCA MATÉRIAS DAS NOTAS ---
 window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
     const selectMat = document.getElementById('aula-materia-select');
-    selectMat.innerHTML = '<option value="">Selecionar...</option>';
+    selectMat.innerHTML = '<option value="">Carregando matérias...</option>';
     document.getElementById('modal-aula').style.display = 'flex';
 
-    const materiasLocal = JSON.parse(localStorage.getItem('materias')) || [];
-    materiasLocal.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m.nome || m; opt.textContent = m.nome || m;
-        selectMat.appendChild(opt);
-    });
+    try {
+        const docSnap = await getDoc(doc(db, "notas", userPhone));
+        let materias = [];
+        if (docSnap.exists()) {
+            materias = docSnap.data().materias || [];
+        }
+        
+        selectMat.innerHTML = '<option value="">Selecionar...</option>';
+        materias.forEach(m => {
+            const nome = m.nome || m;
+            const opt = document.createElement('option');
+            opt.value = nome; opt.textContent = nome;
+            selectMat.appendChild(opt);
+        });
+    } catch (e) {
+        selectMat.innerHTML = '<option value="">Erro ao carregar</option>';
+    }
 };
 
 window.salvarAula = async () => {
@@ -156,30 +141,24 @@ window.salvarAula = async () => {
     const infoHorario = TABELA_HORARIOS[turno][nAula];
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
     
-    const novaAula = { 
-        ordem: infoHorario.ordem, 
-        materia: materiaFinal, 
-        hora: infoHorario.inicio, 
-        prof: prof 
-    };
+    gradeHoraria[diaAtualGrade].push({ 
+        ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
+    });
 
-    gradeHoraria[diaAtualGrade].push(novaAula);
-
-    // Manda agendar e avisa na tela
     await agendarNoServidorOneSignal(materiaFinal, infoHorario.inicio);
 
     renderizarAulas();
     fecharModalAula();
-    await sincronizar();
+    // Sincroniza no Firebase
+    await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
 };
 
-// --- AGENDAMENTO ONESIGNAL ---
+// --- AGENDAMENTO ONESIGNAL (TESTE 1 MINUTO) ---
 async function agendarNoServidorOneSignal(materia, horaInicio) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
 
-    // Sempre agenda para 70 segundos à frente para o seu teste
-    let dataAlerta = new Date(new Date().getTime() + 70000);
+    let dataAlerta = new Date(new Date().getTime() + 70000); 
 
     const corpo = {
         app_id: appId,
@@ -198,9 +177,13 @@ async function agendarNoServidorOneSignal(materia, horaInicio) {
         });
         const data = await res.json();
         if (data.id) {
-            window.mostrarAvisoCustom("✅ Alerta agendado (1 min)!");
+            window.mostrarAvisoCustom("✅ Alerta agendado para daqui a 1 min!");
+        } else {
+            alert("Erro OneSignal: " + (data.errors ? data.errors[0] : "Desconhecido"));
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        alert("Erro de Conexão: " + e.message);
+    }
 }
 
 window.abrirConfirmExcluir = (i) => { 
@@ -210,15 +193,15 @@ window.abrirConfirmExcluir = (i) => {
 
 document.getElementById('btn-confirmar-delete').onclick = async () => {
     gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
-    renderizarAulas(); await sincronizar(); fecharModalExcluir();
+    renderizarAulas();
+    await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria });
+    fecharModalExcluir();
 };
 
 window.ativarNotificacoesReal = () => {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.Notifications.requestPermission().then(() => {
-            window.mostrarAvisoCustom("Notificações Ativas! ✅");
-        });
+        OneSignal.Notifications.requestPermission();
     });
 };
-      
+          
