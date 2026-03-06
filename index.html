@@ -7,71 +7,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Premium</title> 
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0a0a0a">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="estilo.css?v=20.0">
+    <link rel="stylesheet" href="estilo.css?v=21.0">
     <link rel="stylesheet" href="ranking.css">
 
     <style>
         :root { --p: #8a2be2; --bg: #050505; --glass: rgba(255, 255, 255, 0.03); }
 
-        /* HEADER ULTRA MODERNO */
+        /* HEADER ALINHADO */
         .glass-header {
-            display: grid; grid-template-columns: 50px 1fr 50px; align-items: center;
-            padding: 0 20px; height: 80px; background: rgba(5, 5, 5, 0.8) !important;
-            backdrop-filter: blur(30px); border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+            display: grid; grid-template-columns: 60px 1fr 60px; align-items: center;
+            padding: 0 15px; height: 80px; background: rgba(5, 5, 5, 0.9) !important;
+            backdrop-filter: blur(20px); border-bottom: 1px solid rgba(138, 43, 226, 0.3);
             position: sticky; top: 0; z-index: 1000;
         }
-        .logo-glow {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            animation: logo-pulse 3s infinite ease-in-out;
-        }
-        @keyframes logo-pulse {
-            0%, 100% { filter: drop-shadow(0 0 2px var(--p)); }
-            50% { filter: drop-shadow(0 0 15px var(--p)); transform: scale(1.02); }
-        }
 
-        /* MENU LATERAL ESTILO APP iOS/ANDROID */
+        /* MENU LATERAL MODERNO */
         .drawer {
             position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
-            background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(25px);
+            background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(25px);
             z-index: 2000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border-right: 1px solid rgba(138, 43, 226, 0.2); padding: 30px 20px;
         }
-        .drawer.open { left: 0; box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
+        .drawer.open { left: 0; }
         .nav-btn {
-            display: flex; align-items: center; gap: 15px; width: 100%; padding: 16px;
+            display: flex; align-items: center; gap: 15px; width: 100%; padding: 15px;
             margin-bottom: 8px; border: none; background: transparent; color: #888;
-            font-size: 15px; font-weight: 600; border-radius: 16px; transition: 0.2s;
+            font-size: 15px; font-weight: 600; border-radius: 14px; cursor: pointer;
         }
-        .nav-btn.active { background: rgba(138, 43, 226, 0.15); color: #fff; border: 1px solid rgba(138, 43, 226, 0.3); }
-        .nav-btn i { width: 20px; }
+        .nav-btn.active { background: rgba(138, 43, 226, 0.15); color: #fff; border: 1px solid var(--p); }
 
-        /* PERFIL GAMER V5 */
-        .perfil-container {
-            background: var(--glass); border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 40px; padding: 40px 20px; text-align: center; margin-top: 20px;
+        /* MODAIS CENTRALIZADOS (O QUE ESTAVA SOLTO) */
+        .modal-full-screen {
+            display: none; position: fixed; inset: 0; 
+            align-items: center; justify-content: center; 
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px);
+            z-index: 9999; padding: 20px;
         }
-        .photo-picker {
-            width: 120px; height: 120px; margin: 0 auto 25px; position: relative;
-            border-radius: 50%; padding: 5px; background: linear-gradient(45deg, var(--p), #fff);
-        }
-        .photo-picker img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #0a0a0a; }
-        .badge-edit { position: absolute; bottom: 5px; right: 5px; background: var(--p); border-radius: 50%; padding: 7px; border: 3px solid #0a0a0a; }
 
-        /* MODAL DEV ORBITAL (CORRIGIDO) */
-        .orbital-wrap { width: 100px; height: 100px; margin: 0 auto 20px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .ring { position: absolute; border: 2px solid transparent; border-radius: 50%; }
-        .ring-1 { width: 100%; height: 100%; border-top-color: var(--p); animation: spin 2s linear infinite; }
-        .ring-2 { width: 70%; height: 70%; border-bottom-color: #fff; animation: spin 1.5s linear infinite reverse; }
+        /* ANIMAÇÃO ÓRBITA DEV */
+        .orbital-wrap { width: 110px; height: 110px; margin: 0 auto 20px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .ring { position: absolute; border: 3px solid transparent; border-radius: 50%; }
+        .ring-1 { width: 100%; height: 100%; border-top-color: var(--p); border-bottom-color: var(--p); animation: spin 2.5s linear infinite; }
+        .ring-2 { width: 70%; height: 70%; border-left-color: #fff; border-right-color: #fff; animation: spin 1.8s linear infinite reverse; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* XP LIST */
-        .xp-card {
-            display: flex; align-items: center; justify-content: space-between;
-            background: rgba(255,255,255,0.02); padding: 15px 20px; border-radius: 20px;
-            margin-bottom: 10px; border-left: 4px solid var(--p);
+        /* LISTA XP MANUAL */
+        .xp-item {
+            background: rgba(255,255,255,0.03); padding: 12px 15px; border-radius: 15px;
+            margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .xp-val { color: var(--p); font-weight: 900; }
+        .xp-val.neg { color: #ff4444; }
+
+        .btn-plus {
+            background: var(--p); color: white; border: none; width: 45px; height: 45px;
+            border-radius: 15px; font-size: 24px; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(138,43,226,0.4);
         }
     </style>
 </head>
@@ -79,28 +75,27 @@
     <div id="overlay" onclick="toggleMenu()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1500;"></div>
 
     <header class="glass-header">
-        <button onclick="toggleMenu()" style="background:none; border:none; color:white;"><i data-lucide="align-left"></i></button>
-        <div class="logo-glow" onclick="abrirDev()">
+        <button onclick="toggleMenu()" style="background:none; border:none; color:white;"><i data-lucide="menu"></i></button>
+        <div style="display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer;" onclick="abrirDev()">
             <span style="font-weight:900; color:#fff; font-size:20px;">HUB</span>
-            <div style="background:var(--p); padding:6px; border-radius:12px;"><i data-lucide="brain-circuit" style="color:#fff; width:20px;"></i></div>
+            <div style="background:var(--p); padding:6px; border-radius:10px;"><i data-lucide="brain-circuit" style="color:#fff; width:22px;"></i></div>
             <span style="font-weight:900; color:var(--p); font-size:20px;">BRAIN</span>
         </div>
-        <button id="btn-add" onclick="abrirModal()" style="background:var(--p); color:white; border:none; width:40px; height:40px; border-radius:12px; font-weight:bold; font-size:20px;">+</button>
+        <button id="btn-add-main" onclick="abrirModal()" class="btn-plus">+</button>
     </header>
 
     <nav id="menu-lateral" class="drawer">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
-            <span style="font-weight:900; letter-spacing:2px; font-size:14px; color:var(--p);">NAVEGAÇÃO</span>
-            <button onclick="toggleMenu()" style="background:none; border:none; color:#555;"><i data-lucide="x"></i></button>
+        <div style="margin-bottom:40px; display:flex; justify-content:space-between;">
+            <span style="font-weight:900; color:var(--p); letter-spacing:2px;">HUB MENU</span>
+            <i data-lucide="x" onclick="toggleMenu()" style="color:#444;"></i>
         </div>
-        <button onclick="mudarAba('notas')" class="nav-btn active" id="btn-notas"><i data-lucide="layout-grid"></i> Notas</button>
-        <button onclick="mudarAba('ranking')" class="nav-btn" id="btn-ranking"><i data-lucide="trophy"></i> Ranking dos Mestres</button>
-        <button onclick="mudarAba('perfil')" class="nav-btn" id="btn-perfil"><i data-lucide="user"></i> Meu Perfil</button>
-        <div style="height:1px; background:rgba(255,255,255,0.05); margin:20px 0;"></div>
+        <button onclick="mudarAba('notas')" class="nav-btn active" id="b-notas"><i data-lucide="layout-grid"></i> Notas</button>
+        <button onclick="mudarAba('ranking')" class="nav-btn" id="b-ranking"><i data-lucide="trophy"></i> Ranking dos Mestres</button>
+        <button onclick="mudarAba('perfil')" class="nav-btn" id="b-perfil"><i data-lucide="user"></i> Meu Perfil</button>
+        <hr style="opacity:0.05; margin:20px 0;">
         <button onclick="window.location.href='horario.html'" class="nav-btn"><i data-lucide="calendar-clock"></i> Horários</button>
         <button onclick="window.location.href='agenda.html'" class="nav-btn"><i data-lucide="calendar"></i> Agenda</button>
         <button onclick="window.location.href='estudos.html'" class="nav-btn"><i data-lucide="sparkles"></i> Inteligência IA</button>
-        <button onclick="logout()" class="nav-btn" style="color:#ff4444; margin-top:40px;"><i data-lucide="log-out"></i> Sair</button>
     </nav>
 
     <main class="container">
@@ -113,81 +108,72 @@
         </section>
 
         <section id="aba-ranking" style="display:none;">
-            <div style="text-align:center; padding:40px 0;">
-                <h2 style="font-weight:900; letter-spacing:2px; margin:0;">RANKING DOS MESTRES</h2>
-                <p style="color:var(--p); font-size:10px; font-weight:800; letter-spacing:4px;">OS MELHORES DA SEMANA</p>
+            <div style="text-align:center; padding:30px 0;">
+                <h2 style="font-weight:900; letter-spacing:1px;">RANKING DOS MESTRES</h2>
+                <p style="color:var(--p); font-size:10px; font-weight:bold; letter-spacing:3px;">TOP PLAYERS</p>
             </div>
             <div id="podio-container" class="podio"></div>
             <div id="lista-ranking-geral"></div>
         </section>
 
         <section id="aba-perfil" style="display:none;">
-            <div class="perfil-container">
-                <div class="photo-picker" onclick="document.getElementById('input-f').click()">
-                    <img id="user-img" src="https://via.placeholder.com/150">
-                    <div class="badge-edit"><i data-lucide="camera" style="width:14px; color:white;"></i></div>
-                    <input type="file" id="input-f" hidden accept="image/*" onchange="uploadFoto(this)">
+            <div style="background:var(--glass); border-radius:35px; padding:35px 20px; text-align:center; border:1px solid rgba(138,43,226,0.2);">
+                <div style="width:115px; height:115px; margin:0 auto 20px; position:relative;" onclick="document.getElementById('in-f').click()">
+                    <img id="u-img" src="https://via.placeholder.com/150" style="width:100%; height:100%; border-radius:50%; border:4px solid var(--p); object-fit:cover;">
+                    <input type="file" id="in-f" hidden onchange="uFoto(this)">
                 </div>
-                <input type="text" id="user-name-input" placeholder="Seu apelido..." style="background:rgba(255,255,255,0.05); border:1px solid #222; color:white; padding:18px; border-radius:20px; width:100%; text-align:center; font-weight:800; margin-bottom:20px; outline:none;">
-                <button onclick="salvarPerfilManual()" style="background:var(--p); color:white; border:none; padding:18px; border-radius:20px; width:100%; font-weight:900; box-shadow: 0 10px 20px rgba(138,43,226,0.2);">SALVAR PERFIL</button>
-                
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:30px;">
-                    <div style="background:rgba(0,0,0,0.3); padding:20px; border-radius:25px;"><span id="user-rank-pos" style="font-size:30px; font-weight:900; color:#ffd700;">--</span><label style="display:block; font-size:10px; opacity:0.5;">RANK</label></div>
-                    <div style="background:rgba(0,0,0,0.3); padding:20px; border-radius:25px;"><span id="user-rank-xp" style="font-size:30px; font-weight:900; color:var(--p);">0</span><label style="display:block; font-size:10px; opacity:0.5;">XP TOTAL</label></div>
-                </div>
+                <input type="text" id="u-name" placeholder="Seu apelido..." style="background:rgba(0,0,0,0.3); border:1px solid #333; color:white; padding:18px; border-radius:18px; width:100%; text-align:center; font-weight:800; margin-bottom:15px; outline:none;">
+                <button onclick="salvarP()" style="background:var(--p); color:white; border:none; padding:18px; border-radius:18px; width:100%; font-weight:900;">SALVAR ALTERAÇÕES</button>
             </div>
-            <button onclick="abrirXP()" style="width:100%; margin-top:20px; background:none; border:1px dashed #333; color:#666; padding:20px; border-radius:25px; font-weight:bold;">COMO GANHAR XP?</button>
+            <button onclick="abrirXP()" style="width:100%; margin-top:20px; background:none; border:1px dashed #444; color:#777; padding:20px; border-radius:20px; font-weight:bold;">MANUAL DE XP</button>
         </section>
     </main>
 
-    <div id="modal-dev" style="display:none;" class="modal-full-screen">
-        <div style="background:#0a0a0a; border:1px solid var(--p); border-radius:40px; padding:40px; width:100%; max-width:340px; text-align:center;">
-            <div class="orbital-wrap">
-                <div class="ring ring-1"></div>
-                <div class="ring ring-2"></div>
-                <i data-lucide="zap" style="color:white; width:30px;"></i>
-            </div>
-            <h3 style="font-weight:900; letter-spacing:2px;">DITOH</h3>
-            <p style="color:var(--p); font-size:11px; font-weight:bold; letter-spacing:4px; margin-bottom:20px;">FOUNDER & DEV</p>
-            <p style="font-size:14px; color:#666; font-style:italic; margin-bottom:25px;">"Hub Brain: Criado de estudante para estudante. Sugestões na DM!"</p>
-            <a href="https://instagram.com/wtfditoh" target="_blank" style="text-decoration:none; color:white; background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; border:1px solid rgba(138,43,226,0.3); display:block; margin-bottom:20px;">@wtfditoh</a>
-            <button onclick="fecharModais()" style="width:100%; background:var(--p); color:white; border:none; padding:15px; border-radius:15px; font-weight:900;">VOLTAR</button>
+    <div id="m-dev" class="modal-full-screen">
+        <div style="background:#0a0a0a; border:1px solid var(--p); border-radius:35px; padding:35px; width:100%; max-width:320px; text-align:center;">
+            <div class="orbital-wrap"><div class="ring ring-1"></div><div class="ring ring-2"></div><i data-lucide="zap" style="color:white;"></i></div>
+            <h3 style="margin:0; font-weight:900;">DITOH</h3>
+            <p style="color:var(--p); font-size:11px; font-weight:bold; margin-bottom:20px;">FOUNDER & DEV</p>
+            <p style="font-size:14px; color:#777; font-style:italic; margin-bottom:25px;">"Hub Brain: O seu aliado nos estudos."</p>
+            <button onclick="fM()" style="width:100%; background:var(--p); color:white; border:none; padding:15px; border-radius:15px; font-weight:900;">VOLTAR</button>
         </div>
     </div>
 
-    <div id="modal-xp" style="display:none;" class="modal-full-screen">
-        <div style="background:#0a0a0a; border-radius:40px; padding:35px; width:100%; max-width:340px;">
-            <h3 style="color:var(--p); margin-bottom:25px;">Manual de XP 🎮</h3>
-            <div class="xp-card"><span>💎 Nota 10</span> <span style="color:var(--p); font-weight:900;">+100</span></div>
-            <div class="xp-card"><span>🎯 Acerto Simulado</span> <span style="color:var(--p); font-weight:900;">+10</span></div>
-            <div class="xp-card"><span>✅ Agenda Concluída</span> <span style="color:var(--p); font-weight:900;">+20</span></div>
-            <div class="xp-card"><span>📅 Aula Assistida</span> <span style="color:var(--p); font-weight:900;">+5</span></div>
-            <div class="xp-card" style="border-color:#ff4444;"><span>❌ Erro Simulado</span> <span style="color:#ff4444; font-weight:900;">-5</span></div>
-            <button onclick="fecharModais()" style="width:100%; background:#222; color:white; border:none; padding:15px; border-radius:15px; margin-top:20px; font-weight:bold;">ENTENDI</button>
+    <div id="m-xp" class="modal-full-screen">
+        <div style="background:#0a0a0a; border-radius:35px; padding:30px; width:100%; max-width:320px;">
+            <h3 style="color:var(--p); margin-bottom:20px;">Manual de XP 🎮</h3>
+            <div class="xp-item"><span>💎 Nota 10</span><span class="xp-val">+100</span></div>
+            <div class="xp-item"><span>🚀 Média (7-9)</span><span class="xp-val">+50</span></div>
+            <div class="xp-item"><span>🎯 Acerto Simulado</span><span class="xp-val">+10</span></div>
+            <div class="xp-item"><span>✅ Agenda Concluída</span><span class="xp-val">+20</span></div>
+            <div class="xp-item"><span>📅 Aula Assistida</span><span class="xp-val">+5</span></div>
+            <div class="xp-item"><span>❌ Erro Simulado</span><span class="xp-val neg">-5</span></div>
+            <div class="xp-item"><span>💀 Nota < 5</span><span class="xp-val neg">-30</span></div>
+            <button onclick="fM()" style="width:100%; background:#222; color:white; border:none; padding:15px; border-radius:15px; margin-top:20px; font-weight:bold;">ENTENDI</button>
         </div>
     </div>
 
-    <script type="module" src="funcoes.js?v=20.0"></script>
+    <script type="module" src="funcoes.js?v=21.0"></script>
     <script type="module">
         import { carregarRankingReal, carregarDadosPessoaisRanking, salvarNomePerfil } from './ranking-logica.js';
         
-        window.salvarPerfilManual = () => {
-            const n = document.getElementById('user-name-input').value;
+        window.salvarP = () => {
+            const n = document.getElementById('u-name').value;
             if(n.trim()){
                 localStorage.setItem('hub_user_name', n);
-                salvarNomePerfil(); // Sincroniza com Firebase
-                alert("Perfil atualizado! 🚀");
+                salvarNomePerfil();
+                alert("Salvo com sucesso! 🚀");
             }
         };
 
         window.mudarAba = (aba) => {
             ['notas','ranking','perfil'].forEach(a => document.getElementById('aba-'+a).style.display = 'none');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            ['b-notas','b-ranking','b-perfil'].forEach(b => document.getElementById(b).classList.remove('active'));
             document.getElementById('aba-'+aba).style.display = 'block';
-            document.getElementById('btn-'+aba).classList.add('active');
-            document.getElementById('btn-add').style.visibility = (aba === 'notas') ? 'visible' : 'hidden';
+            document.getElementById('b-'+aba).classList.add('active');
+            document.getElementById('btn-add-main').style.visibility = (aba === 'notas') ? 'visible' : 'hidden';
             if(aba === 'ranking') carregarRankingReal();
-            if(aba === 'perfil') carregarLocal();
+            if(aba === 'perfil') carregarL();
             lucide.createIcons();
             toggleMenu();
         };
@@ -198,28 +184,29 @@
             m.classList.toggle('open');
             o.style.display = m.classList.contains('open') ? 'block' : 'none';
         };
-        const abrirDev = () => { document.getElementById('modal-dev').style.display='flex'; lucide.createIcons(); };
-        const abrirXP = () => { document.getElementById('modal-xp').style.display='flex'; lucide.createIcons(); };
-        const fecharModais = () => { document.querySelectorAll('.modal-full-screen').forEach(m => m.style.display='none'); };
+        const abrirDev = () => { document.getElementById('m-dev').style.display='flex'; lucide.createIcons(); };
+        const abrirXP = () => { document.getElementById('m-xp').style.display='flex'; lucide.createIcons(); };
+        const fM = () => { document.querySelectorAll('.modal-full-screen').forEach(m => m.style.display='none'); };
         
-        function uploadFoto(input) {
+        function uFoto(input) {
             if (input.files && input.files[0]) {
                 const r = new FileReader();
                 r.onload = (e) => {
-                    document.getElementById('user-img').src = e.target.result;
+                    document.getElementById('u-img').src = e.target.result;
                     localStorage.setItem('hub_user_photo', e.target.result);
                 };
                 r.readAsDataURL(input.files[0]);
             }
         }
 
-        function carregarLocal() {
+        function carregarL() {
             const n = localStorage.getItem('hub_user_name'), f = localStorage.getItem('hub_user_photo');
-            if(n) document.getElementById('user-name-input').value = n;
-            if(f) document.getElementById('user-img').src = f;
+            if(n) document.getElementById('u-name').value = n;
+            if(f) document.getElementById('u-img').src = f;
         }
 
-        document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); carregarLocal(); });
+        document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); carregarL(); });
     </script>
 </body>
-</html>
+                    </html>
+                    
