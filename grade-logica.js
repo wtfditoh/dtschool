@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const d = dMap[new Date().getDay()];
     selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
 
-    // Inicializa OneSignal para garantir que o usuário seja visto
+    // Inicializa OneSignal
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
         OneSignal.init({ appId: "f73275cd-17ad-4963-a25b-321ce2def2ba" });
@@ -161,7 +161,7 @@ window.salvarAula = async () => {
         ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
     });
 
-    // AGENDAMENTO (TESTE 70 SEGUNDOS)
+    // ENVIO IMEDIATO (TESTE)
     await agendarNoServidorOneSignal(materiaFinal, infoHorario.inicio);
 
     renderizarAulas();
@@ -170,22 +170,18 @@ window.salvarAula = async () => {
     if(userPhone) {
         await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
     }
-    window.mostrarAvisoCustom("🚀 Aula e Alerta salvos!");
 };
 
-// --- AGENDAMENTO ONESIGNAL (MOTOR ATUALIZADO) ---
+// --- AGENDAMENTO ONESIGNAL (ENVIO IMEDIATO) ---
 async function agendarNoServidorOneSignal(materia, horaInicio) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
 
-    let dataAlerta = new Date(new Date().getTime() + 70000); 
-
     const corpo = {
         app_id: appId,
-        contents: { "pt": `Sua aula de ${materia} começa em 10 minutos! 🧠` },
+        contents: { "pt": `⚡ Aula de ${materia} salva com sucesso! 🧠` },
         headings: { "pt": "Hub Brain" },
         chrome_web_icon: "https://hubbrain.netlify.app/icon-514.png",
-        send_after: dataAlerta.toISOString(),
         included_segments: ["Subscribed Users"],
         target_channel: "push"
     };
@@ -200,8 +196,17 @@ async function agendarNoServidorOneSignal(materia, horaInicio) {
             body: JSON.stringify(corpo)
         });
         const data = await res.json();
-        if (data.id) console.log("Notificação Agendada ID:", data.id);
-    } catch (e) { console.error("Erro OneSignal:", e); }
+        
+        if (data.id) {
+            window.mostrarAvisoCustom("⚡ Alerta Enviado AGORA!");
+            console.log("Sucesso OneSignal:", data.id);
+        } else if (data.errors) {
+            alert("Erro OneSignal: " + data.errors[0]);
+        }
+    } catch (e) { 
+        console.error("Erro OneSignal:", e);
+        window.mostrarAvisoCustom("⚠️ Erro de conexão.");
+    }
 }
 
 window.abrirConfirmExcluir = (i) => { 
@@ -219,6 +224,8 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
 window.ativarNotificacoesReal = () => {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.Notifications.requestPermission();
+        OneSignal.Notifications.requestPermission().then(() => {
+            window.mostrarAvisoCustom("Notificações Prontas! ✅");
+        });
     });
 };
