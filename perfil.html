@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meu Perfil - Hub Brain</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="perfil.css"> </head>
+    <link rel="stylesheet" href="perfil.css">
+</head>
 <body>
 
     <div id="toast-container"></div>
@@ -21,7 +22,7 @@
 
         <div class="perfil-card">
             <div class="avatar-section">
-                <div class="avatar-wrapper" id="avatar-display">
+                <div class="avatar-wrapper">
                     <i data-lucide="user" id="avatar-icon"></i>
                 </div>
                 <button class="btn-edit-photo" onclick="window.abrirGaleria()">
@@ -32,10 +33,12 @@
             <p class="user-phone-display" id="display-phone">ID: 00000000</p>
 
             <div class="form-group">
-                <label>Nickname</label>
+                <label>COMO QUERES SER CHAMADO?</label>
                 <div class="input-wrapper">
+                    <i data-lucide="signature" class="input-icon"></i>
                     <input type="text" id="user-name-input" placeholder="Teu Nickname">
                 </div>
+                <p class="hint">Este nome aparecerá no Ranking Global.</p>
             </div>
 
             <button id="btn-salvar-perfil" class="btn-save">
