@@ -46,29 +46,30 @@ async function carregarPerfil() {
                     mediaGeral = (soma / materias.length).toFixed(1);
                 }
 
-                // LIMPA TUDO E RECONSTRÓI
                 statsContainer.innerHTML = `
                     <div class="xp-card">
-                        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold;">
-                            <span style="color:#c287ff;">NÍVEL ${nivel}</span>
-                            <span style="color:#888;">${xpTotal} XP</span>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:900;">
+                            <span style="color:#8a2be2; letter-spacing:1px;">NÍVEL ${nivel}</span>
+                            <span style="color:#444;">${xpTotal} XP TOTAL</span>
                         </div>
                         <div class="xp-bar-bg">
                             <div class="xp-bar-fill" style="width: ${porcentagem}%"></div>
                         </div>
-                        <div style="text-align:center; font-size:10px; color:#aaa; font-weight:bold;">
-                            FALTAM <span style="color:#00d2ff;">${faltaParaUpar} XP</span> PARA O NÍVEL ${nivel + 1}
-                        </div>
+                        <p class="hint" style="text-align:center; margin:0;">
+                            Faltam <span style="color:#8a2be2">${faltaParaUpar} XP</span> para subir de nível
+                        </p>
                     </div>
 
                     <div class="stat-grid">
                         <div class="stat-box">
                             <span>${materias.length}</span>
-                            <label>Matérias</label>
+                            <label>Disciplinas</label>
+                            <p class="hint" style="margin:5px 0 0; font-size:8px;">Teu foco atual</p>
                         </div>
                         <div class="stat-box">
                             <span style="color:#2ecc71;">${mediaGeral}</span>
                             <label>Média Geral</label>
+                            <p class="hint" style="margin:5px 0 0; font-size:8px;">Teu rendimento</p>
                         </div>
                     </div>
                 `;
@@ -78,12 +79,11 @@ async function carregarPerfil() {
     } catch (e) { console.error(e); }
 }
 
-// GLOBAIS PARA O HTML ACESSAR
 window.abrirGaleria = () => document.getElementById('modal-avatar').style.display = 'flex';
 window.fecharGaleria = () => document.getElementById('modal-avatar').style.display = 'none';
 window.selecionarAvatar = (icon) => {
     document.getElementById('avatar-icon').setAttribute('data-lucide', icon);
-    lucide.createIcons();
+    if(window.lucide) lucide.createIcons();
     window.fecharGaleria();
 };
 window.logout = () => { localStorage.clear(); window.location.href = 'login.html'; };
