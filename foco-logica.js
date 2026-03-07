@@ -16,14 +16,7 @@ const userPhone = localStorage.getItem('dt_user_phone');
 
 let timer, segs = 0, total = 0, isPaused = false;
 
-// Elementos
-const setupView = document.getElementById('setup-view');
-const clockActive = document.getElementById('active-clock');
-const btnStart = document.getElementById('btn-start');
-const btnPause = document.getElementById('btn-pause');
-const btnQuit = document.getElementById('btn-quit');
-
-const startFoco = () => {
+const start = () => {
     const h = parseInt(document.getElementById('h-val').innerText);
     const m = parseInt(document.getElementById('m-val').innerText);
     if(h === 0 && m === 0) return;
@@ -31,27 +24,23 @@ const startFoco = () => {
     segs = (h * 3600) + (m * 60);
     total = segs;
 
-    setupView.style.display = 'none';
-    btnStart.style.display = 'none';
-    clockActive.style.display = 'flex';
-    btnPause.style.display = 'block';
-    btnQuit.style.display = 'block';
+    document.getElementById('setup-view').style.display = 'none';
+    document.getElementById('btn-start').style.display = 'none';
+    document.getElementById('active-clock').style.display = 'flex';
+    document.getElementById('btn-pause').style.display = 'block';
+    document.getElementById('btn-quit').style.display = 'block';
 
     timer = setInterval(() => {
         if (!isPaused) {
             segs--;
-            render();
+            const hrs = Math.floor(segs / 3600);
+            const min = Math.floor((segs % 3600) / 60);
+            const s = segs % 60;
+            document.getElementById('big-time').innerText = `${hrs > 0 ? hrs + ':' : ''}${min < 10 ? '0' + min : min}`;
+            document.getElementById('small-sec').innerText = s < 10 ? '0' + s : s;
             if (segs <= 0) finalize(true);
         }
     }, 1000);
-};
-
-const render = () => {
-    const hrs = Math.floor(segs / 3600);
-    const min = Math.floor((segs % 3600) / 60);
-    const s = segs % 60;
-    document.getElementById('big-time').innerText = `${hrs > 0 ? hrs + ':' : ''}${min < 10 ? '0' + min : min}`;
-    document.getElementById('small-sec').innerText = s < 10 ? '0' + s : s;
 };
 
 const finalize = async (done) => {
@@ -68,11 +57,10 @@ const finalize = async (done) => {
     window.location.reload();
 };
 
-// Eventos de clique
-btnStart.onclick = startFoco;
-btnPause.onclick = () => {
+document.getElementById('btn-start').onclick = start;
+document.getElementById('btn-pause').onclick = () => {
     isPaused = !isPaused;
-    btnPause.innerText = isPaused ? "RETOMAR" : "PAUSAR";
+    document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR";
 };
-btnQuit.onclick = () => document.getElementById('modal-quit').style.display = 'flex';
+document.getElementById('btn-quit').onclick = () => document.getElementById('modal-quit').style.display = 'flex';
 document.getElementById('btn-confirm-quit').onclick = () => finalize(false);
