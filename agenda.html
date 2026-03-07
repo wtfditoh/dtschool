@@ -2,10 +2,12 @@
 <html lang="pt-br">
 <head>
     <script>
-    if (!localStorage.getItem('dt_user_phone')) {
+    // Se não houver nenhum nome salvo (seja real ou Visitante), expulsa pro login
+    if (!localStorage.getItem('dt_user_name')) {
         window.location.href = 'login.html';
     }
     </script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Agenda</title>
