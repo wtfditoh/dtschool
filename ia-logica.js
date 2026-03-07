@@ -14,7 +14,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const userPhone = localStorage.getItem('dt_user_phone');
-const API_KEY = "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";
+const API_KEY = "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";
 
 // VARIÁVEIS DE CONTROLE DE XP (ADICIONADAS)
 let acertosSimulado = 0;
