@@ -6,71 +6,63 @@
     <title>Meu Perfil - Hub Brain</title>
     
     <link rel="stylesheet" href="menu.css">
-    <link rel="stylesheet" href="perfil.css"> <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="perfil.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* SOBREPOSIÇÃO PARA CORRIGIR O BUG DO FUNDO E DO HEADER */
-        body { background: #0a0a0a !important; margin: 0; padding: 0; }
-
+        /* FUNDO E HEADER PADRÃO */
+        body { background: #0a0a0a !important; margin: 0; }
+        
         .perfil-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; height: 70px; 
-            background: rgba(15, 15, 15, 0.98) !important;
-            border-bottom: 1px solid rgba(138, 43, 226, 0.4) !important;
+            padding: 0 15px; height: 70px; background: rgba(15, 15, 15, 0.98);
+            border-bottom: 1px solid rgba(138, 43, 226, 0.4);
             position: sticky; top: 0; z-index: 2000; width: 100%; box-sizing: border-box;
         }
 
-        /* CARD GLASS QUE PULSA (SÓ ESTE DEVE APARECER) */
+        /* CARD GLASS QUE PULSA */
         .chamada-ranking-novo {
-            margin: 20px 15px;
-            padding: 20px;
-            background: linear-gradient(135deg, rgba(138, 43, 226, 0.25), rgba(255, 255, 255, 0.05));
-            border: 1px solid rgba(138, 43, 226, 0.5);
-            border-radius: 20px;
-            backdrop-filter: blur(12px);
+            margin: 20px 15px; padding: 20px;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(138, 43, 226, 0.4);
+            border-radius: 20px; backdrop-filter: blur(10px);
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            animation: pulse-glass 2.5s infinite ease-in-out;
+            animation: pulse-glass 3s infinite ease-in-out;
         }
 
         @keyframes pulse-glass {
-            0% { transform: scale(1); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
-            50% { transform: scale(1.02); box-shadow: 0 15px 40px rgba(138, 43, 226, 0.3); }
-            100% { transform: scale(1); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.02); opacity: 1; }
         }
 
         .chamada-ranking-novo p {
-            color: #fff; font-weight: 900; font-size: 16px; margin: 0;
+            color: white; font-weight: 900; font-size: 15px; margin: 0;
             text-transform: uppercase; letter-spacing: 2px;
-            text-shadow: 0 0 12px rgba(138, 43, 226, 0.8);
+            text-shadow: 0 0 10px #8a2be2;
         }
 
-        /* TOAST DE ERRO (MUITO VISÍVEL) */
+        /* TOAST DE ERRO */
         #erro-visitante {
             position: fixed; top: 85px; left: 50%; transform: translateX(-50%);
-            background: #ff4444; color: white; padding: 15px 30px;
-            border-radius: 12px; font-weight: 900; font-size: 14px;
-            z-index: 9999; box-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
-            display: none; border: 2px solid white;
+            background: #ff4444; color: white; padding: 12px 25px;
+            border-radius: 50px; font-weight: 800; font-size: 13px;
+            z-index: 9999; display: none; box-shadow: 0 5px 20px rgba(255,0,0,0.4);
         }
-
-        /* Esconder qualquer frase duplicada vinda do JS antigo */
-        .frase-antiga, .hint-ranking, #display-ranking-hint { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="erro-visitante">🛑 ACESSO NEGADO: MODO VISITANTE</div>
+    <div id="erro-visitante">🛑 MODO VISITANTE NÃO PODE SALVAR</div>
 
     <header class="perfil-header">
         <button id="open-menu" class="btn-menu">
             <i data-lucide="menu"></i>
         </button>
-        <h2 style="font-size: 14px; letter-spacing: 3px; color: white;">MEU <span style="color: #8a2be2;">PERFIL</span></h2>
+        <h2 style="font-size: 14px; color: white;">MEU <span style="color: #8a2be2;">PERFIL</span></h2>
         <div style="width: 42px;"></div>
     </header>
 
-    <div class="perfil-container" style="padding: 1px 0;">
+    <div class="perfil-container">
         
         <div class="chamada-ranking-novo">
             <p>🚀 SUBIR NAS PATENTES!</p>
@@ -86,17 +78,17 @@
                 </button>
             </div>
 
-            <p class="user-phone-display" id="display-phone" style="text-align: center; color: #888;">Carregando...</p>
+            <p class="user-phone-display" id="display-phone">Carregando...</p>
 
             <div class="form-group">
-                <label style="color: #8a2be2; font-size: 10px; font-weight: 800;">COMO QUERES SER CHAMADO?</label>
+                <label>COMO QUERES SER CHAMADO?</label>
                 <div class="input-wrapper">
                     <i data-lucide="signature" class="input-icon"></i>
                     <input type="text" id="user-name-input" placeholder="Teu Nickname">
                 </div>
             </div>
 
-            <button id="btn-block-visitante" class="btn-save" style="margin-top: 20px;">
+            <button id="btn-salvar-perfil" class="btn-save">
                 <i data-lucide="check-circle"></i> SALVAR ALTERAÇÕES
             </button>
         </div>
@@ -108,59 +100,42 @@
         </button>
     </div>
 
+    <div id="modal-avatar" class="modal-avatar-overlay" style="display:none;">
+        <div class="modal-avatar-card">
+            <div class="avatar-grid">
+                <div class="avatar-option" onclick="window.selecionarAvatar('user')"><i data-lucide="user"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('zap')"><i data-lucide="zap"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('brain-circuit')"><i data-lucide="brain-circuit"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('rocket')"><i data-lucide="rocket"></i></div>
+            </div>
+            <button onclick="window.fecharGaleria()" class="btn-fechar-galeria">VOLTAR</button>
+        </div>
+    </div>
+
     <script src="menu.js"></script>
     <script type="module" src="perfil-logica.js"></script>
 
     <script>
-        // SOLUÇÃO FINAL PARA O BLOQUEIO
-        document.getElementById('btn-block-visitante').addEventListener('click', function(e) {
-            const phone = localStorage.getItem('dt_user_phone');
-            
-            // Verificação agressiva
-            if (phone === '00000000000' || !phone || phone.includes('teste')) {
-                const erro = document.getElementById('erro-visitante');
-                erro.style.display = 'block';
+        // CAPTURA O CLIQUE ANTES DO JS ORIGINAL
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'btn-salvar-perfil' || e.target.closest('#btn-salvar-perfil')) {
+                const phone = localStorage.getItem('dt_user_phone');
                 
-                // Tremer o ecrã
-                document.body.style.animation = "shake 0.2s ease-in-out 2";
-                
-                setTimeout(() => { 
-                    erro.style.display = 'none'; 
-                    document.body.style.animation = "";
-                }, 3000);
-                
-                return; // Mata a execução aqui
-            }
+                if (phone === '00000000000' || !phone) {
+                    // MATA O EVENTO PARA O FIREBASE NÃO RECEBER NADA
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
 
-            // Se for real, tenta chamar a função de salvar do teu ficheiro 'perfil-logica.js'
-            // Normalmente chamamos a função global definida no módulo
-            if (window.salvarPerfilReal) {
-                window.salvarPerfilReal();
+                    const erro = document.getElementById('erro-visitante');
+                    erro.style.display = 'block';
+                    setTimeout(() => { erro.style.display = 'none'; }, 3000);
+                    
+                    return false;
+                }
             }
-        });
+        }, true); // O 'true' aqui faz ele interceptar ANTES de qualquer outro script
 
-        // Força a limpeza de frases duplicadas que o JS possa injetar
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                // Procura por textos repetidos e remove
-                const frases = document.querySelectorAll('p, span, div');
-                frases.forEach(el => {
-                    if(el.innerText.includes("patente") && !el.closest('.chamada-ranking-novo')) {
-                        el.style.display = 'none';
-                    }
-                });
-            }, 500);
-            if(window.lucide) lucide.createIcons();
-        });
+        window.onload = () => { if(window.lucide) lucide.createIcons(); };
     </script>
-
-    <style>
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-            100% { transform: translateX(0); }
-        }
-    </style>
 </body>
 </html>
