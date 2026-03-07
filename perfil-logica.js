@@ -13,28 +13,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const userPhone = localStorage.getItem('dt_user_phone');
-const userType = localStorage.getItem('dt_user_type');
 
-window.showToast = (msg, type = "success") => {
-    const container = document.getElementById('toast-container');
-    if(!container) return;
-    const toast = document.createElement('div');
-    toast.className = `toast ${type === 'error' ? 'error' : ''}`;
-    toast.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}" style="flex-shrink:0;"></i> <span>${msg}</span>`;
-    container.appendChild(toast);
-    if(window.lucide) lucide.createIcons();
-    setTimeout(() => { 
-        toast.style.transition = "0.5s";
-        toast.style.opacity = '0'; 
-        toast.style.transform = 'translateY(-10px)';
-        setTimeout(() => toast.remove(), 500); 
-    }, 3000);
-};
-
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     if (!userPhone) return window.location.href = 'login.html';
-    document.getElementById('display-phone').innerText = `ID: ${userPhone}`;
-    await carregarPerfil();
+    carregarPerfil();
 });
 
 async function carregarPerfil() {
@@ -46,94 +28,74 @@ async function carregarPerfil() {
             const dados = docSnap.data();
             const xpTotal = dados.xp || 0;
 
-            // --- LÓGICA DE NÍVEL ---
+            // CÁLCULO DE NÍVEL (500 XP POR NÍVEL)
             const nivel = Math.floor(xpTotal / 500) + 1;
             const xpAtualNoNivel = xpTotal % 500;
+            const faltaParaUpar = 500 - xpAtualNoNivel;
             const porcentagem = (xpAtualNoNivel / 500) * 100;
 
-            let patente = "Recruta";
-            if (xpTotal >= 2000) patente = "Mestre";
-            else if (xpTotal >= 1000) patente = "Veterano";
-            else if (xpTotal >= 500) patente = "Estudioso";
-
-            // Nome e Avatar
+            // NOME E AVATAR
             document.getElementById('user-name-input').value = dados.nome || "";
-            if(dados.avatar) {
-                document.getElementById('avatar-icon').setAttribute('data-lucide', dados.avatar);
-            }
+            document.getElementById('display-phone').innerText = `ID: ${userPhone}`;
+            if(dados.avatar) document.getElementById('avatar-icon').setAttribute('data-lucide', dados.avatar);
 
-            // --- INJEÇÃO DO NOVO DASHBOARD (LIMPA O ANTIGO) ---
+            // INJETAR O DASHBOARD
             const statsContainer = document.querySelector('.perfil-stats');
             if (statsContainer) {
+                // CALCULAR MÉDIA
+                const materias = dados.materias || [];
+                let mediaGeral = "0.0";
+                if (materias.length > 0) {
+                    const soma = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
+                    mediaGeral = (soma / materias.length).toFixed(1);
+                }
+
                 statsContainer.innerHTML = `
-                    <div style="background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.3); padding: 15px; border-radius: 20px; text-align: left;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span style="font-weight: 900; color: #c287ff; font-size: 13px;">${patente} • LVL ${nivel}</span>
-                            <span style="font-size: 11px; color: #888;">${xpTotal} XP</span>
+                    <div class="xp-card">
+                        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:900;">
+                            <span style="color:#c287ff;">NÍVEL ${nivel}</span>
+                            <span style="color:#888;">${xpTotal} XP TOTAL</span>
                         </div>
-                        <div style="background: rgba(0,0,0,0.3); height: 8px; border-radius: 4px; overflow: hidden;">
-                            <div style="width: ${porcentagem}%; background: linear-gradient(90deg, #8a2be2, #00d2ff); height: 100%; transition: 1s;"></div>
+                        <div class="xp-bar-bg">
+                            <div class="xp-bar-fill" style="width: ${porcentagem}%"></div>
+                        </div>
+                        <div style="text-align:center; font-size:10px; color:#aaa; font-weight:bold;">
+                            FALTAM <span style="color:#00d2ff;">${faltaParaUpar} XP</span> PARA O PRÓXIMO NÍVEL
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;">
+                    <div class="stat-grid">
                         <div class="stat-box">
-                            <span>${(dados.materias || []).length}</span>
+                            <span>${materias.length}</span>
                             <label>Matérias</label>
                         </div>
                         <div class="stat-box">
-                            <span id="media-geral-txt">0.0</span>
+                            <span style="color:#2ecc71;">${mediaGeral}</span>
                             <label>Média Geral</label>
                         </div>
                     </div>
                 `;
-
-                // Calcular Média
-                const materias = dados.materias || [];
-                if (materias.length > 0) {
-                    const soma = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
-                    document.getElementById('media-geral-txt').innerText = (soma / materias.length).toFixed(1);
-                }
             }
             if(window.lucide) lucide.createIcons();
         }
     } catch (e) { console.error(e); }
 }
 
+// Botão Salvar
 document.getElementById('btn-salvar-perfil').onclick = async () => {
-    const novoNome = document.getElementById('user-name-input').value.trim();
-    if (!novoNome) return showToast("Nickname vazio!", "error");
-    if (userType === 'local') return showToast("Crie uma conta para salvar!", "error");
-
-    const btn = document.getElementById('btn-salvar-perfil');
-    btn.innerText = "SINCRONIZANDO...";
-    btn.disabled = true;
-
+    const nome = document.getElementById('user-name-input').value;
+    const avatar = document.getElementById('avatar-icon').getAttribute('data-lucide');
     try {
-        const avatarAtual = document.getElementById('avatar-icon').getAttribute('data-lucide');
-        await setDoc(doc(db, "notas", userPhone), { 
-            nome: novoNome,
-            avatar: avatarAtual 
-        }, { merge: true });
-
-        showToast("Perfil atualizado! 🔥");
-        setTimeout(() => window.location.href = 'index.html', 1000);
-    } catch (e) {
-        showToast("Falha ao salvar.", "error");
-    } finally {
-        btn.innerHTML = '<i data-lucide="check-circle"></i> SALVAR ALTERAÇÕES';
-        btn.disabled = false;
-        if(window.lucide) lucide.createIcons();
-    }
+        await setDoc(doc(db, "notas", userPhone), { nome, avatar }, { merge: true });
+        alert("Perfil Salvo!");
+        window.location.href = 'index.html';
+    } catch(e) { alert("Erro ao salvar"); }
 };
 
 window.abrirGaleria = () => document.getElementById('modal-avatar').style.display = 'flex';
 window.fecharGaleria = () => document.getElementById('modal-avatar').style.display = 'none';
 window.selecionarAvatar = (icon) => {
     document.getElementById('avatar-icon').setAttribute('data-lucide', icon);
-    if(window.lucide) lucide.createIcons();
+    lucide.createIcons();
     fecharGaleria();
-    showToast("Ícone selecionado!");
 };
-
-window.logout = () => { localStorage.clear(); window.location.href = 'login.html'; };
