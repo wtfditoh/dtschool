@@ -1,58 +1,56 @@
 body { 
-    background: linear-gradient(135deg, #0f051a 0%, #1a0b2e 100%); 
+    background: linear-gradient(135deg, #0f051a 0%, #1a0b2e 100%) !important; 
     color: white; margin: 0; font-family: 'Inter', sans-serif; min-height: 100vh;
 }
 
 .perfil-container { padding: 20px; max-width: 450px; margin: 0 auto; text-align: center; }
 
-/* AVATAR FIXADO */
-.avatar-section { 
-    position: relative; 
-    width: 100px; 
-    height: 100px; 
-    margin: 0 auto 10px; 
+.perfil-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138,43,226,0.5); }
+
+/* CARD PRINCIPAL */
+.perfil-card { 
+    background: rgba(255, 255, 255, 0.03); 
+    border: 1px solid rgba(138, 43, 226, 0.2); 
+    border-radius: 30px; padding: 25px; margin-bottom: 20px;
 }
+
+/* AVATAR */
+.avatar-section { position: relative; width: 100px; height: 100px; margin: 0 auto 10px; }
 .avatar-wrapper { 
-    width: 100%; height: 100%; 
-    background: rgba(138, 43, 226, 0.1); 
-    border-radius: 50%; border: 2px solid #8a2be2; 
-    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%; background: rgba(138, 43, 226, 0.1); 
+    border-radius: 50%; border: 2px solid #8a2be2; display: flex; align-items: center; justify-content: center;
 }
 .btn-edit-photo { 
-    position: absolute; bottom: 0; right: 0; 
-    background: #8a2be2; border: 3px solid #140824; 
-    color: white; width: 32px; height: 32px; 
-    border-radius: 50%; display: flex; align-items: center; 
-    justify-content: center; cursor: pointer; z-index: 10;
+    position: absolute; bottom: 0; right: 0; background: #8a2be2; border: 3px solid #140824; 
+    color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 
-.user-phone-display { 
-    display: block; color: #666; font-weight: 800; 
-    font-size: 11px; margin-bottom: 25px; 
-}
+.user-phone-display { color: #888; font-size: 11px; font-weight: bold; margin: 10px 0 20px; display: block; }
 
-/* DASHBOARD DE XP */
-.perfil-stats { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+/* INPUT */
+.input-wrapper { background: rgba(0,0,0,0.3); border: 1px solid rgba(138,43,226,0.3); border-radius: 12px; margin-top: 5px; }
+.input-wrapper input { background: transparent; border: none; color: white; padding: 12px; width: 100%; outline: none; text-align: center; }
 
-.xp-card {
-    background: rgba(138, 43, 226, 0.1);
-    border: 1px solid rgba(138, 43, 226, 0.3);
-    padding: 15px; border-radius: 20px; text-align: left;
+/* XP DASHBOARD */
+.xp-card { 
+    background: rgba(138, 43, 226, 0.1); border: 1px solid rgba(138, 43, 226, 0.3); 
+    padding: 15px; border-radius: 20px; margin-bottom: 12px; text-align: left;
 }
 .xp-bar-bg { background: rgba(0,0,0,0.4); height: 10px; border-radius: 5px; overflow: hidden; margin: 8px 0; }
 .xp-bar-fill { height: 100%; background: linear-gradient(90deg, #8a2be2, #00d2ff); transition: 1s; }
 
 .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .stat-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; }
-.stat-box span { display: block; font-size: 22px; font-weight: 900; }
-.stat-box label { font-size: 10px; color: #888; text-transform: uppercase; }
+.stat-box span { display: block; font-size: 22px; font-weight: 900; color: #fff; }
+.stat-box label { font-size: 10px; color: #888; text-transform: uppercase; font-weight: bold; }
 
-/* INPUTS */
-.input-wrapper { 
-    background: rgba(0,0,0,0.3); border: 1px solid rgba(138,43,226,0.2); 
-    border-radius: 16px; margin-bottom: 20px;
-}
-.input-wrapper input { 
-    background: transparent; border: none; color: white; 
-    padding: 15px; width: 100%; outline: none; text-align: center;
-}
+.btn-save { width: 100%; background: #8a2be2; color: white; border: none; padding: 15px; border-radius: 15px; font-weight: 900; cursor: pointer; margin-top: 10px; }
+.btn-logout { width: 100%; background: none; border: 1px solid rgba(255, 68, 68, 0.2); color: #ff4444; padding: 15px; border-radius: 15px; margin-top: 20px; font-weight: 800; cursor: pointer; }
+
+/* MODAL */
+.modal-avatar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+.modal-avatar-card { background: #1a0b2e; border: 1px solid #8a2be2; padding: 25px; border-radius: 30px; width: 85%; max-width: 320px; color: white; }
+.avatar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+.avatar-option { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; cursor: pointer; border: 1px solid transparent; }
+.btn-fechar-galeria { width: 100%; background: none; border: 1px solid #333; color: #888; padding: 10px; border-radius: 10px; cursor: pointer; }
