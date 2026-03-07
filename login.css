@@ -1,33 +1,46 @@
-:root { --primary: #8a2be2; --primary-light: #a052ee; --bg: #0a0a0a; }
-body { background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: sans-serif; overflow: hidden; color: white; }
-.wrapper { width: 100%; max-width: 320px; display: flex; flex-direction: column; align-items: center; }
+:root { --primary: #8a2be2; --error: #ff4444; }
+body { background: #0a0a0a; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+.wrapper { width: 320px; text-align: center; }
 
-/* ANIMAÇÃO DE VIDA */
-.monster-box { width: 120px; height: 120px; position: relative; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-.monster-svg { width: 100%; height: 100%; overflow: visible; }
-.monster-body-path { fill: var(--primary); animation: breathe 3s infinite ease-in-out; transform-origin: bottom; }
-
-@keyframes breathe {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05, 0.95); }
+/* ANIMAÇÃO DE RESPIRAÇÃO (Não depende de JS) */
+.monster-body { 
+    animation: breathe 3s ease-in-out infinite; 
+    transform-origin: bottom; 
+    transition: fill 0.3s;
 }
 
-/* OLHOS E PISCADA */
-.lid { transition: height 0.1s; }
-.blinking .lid { height: 20px; } /* Faz o bicho piscar via JS */
+@keyframes breathe {
+    0%, 100% { transform: scale(1, 1); }
+    50% { transform: scale(1.03, 0.95); }
+}
 
-/* MÃOS FLUIDAS */
-.hands-container { position: absolute; top: 70px; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; pointer-events: none; }
-.hand { width: 25px; height: 25px; background: var(--primary-light); border-radius: 50%; opacity: 0; transform: translateY(30px); transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
-.shame .hand { opacity: 1; transform: translateY(-15px); }
+/* ANIMAÇÃO DE PISCAR (Automática) */
+.lid { animation: blink 4s infinite; }
+@keyframes blink {
+    0%, 90%, 100% { height: 0; }
+    95% { height: 30px; }
+}
 
-/* ESTADO BRAVO */
-.angry .monster-body-path { fill: #ff4444; }
-.angry .monster-svg { animation: shake 0.1s infinite; }
+.monster-box { width: 150px; height: 150px; margin: 0 auto -20px; position: relative; }
+.monster-svg { width: 100%; height: 100%; overflow: visible; }
+
+/* MÃOS */
+.hands { position: absolute; top: 80px; width: 100%; display: flex; justify-content: space-between; padding: 0 15px; pointer-events: none; }
+.hand { width: 30px; height: 30px; background: #a052ee; border-radius: 50%; opacity: 0; transform: translateY(40px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+/* ESTADOS DINÂMICOS */
+.shame .hand { opacity: 1; transform: translateY(-20px); }
+.angry .monster-body { fill: var(--error); animation: shake 0.2s infinite; }
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
 
 /* CARD */
-.login-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 30px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); width: 100%; text-align: center; }
-.input-ia { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #333; padding: 12px; border-radius: 12px; color: white; margin-bottom: 10px; outline: none; text-align: center; }
-.btn-acessar { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
-.status-msg { height: 20px; font-size: 11px; color: #ff4444; margin-bottom: 10px; transition: 0.3s; opacity: 0; }
-@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.login-card { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+.purple { color: var(--primary); }
+.input-ia { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; text-align: center; box-sizing: border-box; }
+.btn-acessar { width: 100%; padding: 15px; border-radius: 10px; border: none; background: var(--primary); color: white; font-weight: bold; cursor: pointer; }
+.status-msg { height: 20px; font-size: 11px; color: var(--error); margin-bottom: 10px; opacity: 0; }
