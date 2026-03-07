@@ -2,104 +2,79 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Brain - Scanner Inteligente (Teste)</title>
+    <title>Hub Brain - Scanner Oficial</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        body { background: #0a0a0a; color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; text-align: center; }
-        .card { background: #111; border: 2px dashed #8a2be2; padding: 30px; border-radius: 20px; max-width: 500px; margin: 20px auto; cursor: pointer; transition: 0.3s; }
-        .card:hover { background: #151515; border-style: solid; }
-        .purple { color: #8a2be2; font-weight: bold; }
-        #log { background: #000; padding: 20px; border-radius: 12px; text-align: left; max-width: 600px; margin: 20px auto; font-family: 'Courier New', monospace; font-size: 13px; border: 1px solid #222; overflow-x: auto; }
-        .status { margin: 15px; font-weight: bold; color: #8a2be2; display: none; }
-        .aula-item { background: #1a1a1a; padding: 10px; margin: 5px 0; border-left: 4px solid #8a2be2; border-radius: 4px; }
+        body { background: #0a0a0a; color: white; font-family: sans-serif; padding: 20px; }
+        .purple { color: #8a2be2; }
+        .grid-debug { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
+        .day-column { background: #111; border: 1px solid #333; padding: 10px; border-radius: 10px; }
+        .aula { background: #1a1a1a; padding: 8px; margin: 5px 0; border-left: 3px solid #8a2be2; font-size: 12px; }
+        #status { font-weight: bold; margin: 20px 0; color: #8a2be2; }
+        .preview-img { max-width: 100%; border-radius: 10px; border: 1px solid #333; }
     </style>
 </head>
 <body>
-
-    <h1>SCANNER <span class="purple">HUB BRAIN</span></h1>
-    <p>Teste de Reconhecimento de Horário (SIGEduc)</p>
-
-    <div class="card" onclick="document.getElementById('foto').click()">
-        <i data-lucide="upload-cloud"></i>
-        <p>Clique aqui para subir o <br><b>Print do Horário</b></p>
-        <input type="file" id="foto" accept="image/*" hidden>
-    </div>
-
-    <div id="status-ia" class="status">🧠 A IA está lendo o print... (pode levar 10s)</div>
-
-    <div id="resultado-final">
-        <h3>Resultado do Processamento:</h3>
-        <div id="log">Aguardando imagem...</div>
-    </div>
+    <h1>SCANNER <span class="purple">SIGEDUC</span></h1>
+    <input type="file" id="arquivo" accept="image/*">
+    <div id="status">Aguardando print...</div>
+    
+    <div class="grid-debug" id="resultado">
+        </div>
 
     <script>
-        const fotoInput = document.getElementById('foto');
-        const log = document.getElementById('log');
-        const statusIa = document.getElementById('status-ia');
+        const input = document.getElementById('arquivo');
+        const status = document.getElementById('status');
+        const resultado = document.getElementById('resultado');
 
-        // Mapeamento real das siglas do SIGEduc
-        const horariosMap = {
-            "1": "13:00", "2": "13:50", "3": "14:40",
-            "4": "15:50", "5": "16:40", "6": "17:30"
+        const dias = ["2ª Feira", "3ª Feira", "4ª Feira", "5ª Feira", "6ª Feira"];
+
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            status.innerText = "🧠 Analisando estrutura da tabela...";
+            resultado.innerHTML = "";
+
+            const worker = await Tesseract.createWorker('por');
+            const { data } = await worker.recognize(file);
+            
+            status.innerText = "✅ Processamento Concluído!";
+            organizarAgenda(data.lines);
+            await worker.terminate();
         };
 
-        fotoInput.onchange = async (e) => {
-            const arquivo = e.target.files[0];
-            if (!arquivo) return;
+        function organizarAgenda(linhas) {
+            // Criamos 5 containers para os dias
+            dias.forEach(dia => {
+                const col = document.createElement('div');
+                col.className = 'day-column';
+                col.innerHTML = `<strong class="purple">${dia}</strong><br><br>`;
+                col.id = dia.replace(" ", "");
+                resultado.appendChild(col);
+            });
 
-            statusIa.style.display = "block";
-            log.innerHTML = "Iniciando motor Tesseract...";
+            // Lógica de distribuição por posição horizontal (X)
+            linhas.forEach(linha => {
+                const texto = linha.text.trim();
+                if (texto.length < 4) return; // Ignora lixo
 
-            try {
-                // Configura o motor para Português
-                const worker = await Tesseract.createWorker('por');
-                const { data: { text } } = await worker.recognize(arquivo);
-                
-                statusIa.style.display = "none";
-                processarTextoLimpo(text);
-                
-                await worker.terminate();
-            } catch (erro) {
-                log.innerHTML = "Erro: " + erro;
-                statusIa.style.display = "none";
-            }
-        };
+                // Identifica o dia baseado na posição X da linha na imagem
+                // Dividimos a largura em 5 partes
+                const x = linha.bbox.x0;
+                const larguraTotal = 1000; // Base teórica
+                const indexDia = Math.floor((x / larguraTotal) * 5);
+                const diaAlvo = dias[indexDia] ? dias[indexDia].replace(" ", "") : null;
 
-        function processarTextoLimpo(textoBruto) {
-            // Limpa o log
-            log.innerHTML = "<strong>Texto Bruto lido pela IA:</strong><br><small style='color:#555'>" + textoBruto.substring(0, 100) + "...</small><br><br>";
-            log.innerHTML += "<strong>Aulas encontradas:</strong><br>";
-
-            // REGEX FLEXÍVEL: Aceita 'les', 'Ves', 'es', 's' + número + 'º'
-            // Isso corrige o erro da IA confundir o 'V' com 'l'
-            const regex = /(les|Ves|es|s)\s*(\d)º/gi;
-            let achou = false;
-            let match;
-
-            // Criar uma lista de aulas para exibir
-            while ((match = regex.exec(textoBruto)) !== null) {
-                achou = true;
-                const numeroHorario = match[2];
-                
-                // Pegar o que vem depois da sigla (Matéria)
-                const inicio = match.index;
-                const fim = inicio + 80; // Pega os próximos 80 caracteres
-                const trecho = textoBruto.substring(inicio, fim).replace(/\n/g, " ");
-
-                log.innerHTML += `
-                    <div class="aula-item">
-                        <span class="purple">⏰ ${horariosMap[numeroHorario]} (${numeroHorario}º Horário)</span><br>
-                        <span>📄 Contexto lido: ${trecho.substring(0, 60)}...</span>
-                    </div>
-                `;
-            }
-
-            if (!achou) {
-                log.innerHTML += "<b style='color:red'>❌ Não identifiquei as siglas Ves_ ou Mat_. Tente um print mais nítido ou com mais zoom nas letras.</b>";
-            }
+                if (diaAlvo) {
+                    const div = document.createElement('div');
+                    div.className = 'aula';
+                    // Limpa o nome do professor se ele aparecer (texto entre parênteses ou na linha de baixo)
+                    div.innerText = texto.split('\n')[0]; 
+                    document.getElementById(diaAlvo).appendChild(div);
+                }
+            });
         }
     </script>
-
 </body>
 </html>
