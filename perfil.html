@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="menu.css"> 
     <link rel="stylesheet" href="perfil.css">
     <style>
-        /* Header ocupando 100% da largura da tela */
         .perfil-header {
             display: flex;
             align-items: center;
@@ -22,8 +21,6 @@
             top: 0;
             z-index: 1000;
         }
-
-        /* Botão de menu original */
         #open-menu {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid #222;
@@ -35,8 +32,6 @@
             align-items: center;
             justify-content: center;
         }
-
-        /* Centraliza o título perfeitamente */
         .header-title {
             position: absolute;
             left: 50%;
@@ -57,9 +52,7 @@
         <button id="open-menu">
             <i data-lucide="menu"></i>
         </button>
-        
         <h2 class="header-title">MEU <span class="purple">PERFIL</span></h2>
-        
         <div style="width: 44px;"></div>
     </header>
 
@@ -74,7 +67,9 @@
                 </button>
             </div>
 
-            <p class="user-phone-display" id="display-phone">Carregando...</p>
+            <div class="id-badge-container">
+                <p class="user-id-display" id="display-id">Carregando...</p>
+            </div>
 
             <div class="form-group">
                 <label>COMO QUERES SER CHAMADO?</label>
