@@ -16,51 +16,89 @@ const db = getFirestore(app);
 const userPhone = localStorage.getItem('dt_user_phone');
 const API_KEY = "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";
 
-let acertosAtuais = 0;
-let questoesRespondidas = 0;
+// VARIÁVEIS DE CONTROLE DE XP
+let acertosSimulado = 0;
+let respondidasSimulado = 0;
 
-// --- FUNÇÕES DE NAVEGAÇÃO ---
-window.trocarAba = (aba) => {
+// Garante que tudo carregue, inclusive os ícones
+window.addEventListener('load', () => {
+    if (window.lucide) lucide.createIcons();
+    const salvo = localStorage.getItem('dt_chat_hist');
+    if(salvo && document.getElementById('chat-box')) {
+        document.getElementById('chat-box').innerHTML = salvo;
+    }
+});
+
+// 1. MENU LATERAL (Conecta com os 3 traços)
+window.abrirSeuMenuLateral = function() {
+    const menu = document.querySelector('.dt-sidebar') || document.querySelector('nav');
+    if(menu) menu.classList.toggle('open');
+}
+
+// 2. NAVEGAÇÃO DE ABAS
+window.trocarAba = function(aba) {
     document.querySelectorAll('.dt-aba').forEach(a => a.classList.remove('active'));
     document.querySelectorAll('.dt-tab-button').forEach(b => b.classList.remove('active'));
+    
     document.getElementById('painel-' + aba).classList.add('active');
     document.getElementById('tab-' + aba).classList.add('active');
-    const header = document.getElementById('header-titulo');
-    if(header) header.innerText = aba === 'simulado' ? 'Simulado IA' : 'Tira-Dúvidas';
-};
+    document.getElementById('header-titulo').innerText = aba === 'simulado' ? 'Simulado IA' : 'Tira-Dúvidas';
+}
 
-window.mostrarAviso = (txt) => {
-    const el = document.getElementById('txt-aviso');
-    if(el) el.innerText = txt;
+// 3. LIXEIRA CUSTOMIZADA (O modal bonitão)
+window.abrirModalLixeira = function() { 
+    document.getElementById('modal-lixeira').style.display = 'flex'; 
+}
+window.fecharModalLixeira = function() { 
+    document.getElementById('modal-lixeira').style.display = 'none'; 
+}
+window.confirmarLimpeza = function() {
+    localStorage.removeItem('dt_chat_hist');
+    const container = document.getElementById('container-questoes');
+    const chat = document.getElementById('chat-box');
+    if(container) container.innerHTML = "";
+    if(chat) chat.innerHTML = '<div class="dt-bolha ia">Histórico limpo!</div>';
+    window.fecharModalLixeira();
+}
+
+// 4. AVISOS
+window.mostrarAviso = function(txt) {
+    document.getElementById('txt-aviso').innerText = txt;
     document.getElementById('modal-aviso').style.display = 'flex';
-};
-window.fecharAviso = () => document.getElementById('modal-aviso').style.display = 'none';
+}
+window.fecharAviso = function() { 
+    document.getElementById('modal-aviso').style.display = 'none'; 
+}
 
-// --- LOGICA DE XP ---
-async function finalizarSimuladoXP() {
+// FUNÇÃO PARA PROCESSAR O XP NO FINAL
+async function processarXPSimulado() {
     let xpFinal = 0;
-    if (acertosAtuais === 10) xpFinal = 150;
-    else if (acertosAtuais >= 7) xpFinal = 60;
-    else if (acertosAtuais >= 5) xpFinal = 20;
-    else if (acertosAtuais >= 3) xpFinal = -30;
+    if (acertosSimulado === 10) xpFinal = 150;
+    else if (acertosSimulado >= 7) xpFinal = 60;
+    else if (acertosSimulado >= 5) xpFinal = 20;
+    else if (acertosSimulado >= 3) xpFinal = -30;
     else xpFinal = -80;
 
     if (userPhone) {
         try {
-            await updateDoc(doc(db, "notas", userPhone), { xp: increment(xpFinal) });
-        } catch (e) { console.error(e); }
+            const userRef = doc(db, "notas", userPhone);
+            await updateDoc(userRef, { xp: increment(xpFinal) });
+            window.mostrarAviso(`Simulado encerrado! ${acertosSimulado}/10 acertos. XP: ${xpFinal > 0 ? '+' : ''}${xpFinal}`);
+        } catch (e) { console.error("Erro Firebase XP:", e); }
     }
-    window.mostrarAviso(`Simulado Finalizado! Acertos: ${acertosAtuais}/10. XP: ${xpFinal > 0 ? '+' : ''}${xpFinal}`);
-    setTimeout(() => location.reload(), 3000);
 }
 
-// --- CORE: GERAR SIMULADO ---
-async function dispararSimulado() {
+// 5. SIMULADO COM CORES (VERDE/VERMELHO) + XP
+window.gerarSimulado = async function() {
     const tema = document.getElementById('campo-tema').value;
-    if(!tema) return window.mostrarAviso("⚠️ Digite um tema!");
+    if(!tema) return window.mostrarAviso("⚠️ Digite um tema primeiro!");
     
+    // Reset de contagem
+    acertosSimulado = 0;
+    respondidasSimulado = 0;
+
     const container = document.getElementById('container-questoes');
-    container.innerHTML = "<div class='dt-questao-card'>⏳ Gerando questões...</div>";
+    container.innerHTML = "<div class='dt-questao-card' style='text-align:center'>⏳ Preparando seu simulado...</div>";
 
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -68,74 +106,82 @@ async function dispararSimulado() {
             headers: { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [{role: "user", content: `Gere 10 questões sobre ${tema}. Responda APENAS JSON: [{"p":"pergunta","o":["a","b","c","d"],"c":0,"e":"explicação"}]`}]
+                messages: [{role: "user", content: `Gere 10 questões sobre ${tema}. Retorne apenas JSON: [{"p":"pergunta","o":["a","b","c","d"],"c":0,"e":"EXPLICAÇÃO"}]`}]
             })
         });
+
         const d = await res.json();
-        const content = d.choices[0].message.content;
-        const json = JSON.parse(content.substring(content.indexOf("["), content.lastIndexOf("]") + 1));
-        
+        const json = JSON.parse(d.choices[0].message.content.match(/\[.*\]/s)[0]);
         container.innerHTML = "";
+
         json.forEach((q, i) => {
             const div = document.createElement('div');
             div.className = "dt-questao-card";
-            div.innerHTML = `<p><b>${i+1}.</b> ${q.p}</p>`;
+            div.innerHTML = `<p style="margin-bottom:15px"><b>${i+1}.</b> ${q.p}</p>`;
+            
             q.o.forEach((opt, idx) => {
                 const btn = document.createElement('button');
                 btn.className = "dt-opt-btn";
                 btn.innerText = opt;
                 btn.onclick = () => {
-                    div.querySelectorAll('.dt-opt-btn').forEach(b => b.disabled = true);
-                    questoesRespondidas++;
-                    if (idx === q.c) { acertosAtuais++; btn.style.background = '#1b4d2e'; } 
-                    else { btn.style.background = '#4d1b1b'; }
-                    if (questoesRespondidas === 10) finalizarSimuladoXP();
+                    const btns = div.querySelectorAll('.dt-opt-btn');
+                    btns.forEach(b => b.disabled = true);
+                    
+                    respondidasSimulado++;
+
+                    // A MÁGICA DAS CORES E XP AQUI
+                    if (idx === q.c) {
+                        acertosSimulado++;
+                        btn.style.setProperty('background-color', '#1b4d2e', 'important');
+                        btn.style.setProperty('border-color', '#2ecc71', 'important');
+                        btn.style.setProperty('color', '#fff', 'important');
+                    } else {
+                        btn.style.setProperty('background-color', '#4d1b1b', 'important');
+                        btn.style.setProperty('border-color', '#ff4444', 'important');
+                        btns[q.c].style.setProperty('border', '2px solid #2ecc71', 'important');
+                    }
+                    
+                    const aula = document.createElement('div');
+                    aula.className = "dt-mini-aula";
+                    aula.innerHTML = `<b>🎓 Mini Aula:</b><br>${q.e}`;
+                    div.appendChild(aula);
+
+                    // Se terminou as 10, dispara o XP
+                    if (respondidasSimulado === 10) {
+                        processarXPSimulado();
+                    }
                 };
                 div.appendChild(btn);
             });
             container.appendChild(div);
         });
-    } catch(e) { container.innerHTML = "Erro ao carregar."; }
+    } catch(e) { container.innerHTML = "Erro ao gerar simulado. Tente novamente."; }
 }
 
-// --- CORE: TIRA DÚVIDAS ---
-async function dispararDuvida() {
+// 6. CHAT TIRA-DÚVIDAS
+window.enviarMensagem = async function() {
     const input = document.getElementById('chat-input');
     const box = document.getElementById('chat-box');
     if(!input.value) return;
-    const txt = input.value;
+
+    const texto = input.value;
     input.value = "";
-    box.innerHTML += `<div class="dt-bolha user">${txt}</div>`;
-    
+    box.innerHTML += `<div class="dt-bolha user">${texto}</div>`;
+    box.scrollTop = box.scrollHeight;
+
     try {
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [{role: "user", content: txt}]
+                messages: [{role: "system", content: "Responda de forma curta e acadêmica."}, {role: "user", content: texto}]
             })
         });
         const d = await res.json();
-        box.innerHTML += `<div class="dt-bolha ia">${d.choices[0].message.content}</div>`;
+        const respIA = d.choices[0].message.content.replace(/\n/g, '<br>');
+        box.innerHTML += `<div class="dt-bolha ia">${respIA}</div>`;
         box.scrollTop = box.scrollHeight;
-    } catch(e) { box.innerHTML += "Erro na IA."; }
+        localStorage.setItem('dt_chat_hist', box.innerHTML);
+    } catch(e) { box.innerHTML += `<div class="dt-bolha ia">Erro ao responder.</div>`; }
 }
-
-// --- INICIALIZAÇÃO SEGURA ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Liga os botões via ID (mais seguro que onclick no HTML)
-    const btnGerar = document.getElementById('btn-gerar');
-    if(btnGerar) btnGerar.addEventListener('click', dispararSimulado);
-
-    const btnEnviar = document.getElementById('btn-enviar');
-    if(btnEnviar) btnEnviar.addEventListener('click', dispararDuvida);
-
-    const btnLimpar = document.getElementById('btn-limpar');
-    if(btnLimpar) btnLimpar.addEventListener('click', () => {
-        localStorage.removeItem('dt_chat_hist');
-        location.reload();
-    });
-
-    if (window.lucide) lucide.createIcons();
-});
