@@ -6,8 +6,19 @@
     <title>Deep Focus</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="foco.css">
-</head>
+    </head>
 <body>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <button id="close-sidebar"><i data-lucide="x"></i></button>
+        </div>
+        <nav class="sidebar-menu">
+            <a href="index.html">Notas</a>
+            <a href="foco.html" class="active">Foco</a>
+            </nav>
+    </div>
+    <div id="overlay" class="overlay"></div>
 
     <header class="header-minimal">
         <button id="open-sidebar" class="btn-icon-top">
@@ -72,6 +83,10 @@
         </div>
     </div>
 
+    <script>lucide.createIcons();</script>
+    
+    <script src="menu.js"></script> 
+    
     <script type="module" src="foco-logica.js"></script>
 </body>
 </html>
