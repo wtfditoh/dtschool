@@ -17,10 +17,7 @@
                     <div class="eye-ball"><div class="pupil"></div></div>
                 </div>
             </div>
-            <div class="monster-hands">
-                <div class="m-hand"></div>
-                <div class="m-hand"></div>
-            </div>
+            <div class="monster-hands"><div class="m-hand"></div><div class="m-hand"></div></div>
         </div>
 
         <div class="login-card">
@@ -29,22 +26,15 @@
                 <p>ENTRE PARA O RANKING</p>
             </div>
 
-            <div class="input-group">
-                <input type="text" id="user-name" placeholder="Nome no Ranking (Ex: Dev_Mestre)" class="input-ia">
-            </div>
-
-            <div class="input-group">
-                <input type="email" id="user-email" placeholder="Seu melhor e-mail" class="input-ia">
-            </div>
-
-            <div class="input-group">
-                <input type="password" id="user-pass" placeholder="Crie uma senha forte" class="input-ia">
-            </div>
+            <input type="text" id="user-name" placeholder="Nome no Ranking" class="input-ia">
+            <input type="email" id="user-email" placeholder="Seu melhor e-mail" class="input-ia">
+            <input type="password" id="user-pass" placeholder="Crie uma senha forte" class="input-ia">
 
             <div id="login-status" class="status-msg"></div>
 
             <button onclick="realizarCadastro()" class="btn-acessar">
-                Finalizar Cadastro <i data-lucide="user-plus" style="width: 18px;"></i>
+                <span>Finalizar Cadastro</span>
+                <i data-lucide="user-plus"></i>
             </button>
 
             <div class="footer-links">
