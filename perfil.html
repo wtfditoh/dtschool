@@ -4,8 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meu Perfil - Hub Brain</title>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="perfil.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Ajuste fino para o Header do Perfil */
+        .perfil-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8);
+            border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+            position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px);
+        }
+        .perfil-header h2 { font-size: 16px; letter-spacing: 2px; margin: 0; color: white; }
+        .purple { color: #8a2be2; }
+    </style>
 </head>
 <body>
 
@@ -13,12 +27,13 @@
 
     <div class="perfil-container">
         <header class="perfil-header">
-            <button onclick="window.location.href='index.html'" class="btn-back">
-                <i data-lucide="chevron-left"></i>
+            <button id="open-menu" class="btn-menu">
+                <i data-lucide="menu"></i>
             </button>
+            
             <h2>MEU <span class="purple">PERFIL</span></h2>
-            <div style="width: 40px;"></div>
-        </header>
+            
+            <div style="width: 42px;"></div> </header>
 
         <div class="perfil-card">
             <div class="avatar-section">
@@ -41,7 +56,7 @@
                 <p class="hint">Este nome aparecerá no Ranking Global.</p>
             </div>
 
-            <button id="btn-salvar-perfil" class="btn-save">
+            <button id="btn-salvar-perfil" class="btn-save" onclick="tentarSalvarPerfil()">
                 <i data-lucide="check-circle"></i> SALVAR ALTERAÇÕES
             </button>
         </div>
@@ -75,6 +90,47 @@
         </div>
     </div>
 
+    <script src="menu.js"></script>
     <script type="module" src="perfil-logica.js"></script>
+
+    <script>
+        // Lógica de Toast para o Modo Visitante
+        function mostrarToast(mensagem, tipo = 'erro') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`; // Você pode estilizar .toast.erro no perfil.css
+            toast.style.cssText = `
+                background: #ff4444; color: white; padding: 12px 20px; 
+                border-radius: 10px; margin-bottom: 10px; font-weight: bold;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3); animation: slideIn 0.3s forwards;
+            `;
+            toast.innerText = mensagem;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function tentarSalvarPerfil() {
+            const phone = localStorage.getItem('dt_user_phone');
+            
+            // Verifica se é o número de teste/visitante
+            if (phone === '00000000000' || !phone) {
+                mostrarToast("⚠️ Modo Visitante não pode alterar o perfil!");
+                return;
+            }
+
+            // Se não for visitante, executa a função que está no perfil-logica.js
+            if (typeof window.salvarPerfilReal === 'function') {
+                window.salvarPerfilReal();
+            }
+        }
+
+        // Estilos para o toast (caso não tenha no perfil.css)
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>
