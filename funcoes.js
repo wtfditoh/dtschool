@@ -20,7 +20,7 @@ let materias = [];
 let idParaExcluir = null;
 
 // ==========================================
-// MOTOR DE XP BRUTAL - HUB BRAIN
+// MOTOR DE XP - HUB BRAIN
 // ==========================================
 function calcularXP(nota) {
     const n = parseFloat(nota);
@@ -48,8 +48,6 @@ async function atualizarXPGlobal() {
 
     try {
         const userRef = doc(db, "notas", userPhone);
-        
-        // Pega os dados do perfil salvos no navegador
         const nomeLocal = localStorage.getItem('dt_user_name');
         const avatarLocal = localStorage.getItem('dt_user_avatar');
 
@@ -58,21 +56,18 @@ async function atualizarXPGlobal() {
             materias: materias 
         };
 
-        // Só envia nome/avatar se eles existirem, evitando o bug de virar "Estudante"
         if (nomeLocal) dadosParaAtualizar.nome = nomeLocal;
         if (avatarLocal) dadosParaAtualizar.avatar = avatarLocal;
 
-        // Merge true garante que o que já está lá (como o nome) não suma
         await setDoc(userRef, dadosParaAtualizar, { merge: true });
-        
-        console.log(`🏆 XP Sincronizado para ${nomeLocal || 'Usuário'}: ${xpTotal}`);
+        console.log(`🏆 XP Sincronizado: ${xpTotal}`);
     } catch (e) { 
         console.error("Erro ao sincronizar XP:", e); 
     }
 }
 
 // ==========================================
-// CARREGAMENTO INICIAL
+// CARREGAMENTO E SALVAMENTO
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
     await carregarDados();
@@ -104,124 +99,26 @@ async function salvarNaNuvem() {
 }
 
 // ==========================================
-// CARD DE VITÓRIA E COMPARTILHAMENTO
-// ==========================================
-window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
-    let container = document.getElementById('compartilhamento-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'compartilhamento-container';
-        document.body.appendChild(container);
-    }
-
-    let elogio = "Mais uma pra conta!";
-    let subtitulo = `MÉDIA ${mediaReal} ATINGIDA`;
-
-    if (mediaReal >= 8.0) {
-        elogio = "Nível Elite";
-        subtitulo = `NOTA EXTRAORDINÁRIA: ${mediaReal}`;
-    } else if (mediaReal >= 6.0) {
-        elogio = "Objetivo Concluído";
-        subtitulo = `MÉDIA ${mediaReal} SUPERADA`;
-    }
-
-    container.innerHTML = `
-        <div class="card-vitoria-story">
-            <div class="vitoria-content">
-                <div class="logo-neon-vitoria">
-                    <i data-lucide="brain-circuit" style="width:240px; height:240px; color:#8a2be2;"></i>
-                </div>
-                <p class="status-conquista">${elogio}</p>
-                <h1 class="materia-nome-vitoria">${nomeMateria}</h1>
-                <p class="badge-comemorativa">${subtitulo}</p>
-            </div>
-            <div class="vitoria-footer">
-                <p>HUB BRAIN</p>
-                <p class="link-app-vitoria">https://hubbrain.netlify.app/</p>
-            </div>
-        </div>
-    `;
-
-    lucide.createIcons({ container: container });
-
-    setTimeout(async () => {
-        const canvas = await html2canvas(container, { 
-            backgroundColor: null, 
-            width: 1080, height: 1920, scale: 1,
-            logging: false, useCORS: true
-        });
-
-        canvas.toBlob(async (blob) => {
-            const file = new File([blob], `HubBrain_${nomeMateria}.png`, { type: 'image/png' });
-            const shareData = {
-                title: 'Hub Brain - Alta Performance',
-                text: `Passei em ${nomeMateria}!🚀 Venha você também cuidar dos seus estudos com a Hub Brain: https://hubbrain.netlify.app/`,
-                files: [file]
-            };
-            try {
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share(shareData);
-                } else {
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = `HubBrain_Vitoria_${nomeMateria}.png`;
-                    link.click();
-                }
-            } catch (err) { console.log('Compartilhamento cancelado'); }
-            container.innerHTML = '';
-        }, 'image/png');
-    }, 400);
-};
-
-// ==========================================
-// NAVEGAÇÃO E MODAIS
-// ==========================================
-window.toggleMenu = function() {
-    document.getElementById('menu-lateral').classList.toggle('open');
-    document.getElementById('overlay').classList.toggle('active');
-};
-
-window.navegar = function(p) {
-    window.toggleMenu();
-    if(p === 'notas') return;
-    if(p === 'ranking') { window.location.href = 'ranking.html'; return; }
-    
-    const msg = p === 'agenda' ? 'Em breve poderás marcar teus testes aqui!' : 'Em breve verás quem é o melhor da HUB BRAIN!';
-    document.getElementById('aviso-titulo').innerText = p.charAt(0).toUpperCase() + p.slice(1);
-    document.getElementById('aviso-texto').innerText = msg;
-    document.getElementById('aviso-icon').innerHTML = `<i data-lucide="${p === 'agenda' ? 'calendar' : 'trophy'}" style="width:45px; height:45px; color:#8a2be2;"></i>`;
-    document.getElementById('modal-aviso-container').style.display = 'flex';
-    lucide.createIcons();
-};
-
-window.fecharAviso = function() { document.getElementById('modal-aviso-container').style.display = 'none'; };
-
-window.abrirModalExcluir = function(id) {
-    idParaExcluir = id;
-    document.getElementById('modal-excluir-container').style.display = 'flex';
-    lucide.createIcons();
-};
-
-window.fecharModalExcluir = function() { 
-    document.getElementById('modal-excluir-container').style.display = 'none'; 
-};
-
-window.confirmarExclusao = async function() {
-    materias = materias.filter(m => m.id !== idParaExcluir);
-    localStorage.setItem('materias', JSON.stringify(materias));
-    await salvarNaNuvem();
-    atualizarLista();
-    fecharModalExcluir();
-};
-
-// ==========================================
-// GESTÃO DE NOTAS E LISTA
+// GESTÃO DA LISTA (ORDEM POR NOTA + CRIAÇÃO)
 // ==========================================
 window.atualizarLista = function() {
     const lista = document.getElementById('lista-materias');
     if(!lista) return;
 
-    materias.sort((a, b) => b.id - a.id);
+    // ORDENAÇÃO INTELIGENTE:
+    materias.sort((a, b) => {
+        const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
+        const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
+        const mediaA = somaA / 4;
+        const mediaB = somaB / 4;
+
+        // 1º Critério: Nota Maior Sobe
+        if (mediaB !== mediaA) {
+            return mediaB - mediaA;
+        }
+        // 2º Critério (Empate): Ordem de Criação (ID antigo em cima)
+        return a.id - b.id; 
+    });
 
     lista.innerHTML = materias.map(m => {
         const soma = (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0);
@@ -266,9 +163,10 @@ window.atualizarLista = function() {
         </div>`;
     }).join('');
     
+    // Atualiza contadores do topo
     const total = materias.length;
-    const somaMedias = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
-    document.getElementById('media-geral').innerText = total > 0 ? (somaMedias / total).toFixed(1) : "0.0";
+    const somaMediasGerais = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
+    document.getElementById('media-geral').innerText = total > 0 ? (somaMediasGerais / total).toFixed(1) : "0.0";
     document.getElementById('aprov-count').innerText = `${materias.filter(m => (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4)) >= 24).length}/${total}`;
     lucide.createIcons();
 };
@@ -283,33 +181,118 @@ window.salvarNota = async function(id, b, val) {
     }
 };
 
+// ==========================================
+// MODAIS E MATÉRIAS
+// ==========================================
 window.abrirModal = function() { document.getElementById('modal-materia').style.display = 'flex'; };
 window.fecharModal = function() { document.getElementById('modal-materia').style.display = 'none'; };
 
 window.confirmarNovaMateria = async function() {
     const input = document.getElementById('nome-materia-input');
     if(input.value) {
+        // IDs baseados em tempo garantem a ordem de criação correta
         materias.push({ id: Date.now(), nome: input.value, n1:"", n2:"", n3:"", n4:"" });
         localStorage.setItem('materias', JSON.stringify(materias));
         await salvarNaNuvem();
-        input.value = ''; fecharModal(); atualizarLista();
+        input.value = ''; 
+        fecharModal(); 
+        atualizarLista();
     }
 };
 
+window.abrirModalExcluir = function(id) {
+    idParaExcluir = id;
+    document.getElementById('modal-excluir-container').style.display = 'flex';
+    lucide.createIcons();
+};
+
+window.fecharModalExcluir = function() { 
+    document.getElementById('modal-excluir-container').style.display = 'none'; 
+};
+
+window.confirmarExclusao = async function() {
+    materias = materias.filter(m => m.id !== idParaExcluir);
+    localStorage.setItem('materias', JSON.stringify(materias));
+    await salvarNaNuvem();
+    atualizarLista();
+    fecharModalExcluir();
+};
+
 // ==========================================
-// PWA E INSTALAÇÃO
+// VITÓRIA E COMPARTILHAMENTO
 // ==========================================
+window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
+    let container = document.getElementById('compartilhamento-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'compartilhamento-container';
+        document.body.appendChild(container);
+    }
+
+    let elogio = mediaReal >= 8.0 ? "Nível Elite" : "Objetivo Concluído";
+    let subtitulo = mediaReal >= 8.0 ? `NOTA EXTRAORDINÁRIA: ${mediaReal}` : `MÉDIA ${mediaReal} SUPERADA`;
+
+    container.innerHTML = `
+        <div class="card-vitoria-story">
+            <div class="vitoria-content">
+                <div class="logo-neon-vitoria"><i data-lucide="brain-circuit" style="width:240px; height:240px; color:#8a2be2;"></i></div>
+                <p class="status-conquista">${elogio}</p>
+                <h1 class="materia-nome-vitoria">${nomeMateria}</h1>
+                <p class="badge-comemorativa">${subtitulo}</p>
+            </div>
+            <div class="vitoria-footer"><p>HUB BRAIN</p><p class="link-app-vitoria">https://hubbrain.netlify.app/</p></div>
+        </div>
+    `;
+
+    lucide.createIcons({ container: container });
+
+    setTimeout(async () => {
+        const canvas = await html2canvas(container, { backgroundColor: null, width: 1080, height: 1920, scale: 1, useCORS: true });
+        canvas.toBlob(async (blob) => {
+            const file = new File([blob], `HubBrain_${nomeMateria}.png`, { type: 'image/png' });
+            try {
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ title: 'Hub Brain', text: `Passei em ${nomeMateria}! 🚀`, files: [file] });
+                } else {
+                    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `Vitoria_${nomeMateria}.png`; link.click();
+                }
+            } catch (err) { console.log('Cancelado'); }
+            container.innerHTML = '';
+        });
+    }, 400);
+};
+
+// ==========================================
+// MENU E PWA
+// ==========================================
+window.toggleMenu = function() {
+    document.getElementById('menu-lateral').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('active');
+};
+
+window.navegar = function(p) {
+    window.toggleMenu();
+    if(p === 'notas') return;
+    if(p === 'ranking') { window.location.href = 'ranking.html'; return; }
+    if(p === 'perfil') { window.location.href = 'perfil.html'; return; }
+    
+    document.getElementById('aviso-titulo').innerText = p.charAt(0).toUpperCase() + p.slice(1);
+    document.getElementById('modal-aviso-container').style.display = 'flex';
+    lucide.createIcons();
+};
+
+window.fecharAviso = function() { document.getElementById('modal-aviso-container').style.display = 'none'; };
+
 let instaladorPWA = null;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     instaladorPWA = e;
-    const containerBotao = document.getElementById('pwa-install-container');
-    if (containerBotao) containerBotao.style.display = 'block';
+    if (document.getElementById('pwa-install-container')) document.getElementById('pwa-install-container').style.display = 'block';
 });
 
 window.instalarApp = async function() {
     if (!instaladorPWA) {
-        alert("Para instalar no iPhone: Toque no ícone de 'Compartilhar' e depois em 'Adicionar à Tela de Início' 📲");
+        alert("No iPhone: Compartilhar > Adicionar à Tela de Início 📲");
         return;
     }
     instaladorPWA.prompt();
