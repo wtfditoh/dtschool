@@ -28,21 +28,17 @@ async function carregarPerfil() {
             const dados = docSnap.data();
             const xpTotal = dados.xp || 0;
 
-            // CÁLCULO DE NÍVEL (500 XP POR NÍVEL)
             const nivel = Math.floor(xpTotal / 500) + 1;
             const xpAtualNoNivel = xpTotal % 500;
             const faltaParaUpar = 500 - xpAtualNoNivel;
             const porcentagem = (xpAtualNoNivel / 500) * 100;
 
-            // NOME E AVATAR
             document.getElementById('user-name-input').value = dados.nome || "";
             document.getElementById('display-phone').innerText = `ID: ${userPhone}`;
             if(dados.avatar) document.getElementById('avatar-icon').setAttribute('data-lucide', dados.avatar);
 
-            // INJETAR O DASHBOARD
-            const statsContainer = document.querySelector('.perfil-stats');
+            const statsContainer = document.getElementById('area-stats');
             if (statsContainer) {
-                // CALCULAR MÉDIA
                 const materias = dados.materias || [];
                 let mediaGeral = "0.0";
                 if (materias.length > 0) {
@@ -50,17 +46,18 @@ async function carregarPerfil() {
                     mediaGeral = (soma / materias.length).toFixed(1);
                 }
 
+                // LIMPA TUDO E RECONSTRÓI
                 statsContainer.innerHTML = `
                     <div class="xp-card">
-                        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:900;">
+                        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold;">
                             <span style="color:#c287ff;">NÍVEL ${nivel}</span>
-                            <span style="color:#888;">${xpTotal} XP TOTAL</span>
+                            <span style="color:#888;">${xpTotal} XP</span>
                         </div>
                         <div class="xp-bar-bg">
                             <div class="xp-bar-fill" style="width: ${porcentagem}%"></div>
                         </div>
                         <div style="text-align:center; font-size:10px; color:#aaa; font-weight:bold;">
-                            FALTAM <span style="color:#00d2ff;">${faltaParaUpar} XP</span> PARA O PRÓXIMO NÍVEL
+                            FALTAM <span style="color:#00d2ff;">${faltaParaUpar} XP</span> PARA O NÍVEL ${nivel + 1}
                         </div>
                     </div>
 
@@ -81,21 +78,21 @@ async function carregarPerfil() {
     } catch (e) { console.error(e); }
 }
 
-// Botão Salvar
-document.getElementById('btn-salvar-perfil').onclick = async () => {
-    const nome = document.getElementById('user-name-input').value;
-    const avatar = document.getElementById('avatar-icon').getAttribute('data-lucide');
-    try {
-        await setDoc(doc(db, "notas", userPhone), { nome, avatar }, { merge: true });
-        alert("Perfil Salvo!");
-        window.location.href = 'index.html';
-    } catch(e) { alert("Erro ao salvar"); }
-};
-
+// GLOBAIS PARA O HTML ACESSAR
 window.abrirGaleria = () => document.getElementById('modal-avatar').style.display = 'flex';
 window.fecharGaleria = () => document.getElementById('modal-avatar').style.display = 'none';
 window.selecionarAvatar = (icon) => {
     document.getElementById('avatar-icon').setAttribute('data-lucide', icon);
     lucide.createIcons();
-    fecharGaleria();
+    window.fecharGaleria();
+};
+window.logout = () => { localStorage.clear(); window.location.href = 'login.html'; };
+
+document.getElementById('btn-salvar-perfil').onclick = async () => {
+    const nome = document.getElementById('user-name-input').value;
+    const avatar = document.getElementById('avatar-icon').getAttribute('data-lucide');
+    try {
+        await setDoc(doc(db, "notas", userPhone), { nome, avatar }, { merge: true });
+        window.location.href = 'index.html';
+    } catch(e) { alert("Erro ao salvar"); }
 };
