@@ -31,27 +31,27 @@ async function carregarRanking() {
         });
         lista.sort((a, b) => b.xp - a.xp);
         renderizar(lista);
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Erro ao carregar ranking:", e); }
 }
 
 function renderizar(lista) {
-    // Renderiza o Top 3
+    // Renderiza o Top 3 no Pódio
     for(let i=0; i<3; i++) {
         const u = lista[i];
         if(u) {
             document.getElementById(`p${i+1}-name`).innerText = u.nome;
             document.getElementById(`p${i+1}-score`).innerText = u.xp;
             
-            const avatarFrame = document.getElementById(`avatar-p${i+1}`);
+            const frame = document.getElementById(`avatar-p${i+1}`);
             if (i === 0) {
-                avatarFrame.innerHTML = `<i data-lucide="crown" class="crown-icon"></i><i data-lucide="${u.avatar}" style="width: 50px; height: 50px;"></i>`;
+                frame.innerHTML = `<i data-lucide="crown" class="crown-icon"></i><i data-lucide="${u.avatar}" style="width:50px; height:50px;"></i>`;
             } else {
-                avatarFrame.innerHTML = `<i data-lucide="${u.avatar}" style="width: 35px; height: 35px;"></i>`;
+                frame.innerHTML = `<i data-lucide="${u.avatar}" style="width:35px; height:35px;"></i>`;
             }
         }
     }
 
-    // Renderiza o resto da lista em cards
+    // Renderiza o resto da lista
     const container = document.getElementById('lista-ranking');
     container.innerHTML = lista.slice(3).map((u, i) => `
         <div class="rank-item">
@@ -60,9 +60,9 @@ function renderizar(lista) {
                 <span class="rank-name">${u.nome}</span>
                 <span class="rank-patente">${getPatente(u.xp)} • ${u.xp} XP</span>
             </div>
-            <i data-lucide="${u.avatar}" style="width:22px; height:22px; color:#8a2be2; opacity:0.6;"></i>
+            <i data-lucide="${u.avatar}" style="width:20px; height:20px; color:#8a2be2; opacity:0.5;"></i>
         </div>
-    `).join('') || '<p style="text-align:center; padding:20px; color:#444;">Sem mais competidores.</p>';
+    `).join('') || '<p style="text-align:center; padding:20px; color:#444;">Aguardando competidores...</p>';
     
     if(window.lucide) lucide.createIcons();
 }
