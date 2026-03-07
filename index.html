@@ -2,10 +2,15 @@
 <html lang="pt-br">
 <head>
     <script>
-    if (!localStorage.getItem('dt_user_phone')) {
+    // Agora verificamos o nome, que é o que seu login-logica.js salva
+    const usuario = localStorage.getItem('dt_user_name');
+    
+    if (!usuario) {
+        // Se não tiver nome nenhum no sistema, manda de volta pro login
         window.location.href = 'login.html';
     }
     </script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Inteligência Escolar</title> 
