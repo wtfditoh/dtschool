@@ -3,56 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain - Scanner SIGEduc Pro</title>
+    <title>Hub Brain - Scanner Inteligente</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root { --purple: #8a2be2; --bg: #0a0a0a; --card: #111; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
         
+        h2 { text-align: center; letter-spacing: 1px; margin: 10px 0; }
+        .purple { color: var(--purple); }
+        
+        /* Botão Estilizado */
         .btn-upload {
-            background: var(--purple); color: white; border: none; padding: 12px 24px;
+            background: var(--purple); color: white; border: none; padding: 14px 28px;
             border-radius: 30px; font-weight: bold; cursor: pointer; margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3); width: 80%; max-width: 300px;
         }
 
+        /* Grade Compacta */
         .timetable {
             display: grid; grid-template-columns: 40px repeat(5, 1fr);
             gap: 4px; width: 100%; max-width: 500px;
             background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid #222;
         }
+        .header { font-size: 9px; color: var(--purple); text-align: center; font-weight: 800; padding-bottom: 5px; }
         .cell {
             background: #000; border: 1px solid #1a1a1a; height: 50px;
             border-radius: 4px; font-size: 8px; display: flex; align-items: center;
             justify-content: center; text-align: center; font-weight: bold; padding: 2px;
+            position: relative;
         }
-        .header { font-size: 9px; color: var(--purple); text-align: center; font-weight: 800; padding-bottom: 5px; }
+        .hour-label { color: #444; font-size: 9px; display: flex; align-items: center; justify-content: center; }
+        
         .materia-tag {
-            color: #fff; background: rgba(138, 43, 226, 0.3);
-            border: 1px solid var(--purple); width: 100%; padding: 3px 0;
-            border-radius: 3px; font-size: 7px;
+            color: #fff; background: rgba(138, 43, 226, 0.25);
+            border: 1px solid var(--purple); width: 95%; padding: 4px 0;
+            border-radius: 3px; font-size: 7px; text-transform: uppercase;
         }
-        #status { margin: 10px; font-size: 12px; color: var(--purple); font-weight: bold; }
+
+        #status { margin: 10px; font-size: 12px; color: var(--purple); font-weight: bold; height: 18px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <h2 style="margin-bottom: 5px;">HUB <span style="color:var(--purple)">SCANNER</span></h2>
-    <div id="status">Aguardando print...</div>
+    <h2>HUB <span class="purple">SCANNER</span></h2>
+    <div id="status">Aguardando print do horário...</div>
 
-    <button class="btn-upload" onclick="document.getElementById('img-input').click()">SUBIR PRINT DO HORÁRIO</button>
+    <button class="btn-upload" onclick="document.getElementById('img-input').click()">ESCOLHER PRINT</button>
     <input type="file" id="img-input" accept="image/*" hidden>
 
     <div class="timetable" id="grid">
         <div class="header">H</div>
         <div class="header">2ª</div><div class="header">3ª</div><div class="header">4ª</div><div class="header">5ª</div><div class="header">6ª</div>
-    </div>
+        </div>
 
     <script>
         const grid = document.getElementById('grid');
-        const materiasOk = ["QUIMICA", "FISICA", "HISTORIA", "BIOLOGIA", "MATEMATICA", "GEOGRAFIA", "PORTUGUES", "FILOSOFIA", "SOCIOLOGIA", "ARTES", "INGLES", "ESPANHOL", "EDUCACAO"];
+        const materiasBase = ["QUIMICA", "FISICA", "HISTORIA", "BIOLOGIA", "MATEMATICA", "GEOGRAFIA", "PORTUGUES", "FILOSOFIA", "SOCIOLOGIA", "ARTES", "INGLES", "ESPANHOL", "EDUCACAO"];
 
+        // Criar estrutura da grade
         for(let h=1; h<=6; h++) {
-            grid.innerHTML += `<div style="color:#555; font-size:9px; display:flex; align-items:center; justify-content:center;">${h}º</div>`;
+            grid.innerHTML += `<div class="hour-label">${h}º</div>`;
             for(let d=0; d<5; d++) {
                 grid.innerHTML += `<div class="cell" id="slot-${h}-${d}"></div>`;
             }
@@ -62,37 +72,49 @@
             const file = e.target.files[0];
             if(!file) return;
 
-            document.getElementById('status').innerText = "🧠 CALIBRANDO E ESCANEANDO...";
+            const status = document.getElementById('status');
+            status.innerText = "🧠 SINCRONIZANDO TABELA...";
+            
+            // Limpa a grade para novo scan
             document.querySelectorAll('.cell').forEach(c => c.innerHTML = '');
 
             const worker = await Tesseract.createWorker('por');
             const { data } = await worker.recognize(file);
             
-            // BUSCAR LIMITES REAIS DA TABELA (Calibragem)
-            let xMin = 9999, xMax = 0, yMin = 9999, yMax = 0;
-            
+            // --- LÓGICA DE CALIBRAGEM POR ÂNCORA ---
+            let anchorY = 0; // Topo da tabela (onde estão os dias)
+            let anchorX = 0; // Início da tabela à esquerda
+            let imgWidth = data.blocks[0].bbox.x1;
+            let imgHeight = data.blocks[0].bbox.y1;
+
+            // Busca a posição das palavras "Feira" para saber onde a tabela começa de verdade
             data.words.forEach(w => {
                 const t = w.text.toUpperCase();
-                if(t.includes("FEIRA") || materiasOk.some(m => t.includes(m))) {
-                    xMin = Math.min(xMin, w.bbox.x0);
-                    xMax = Math.max(xMax, w.bbox.x1);
-                    yMin = Math.min(yMin, w.bbox.y0);
-                    yMax = Math.max(yMax, w.bbox.y1);
+                if(t.includes("FEIRA") || t.includes("EGUNDA") || t.includes("TERCA")) {
+                    if(anchorY === 0 || w.bbox.y1 < anchorY) anchorY = w.bbox.y1;
+                    if(anchorX === 0 || w.bbox.x0 < anchorX) anchorX = w.bbox.x0;
                 }
             });
 
-            const tableW = xMax - xMin;
-            const tableH = yMax - yMin;
+            // Se não achar âncora, usa valores padrão para não quebrar
+            if(anchorY === 0) anchorY = imgHeight * 0.2; 
+            if(anchorX === 0) anchorX = imgWidth * 0.1;
+
+            const areaUtilH = imgHeight - anchorY;
+            const areaUtilW = imgWidth - anchorX;
 
             data.words.forEach(word => {
                 let txt = word.text.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 
-                materiasOk.forEach(m => {
+                materiasBase.forEach(m => {
                     if(txt.includes(m)) {
-                        // Cálculo proporcional baseado nos limites detectados
-                        let col = Math.floor(((word.bbox.x0 - xMin) / tableW) * 5);
-                        let row = Math.floor(((word.bbox.y0 - yMin) / tableH) * 7); // 6 horários + cabeçalho
+                        // Calcula a coluna baseada na distância da âncora X
+                        let col = Math.floor(((word.bbox.x0 - anchorX) / areaUtilW) * 5);
+                        
+                        // Calcula a linha baseada na distância da âncora Y (abaixo dos nomes dos dias)
+                        let row = Math.floor(((word.bbox.y0 - anchorY) / areaUtilH) * 6) + 1;
 
+                        // Travas de segurança para manter dentro da grade 6x5
                         col = Math.max(0, Math.min(4, col));
                         row = Math.max(1, Math.min(6, row));
 
@@ -104,7 +126,7 @@
                 });
             });
 
-            document.getElementById('status').innerText = "✅ MAPEADO COM SUCESSO!";
+            status.innerText = "✅ MAPEADO COM SUCESSO!";
             await worker.terminate();
         };
     </script>
