@@ -2,79 +2,72 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
 body { 
-    background: #050505; 
-    background: radial-gradient(circle at center, #120520 0%, #050505 100%);
+    background: #080808; 
+    background: radial-gradient(circle at top right, #1a0b2e, #080808);
     color: white; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden;
     display: flex; flex-direction: column; align-items: center;
 }
 
-/* HEADER DISCRETO */
-.header-minimal { width: 100%; padding: 25px; display: flex; justify-content: space-between; align-items: center; opacity: 0.6; }
+.header-minimal { width: 100%; padding: 25px; display: flex; justify-content: space-between; align-items: center; }
 
-/* ÁREA DO CRONÔMETRO */
-.timer-viewport { 
-    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; 
-}
+.timer-viewport { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
 
-/* ESCOLHA DE TEMPO - ESTILO FLUTUANTE */
-.picker-modern { display: flex; align-items: center; gap: 10px; }
-.unit-box { display: flex; flex-direction: column; align-items: center; }
+/* ESCOLHA */
+.picker-modern { display: flex; align-items: center; gap: 20px; }
+.unit-box { display: flex; flex-direction: column; align-items: center; width: 100px; }
 
 .num-display {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 80px; font-weight: 700; color: #fff;
-    line-height: 1; margin: 10px 0;
-    text-shadow: 0 0 40px rgba(138, 43, 226, 0.3);
+    font-family: 'Orbitron', sans-serif; font-size: 70px; font-weight: 700; color: #fff;
+    line-height: 1.2; margin: 5px 0;
 }
 
 .adjust-btn {
-    background: rgba(255,255,255,0.03); border: 1px solid rgba(138,43,226,0.2);
-    color: #8a2be2; width: 50px; height: 40px; border-radius: 12px;
+    background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.2);
+    color: #8a2be2; width: 45px; height: 45px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 
-.dot-sep { font-family: 'Orbitron'; font-size: 40px; color: #222; margin-top: -15px; }
-.label-hint { font-size: 9px; letter-spacing: 4px; color: #444; font-weight: 900; text-transform: uppercase; }
+.dot-sep { font-family: 'Orbitron'; font-size: 40px; color: #1a1a1a; margin-top: -30px; }
+.label-hint { font-size: 10px; color: #444; font-weight: 900; text-transform: uppercase; margin-top: 10px; }
 
-/* RELÓGIO ATIVO - ESTILO "DEEP FOCUS" */
+.xp-preview-box {
+    background: rgba(138,43,226,0.05); border: 1px solid rgba(138,43,226,0.2);
+    padding: 10px 20px; border-radius: 50px; color: #ffd700; font-size: 11px;
+    font-weight: 900; margin-top: 40px; letter-spacing: 1px;
+}
+
+/* RELÓGIO ATIVO - ROXO ESCURO/NEON */
 #active-clock {
-    display: none; flex-direction: column; align-items: center;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
 }
 
 #main-time {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 110px; font-weight: 900; letter-spacing: -6px;
-    background: linear-gradient(to bottom, #fff, #8a2be2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 30px rgba(138, 43, 226, 0.5));
+    font-family: 'Orbitron', sans-serif; font-size: 120px; font-weight: 900; letter-spacing: -5px;
+    color: #8a2be2; text-shadow: 0 0 40px rgba(138, 43, 226, 0.6); line-height: 1;
 }
 
 #sec-strip {
-    font-family: 'Orbitron'; font-size: 20px; color: #8a2be2;
-    margin-top: -10px; font-weight: 700; letter-spacing: 2px;
+    font-family: 'Orbitron'; font-size: 25px; color: #8a2be2;
+    opacity: 0.4; font-weight: 700; margin-top: 5px;
 }
 
-/* FOOTER E BOTÕES */
-.actions-area { width: 100%; padding: 40px 30px; display: flex; flex-direction: column; gap: 12px; }
+/* BOTÕES */
+.actions-area { width: 100%; max-width: 400px; padding: 40px 30px; display: flex; flex-direction: column; gap: 15px; }
 
 .btn-glass {
-    background: #8a2be2; color: white; border: none; padding: 22px;
-    border-radius: 24px; font-weight: 900; font-size: 15px; letter-spacing: 1px;
-    box-shadow: 0 15px 35px rgba(138, 43, 226, 0.25);
+    background: #8a2be2; color: white; border: none; padding: 20px;
+    border-radius: 20px; font-weight: 900; font-size: 15px; cursor: pointer;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
 }
 
 .btn-quit {
-    background: rgba(255, 68, 68, 0.05); color: #ff4444; border: 1px solid rgba(255, 68, 68, 0.1);
-    padding: 15px; border-radius: 18px; font-weight: 800; font-size: 12px; margin-top: 10px;
+    background: none; color: #444; border: 1px solid #222;
+    padding: 15px; border-radius: 18px; font-weight: 800; font-size: 12px;
 }
 
-/* MODAL MODERNO */
+/* MODAL */
 .glass-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(15px);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95);
     display: none; align-items: center; justify-content: center; z-index: 1000;
 }
-.glass-card {
-    background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.05);
-    padding: 40px 30px; border-radius: 40px; width: 85%; text-align: center;
-}
+.glass-card { background: #0e0e0e; padding: 40px 30px; border-radius: 35px; width: 85%; max-width: 320px; text-align: center; border: 1px solid #1a1a1a; }
