@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Deep Work - Hub Brain</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root { --purple-neon: #8a2be2; --bg-dark: #020202; }
+        body {
+            background: var(--bg-dark);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .foco-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(138, 43, 226, 0.1);
+        }
+        .timer-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .xp-preview {
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 900;
+            margin-bottom: 25px;
+        }
+        .circle-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .outer-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(138, 43, 226, 0.1);
+        }
+        .progress-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top: 4px solid var(--purple-neon);
+            filter: drop-shadow(0 0 10px var(--purple-neon));
+            animation: spin 3s linear infinite;
+            display: none;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .time-pickers { display: flex; align-items: center; gap: 15px; z-index: 10; }
+        .picker-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .picker-group span { font-size: 55px; font-weight: 900; line-height: 1; }
+        .picker-group small { font-size: 10px; color: #555; font-weight: 800; }
+        .btn-adj { 
+            background: rgba(138, 43, 226, 0.1); border: 1px solid rgba(138, 43, 226, 0.3);
+            color: white; width: 40px; height: 35px; border-radius: 10px; cursor: pointer;
+        }
+        .separator { font-size: 40px; font-weight: 900; color: var(--purple-neon); margin-top: -20px; }
+        .status-badge { font-size: 12px; letter-spacing: 4px; color: var(--purple-neon); font-weight: 800; margin-top: 20px; }
+        .controls { margin-top: 60px; display: flex; flex-direction: column; gap: 15px; }
+        .btn-main { width: 220px; padding: 18px; border-radius: 20px; border: none; font-weight: 900; font-size: 15px; cursor: pointer; transition: 0.3s; }
+        .btn-start { background: var(--purple-neon); color: white; box-shadow: 0 0 30px rgba(138, 43, 226, 0.3); }
+        .btn-reset { background: transparent; color: #444; border: 1px solid #222; }
+    </style>
+</head>
+<body>
+    <header class="foco-header">
+        <button onclick="window.location.href='index.html'" style="background:none; border:none; color:white;">
+            <i data-lucide="arrow-left"></i>
+        </button>
+        <h2 style="font-size: 13px; letter-spacing: 2px; font-weight: 900;">HUB <span style="color:#8a2be2">FOCUS</span></h2>
+        <div style="width: 24px;"></div>
+    </header>
+
+    <div class="timer-wrapper">
+        <div class="xp-preview">VALENDO: <span id="xp-val">10</span> XP</div>
+        <div class="circle-container">
+            <div class="outer-ring"></div>
+            <div id="ring" class="progress-ring"></div>
+            <div style="text-align: center; z-index: 10;">
+                <div class="time-pickers">
+                    <div class="picker-group">
+                        <button class="btn-adj btn-h" onclick="ajustar('h', 1)">+</button>
+                        <span id="h-display">00</span>
+                        <button class="btn-adj btn-h" onclick="ajustar('h', -1)">-</button>
+                        <small>HORAS</small>
+                    </div>
+                    <span class="separator">:</span>
+                    <div class="picker-group">
+                        <button class="btn-adj btn-m" onclick="ajustar('m', 5)">+</button>
+                        <span id="m-display">25</span>
+                        <button class="btn-adj btn-m" onclick="ajustar('m', -5)">-</button>
+                        <small>MINS</small>
+                    </div>
+                </div>
+                <div class="status-badge" id="status">Concentração</div>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="btn-main btn-start" id="btn-start" onclick="toggleTimer()">INICIAR FOCO</button>
+            <button class="btn-main btn-reset" onclick="handleReset()">DESISTIR / RESET</button>
+        </div>
+    </div>
+
+    <script type="module" src="foco-logica.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
