@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain - Criar Conta</title> 
+    <title>Hub Brain - Cadastro</title> 
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="login.css">
 </head>
@@ -26,7 +26,11 @@
         <div class="login-card">
             <div class="logo-area">
                 <h2>CRIAR <span style="color: var(--primary);">CONTA</span></h2>
-                <p>JUNTE-SE AO HUB BRAIN</p>
+                <p>ENTRE PARA O RANKING</p>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="user-name" placeholder="Nome no Ranking (Ex: Dev_Mestre)" class="input-ia">
             </div>
 
             <div class="input-group">
@@ -37,7 +41,7 @@
                 <input type="password" id="user-pass" placeholder="Crie uma senha forte" class="input-ia">
             </div>
 
-            <div id="login-status"></div>
+            <div id="login-status" class="status-msg"></div>
 
             <button onclick="realizarCadastro()" class="btn-acessar">
                 Finalizar Cadastro <i data-lucide="user-plus" style="width: 18px;"></i>
@@ -48,7 +52,6 @@
             </div>
         </div>
     </div>
-
     <script type="module" src="login-logica.js"></script>
     <script>lucide.createIcons();</script>
 </body>
