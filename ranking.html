@@ -7,51 +7,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="ranking.css">
-    <style>
-        /* Ajuste para o Header ocupar a tela toda e centralizar o título */
-        .ranking-header {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 0 20px;
-            height: 70px;
-            box-sizing: border-box;
-            background: #0a0a0a;
-            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        #open-menu {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid #222;
-            color: white;
-            padding: 10px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .header-title {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            margin: 0;
-            font-size: 16px;
-            letter-spacing: 2px;
-            color: white;
-            white-space: nowrap;
-            text-transform: uppercase;
-            font-weight: 800;
-        }
-
-        .header-title .purple {
-            color: #8a2be2;
-        }
-    </style>
 </head>
 <body>
 
@@ -59,13 +14,12 @@
         <button id="open-menu">
             <i data-lucide="menu"></i>
         </button>
-        
         <h1 class="header-title">RANKING <span class="purple">GLOBAL</span></h1>
-        
-        <div style="width: 44px;"></div> </header>
+        <div style="width: 44px;"></div> 
+    </header>
 
     <button class="btn-help-floating" onclick="abrirAjudaXP()">
-        <i data-lucide="help-circle"></i>
+        <i data-lucide="info"></i>
     </button>
 
     <div id="modal-xp" class="modal-xp-overlay" style="display:none;">
@@ -73,59 +27,41 @@
             <div class="xp-header">
                 <i data-lucide="zap" class="purple" style="width: 32px; height: 32px;"></i>
                 <h3>SISTEMA DE <span class="purple">PONTUAÇÃO</span></h3>
-                <p>Entenda como subir (e cair) no ranking global.</p>
+                <p>Entenda como subir no ranking global.</p>
             </div>
             
             <div class="xp-rules-scroll">
                 <div class="xp-section">
                     <div class="xp-tag">📊 DESEMPENHO ACADÊMICO</div>
-                    <p class="section-desc">Suas notas definem sua base. Notas altas garantem bônus massivos, notas baixas punem severamente.</p>
-                    <div class="rule-box pos"><span>+100</span> <p><strong>Nota 10:</strong> Excelência máxima.</p></div>
-                    <div class="rule-box pos"><span>+50</span> <p><strong>Nota 8.0 a 9.9:</strong> Aluno de Elite.</p></div>
-                    <div class="rule-box pos"><span>+20</span> <p><strong>Nota 6.0 a 7.9:</strong> Dever cumprido.</p></div>
-                    <div class="rule-box neg"><span>-20</span> <p><strong>Nota 4.0 a 5.9:</strong> Zona de risco.</p></div>
-                    <div class="rule-box neg"><span>-50</span> <p><strong>Nota 0.1 a 3.9:</strong> Crise acadêmica.</p></div>
-                    <div class="rule-box neg"><span>-100</span> <p><strong>Nota 0:</strong> Desistência ou erro grave.</p></div>
+                    <div class="rule-box pos"><span>+100</span> <p>Nota 10: Excelência.</p></div>
+                    <div class="rule-box neg"><span>-50</span> <p>Nota baixa: Crise.</p></div>
                 </div>
 
                 <div class="xp-section">
                     <div class="xp-tag">🤖 SIMULADOS COM IA</div>
-                    <p class="section-desc">Testes de 10 questões gerados por inteligência artificial. O maior multiplicador de XP.</p>
-                    <div class="rule-box pos"><span>+150</span> <p><strong>Gabarito (10/10):</strong> Mestre do Conhecimento.</p></div>
-                    <div class="rule-box pos"><span>+60</span> <p><strong>7 a 9 acertos:</strong> Ótimo desempenho.</p></div>
-                    <div class="rule-box neg"><span>-30</span> <p><strong>3 a 4 acertos:</strong> Falta de estudo.</p></div>
-                    <div class="rule-box neg"><span>-80</span> <p><strong>0 a 2 acertos:</strong> Chute ou falta de base.</p></div>
-                </div>
-
-                <div class="xp-section">
-                    <div class="xp-tag">📅 AGENDA E ROTINA</div>
-                    <p class="section-desc">Ser organizado também dá pontos. A inatividade remove sua glória.</p>
-                    <div class="rule-box pos"><span>+15</span> <p><strong>Atividade Concluída:</strong> Foco total.</p></div>
-                    <div class="rule-box pos"><span>+40</span> <p><strong>Horário Montado:</strong> Planejamento semanal.</p></div>
-                    <div class="rule-box neg"><span>-25</span> <p><strong>Atraso:</strong> Procrastinação detectada.</p></div>
-                    <div class="rule-box pos"><span>+5</span> <p><strong>Check-in Diário:</strong> Constância no app.</p></div>
+                    <div class="rule-box pos"><span>+150</span> <p>Gabarito (10/10).</p></div>
+                    <div class="rule-box neg"><span>-80</span> <p>Baixo acerto.</p></div>
                 </div>
 
                 <div class="xp-section">
                     <div class="xp-tag">🎖️ AS PATENTES</div>
-                    <div class="patente-item"><span>0 - 500</span> <p>Novato 🟢</p></div>
-                    <div class="patente-item"><span>501 - 1500</span> <p>Estudioso 🔵</p></div>
-                    <div class="patente-item"><span>1501 - 4000</span> <p>Veterano 🟣</p></div>
-                    <div class="patente-item"><span>4001 - 8000</span> <p>Cérebro de Elite ⚡</p></div>
                     <div class="patente-item"><span>+8000</span> <p>Lenda do Hub 🏆</p></div>
+                    <div class="patente-item"><span>+4000</span> <p>Elite ⚡</p></div>
                 </div>
             </div>
 
-            <button onclick="fecharAjudaXP()" class="btn-close-modal">ENTENDIDO, VOU AO TOPO!</button>
+            <button onclick="fecharAjudaXP()" class="btn-close-modal">ENTENDIDO!</button>
         </div>
     </div>
 
     <div class="ranking-wrapper">
         <div class="podium-container">
             <div class="podium-slot second">
-                <div class="avatar-frame" id="avatar-p2"><i data-lucide="user"></i></div>
+                <div class="avatar-frame" id="avatar-p2">
+                    <i data-lucide="user"></i>
+                </div>
                 <p class="p-name" id="p2-name">---</p>
-                <div class="p-xp"><span id="p2-score">0</span> XP</div>
+                <div class="p-xp silver" id="p2-xp-box"><span id="p2-score">0</span> XP</div>
             </div>
 
             <div class="podium-slot first">
@@ -134,13 +70,15 @@
                     <i data-lucide="user"></i>
                 </div>
                 <p class="p-name" id="p1-name">---</p>
-                <div class="p-xp gold"><span id="p1-score">0</span> XP</div>
+                <div class="p-xp gold" id="p1-xp-box"><span id="p1-score">0</span> XP</div>
             </div>
 
             <div class="podium-slot third">
-                <div class="avatar-frame" id="avatar-p3"><i data-lucide="user"></i></div>
+                <div class="avatar-frame" id="avatar-p3">
+                    <i data-lucide="user"></i>
+                </div>
                 <p class="p-name" id="p3-name">---</p>
-                <div class="p-xp"><span id="p3-score">0</span> XP</div>
+                <div class="p-xp bronze" id="p3-xp-box"><span id="p3-score">0</span> XP</div>
             </div>
         </div>
 
@@ -154,7 +92,6 @@
     <script>
         window.abrirAjudaXP = () => { document.getElementById('modal-xp').style.display = 'flex'; lucide.createIcons(); }
         window.fecharAjudaXP = () => { document.getElementById('modal-xp').style.display = 'none'; }
-        window.onload = () => { if(window.lucide) lucide.createIcons(); }
     </script>
 </body>
 </html>
