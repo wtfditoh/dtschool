@@ -5,74 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Focus</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@400;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="foco.css">
 </head>
 <body>
 
-    <div class="container">
-        <header class="perfil-header">
-            <button class="btn-back" onclick="window.history.back()">
-                <i data-lucide="chevron-left"></i>
-            </button>
-            <h2>HUB <span class="purple">FOCUS</span></h2>
-            <div style="width: 44px;"></div>
-        </header>
+    <header class="header-minimal">
+        <button onclick="window.history.back()" style="background:none; border:none; color:white;"><i data-lucide="chevron-left"></i></button>
+        <span style="font-weight: 900; font-size: 10px; letter-spacing: 3px;">FOCUS MODE</span>
+        <div style="width: 24px;"></div>
+    </header>
 
-        <main class="main-content">
-            <div id="setup-view" class="timer-card">
-                <div class="picker-container">
-                    <div class="unit-column">
-                        <button class="arrow-icon" onclick="adjust('h', 1)"><i data-lucide="chevron-up"></i></button>
-                        <div class="num-val" id="h-val">00</div>
-                        <button class="arrow-icon" onclick="adjust('h', -1)"><i data-lucide="chevron-down"></i></button>
-                        <span class="label-sub">Horas</span>
-                    </div>
-                    
-                    <div class="separator">:</div>
-
-                    <div class="unit-column">
-                        <button class="arrow-icon" onclick="adjust('m', 5)"><i data-lucide="chevron-up"></i></button>
-                        <div class="num-val" id="m-val">25</div>
-                        <button class="arrow-icon" onclick="adjust('m', -5)"><i data-lucide="chevron-down"></i></button>
-                        <span class="label-sub">Minutos</span>
-                    </div>
+    <main class="timer-viewport">
+        <div id="setup-view" style="text-align: center;">
+            <div class="picker-modern">
+                <div class="unit-box">
+                    <button class="adjust-btn" onclick="adjust('h', 1)"><i data-lucide="plus" size="18"></i></button>
+                    <div class="num-display" id="h-val">00</div>
+                    <button class="adjust-btn" onclick="adjust('h', -1)"><i data-lucide="minus" size="18"></i></button>
+                    <span class="label-hint">Hrs</span>
                 </div>
-
-                <div class="xp-preview-box">
-                    FOCO VALENDO <span id="xp-num">10</span> XP
+                <div class="dot-sep">:</div>
+                <div class="unit-box">
+                    <button class="adjust-btn" onclick="adjust('m', 5)"><i data-lucide="plus" size="18"></i></button>
+                    <div class="num-display" id="m-val">25</div>
+                    <button class="adjust-btn" onclick="adjust('m', -5)"><i data-lucide="minus" size="18"></i></button>
+                    <span class="label-hint">Min</span>
                 </div>
             </div>
-
-            <div id="active-clock">
-                <span id="big-time">00:00</span>
-                <span id="small-sec">00</span>
+            <div style="margin-top: 40px; color: #ffd700; font-weight: 900; font-size: 12px; opacity: 0.8;">
+                POTENCIAL: <span id="xp-num">10</span> XP
             </div>
-        </main>
+        </div>
 
-        <footer class="footer-actions">
-            <button id="btn-start" class="btn-main">
-                <i data-lucide="play" fill="white"></i> INICIAR SESSÃO
-            </button>
-            <button id="btn-pause" class="btn-main" style="display:none; background:white; color:black;">
-                <i data-lucide="pause" fill="black"></i> PAUSAR
-            </button>
-            <button id="btn-quit" class="btn-outline" style="display:none">
-                DESISTIR
-            </button>
-        </footer>
-    </div>
+        <div id="active-clock">
+            <div id="main-time">00:00</div>
+            <div id="sec-strip">SECONDS: <span id="small-sec">00</span></div>
+        </div>
+    </main>
 
-    <div id="modal-quit" class="modal-overlay">
-        <div class="modal-card">
-            <h2 style="font-weight:900; margin-bottom:10px;">PARAR AGORA?</h2>
-            <p style="color:#666; font-size:14px; margin-bottom:30px;">Seu progresso de XP será cortado pela metade.</p>
-            <button class="btn-main" onclick="document.getElementById('modal-quit').style.display='none'">
-                CONTINUAR FOCADO
-            </button>
-            <button class="btn-outline" style="border:none;" id="btn-confirm-quit">
-                SAIR MESMO ASSIM
-            </button>
+    <footer class="actions-area">
+        <button id="btn-start" class="btn-glass">COMEÇAR AGORA</button>
+        <button id="btn-pause" class="btn-glass" style="display:none; background: #fff; color: #000;">PAUSAR SESSÃO</button>
+        <button id="btn-quit" class="btn-quit" style="display:none">INTERROMPER</button>
+    </footer>
+
+    <div id="modal-quit" class="glass-overlay">
+        <div class="glass-card">
+            <h2 style="font-weight:900; margin-bottom:15px;">DESISTIR?</h2>
+            <p style="color:#888; font-size:14px; margin-bottom:35px; line-height: 1.6;">O tempo é o seu recurso mais valioso. Se sair agora, perderá metade do seu XP.</p>
+            <button class="btn-glass" style="width:100%" onclick="document.getElementById('modal-quit').style.display='none'">VOLTAR AO TRABALHO</button>
+            <button id="btn-confirm-quit" style="background:none; border:none; color:#ff4444; margin-top:20px; font-weight:800; cursor:pointer;">SAIR MESMO ASSIM</button>
         </div>
     </div>
 
