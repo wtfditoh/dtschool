@@ -18,10 +18,10 @@ body {
 }
 
 #open-menu { background: rgba(255, 255, 255, 0.03); border: 1px solid #222; color: white; padding: 10px; border-radius: 12px; cursor: pointer; }
-.header-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 16px; font-weight: 800; letter-spacing: 1px; }
+.header-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 800; letter-spacing: 2px; }
 
-/* PODIUM ESTILIZADO */
-.podium-container { display: flex; align-items: flex-end; justify-content: center; gap: 10px; margin: 50px 0 40px; height: 180px; }
+/* PODIUM */
+.podium-container { display: flex; align-items: flex-end; justify-content: center; gap: 10px; margin: 50px 0 30px; height: 180px; }
 .podium-slot { width: 32%; display: flex; flex-direction: column; align-items: center; position: relative; }
 
 .avatar-frame { 
@@ -29,38 +29,52 @@ body {
     background: rgba(255, 255, 255, 0.02); display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
 }
 
-/* CORES DOS LUGARES */
+/* CORES METÁLICAS */
 .first .avatar-frame { width: 95px; height: 95px; border-color: #f1c40f; box-shadow: 0 0 25px rgba(241, 196, 15, 0.3); }
 .second .avatar-frame { border-color: #bdc3c7; box-shadow: 0 0 15px rgba(189, 195, 199, 0.2); }
 .third .avatar-frame { border-color: #cd7f32; box-shadow: 0 0 15px rgba(205, 127, 50, 0.2); }
 
-.crown-icon { position: absolute; top: -30px; color: #f1c40f; width: 35px; filter: drop-shadow(0 0 8px #f1c40f); }
+.crown-icon { position: absolute; top: -30px; color: #f1c40f; width: 35px; filter: drop-shadow(0 0 8px #f1c40f); z-index: 10; }
 
-.p-name { font-size: 11px; font-weight: 900; color: #fff; margin-bottom: 5px; text-transform: uppercase; }
-.p-xp { padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 900; border: 1px solid rgba(255,255,255,0.1); }
+.p-name { font-size: 10px; font-weight: 900; color: #fff; margin-bottom: 5px; text-transform: uppercase; text-align: center; }
+.p-xp { padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 900; }
 
-/* TAGS DE XP METÁLICAS */
-.p-xp.gold { color: #f1c40f; border-color: #f1c40f; background: rgba(241, 196, 15, 0.1); }
-.p-xp.silver { color: #bdc3c7; border-color: #bdc3c7; background: rgba(189, 195, 199, 0.1); }
-.p-xp.bronze { color: #cd7f32; border-color: #cd7f32; background: rgba(205, 127, 50, 0.1); }
+.p-xp.gold { color: #f1c40f; border: 1px solid #f1c40f; background: rgba(241, 196, 15, 0.1); }
+.p-xp.silver { color: #bdc3c7; border: 1px solid #bdc3c7; background: rgba(189, 195, 199, 0.1); }
+.p-xp.bronze { color: #cd7f32; border: 1px solid #cd7f32; background: rgba(205, 127, 50, 0.1); }
 
-/* LISTA ABAIXO */
-.ranking-list-container { display: flex; flex-direction: column; gap: 10px; padding-bottom: 100px; }
+/* LISTA */
+.ranking-list-container { display: flex; flex-direction: column; gap: 12px; padding: 0 15px 120px; }
 .rank-item { 
     display: flex; align-items: center; padding: 18px; 
     background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 20px; border-left: 4px solid #8a2be2;
 }
+.rank-pos { width: 35px; font-weight: 900; color: #444; font-style: italic; }
+.rank-name { font-weight: 800; font-size: 14px; color: #eee; }
+.rank-patente { font-size: 9px; font-weight: 900; color: #8a2be2; text-transform: uppercase; }
 
-.rank-pos { width: 40px; font-weight: 900; color: #555; font-style: italic; }
-.rank-name { font-weight: 800; font-size: 15px; color: #eee; }
-.rank-patente { font-size: 10px; font-weight: 900; color: #8a2be2; text-transform: uppercase; }
+/* MODAL AJUDA */
+.modal-xp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal-xp-card { background: #0d0d0d; border: 1px solid #8a2be2; padding: 25px; border-radius: 30px; width: 100%; max-width: 380px; max-height: 80vh; display: flex; flex-direction: column; }
+.xp-rules-scroll { overflow-y: auto; margin: 15px 0; padding-right: 10px; flex: 1; }
+.xp-rules-scroll::-webkit-scrollbar { width: 3px; }
+.xp-rules-scroll::-webkit-scrollbar-thumb { background: #8a2be2; }
 
-/* BOTÃO AJUDA MODERNO */
+.xp-tag { font-size: 10px; font-weight: 900; color: #8a2be2; margin-bottom: 8px; }
+.rule-box { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px; margin-bottom: 6px; }
+.rule-box span { font-weight: 900; font-size: 10px; min-width: 45px; text-align: center; padding: 4px; border-radius: 6px; }
+.rule-box.pos span { background: rgba(138, 43, 226, 0.2); color: #a855f7; border: 1px solid #8a2be2; }
+.rule-box.neg span { background: rgba(255, 68, 68, 0.15); color: #ff4444; border: 1px solid #ff4444; }
+.rule-box p { font-size: 12px; color: #ccc; margin: 0; }
+.patente-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
+
+.btn-close-modal { background: #8a2be2; border: none; color: white; padding: 16px; border-radius: 15px; font-weight: 900; cursor: pointer; margin-top: 10px; }
+
+/* BOTÃO AJUDA */
 .btn-help-floating {
     position: fixed; bottom: 30px; right: 20px; width: 50px; height: 50px;
-    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(138, 43, 226, 0.1); border: 1px solid rgba(138, 43, 226, 0.4);
     border-radius: 50%; color: #8a2be2; display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(10px); z-index: 1000; transition: 0.3s;
+    backdrop-filter: blur(10px); z-index: 1000; box-shadow: 0 0 15px rgba(138,43,226,0.2);
 }
-.btn-help-floating:active { transform: scale(0.9); }
