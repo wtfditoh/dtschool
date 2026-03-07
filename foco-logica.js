@@ -18,6 +18,7 @@ let timer, segs = 0, total = 0, isPaused = false;
 const circle = document.getElementById('circle-bar');
 const circumference = 130 * 2 * Math.PI;
 
+// --- SOM TIC-TAC ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const playTick = () => {
     if (isPaused) return;
@@ -33,6 +34,7 @@ const playTick = () => {
     osc.stop(audioCtx.currentTime + 0.05);
 };
 
+// --- FUNÇÕES TIMER ---
 const updateCircle = (percent) => {
     const offset = circumference - (percent / 100 * circumference);
     circle.style.strokeDashoffset = offset;
@@ -86,6 +88,7 @@ const finish = async (win) => {
     window.location.reload();
 };
 
+// --- EVENTOS BOTOES ---
 document.getElementById('h-up').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v<12) v++; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; updateXPPreview(); };
 document.getElementById('h-down').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v>0) v--; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; updateXPPreview(); };
 document.getElementById('m-up').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v<55) v+=5; document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; updateXPPreview(); };
@@ -102,12 +105,12 @@ document.getElementById('btn-quit').onclick = () => { isPaused = true; modal.sty
 document.getElementById('btn-keep-going').onclick = () => { isPaused = false; modal.style.display = 'none'; };
 document.getElementById('btn-really-quit').onclick = () => window.location.reload();
 
-// --- LÓGICA DO MENU CORRIGIDA ---
+// --- LOGICA MENU LATERAL ---
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('overlay');
 
 document.getElementById('open-sidebar').onclick = () => {
-    isPaused = true; // Pausa o tempo ao abrir menu
+    isPaused = true;
     sidebar.classList.add('active');
     overlay.classList.add('active');
 };
@@ -115,15 +118,10 @@ document.getElementById('open-sidebar').onclick = () => {
 document.getElementById('close-sidebar').onclick = () => {
     sidebar.classList.remove('active');
     overlay.classList.remove('active');
-    // Só volta a correr o tempo se o botão NÃO estiver em "RETOMAR"
-    if (document.getElementById('btn-pause').innerText === "PAUSAR") {
-        isPaused = false;
-    }
+    if(document.getElementById('btn-pause').innerText === "PAUSAR") isPaused = false;
 };
 
-if(overlay) {
-    overlay.onclick = () => document.getElementById('close-sidebar').click();
-}
+overlay.onclick = () => document.getElementById('close-sidebar').click();
 
 updateXPPreview();
 lucide.createIcons();
