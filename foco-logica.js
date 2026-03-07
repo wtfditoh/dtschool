@@ -15,28 +15,17 @@ const db = getFirestore(app);
 const userPhone = localStorage.getItem('dt_user_phone');
 
 let timer, segs = 0, total = 0, isPaused = false;
+const circle = document.getElementById('circle-bar');
+const radius = circle.r.baseVal.value;
+const circumference = radius * 2 * Math.PI;
 
-// Elementos
-const setup = document.getElementById('setup-view');
-const active = document.getElementById('active-clock');
-const btnStart = document.getElementById('btn-start');
-const btnPause = document.getElementById('btn-pause');
-const btnQuit = document.getElementById('btn-quit');
+circle.style.strokeDasharray = `${circumference} ${circumference}`;
 
-// Ajuste de Tempo
-const adjust = (t, a) => {
-    const el = document.getElementById(t + '-val');
-    let v = parseInt(el.innerText) + a;
-    if(t==='h'){ if(v<0) v=12; if(v>12) v=0; }
-    else { if(v<0) v=55; if(v>55) v=0; }
-    el.innerText = v < 10 ? '0'+v : v;
-    
-    const h = parseInt(document.getElementById('h-val').innerText);
-    const m = parseInt(document.getElementById('m-val').innerText);
-    document.getElementById('xp-num').innerText = Math.floor(((h*60+m)/25)*10);
+const setProgress = (percent) => {
+    const offset = circumference - (percent / 100 * circumference);
+    circle.style.strokeDashoffset = offset;
 };
 
-// Iniciar
 const start = () => {
     const h = parseInt(document.getElementById('h-val').innerText);
     const m = parseInt(document.getElementById('m-val').innerText);
@@ -45,20 +34,21 @@ const start = () => {
     segs = (h * 3600) + (m * 60);
     total = segs;
 
-    setup.style.display = 'none';
-    btnStart.style.display = 'none';
-    active.style.display = 'flex';
-    btnPause.style.display = 'block';
-    btnQuit.style.display = 'block';
+    document.getElementById('setup-view').style.display = 'none';
+    document.getElementById('btn-start').style.display = 'none';
+    document.getElementById('active-clock').style.display = 'block';
+    document.getElementById('btn-pause').style.display = 'block';
+    document.getElementById('btn-quit').style.display = 'block';
 
     timer = setInterval(() => {
         if (!isPaused) {
             segs--;
-            const hrs = Math.floor(segs / 3600);
-            const min = Math.floor((segs % 3600) / 60);
+            const mins = Math.floor(segs / 60);
             const s = segs % 60;
-            document.getElementById('main-time').innerText = `${hrs > 0 ? hrs + ':' : ''}${min < 10 ? '0' + min : min}`;
-            document.getElementById('small-sec').innerText = s < 10 ? '0' + s : s;
+            document.getElementById('main-time').innerText = `${mins < 10 ? '0'+mins : mins}:${s < 10 ? '0'+s : s}`;
+            
+            setProgress((segs / total) * 100);
+
             if (segs <= 0) finish(true);
         }
     }, 1000);
@@ -66,27 +56,28 @@ const start = () => {
 
 const finish = async (win) => {
     clearInterval(timer);
-    const p = (total - segs) / 60;
-    let xp = Math.floor((p / 25) * 10);
-    if (!win) xp = Math.floor(xp / 2);
-    if (xp > 0 && userPhone) await updateDoc(doc(db, "notas", userPhone), { xp: increment(xp) });
+    if (win && userPhone) {
+        const xp = Math.floor((total/1500)*10);
+        await updateDoc(doc(db, "notas", userPhone), { xp: increment(xp) });
+    }
     window.location.reload();
 };
 
-// Atribuição de Eventos (O segredo do funcionamento)
-document.getElementById('h-up').onclick = () => adjust('h', 1);
-document.getElementById('h-down').onclick = () => adjust('h', -1);
-document.getElementById('m-up').onclick = () => adjust('m', 5);
-document.getElementById('m-down').onclick = () => adjust('m', -5);
-document.getElementById('back-nav').onclick = () => window.history.back();
+// Eventos
+document.getElementById('btn-start').onclick = start;
+document.getElementById('h-up').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); v++; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; };
+document.getElementById('h-down').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v>0) v--; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; };
+document.getElementById('m-up').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v<55) v+=5; document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; };
+document.getElementById('m-down').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v>0) v-=5; document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; };
 
-btnStart.onclick = start;
-btnPause.onclick = () => {
+document.getElementById('btn-pause').onclick = () => {
     isPaused = !isPaused;
-    btnPause.innerText = isPaused ? "RETOMAR" : "PAUSAR";
+    document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR";
 };
-btnQuit.onclick = () => document.getElementById('modal-quit').style.display = 'flex';
+
+document.getElementById('btn-quit').onclick = () => document.getElementById('modal-quit').style.display = 'flex';
 document.getElementById('btn-resume').onclick = () => document.getElementById('modal-quit').style.display = 'none';
 document.getElementById('btn-confirm-quit').onclick = () => finish(false);
+document.getElementById('back-nav').onclick = () => window.history.back();
 
 lucide.createIcons();
