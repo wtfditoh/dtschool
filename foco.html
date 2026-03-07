@@ -10,52 +10,69 @@
 </head>
 <body>
 
-    <header style="padding: 20px;">
-        <button onclick="window.history.back()" style="background:none; border:none; color:white;">
-            <i data-lucide="arrow-left"></i>
-        </button>
-    </header>
+    <div class="container">
+        <header class="perfil-header">
+            <button class="btn-back" onclick="window.history.back()">
+                <i data-lucide="chevron-left"></i>
+            </button>
+            <h2>HUB <span class="purple">FOCUS</span></h2>
+            <div style="width: 44px;"></div>
+        </header>
 
-    <main class="main-content">
-        <div id="setup-view" style="text-align: center;">
-            <div class="picker-container">
-                <div class="unit-column">
-                    <button class="arrow-icon" onclick="adjust('h', 1)"><i data-lucide="chevron-up" size="36"></i></button>
-                    <div class="num-val" id="h-val">00</div>
-                    <button class="arrow-icon" onclick="adjust('h', -1)"><i data-lucide="chevron-down" size="36"></i></button>
-                    <span class="label-sub">HORAS</span>
+        <main class="main-content">
+            <div id="setup-view" class="timer-card">
+                <div class="picker-container">
+                    <div class="unit-column">
+                        <button class="arrow-icon" onclick="adjust('h', 1)"><i data-lucide="chevron-up"></i></button>
+                        <div class="num-val" id="h-val">00</div>
+                        <button class="arrow-icon" onclick="adjust('h', -1)"><i data-lucide="chevron-down"></i></button>
+                        <span class="label-sub">Horas</span>
+                    </div>
+                    
+                    <div class="separator">:</div>
+
+                    <div class="unit-column">
+                        <button class="arrow-icon" onclick="adjust('m', 5)"><i data-lucide="chevron-up"></i></button>
+                        <div class="num-val" id="m-val">25</div>
+                        <button class="arrow-icon" onclick="adjust('m', -5)"><i data-lucide="chevron-down"></i></button>
+                        <span class="label-sub">Minutos</span>
+                    </div>
                 </div>
-                <div class="separator">:</div>
-                <div class="unit-column">
-                    <button class="arrow-icon" onclick="adjust('m', 5)"><i data-lucide="chevron-up" size="36"></i></button>
-                    <div class="num-val" id="m-val">25</div>
-                    <button class="arrow-icon" onclick="adjust('m', -5)"><i data-lucide="chevron-down" size="36"></i></button>
-                    <span class="label-sub">MINUTOS</span>
+
+                <div class="xp-preview-box">
+                    FOCO VALENDO <span id="xp-num">10</span> XP
                 </div>
             </div>
-            <div id="xp-preview" style="color:#ffd700; font-size:11px; font-weight:900; margin-top:35px; letter-spacing:1px;">
-                RECOMPENSA: <span id="xp-num">10</span> XP
+
+            <div id="active-clock">
+                <span id="big-time">00:00</span>
+                <span id="small-sec">00</span>
             </div>
-        </div>
+        </main>
 
-        <div id="active-clock">
-            <span id="big-time">00:00</span>
-            <span id="small-sec">00</span>
-        </div>
-    </main>
+        <footer class="footer-actions">
+            <button id="btn-start" class="btn-main">
+                <i data-lucide="play" fill="white"></i> INICIAR SESSÃO
+            </button>
+            <button id="btn-pause" class="btn-main" style="display:none; background:white; color:black;">
+                <i data-lucide="pause" fill="black"></i> PAUSAR
+            </button>
+            <button id="btn-quit" class="btn-outline" style="display:none">
+                DESISTIR
+            </button>
+        </footer>
+    </div>
 
-    <footer class="footer-area">
-        <button id="btn-start" class="btn-base btn-purple">INICIAR FOCO</button>
-        <button id="btn-pause" class="btn-base btn-white" style="display:none">PAUSAR</button>
-        <button id="btn-quit" class="btn-base btn-ghost" style="display:none">DESISTIR</button>
-    </footer>
-
-    <div id="modal-quit" class="modal-bg">
-        <div class="modal-box">
-            <h3 style="margin-bottom:10px">Interromper?</h3>
-            <p style="color:#666; font-size:13px; margin-bottom:25px">O XP proporcional será cortado pela metade.</p>
-            <button class="btn-base btn-purple" onclick="document.getElementById('modal-quit').style.display='none'">VOLTAR</button>
-            <button class="btn-base btn-ghost" style="color:#ff4444; border:none" id="btn-confirm-quit">SAIR</button>
+    <div id="modal-quit" class="modal-overlay">
+        <div class="modal-card">
+            <h2 style="font-weight:900; margin-bottom:10px;">PARAR AGORA?</h2>
+            <p style="color:#666; font-size:14px; margin-bottom:30px;">Seu progresso de XP será cortado pela metade.</p>
+            <button class="btn-main" onclick="document.getElementById('modal-quit').style.display='none'">
+                CONTINUAR FOCADO
+            </button>
+            <button class="btn-outline" style="border:none;" id="btn-confirm-quit">
+                SAIR MESMO ASSIM
+            </button>
         </div>
     </div>
 
