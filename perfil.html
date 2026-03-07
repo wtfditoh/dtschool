@@ -10,31 +10,78 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* Ajuste fino para o Header do Perfil */
+        /* RESET PARA O HEADER IR ATÉ A BORDA */
+        body { margin: 0; padding: 0; background: #050505; }
+
         .perfil-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8);
-            border-bottom: 1px solid rgba(138, 43, 226, 0.2);
-            position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px);
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            padding: 0 15px; 
+            height: 70px; 
+            background: rgba(10, 10, 10, 0.95);
+            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            backdrop-filter: blur(15px);
+            width: 100%;
+            box-sizing: border-box; /* Garante que o padding não "empurre" o header para fora */
         }
-        .perfil-header h2 { font-size: 16px; letter-spacing: 2px; margin: 0; color: white; }
-        .purple { color: #8a2be2; }
+
+        .perfil-header h2 { 
+            font-size: 15px; 
+            letter-spacing: 3px; 
+            margin: 0; 
+            color: white; 
+            font-weight: 900;
+        }
+
+        .perfil-container {
+            padding: 20px 15px; /* Padding apenas no conteúdo, não no header */
+        }
+
+        /* TOAST DE VISITANTE CUSTOMIZADO */
+        .toast-visitante {
+            position: fixed;
+            top: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff4444;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 800;
+            z-index: 9999;
+            box-shadow: 0 10px 20px rgba(255, 68, 68, 0.3);
+            display: none;
+            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
     </style>
 </head>
 <body>
 
-    <div id="toast-container"></div>
+    <div id="aviso-visitante" class="toast-visitante">
+        ⚠️ MODO VISITANTE NÃO PODE ALTERAR
+    </div>
+
+    <header class="perfil-header">
+        <button id="open-menu" class="btn-menu">
+            <i data-lucide="menu"></i>
+        </button>
+        
+        <h2>MEU <span style="color: #8a2be2;">PERFIL</span></h2>
+        
+        <div style="width: 42px;"></div> 
+    </header>
 
     <div class="perfil-container">
-        <header class="perfil-header">
-            <button id="open-menu" class="btn-menu">
-                <i data-lucide="menu"></i>
-            </button>
-            
-            <h2>MEU <span class="purple">PERFIL</span></h2>
-            
-            <div style="width: 42px;"></div> </header>
-
         <div class="perfil-card">
             <div class="avatar-section">
                 <div class="avatar-wrapper">
@@ -56,7 +103,7 @@
                 <p class="hint">Este nome aparecerá no Ranking Global.</p>
             </div>
 
-            <button id="btn-salvar-perfil" class="btn-save" onclick="tentarSalvarPerfil()">
+            <button id="btn-salvar-perfil" class="btn-save">
                 <i data-lucide="check-circle"></i> SALVAR ALTERAÇÕES
             </button>
         </div>
@@ -71,7 +118,6 @@
     <div id="modal-avatar" class="modal-avatar-overlay" style="display:none;">
         <div class="modal-avatar-card">
             <h3>ESCOLHA SEU ÍCONE</h3>
-            <p class="hint" style="text-align:center; margin-bottom:15px;">Estilos exclusivos Hub Brain</p>
             <div class="avatar-grid">
                 <div class="avatar-option" onclick="window.selecionarAvatar('user')"><i data-lucide="user"></i></div>
                 <div class="avatar-option" onclick="window.selecionarAvatar('zap')"><i data-lucide="zap"></i></div>
@@ -94,43 +140,34 @@
     <script type="module" src="perfil-logica.js"></script>
 
     <script>
-        // Lógica de Toast para o Modo Visitante
-        function mostrarToast(mensagem, tipo = 'erro') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${tipo}`; // Você pode estilizar .toast.erro no perfil.css
-            toast.style.cssText = `
-                background: #ff4444; color: white; padding: 12px 20px; 
-                border-radius: 10px; margin-bottom: 10px; font-weight: bold;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.3); animation: slideIn 0.3s forwards;
-            `;
-            toast.innerText = mensagem;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        function tentarSalvarPerfil() {
+        // LÓGICA DE SALVAMENTO COM BLOQUEIO DE VISITANTE
+        document.getElementById('btn-salvar-perfil').addEventListener('click', function() {
             const phone = localStorage.getItem('dt_user_phone');
             
-            // Verifica se é o número de teste/visitante
+            // 1. Verificação de Visitante
             if (phone === '00000000000' || !phone) {
-                mostrarToast("⚠️ Modo Visitante não pode alterar o perfil!");
+                const aviso = document.getElementById('aviso-visitante');
+                aviso.style.display = 'block';
+                
+                // Vibração (se o celular permitir)
+                if(navigator.vibrate) navigator.vibrate(100);
+
+                setTimeout(() => {
+                    aviso.style.display = 'none';
+                }, 3000);
                 return;
             }
 
-            // Se não for visitante, executa a função que está no perfil-logica.js
+            // 2. Se não for visitante, executa o salvamento real
+            // Essa função deve estar exportada no seu perfil-logica.js
             if (typeof window.salvarPerfilReal === 'function') {
                 window.salvarPerfilReal();
             }
-        }
+        });
 
-        // Estilos para o toast (caso não tenha no perfil.css)
-        const style = document.createElement('style');
-        style.innerHTML = `
-            @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-            #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
-        `;
-        document.head.appendChild(style);
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) lucide.createIcons();
+        });
     </script>
 </body>
 </html>
