@@ -4,69 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meu Perfil - Hub Brain</title>
-    
-    <link rel="stylesheet" href="menu.css">
-    <link rel="stylesheet" href="perfil.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <style>
-        /* FUNDO E HEADER PADRÃO */
-        body { background: #0a0a0a !important; margin: 0; }
-        
-        .perfil-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; height: 70px; background: rgba(15, 15, 15, 0.98);
-            border-bottom: 1px solid rgba(138, 43, 226, 0.4);
-            position: sticky; top: 0; z-index: 2000; width: 100%; box-sizing: border-box;
-        }
-
-        /* CARD GLASS QUE PULSA */
-        .chamada-ranking-novo {
-            margin: 20px 15px; padding: 20px;
-            background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(255, 255, 255, 0.05));
-            border: 1px solid rgba(138, 43, 226, 0.4);
-            border-radius: 20px; backdrop-filter: blur(10px);
-            text-align: center;
-            animation: pulse-glass 3s infinite ease-in-out;
-        }
-
-        @keyframes pulse-glass {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.02); opacity: 1; }
-        }
-
-        .chamada-ranking-novo p {
-            color: white; font-weight: 900; font-size: 15px; margin: 0;
-            text-transform: uppercase; letter-spacing: 2px;
-            text-shadow: 0 0 10px #8a2be2;
-        }
-
-        /* TOAST DE ERRO */
-        #erro-visitante {
-            position: fixed; top: 85px; left: 50%; transform: translateX(-50%);
-            background: #ff4444; color: white; padding: 12px 25px;
-            border-radius: 50px; font-weight: 800; font-size: 13px;
-            z-index: 9999; display: none; box-shadow: 0 5px 20px rgba(255,0,0,0.4);
-        }
-    </style>
+    <link rel="stylesheet" href="perfil.css">
 </head>
 <body>
 
-    <div id="erro-visitante">🛑 MODO VISITANTE NÃO PODE SALVAR</div>
-
-    <header class="perfil-header">
-        <button id="open-menu" class="btn-menu">
-            <i data-lucide="menu"></i>
-        </button>
-        <h2 style="font-size: 14px; color: white;">MEU <span style="color: #8a2be2;">PERFIL</span></h2>
-        <div style="width: 42px;"></div>
-    </header>
+    <div id="toast-container"></div>
 
     <div class="perfil-container">
-        
-        <div class="chamada-ranking-novo">
-            <p>🚀 SUBIR NAS PATENTES!</p>
-        </div>
+        <header class="perfil-header">
+            <button onclick="window.location.href='index.html'" class="btn-back">
+                <i data-lucide="chevron-left"></i>
+            </button>
+            <h2>MEU <span class="purple">PERFIL</span></h2>
+            <div style="width: 40px;"></div>
+        </header>
 
         <div class="perfil-card">
             <div class="avatar-section">
@@ -86,6 +38,7 @@
                     <i data-lucide="signature" class="input-icon"></i>
                     <input type="text" id="user-name-input" placeholder="Teu Nickname">
                 </div>
+                <p class="hint">Este nome aparecerá no Ranking Global.</p>
             </div>
 
             <button id="btn-salvar-perfil" class="btn-save">
@@ -102,40 +55,26 @@
 
     <div id="modal-avatar" class="modal-avatar-overlay" style="display:none;">
         <div class="modal-avatar-card">
+            <h3>ESCOLHA SEU ÍCONE</h3>
+            <p class="hint" style="text-align:center; margin-bottom:15px;">Estilos exclusivos Hub Brain</p>
             <div class="avatar-grid">
                 <div class="avatar-option" onclick="window.selecionarAvatar('user')"><i data-lucide="user"></i></div>
                 <div class="avatar-option" onclick="window.selecionarAvatar('zap')"><i data-lucide="zap"></i></div>
                 <div class="avatar-option" onclick="window.selecionarAvatar('brain-circuit')"><i data-lucide="brain-circuit"></i></div>
                 <div class="avatar-option" onclick="window.selecionarAvatar('rocket')"><i data-lucide="rocket"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('flame')"><i data-lucide="flame"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('trophy')"><i data-lucide="trophy"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('crown')"><i data-lucide="crown"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('ghost')"><i data-lucide="ghost"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('sword')"><i data-lucide="sword"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('target')"><i data-lucide="target"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('skull')"><i data-lucide="skull"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('gem')"><i data-lucide="gem"></i></div>
             </div>
             <button onclick="window.fecharGaleria()" class="btn-fechar-galeria">VOLTAR</button>
         </div>
     </div>
 
-    <script src="menu.js"></script>
     <script type="module" src="perfil-logica.js"></script>
-
-    <script>
-        // CAPTURA O CLIQUE ANTES DO JS ORIGINAL
-        document.addEventListener('click', function(e) {
-            if (e.target && e.target.id === 'btn-salvar-perfil' || e.target.closest('#btn-salvar-perfil')) {
-                const phone = localStorage.getItem('dt_user_phone');
-                
-                if (phone === '00000000000' || !phone) {
-                    // MATA O EVENTO PARA O FIREBASE NÃO RECEBER NADA
-                    e.stopImmediatePropagation();
-                    e.preventDefault();
-
-                    const erro = document.getElementById('erro-visitante');
-                    erro.style.display = 'block';
-                    setTimeout(() => { erro.style.display = 'none'; }, 3000);
-                    
-                    return false;
-                }
-            }
-        }, true); // O 'true' aqui faz ele interceptar ANTES de qualquer outro script
-
-        window.onload = () => { if(window.lucide) lucide.createIcons(); };
-    </script>
 </body>
 </html>
