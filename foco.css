@@ -1,261 +1,68 @@
-/* ============================================================
-   1. CONFIGURAÇÕES GLOBAIS E FONTES
-   ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;900&display=swap');
 
-* { 
-    box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent; 
-    margin: 0; 
-    padding: 0; 
-}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+body { background: #000; color: white; font-family: 'Inter', sans-serif; height: 100svh; overflow: hidden; display: flex; flex-direction: column; }
 
-body { 
-    background: #000; 
-    color: white; 
-    font-family: 'Inter', sans-serif; 
-    height: 100svh; 
-    width: 100vw; 
-    overflow: hidden;
-    display: flex; 
-    flex-direction: column;
-}
-
-/* ============================================================
-   2. ESTILO DO SEU MENU GLOBAL (HUB BRAIN)
-   Baseado no seu menu.js para garantir que fique igual a todos
-   ============================================================ */
+/* --- MENU INJETADO PELO MENU.JS --- */
 .side-menu {
     position: fixed !important;
-    top: 0;
-    left: -280px; /* Escondido à esquerda */
-    width: 280px;
-    height: 100vh;
-    background: #0a0a0a;
-    z-index: 10001; /* Garante que fica acima de tudo */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-right: 1px solid #1a1a1a;
+    top: 0; left: -280px; width: 280px; height: 100vh;
+    background: #0a0a0a; z-index: 10001;
+    transition: all 0.3s ease; border-right: 1px solid #1a1a1a;
+    display: flex; flex-direction: column;
+}
+.side-menu.open { left: 0 !important; }
+.menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: none; backdrop-filter: blur(5px); }
+.menu-overlay.active { display: block !important; }
+
+/* Estilos internos do menu (para ficar igual às outras páginas) */
+.menu-header { padding: 25px; display: flex; justify-content: space-between; align-items: center; }
+.menu-title { font-weight: 900; font-size: 16px; }
+.purple { color: #8a2be2; }
+.menu-links { display: flex; flex-direction: column; padding: 20px; gap: 10px; }
+.menu-links a { color: #666; text-decoration: none; padding: 12px; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; }
+.menu-links a.active { color: #8a2be2; background: #111; border-radius: 10px; }
+
+/* --- ESTIMATIVA (ESTILO HUB BRAIN) --- */
+.xp-preview-box {
+    margin-top: 15px;
     display: flex;
     flex-direction: column;
-}
-
-/* Classe que o seu menu.js ativa */
-.side-menu.open {
-    left: 0 !important;
-}
-
-.menu-header { 
-    padding: 25px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-}
-
-.menu-title { font-weight: 900; font-size: 16px; letter-spacing: 1px; }
-.purple { color: #8a2be2; }
-
-#close-menu { 
-    background: none; 
-    border: none; 
-    color: #444; 
-    cursor: pointer; 
-}
-
-.menu-links { 
-    display: flex; 
-    flex-direction: column; 
-    padding: 20px; 
-    gap: 10px; 
-}
-
-.menu-links a { 
-    color: #666; 
-    text-decoration: none; 
-    padding: 14px; 
-    border-radius: 12px;
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-    font-size: 14px; 
-    font-weight: 600;
-    transition: 0.2s;
-}
-
-/* Destaque do Modo Foco no Menu */
-.menu-links a.foco-highlight {
-    background: rgba(138, 43, 226, 0.1);
-    color: #8a2be2;
-}
-
-.xp-badge {
-    font-size: 10px;
-    background: #ffd700;
-    color: #000;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 900;
-    margin-left: 5px;
-}
-
-.menu-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 10000;
-    display: none;
-    backdrop-filter: blur(5px);
-}
-
-.menu-overlay.active {
-    display: block !important;
-}
-
-/* ============================================================
-   3. LAYOUT ESPECÍFICO DO MODO FOCO
-   ============================================================ */
-.header-minimal { 
-    flex-shrink: 0; 
-    padding: 15px 20px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-}
-
-.btn-icon-top { 
-    background: none; 
-    border: none; 
-    color: #222; /* Cor discreta para os ícones do topo */
-    cursor: pointer; 
-    padding: 8px; 
-}
-
-.label-header { 
-    font-weight: 900; 
-    font-size: 8px; 
-    letter-spacing: 3px; 
-    color: #1a1a1a; 
-    text-transform: uppercase; 
-}
-
-.timer-viewport { 
-    flex: 1; 
-    position: relative; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-}
-
-.canvas-timer { 
-    position: relative; 
-    width: 280px; 
-    height: 280px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-}
-
-.progress-ring { 
-    position: absolute; 
-    transform: rotate(-90deg); 
-    width: 100%; 
-    height: 100%; 
-}
-
-.progress-ring__circle {
-    stroke: #8a2be2; 
-    stroke-width: 6; 
-    fill: transparent;
-    stroke-dasharray: 816.8; 
-    stroke-dashoffset: 816.8;
-    stroke-linecap: round; 
-    transition: stroke-dashoffset 1s linear;
-}
-
-.progress-bg { 
-    stroke: #0a0a0a; 
-    stroke-width: 6; 
-    fill: transparent; 
-}
-
-.timer-content { 
-    position: absolute; 
-    z-index: 5; 
-    text-align: center; 
-    width: 100%; 
-}
-
-.digital-clock { 
-    font-family: 'Share Tech Mono', monospace; 
-    color: #fff; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    line-height: 1; 
-}
-
-#setup-view .digital-clock { font-size: 50px; }
-#active-clock .digital-clock { 
-    font-size: 65px; 
-    color: #8a2be2; 
-    text-shadow: 0 0 20px rgba(138, 43, 226, 0.3); 
-}
-
-.unit-adjust { display: flex; flex-direction: column; align-items: center; }
-.btn-arrow { 
-    background: none; 
-    border: none; 
-    color: #1a1a1a; 
-    cursor: pointer; 
-    padding: 5px; 
-}
-
-/* Badge de XP do Cronômetro */
-.timer-xp-badge {
-    background: rgba(138, 43, 226, 0.05); 
-    border: 1px solid rgba(138, 43, 226, 0.15);
-    padding: 6px 15px; 
-    border-radius: 10px; 
-    margin-top: 15px; 
-    display: inline-flex;
-    flex-direction: column; 
     align-items: center;
 }
-
-.footer-area { 
-    flex-shrink: 0; 
-    width: 100%; 
-    padding: 10px 25px 40px; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    gap: 12px; 
+.xp-preview-label {
+    font-size: 8px;
+    font-weight: 900;
+    color: #444;
+    letter-spacing: 2px;
+}
+.xp-preview-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 16px;
+    color: #ffd700;
+    margin-top: 2px;
 }
 
-.btn-main {
-    width: 100%; 
-    max-width: 320px; 
-    padding: 18px; 
-    border-radius: 100px; 
-    border: none;
-    font-weight: 900; 
-    font-size: 14px; 
-    background: #8a2be2; 
-    color: white; 
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
-}
+/* --- LAYOUT CRONÓMETRO --- */
+.header-minimal { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+.btn-icon-top { background: none; border: none; color: #1a1a1a; cursor: pointer; }
+.label-header { font-weight: 900; font-size: 8px; letter-spacing: 3px; color: #1a1a1a; }
 
-.btn-pause { background: #111; border: 1px solid #222; box-shadow: none; }
+.timer-viewport { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.canvas-timer { position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; }
+.progress-ring { position: absolute; transform: rotate(-90deg); width: 100%; height: 100%; }
+.progress-ring__circle { stroke: #8a2be2; stroke-width: 6; fill: transparent; stroke-dasharray: 816.8; stroke-dashoffset: 816.8; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.progress-bg { stroke: #0a0a0a; stroke-width: 6; fill: transparent; }
 
-.btn-quit-label { 
-    background: none; 
-    border: none; 
-    color: #333; 
-    font-weight: 800; 
-    font-size: 11px; 
-    padding: 10px; 
-    cursor: pointer; 
-    text-transform: uppercase; 
-    letter-spacing: 1px;
-}
+.timer-content { position: absolute; text-align: center; width: 100%; }
+.digital-clock { font-family: 'Share Tech Mono', monospace; color: #fff; display: flex; justify-content: center; align-items: center; }
+#setup-view .digital-clock { font-size: 50px; }
+#active-clock .digital-clock { font-size: 65px; color: #8a2be2; }
+
+.unit-adjust { display: flex; flex-direction: column; align-items: center; }
+.btn-arrow { background: none; border: none; color: #1a1a1a; padding: 5px; cursor: pointer; }
+
+.footer-area { padding: 10px 25px 40px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.btn-main { width: 100%; max-width: 320px; padding: 18px; border-radius: 100px; border: none; font-weight: 900; background: #8a2be2; color: white; cursor: pointer; }
+.btn-pause { background: #111; border: 1px solid #222; }
+.btn-quit-label { background: none; border: none; color: #333; font-weight: 800; font-size: 11px; text-transform: uppercase; cursor: pointer; }
