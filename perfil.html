@@ -5,22 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meu Perfil - Hub Brain</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="menu.css"> <link rel="stylesheet" href="perfil.css">
+    <link rel="stylesheet" href="menu.css"> 
+    <link rel="stylesheet" href="perfil.css">
     <style>
-        /* Ajuste fino para o Header encostar nas bordas e o menu ficar no canto */
+        /* Header ocupando 100% da largura da tela */
         .perfil-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
             width: 100%;
-            padding: 0 15px;
+            padding: 0 20px;
             height: 70px;
             box-sizing: border-box;
-            background: #0a0a0a; /* Garante o fundo original */
+            background: #0a0a0a;
             border-bottom: 1px solid rgba(138, 43, 226, 0.3);
-            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-        /* Estilo do botão de menu para combinar com seu btn-back */
+
+        /* Botão de menu original */
         #open-menu {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid #222;
@@ -32,24 +35,35 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* Centraliza o título perfeitamente */
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: white;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
 
-    <div class="perfil-container" style="padding-top: 0;"> <header class="perfil-header">
-            <button id="open-menu">
-                <i data-lucide="menu"></i>
-            </button>
-            
-            <h2 style="margin: 0;">MEU <span class="purple">PERFIL</span></h2>
-            
-            <button onclick="window.location.href='index.html'" class="btn-back">
-                <i data-lucide="chevron-left"></i>
-            </button>
-        </header>
+    <header class="perfil-header">
+        <button id="open-menu">
+            <i data-lucide="menu"></i>
+        </button>
+        
+        <h2 class="header-title">MEU <span class="purple">PERFIL</span></h2>
+        
+        <div style="width: 44px;"></div>
+    </header>
 
+    <div class="perfil-container" style="padding-top: 20px;">
         <div class="perfil-card">
             <div class="avatar-section">
                 <div class="avatar-wrapper">
@@ -108,7 +122,6 @@
     <script src="menu.js"></script>
     <script type="module" src="perfil-logica.js"></script>
     <script>
-        // Inicializa os ícones após carregar a página
         window.onload = () => { if(window.lucide) lucide.createIcons(); };
     </script>
 </body>
