@@ -10,30 +10,36 @@
 <body>
     <div class="wrapper">
         <div class="monster-box" id="monster-ui">
-            <svg viewBox="0 0 120 120" class="monster-svg">
-                <path d="M20,100 Q20,30 60,30 Q100,30 100,100 Z" class="monster-body-path" fill="url(#grad)" />
-                <g class="eyes-wrap">
-                    <circle cx="45" cy="65" r="10" fill="white" />
-                    <circle cx="75" cy="65" r="10" fill="white" />
-                    <circle cx="45" cy="65" r="5" fill="black" class="pupil" />
-                    <circle cx="75" cy="65" r="5" fill="black" class="pupil" />
-                    <rect x="35" y="55" width="20" height="0" fill="#8a2be2" class="lid" />
-                    <rect x="65" y="55" width="20" height="0" fill="#8a2be2" class="lid" />
-                </g>
-            </svg>
-            <div class="hands-container"><div class="hand left"></div><div class="hand right"></div></div>
+            <div class="monster-body">
+                <div class="horns"></div>
+                <div class="eyes-container">
+                    <div class="eye-ball"><div class="pupil"></div></div>
+                    <div class="eye-ball"><div class="pupil"></div></div>
+                </div>
+            </div>
+            <div class="monster-hands"><div class="m-hand"></div><div class="m-hand"></div></div>
         </div>
 
         <div class="login-card">
-            <h2>CRIAR <span style="color: var(--primary);">CONTA</span></h2>
+            <div class="logo-area">
+                <h2>CRIAR <span style="color: var(--primary);">CONTA</span></h2>
+                <p>ENTRE PARA O RANKING</p>
+            </div>
+
             <input type="text" id="user-name" placeholder="Nome no Ranking" class="input-ia">
             <input type="email" id="user-email" placeholder="Seu melhor e-mail" class="input-ia">
-            <input type="password" id="user-pass" placeholder="Sua senha" class="input-ia">
+            <input type="password" id="user-pass" placeholder="Crie uma senha forte" class="input-ia">
+
             <div id="login-status" class="status-msg"></div>
+
             <button onclick="realizarCadastro()" class="btn-acessar">
-                <span>Finalizar Cadastro</span> <i data-lucide="user-plus"></i>
+                <span>Finalizar Cadastro</span>
+                <i data-lucide="user-plus"></i>
             </button>
-            <a href="Login.html" class="create-acc" style="display:block; margin-top:15px;">Já tenho conta</a>
+
+            <div class="footer-links">
+                <a href="Login.html" class="create-acc">Já tenho conta? Entrar</a>
+            </div>
         </div>
     </div>
     <script type="module" src="login-logica.js"></script>
