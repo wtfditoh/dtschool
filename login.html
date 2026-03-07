@@ -11,6 +11,7 @@
             --primary-light: #a052ee;
             --bg: #0a0a0a;
             --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
         }
 
         body {
@@ -18,137 +19,167 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
             color: white;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
-        /* --- ESTILO DO MONSTRINHO --- */
-        .monster-container {
-            display: flex; justify-content: center; align-items: flex-end;
-            height: 100px; margin-bottom: -15px; z-index: 10; position: relative;
+        .wrapper {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
         }
-        .monster {
-            width: 90px; height: 90px; background: var(--primary);
-            border-radius: 35px 35px 10px 10px; position: relative;
-            border: 2px solid rgba(255,255,255,0.1);
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+        /* --- MONSTRINHO ROXO (ESTILO PREMIUM) --- */
+        .monster-box {
+            position: relative;
+            width: 120px;
+            height: 110px;
+            z-index: 10;
+            margin-bottom: -15px; /* Encaixa no card */
         }
+
+        .monster-body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, var(--primary), #4b0082);
+            border-radius: 45% 45% 15% 15%;
+            position: relative;
+            border: 2px solid var(--primary-light);
+            box-shadow: 0 0 25px rgba(138, 43, 226, 0.5);
+            transition: 0.4s ease;
+        }
+
         .horns::before, .horns::after {
-            content: ''; position: absolute; top: -12px; width: 12px; height: 20px;
-            background: var(--primary-light); border-radius: 50% 50% 0 0;
+            content: ''; position: absolute; top: -15px; width: 18px; height: 30px;
+            background: var(--primary); border-radius: 50% 50% 0 0;
+            border: 2px solid var(--primary-light);
         }
-        .horns::before { left: 15px; transform: rotate(-20deg); }
-        .horns::after { right: 15px; transform: rotate(20deg); }
-        .eyes { display: flex; justify-content: space-around; margin-top: 25px; padding: 0 15px; transition: 0.3s; }
-        .eye { width: 18px; height: 18px; background: white; border-radius: 50%; position: relative; overflow: hidden; }
-        .pupil { width: 9px; height: 9px; background: #111; border-radius: 50%; position: absolute; top: 4px; left: 4px; }
-        .hands { position: absolute; width: 100%; bottom: -5px; display: flex; justify-content: space-between; padding: 0 5px; }
-        .hand { width: 22px; height: 22px; background: var(--primary-light); border-radius: 50%; transition: 0.4s ease; transform: translateY(25px); }
-        
-        /* Estados do Monstrinho */
-        .shame .hand { transform: translateY(-40px); }
-        .shame .eyes { opacity: 0; }
-        .looking .pupil { transform: translateY(3px); }
+        .horns::before { left: 10px; transform: rotate(-25deg); }
+        .horns::after { right: 10px; transform: rotate(25deg); }
+
+        .eyes-container {
+            display: flex; justify-content: center; gap: 12px; margin-top: 30px;
+            transition: 0.3s;
+        }
+        .eye-ball { 
+            width: 24px; height: 24px; background: white; border-radius: 50%; 
+            position: relative; display: flex; align-items: center; justify-content: center;
+        }
+        .pupil { width: 10px; height: 10px; background: #111; border-radius: 50%; transition: 0.1s; }
+
+        /* Mãos que tampam os olhos */
+        .monster-hands {
+            position: absolute; width: 100%; top: 50px; display: flex; 
+            justify-content: space-between; padding: 0 5px; pointer-events: none;
+        }
+        .m-hand { 
+            width: 30px; height: 30px; background: var(--primary-light); 
+            border-radius: 50%; border: 2px solid #fff;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(60px); opacity: 0;
+        }
+
+        /* Animações */
+        .shame .m-hand { transform: translateY(-15px); opacity: 1; }
+        .shame .eyes-container { opacity: 0; }
+        .looking .pupil { transform: translateY(4px); }
 
         /* --- CARD DE LOGIN --- */
         .login-card {
             background: var(--glass);
-            backdrop-filter: blur(15px);
-            padding: 30px 30px 40px;
-            border-radius: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 90%;
-            max-width: 350px;
+            backdrop-filter: blur(20px);
+            width: 100%;
+            padding: 40px 30px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            position: relative;
-            z-index: 5;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
 
         .hub-symbol {
             background: rgba(138, 43, 226, 0.1);
-            width: 60px; height: 60px; border-radius: 18px;
+            width: 65px; height: 65px; border-radius: 20px;
             border: 1px solid rgba(138, 43, 226, 0.3);
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 15px;
-            animation: pulse-glow-login 3s infinite ease-in-out;
+            animation: pulse-glow 3s infinite;
         }
 
-        @keyframes pulse-glow-login {
-            0%, 100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
-            50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.4); transform: scale(1.05); }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0px var(--primary); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(138, 43, 226, 0.4); transform: scale(1.05); }
         }
 
-        .logo-area h2 { margin: 0; font-weight: 900; font-size: 24px; text-transform: uppercase; }
-        .logo-area p { color: #666; font-size: 11px; margin: 5px 0 25px; letter-spacing: 1px; font-weight: bold; }
+        .logo-area h2 { margin: 0; font-size: 26px; font-weight: 900; }
+        .logo-area p { color: #555; font-size: 11px; margin: 5px 0 25px; letter-spacing: 2px; font-weight: bold; }
 
-        .input-group { position: relative; margin-bottom: 15px; }
+        .input-group { margin-bottom: 15px; }
         .input-ia {
-            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #333;
-            padding: 15px; border-radius: 12px; color: white; font-size: 15px;
-            text-align: center; outline: none; transition: 0.3s; box-sizing: border-box;
+            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid #333;
+            padding: 16px; border-radius: 14px; color: white; font-size: 15px;
+            outline: none; transition: 0.3s; box-sizing: border-box; text-align: center;
         }
-        .input-ia:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(138, 43, 226, 0.15); }
-
-        /* MANTER CONECTADO */
-        .options-row {
-            display: flex; align-items: center; justify-content: center;
-            gap: 8px; margin-bottom: 20px; font-size: 13px; color: #888;
-        }
-        .options-row input { accent-color: var(--primary); cursor: pointer; }
+        .input-ia:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(138, 43, 226, 0.2); }
 
         .btn-acessar {
             width: 100%; background: var(--primary); color: white; border: none;
-            padding: 15px; border-radius: 12px; font-size: 16px; font-weight: 800;
+            padding: 16px; border-radius: 14px; font-size: 16px; font-weight: bold;
             cursor: pointer; transition: 0.3s; display: flex; justify-content: center;
-            align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+            align-items: center; gap: 10px; margin-top: 10px;
         }
-        .btn-acessar:active { transform: scale(0.97); }
 
-        #login-status { color: #ff4444; font-size: 11px; margin-top: 10px; font-weight: bold; min-height: 15px; }
+        /* OPÇÕES DE BAIXO */
+        .footer-links { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .create-acc { color: var(--primary-light); font-size: 14px; text-decoration: none; font-weight: bold; }
+        .btn-visitante { background: none; border: none; color: #444; font-size: 13px; cursor: pointer; text-decoration: underline; }
+        
+        #login-status { color: #ff4444; font-size: 12px; margin: 10px 0; font-weight: bold; min-height: 18px; }
+        
+        .keep-row { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: #777; margin-bottom: 15px; }
+        .keep-row input { accent-color: var(--primary); }
     </style>
 </head>
 <body>
 
     <div class="wrapper">
-        <div class="monster-container">
-            <div class="monster" id="monster-avatar">
+        <div class="monster-box" id="monster-ui">
+            <div class="monster-body">
                 <div class="horns"></div>
-                <div class="face">
-                    <div class="eyes">
-                        <div class="eye"><div class="pupil"></div></div>
-                        <div class="eye"><div class="pupil"></div></div>
-                    </div>
+                <div class="eyes-container">
+                    <div class="eye-ball"><div class="pupil"></div></div>
+                    <div class="eye-ball"><div class="pupil"></div></div>
                 </div>
-                <div class="hands">
-                    <div class="hand"></div>
-                    <div class="hand"></div>
-                </div>
+            </div>
+            <div class="monster-hands">
+                <div class="m-hand"></div>
+                <div class="m-hand"></div>
             </div>
         </div>
 
         <div class="login-card">
             <div class="logo-area">
                 <div class="hub-symbol">
-                    <i data-lucide="brain-circuit" style="width: 30px; height: 30px; color: var(--primary);"></i>
+                    <i data-lucide="brain-circuit" style="width: 35px; height: 35px; color: var(--primary);"></i>
                 </div>
                 <h2>HUB <span style="color: var(--primary);">BRAIN</span></h2>
                 <p>DOMINE SUA ROTINA</p>
             </div>
 
             <div class="input-group">
-                <input type="email" id="user-email" placeholder="E-mail" class="input-ia">
+                <input type="email" id="user-email" placeholder="E-mail de estudante" class="input-ia">
             </div>
 
             <div class="input-group">
-                <input type="password" id="user-pass" placeholder="Senha" class="input-ia">
+                <input type="password" id="user-pass" placeholder="Sua senha" class="input-ia">
             </div>
 
-            <div class="options-row">
+            <div class="keep-row">
                 <input type="checkbox" id="keep-logged" checked>
                 <label for="keep-logged">Manter conectado</label>
             </div>
@@ -156,79 +187,17 @@
             <div id="login-status"></div>
 
             <button onclick="tentarLogar()" class="btn-acessar">
-                Acessar Hub <i data-lucide="arrow-right" style="width: 18px;"></i>
+                Acessar minha conta <i data-lucide="arrow-right" style="width: 18px;"></i>
             </button>
+
+            <div class="footer-links">
+                <a href="cadastro.html" class="create-acc">Não tem conta? Criar agora</a>
+                <button onclick="entrarComoVisitante()" class="btn-visitante">Continuar como Visitante</button>
+            </div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            setPersistence, 
-            browserLocalPersistence, 
-            browserSessionPersistence 
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        // CONFIGURAÇÃO DO SEU FIREBASE (Substitua pelos seus dados)
-        const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_PROJETO.firebaseapp.com",
-            projectId: "SEU_PROJETO",
-            storageBucket: "SEU_PROJETO.appspot.com",
-            messagingSenderId: "ID",
-            appId: "ID_APP"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        // --- ANIMAÇÃO DO MONSTRINHO ---
-        const monster = document.getElementById('monster-avatar');
-        const emailInput = document.getElementById('user-email');
-        const passInput = document.getElementById('user-pass');
-
-        emailInput.addEventListener('focus', () => {
-            monster.classList.add('looking');
-            monster.classList.remove('shame');
-        });
-
-        passInput.addEventListener('focus', () => {
-            monster.classList.add('shame');
-            monster.classList.remove('looking');
-        });
-
-        [emailInput, passInput].forEach(el => {
-            el.addEventListener('blur', () => monster.classList.remove('shame', 'looking'));
-        });
-
-        // --- LÓGICA DE LOGIN ---
-        window.tentarLogar = async () => {
-            const email = emailInput.value;
-            const pass = passInput.value;
-            const keep = document.getElementById('keep-logged').checked;
-            const status = document.getElementById('login-status');
-
-            if(!email || !pass) {
-                status.innerText = "Preencha todos os campos";
-                return;
-            }
-
-            try {
-                // Define se mantém conectado ou não
-                const persistence = keep ? browserLocalPersistence : browserSessionPersistence;
-                await setPersistence(auth, persistence);
-                
-                await signInWithEmailAndPassword(auth, email, pass);
-                window.location.href = "home.html";
-            } catch (error) {
-                status.innerText = "E-mail ou senha inválidos";
-                console.error(error);
-            }
-        };
-
-        lucide.createIcons();
-    </script>
+    <script type="module" src="login-logica.js"></script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
