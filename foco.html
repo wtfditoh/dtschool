@@ -3,121 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Deep Work - Hub Focus</title>
+    <title>Hub Focus</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --deep-purple: #05020a; 
-            --neon-purple: #8a2be2;
-            --dim-purple: #2a1b4d;
-        }
+        :root { --deep-purple: #05020a; --neon-purple: #8a2be2; }
         
         body { 
-            background: var(--deep-purple); 
-            color: #fff; 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column;
-            overflow: hidden;
+            background: var(--deep-purple); color: #fff; font-family: 'Inter', sans-serif; 
+            margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
 
-        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-        /* RELÓGIO DIGITAL ESTILO SEGMENTO */
-        .clock-wrapper {
-            display: none; /* Só aparece no Iniciar */
-            flex-direction: row;
-            align-items: baseline;
-            font-family: 'Orbitron', sans-serif;
-            color: var(--neon-purple);
-            text-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
+        /* RELÓGIO ATIVO - ROXO ESCURO NEON */
+        #clock-active {
+            display: none; flex-direction: row; align-items: baseline;
+            font-family: 'Orbitron', sans-serif; color: var(--neon-purple);
+            text-shadow: 0 0 30px rgba(138, 43, 226, 0.8);
         }
-
         #main-time { font-size: 110px; line-height: 1; letter-spacing: 5px; }
-        #seconds-tiny { font-size: 35px; margin-left: 10px; opacity: 0.6; }
+        #seconds-tiny { font-size: 35px; margin-left: 10px; opacity: 0.5; font-weight: 400; }
 
-        /* SETUP UI (Escolha de tempo) */
+        /* ESCOLHA DE TEMPO - SEM BORDAS E ALINHADO */
         .setup-card { text-align: center; }
-        .picker-row { display: flex; gap: 20px; align-items: center; margin-bottom: 30px; }
-        .box { background: rgba(138,43,226,0.05); border: 1px solid var(--dim-purple); border-radius: 15px; padding: 15px; width: 80px; }
-        .box span { font-size: 35px; font-weight: 900; font-family: 'Orbitron'; display: block; }
-        .btn-adj { background: none; border: none; color: var(--neon-purple); cursor: pointer; padding: 5px; }
+        .picker-row { display: flex; gap: 40px; align-items: center; justify-content: center; margin-bottom: 20px; }
+        
+        .picker-col { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 80px; }
+        .val-num { font-size: 55px; font-weight: 900; font-family: 'Orbitron'; color: #fff; line-height: 1.2; }
+        
+        .btn-adj { 
+            background: none; border: none; color: var(--neon-purple); cursor: pointer; 
+            padding: 10px; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-adj:active { transform: scale(0.8); }
 
-        /* BOTÕES */
-        .controls { width: 100%; max-width: 280px; margin-top: 40px; display: flex; flex-direction: column; gap: 10px; }
-        .btn { padding: 18px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; transition: 0.3s; }
-        .btn-start { background: var(--neon-purple); color: white; box-shadow: 0 0 20px rgba(138,43,226,0.4); }
-        .btn-exit { background: none; color: #444; border: 1px solid #222; font-size: 12px; margin-top: 20px; }
+        .label-small { font-size: 9px; letter-spacing: 2px; color: #444; font-weight: 800; margin-top: 5px; }
 
-        /* MODAL PEQUENO */
+        /* XP E BOTÕES */
+        .xp-tag { color: #ffd700; font-size: 11px; font-weight: 900; margin-top: 20px; letter-spacing: 1px; }
+        .controls { width: 100%; max-width: 280px; margin-top: 50px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .btn { padding: 20px; border-radius: 18px; border: none; font-weight: 900; font-size: 14px; cursor: pointer; transition: 0.3s; }
+        .btn-start { background: var(--neon-purple); color: white; box-shadow: 0 10px 25px rgba(138, 43, 226, 0.4); }
+        .btn-exit { background: none; color: #555; border: 1px solid #222; margin-top: 20px; }
+
+        /* MODAL */
         #modal-quit {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 100;
+            background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 100;
         }
-        .modal-card { background: #111; padding: 25px; border-radius: 20px; text-align: center; border: 1px solid #222; width: 280px; }
-        .modal-card h3 { margin: 0 0 10px 0; font-size: 16px; }
-        .modal-card p { font-size: 13px; color: #666; margin-bottom: 20px; }
+        .modal-card { background: #111; padding: 30px; border-radius: 25px; text-align: center; border: 1px solid #222; width: 80%; max-width: 300px; }
     </style>
 </head>
 <body>
 
-    <header style="padding: 20px; position: absolute; width: 100%; box-sizing: border-box;">
+    <header style="padding: 20px; position: absolute; width: 100%; z-index: 5;">
         <button onclick="window.location.href='index.html'" style="background:none; border:none; color:white;"><i data-lucide="arrow-left"></i></button>
     </header>
 
     <main class="main-container">
         <div id="setup-ui" class="setup-card">
-            <div style="font-size: 10px; letter-spacing: 3px; color: var(--neon-purple); margin-bottom: 25px; font-weight: 900;">HUB FOCUS</div>
             <div class="picker-row">
                 <div class="picker-col">
-                    <button class="btn-adj" onclick="ajustar('h', 1)"><i data-lucide="chevron-up"></i></button>
-                    <div class="box"><span id="h-val">00</span></div>
-                    <button class="btn-adj" onclick="ajustar('h', -1)"><i data-lucide="chevron-down"></i></button>
-                    <small style="font-size: 8px; color: #444;">HORAS</small>
+                    <button class="btn-adj" onclick="ajustar('h', 1)"><i data-lucide="chevron-up" size="32"></i></button>
+                    <div class="val-num" id="h-val">00</div>
+                    <button class="btn-adj" onclick="ajustar('h', -1)"><i data-lucide="chevron-down" size="32"></i></button>
+                    <div class="label-small">HORAS</div>
                 </div>
-                <div style="font-size: 30px; font-family: 'Orbitron'; color: var(--dim-purple);">:</div>
+                <div style="font-size: 40px; font-family: 'Orbitron'; color: #222; margin-top: -10px;">:</div>
                 <div class="picker-col">
-                    <button class="btn-adj" onclick="ajustar('m', 5)"><i data-lucide="chevron-up"></i></button>
-                    <div class="box"><span id="m-val">25</span></div>
-                    <button class="btn-adj" onclick="ajustar('m', -5)"><i data-lucide="chevron-down"></i></button>
-                    <small style="font-size: 8px; color: #444;">MINS</small>
+                    <button class="btn-adj" onclick="ajustar('m', 5)"><i data-lucide="chevron-up" size="32"></i></button>
+                    <div class="val-num" id="m-val">25</div>
+                    <button class="btn-adj" onclick="ajustar('m', -5)"><i data-lucide="chevron-down" size="32"></i></button>
+                    <div class="label-small">MINUTOS</div>
                 </div>
             </div>
-            <div style="color: #ffd700; font-size: 11px; font-weight: 900; background: rgba(255,215,0,0.05); padding: 5px 15px; border-radius: 50px; display: inline-block;">VALENDO <span id="xp-num">10</span> XP</div>
+            <div class="xp-tag">BÔNUS: <span id="xp-num">10</span> XP</div>
         </div>
 
-        <div id="clock-active" class="clock-wrapper">
+        <div id="clock-active">
             <div id="main-time">00:00</div>
             <div id="seconds-tiny">00</div>
         </div>
 
         <div class="controls">
-            <button id="btn-start" class="btn btn-start" onclick="iniciar()">INICIAR</button>
-            <button id="btn-pause" class="btn" style="display:none; background: #222; color: #fff;" onclick="pausar()">PAUSAR</button>
-            <button id="btn-quit" class="btn-exit" style="display:none" onclick="abrirModal()">DESISTIR</button>
+            <button id="btn-start" class="btn btn-start">INICIAR SESSÃO</button>
+            <button id="btn-pause" class="btn" style="display:none; background: #fff; color: #000;">PAUSAR</button>
+            <button id="btn-quit" class="btn-exit" style="display:none">DESISTIR</button>
         </div>
     </main>
 
     <div id="modal-quit">
         <div class="modal-card">
-            <h3>Parar agora?</h3>
-            <p>Você perde 50% do XP proporcional.</p>
-            <button class="btn btn-start" style="width:100%" onclick="fecharModal()">VOLTAR</button>
-            <button class="btn-exit" style="width:100%; border:none; color:#ff4444" onclick="confirmarSair()">DESISTIR</button>
+            <h3 style="margin:0">Interromper?</h3>
+            <p style="color:#666; font-size:13px">Você receberá apenas 50% do XP proporcional.</p>
+            <button class="btn btn-start" style="width:100%; margin-top:10px" id="btn-voltar">VOLTAR</button>
+            <button class="btn-exit" style="width:100%; border:none; color:#ff4444" id="btn-confirm-exit">DESISTIR</button>
         </div>
     </div>
 
     <script type="module" src="foco-logica.js"></script>
     <script>
+        // Lógica de UI (Setas e XP)
         window.ajustar = (tipo, amt) => {
             const el = document.getElementById(tipo + '-val');
             let val = parseInt(el.innerText) + amt;
             if(tipo === 'h') { if(val < 0) val = 12; if(val > 12) val = 0; }
             else { if(val < 0) val = 55; if(val > 55) val = 0; }
             el.innerText = val < 10 ? '0'+val : val;
+            
             const h = parseInt(document.getElementById('h-val').innerText);
             const m = parseInt(document.getElementById('m-val').innerText);
             document.getElementById('xp-num').innerText = Math.floor(((h * 60 + m) / 25) * 10);
