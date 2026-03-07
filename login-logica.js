@@ -17,37 +17,58 @@ const status = document.getElementById('login-status');
 const card = document.querySelector('.login-card');
 const monster = document.getElementById('monster-ui');
 
-// Função de Erro
 function mostrarErro(msg) {
     status.innerText = "⚠ " + msg;
+    status.style.opacity = "1";
     card.classList.add('shake-error');
-    setTimeout(() => card.classList.remove('shake-error'), 400);
+    monster.classList.add('angry'); // Fica bravo!
+
+    // Limpa o erro e acalma o monstrinho após 3s
+    setTimeout(() => {
+        status.style.opacity = "0";
+        monster.classList.remove('angry');
+        card.classList.remove('shake-error');
+        setTimeout(() => { status.innerText = ""; }, 300);
+    }, 3000);
 }
 
-// Animação Monstrinho
 const inputEmail = document.getElementById('user-email');
 const inputPass = document.getElementById('user-pass');
 
 if (monster && inputEmail && inputPass) {
-    inputEmail.addEventListener('focus', () => { monster.classList.add('looking'); monster.classList.remove('shame'); });
-    inputPass.addEventListener('focus', () => { monster.classList.add('shame'); monster.classList.remove('looking'); });
+    inputEmail.addEventListener('focus', () => { 
+        if(!monster.classList.contains('angry')){
+            monster.classList.add('looking'); monster.classList.remove('shame'); 
+        }
+    });
+    inputPass.addEventListener('focus', () => { 
+        if(!monster.classList.contains('angry')){
+            monster.classList.add('shame'); monster.classList.remove('looking'); 
+        }
+    });
     [inputEmail, inputPass].forEach(el => el.addEventListener('blur', () => monster.classList.remove('looking', 'shame')));
+    
+    document.addEventListener('mousemove', (e) => {
+        if (monster && !monster.classList.contains('shame') && !monster.classList.contains('angry')) {
+            const pupils = document.querySelectorAll('.pupil');
+            let x = (e.clientX / window.innerWidth - 0.5) * 10;
+            let y = (e.clientY / window.innerHeight - 0.5) * 10;
+            pupils.forEach(p => p.style.transform = `translate(${x}px, ${y}px)`);
+        }
+    });
 }
 
-// LOGIN
 window.tentarLogar = async () => {
     const email = inputEmail.value.trim();
     const pass = inputPass.value;
-    const manter = document.getElementById('keep-logged') ? document.getElementById('keep-logged').checked : true;
     if (!email || !pass) return mostrarErro("Vazio? Aí não né, patrão!");
     try {
-        await setPersistence(auth, manter ? browserLocalPersistence : browserSessionPersistence);
+        await setPersistence(auth, browserLocalPersistence);
         await signInWithEmailAndPassword(auth, email, pass);
         window.location.href = 'index.html';
     } catch (e) { mostrarErro("Dados inválidos!"); }
 };
 
-// CADASTRO
 window.realizarCadastro = async () => {
     const nome = document.getElementById('user-name').value.trim();
     const email = inputEmail.value.trim();
@@ -61,7 +82,6 @@ window.realizarCadastro = async () => {
     } catch (e) { mostrarErro("Erro ao cadastrar!"); }
 };
 
-// VISITANTE (CORRIGIDO)
 window.entrarComoVisitante = () => {
     localStorage.setItem('dt_user_name', 'Visitante');
     localStorage.setItem('dt_user_phone', 'visitante');
