@@ -102,17 +102,28 @@ document.getElementById('btn-quit').onclick = () => { isPaused = true; modal.sty
 document.getElementById('btn-keep-going').onclick = () => { isPaused = false; modal.style.display = 'none'; };
 document.getElementById('btn-really-quit').onclick = () => window.location.reload();
 
-// CORREÇÃO AQUI: CONECTANDO COM O MENU.JS
+// --- LÓGICA DO MENU CORRIGIDA ---
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+
 document.getElementById('open-sidebar').onclick = () => {
-    // Tenta chamar a função do seu menu.js. 
-    // Se a função lá se chamar toggleMenu(), troque o nome abaixo.
-    if (typeof window.abrirMenu === "function") {
-        window.abrirMenu();
-    } else {
-        // Se não houver função, tenta voltar para a index onde o menu está
-        window.location.href = 'index.html'; 
+    isPaused = true; // Pausa o tempo ao abrir menu
+    sidebar.classList.add('active');
+    overlay.classList.add('active');
+};
+
+document.getElementById('close-sidebar').onclick = () => {
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+    // Só volta a correr o tempo se o botão NÃO estiver em "RETOMAR"
+    if (document.getElementById('btn-pause').innerText === "PAUSAR") {
+        isPaused = false;
     }
 };
+
+if(overlay) {
+    overlay.onclick = () => document.getElementById('close-sidebar').click();
+}
 
 updateXPPreview();
 lucide.createIcons();
