@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="login.css">
 </head>
 <body>
-
     <div class="wrapper">
         <div class="monster-box" id="monster-ui">
             <div class="monster-body">
@@ -27,18 +26,18 @@
         <div class="login-card">
             <div class="logo-area">
                 <div class="hub-symbol">
-                    <i data-lucide="brain-circuit" style="width: 35px; height: 35px; color: var(--primary);"></i>
+                    <i data-lucide="brain-circuit" style="width: 30px; height: 30px; color: var(--primary);"></i>
                 </div>
                 <h2>HUB <span style="color: var(--primary);">BRAIN</span></h2>
                 <p>DOMINE SUA ROTINA</p>
             </div>
 
             <div class="input-group">
-                <input type="email" id="user-email" placeholder="E-mail de estudante" class="input-ia" autocomplete="email">
+                <input type="email" id="user-email" placeholder="E-mail de estudante" class="input-ia">
             </div>
 
             <div class="input-group">
-                <input type="password" id="user-pass" placeholder="Sua senha" class="input-ia" autocomplete="current-password">
+                <input type="password" id="user-pass" placeholder="Sua senha" class="input-ia">
             </div>
 
             <div class="keep-row">
@@ -46,24 +45,19 @@
                 <label for="keep-logged">Manter conectado</label>
             </div>
 
-            <div id="login-status"></div>
+            <div id="login-status" class="status-msg"></div>
 
             <button onclick="tentarLogar()" class="btn-acessar">
                 Acessar minha conta <i data-lucide="arrow-right" style="width: 18px;"></i>
             </button>
 
             <div class="footer-links">
-                <a href="cadastro.html" class="create-acc">Não tens conta? Criar agora</a>
+                <a href="cadastro.html" class="create-acc">Não tem conta? Criar agora</a>
                 <button onclick="entrarComoVisitante()" class="btn-visitante">Continuar como Visitante</button>
             </div>
         </div>
     </div>
-
     <script type="module" src="login-logica.js"></script>
-    
-    <script>
-        // Inicializa os ícones do Lucide
-        lucide.createIcons();
-    </script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
