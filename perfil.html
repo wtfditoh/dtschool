@@ -10,78 +10,73 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* AJUSTE DE FUNDO E ESTRUTURA */
-        body { margin: 0; padding: 0; background: #0a0a0a !important; color: white; font-family: sans-serif; }
+        body { margin: 0; padding: 0; background: #0a0a0a !important; color: white; }
 
         .perfil-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; height: 70px; background: rgba(15, 15, 15, 0.98);
+            padding: 0 15px; height: 70px; background: rgba(15, 15, 15, 0.95);
             border-bottom: 1px solid rgba(138, 43, 226, 0.3);
             position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(15px);
             width: 100%; box-sizing: border-box;
         }
 
-        .perfil-header h2 { font-size: 15px; letter-spacing: 3px; margin: 0; font-weight: 900; }
-        .purple { color: #8a2be2; }
-
-        /* CHAMADA DO RANKING (ESTILIZADA) */
-        .chamada-ranking {
-            margin: 25px 0 10px 0;
+        /* CHAMADA DO RANKING - ESTILO GLASS DEGRADÊ */
+        .chamada-ranking-glass {
+            margin: 20px 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(138, 43, 226, 0.4);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
             text-align: center;
-            padding: 15px;
-            background: rgba(138, 43, 226, 0.05);
-            border: 1px dashed rgba(138, 43, 226, 0.3);
-            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
-        .chamada-ranking p {
-            color: #b388ff;
+        .chamada-ranking-glass p {
+            color: white;
             font-weight: 900;
-            font-size: 16px; /* Aumentado */
+            font-size: 17px;
             margin: 0;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
-            animation: pulse-text 2s infinite;
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 10px rgba(138, 43, 226, 0.8);
         }
 
-        @keyframes pulse-text {
-            0% { opacity: 0.7; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.03); }
-            100% { opacity: 0.7; transform: scale(1); }
-        }
-
-        /* AVISO DE BLOQUEIO (MODO VISITANTE) */
-        #aviso-visitante {
+        /* TOAST DE BLOQUEIO */
+        .toast-red {
             position: fixed; top: 85px; left: 50%; transform: translateX(-50%);
             background: #ff4444; color: white; padding: 12px 25px;
             border-radius: 50px; font-size: 13px; font-weight: 800;
             z-index: 9999; box-shadow: 0 10px 20px rgba(255, 68, 68, 0.4);
-            display: none; animation: slideDown 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            display: none; animation: slideDown 0.4s forwards;
         }
 
         @keyframes slideDown {
-            from { opacity: 0; transform: translate(-50%, -30px); }
+            from { opacity: 0; transform: translate(-50%, -20px); }
             to { opacity: 1; transform: translate(-50%, 0); }
         }
+
+        /* Ajuste para o header colado */
+        .perfil-container { padding: 0 !important; }
+        .perfil-card { margin: 15px !important; }
     </style>
 </head>
 <body>
 
-    <div id="aviso-visitante">⚠️ MODO VISITANTE BLOQUEADO</div>
+    <div id="aviso-visitante" class="toast-red">⚠️ ACESSO NEGADO: MODO VISITANTE</div>
 
     <header class="perfil-header">
         <button id="open-menu" class="btn-menu">
             <i data-lucide="menu"></i>
         </button>
-        <h2>MEU <span class="purple">PERFIL</span></h2>
+        <h2 style="font-size: 15px; letter-spacing: 3px; margin: 0;">MEU <span style="color: #8a2be2;">PERFIL</span></h2>
         <div style="width: 42px;"></div>
     </header>
 
     <div class="perfil-container">
         
-        <div class="chamada-ranking">
-            <p>🚀 Entre para subir nas patentes!</p>
+        <div class="chamada-ranking-glass">
+            <p>🚀 SUBIR NAS PATENTES!</p>
         </div>
 
         <div class="perfil-card">
@@ -104,7 +99,7 @@
                 </div>
             </div>
 
-            <button id="btn-salvar-perfil" class="btn-save">
+            <button id="btn-trava-visitante" class="btn-save">
                 <i data-lucide="check-circle"></i> SALVAR ALTERAÇÕES
             </button>
         </div>
@@ -118,7 +113,7 @@
 
     <div id="modal-avatar" class="modal-avatar-overlay" style="display:none;">
         <div class="modal-avatar-card">
-            <h3>ESCOLHA SEU ÍCONE</h3>
+            <h3 style="color:white; text-align:center;">ÍCONES HUB</h3>
             <div class="avatar-grid">
                 <div class="avatar-option" onclick="window.selecionarAvatar('user')"><i data-lucide="user"></i></div>
                 <div class="avatar-option" onclick="window.selecionarAvatar('zap')"><i data-lucide="zap"></i></div>
@@ -141,32 +136,28 @@
     <script type="module" src="perfil-logica.js"></script>
 
     <script>
-        // BLOQUEIO TOTAL DE SALVAMENTO PARA VISITANTE
-        const btnSalvar = document.getElementById('btn-salvar-perfil');
-        
-        btnSalvar.addEventListener('click', function(e) {
+        // BLOQUEIO SUPREMO
+        document.getElementById('btn-trava-visitante').addEventListener('click', function(e) {
             const phone = localStorage.getItem('dt_user_phone');
             
-            // Se for o número de teste ou estiver vazio
             if (phone === '00000000000' || !phone) {
-                // Para qualquer tentativa de envio de formulário
+                // Impede QUALQUER coisa de acontecer
                 e.preventDefault();
-                e.stopPropagation();
+                e.stopImmediatePropagation(); 
 
                 const aviso = document.getElementById('aviso-visitante');
                 aviso.style.display = 'block';
                 
                 if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
-                setTimeout(() => {
-                    aviso.style.display = 'none';
-                }, 3000);
-
-                return false; // Bloqueio garantido
+                setTimeout(() => { aviso.style.display = 'none'; }, 3000);
+                return false;
             }
 
-            // Se for usuário real, a lógica do 'perfil-logica.js' assume daqui
-            console.log("Usuário real, permitindo salvamento...");
+            // Se for real, chama a função do arquivo externo manualmente
+            if (window.salvarPerfilFirebase) {
+                window.salvarPerfilFirebase();
+            }
         });
 
         document.addEventListener('DOMContentLoaded', () => {
