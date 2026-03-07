@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meu Perfil - Hub Brain</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="estilo.css?v=12.0">
-    <link rel="stylesheet" href="perfil.css">
-</head>
+    <link rel="stylesheet" href="perfil.css"> </head>
 <body>
 
     <div id="toast-container"></div>
@@ -26,20 +24,18 @@
                 <div class="avatar-wrapper" id="avatar-display">
                     <i data-lucide="user" id="avatar-icon"></i>
                 </div>
-                <div class="btn-edit-photo" onclick="abrirGaleria()">
+                <button class="btn-edit-photo" onclick="window.abrirGaleria()">
                     <i data-lucide="camera" style="width:16px;"></i>
-                </div>
+                </button>
             </div>
 
-            <p class="user-phone-display" id="display-phone">Carregando ID...</p>
+            <p class="user-phone-display" id="display-phone">ID: 00000000</p>
 
             <div class="form-group">
-                <label>Como queres ser chamado?</label>
+                <label>Nickname</label>
                 <div class="input-wrapper">
-                    <i data-lucide="signature"></i>
                     <input type="text" id="user-name-input" placeholder="Teu Nickname">
                 </div>
-                <p class="hint" style="font-size: 10px; color: #666; margin-top: 5px;">Este nome aparecerá no Ranking Global.</p>
             </div>
 
             <button id="btn-salvar-perfil" class="btn-save">
@@ -47,36 +43,28 @@
             </button>
         </div>
 
-        <div class="perfil-stats">
-            </div>
+        <div class="perfil-stats" id="area-stats"></div>
 
-        <button onclick="logout()" class="btn-logout">
+        <button onclick="window.logout()" class="btn-logout">
             <i data-lucide="log-out"></i> SAIR DA CONTA
         </button>
     </div>
 
     <div id="modal-avatar" class="modal-avatar-overlay" style="display:none;">
         <div class="modal-avatar-card">
-            <h3 style="color: white; margin-bottom: 20px;">ESCOLHA SEU ÍCONE</h3>
+            <h3>ESCOLHA SEU ÍCONE</h3>
             <div class="avatar-grid">
-                <div class="avatar-option" onclick="selecionarAvatar('user')"><i data-lucide="user"></i></div>
-                <div class="avatar-option" onclick="selecionarAvatar('zap')"><i data-lucide="zap"></i></div>
-                <div class="avatar-option" onclick="selecionarAvatar('brain-circuit')"><i data-lucide="brain-circuit"></i></div>
-                <div class="avatar-option" onclick="selecionarAvatar('rocket')"><i data-lucide="rocket"></i></div>
-                <div class="avatar-option" onclick="selecionarAvatar('flame')"><i data-lucide="flame"></i></div>
-                <div class="avatar-option" onclick="selecionarAvatar('trophy')"><i data-lucide="trophy"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('user')"><i data-lucide="user"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('zap')"><i data-lucide="zap"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('brain-circuit')"><i data-lucide="brain-circuit"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('rocket')"><i data-lucide="rocket"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('flame')"><i data-lucide="flame"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('trophy')"><i data-lucide="trophy"></i></div>
             </div>
-            <button onclick="fecharGaleria()" class="btn-fechar-galeria">VOLTAR</button>
+            <button onclick="window.fecharGaleria()" class="btn-fechar-galeria">VOLTAR</button>
         </div>
     </div>
 
     <script type="module" src="perfil-logica.js"></script>
-    
-    <script>
-        // Inicializa os ícones do Lucide no carregamento
-        window.addEventListener('load', () => {
-            if (window.lucide) lucide.createIcons();
-        });
-    </script>
 </body>
 </html>
