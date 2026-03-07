@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Focus - Deep Work</title>
+    <title>Deep Work - Hub Focus</title>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --deep-purple: #0a0514; 
+            --deep-purple: #05020a; 
             --neon-purple: #8a2be2;
-            --glass: rgba(138, 43, 226, 0.1);
+            --dim-purple: #2a1b4d;
         }
         
         body { 
@@ -21,124 +22,102 @@
             display: flex; 
             flex-direction: column;
             overflow: hidden;
-            transition: background 1s ease;
         }
 
-        .header-foco { padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
 
-        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-
-        /* CONTROLES DE AJUSTE CUSTOMIZADOS */
-        .picker-grid { display: flex; gap: 30px; margin-bottom: 20px; align-items: center; }
-        .picker-col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        
-        .val-display { 
-            font-size: 50px; font-weight: 900; color: #fff; 
-            text-shadow: 0 0 15px rgba(138, 43, 226, 0.5); 
-            background: var(--glass); width: 90px; height: 90px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 20px; border: 1px solid rgba(138, 43, 226, 0.3);
+        /* RELÓGIO DIGITAL ESTILO SEGMENTO */
+        .clock-wrapper {
+            display: none; /* Só aparece no Iniciar */
+            flex-direction: row;
+            align-items: baseline;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-purple);
+            text-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
         }
 
-        .btn-adj {
-            background: rgba(255,255,255,0.05); border: none; color: #fff;
-            width: 45px; height: 45px; border-radius: 50%; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: 0.2s;
-        }
-        .btn-adj:active { background: var(--neon-purple); transform: scale(0.9); }
+        #main-time { font-size: 110px; line-height: 1; letter-spacing: 5px; }
+        #seconds-tiny { font-size: 35px; margin-left: 10px; opacity: 0.6; }
 
-        .label { font-size: 10px; letter-spacing: 2px; color: var(--neon-purple); font-weight: 800; margin-top: 5px; }
+        /* SETUP UI (Escolha de tempo) */
+        .setup-card { text-align: center; }
+        .picker-row { display: flex; gap: 20px; align-items: center; margin-bottom: 30px; }
+        .box { background: rgba(138,43,226,0.05); border: 1px solid var(--dim-purple); border-radius: 15px; padding: 15px; width: 80px; }
+        .box span { font-size: 35px; font-weight: 900; font-family: 'Orbitron'; display: block; }
+        .btn-adj { background: none; border: none; color: var(--neon-purple); cursor: pointer; padding: 5px; }
 
-        /* XP PREVIEW */
-        .xp-preview {
-            background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2);
-            padding: 8px 20px; border-radius: 50px; color: #ffd700;
-            font-size: 12px; font-weight: 900; margin-top: 15px;
-        }
+        /* BOTÕES */
+        .controls { width: 100%; max-width: 280px; margin-top: 40px; display: flex; flex-direction: column; gap: 10px; }
+        .btn { padding: 18px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .btn-start { background: var(--neon-purple); color: white; box-shadow: 0 0 20px rgba(138,43,226,0.4); }
+        .btn-exit { background: none; color: #444; border: 1px solid #222; font-size: 12px; margin-top: 20px; }
 
-        /* TIMER RUNNING */
-        #timer-running { 
-            font-size: 100px; font-weight: 900; letter-spacing: -5px; 
-            display: none; text-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
-        }
-
-        /* BOTÕES DE AÇÃO */
-        .actions { width: 100%; max-width: 300px; margin-top: 40px; display: flex; flex-direction: column; gap: 12px; }
-        
-        .btn-main {
-            padding: 20px; border-radius: 18px; border: none; font-weight: 900;
-            font-size: 15px; cursor: pointer; transition: 0.3s;
-        }
-        .btn-start { background: var(--neon-purple); color: #fff; box-shadow: 0 10px 30px rgba(138, 43, 226, 0.3); }
-        .btn-pause { background: #fff; color: #000; display: none; }
-        .btn-exit { background: transparent; color: #555; border: 1px solid #222; display: none; }
-
-        /* MODAL */
+        /* MODAL PEQUENO */
         #modal-quit {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(10, 5, 20, 0.98); display: none;
-            justify-content: center; align-items: center; z-index: 100;
+            background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 100;
         }
-        .modal-card { background: #161021; padding: 40px 30px; border-radius: 30px; text-align: center; border: 1px solid #2a1b4d; width: 80%; }
+        .modal-card { background: #111; padding: 25px; border-radius: 20px; text-align: center; border: 1px solid #222; width: 280px; }
+        .modal-card h3 { margin: 0 0 10px 0; font-size: 16px; }
+        .modal-card p { font-size: 13px; color: #666; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <header class="header-foco">
+    <header style="padding: 20px; position: absolute; width: 100%; box-sizing: border-box;">
         <button onclick="window.location.href='index.html'" style="background:none; border:none; color:white;"><i data-lucide="arrow-left"></i></button>
-        <div style="font-weight: 900; font-size: 12px; letter-spacing: 2px;">HUB <span style="color:var(--neon-purple)">FOCUS</span></div>
-        <div style="width:24px"></div>
     </header>
 
-    <main class="main-container" id="bg-container">
-        
-        <div id="setup-ui" style="text-align: center;">
-            <div class="picker-grid">
+    <main class="main-container">
+        <div id="setup-ui" class="setup-card">
+            <div style="font-size: 10px; letter-spacing: 3px; color: var(--neon-purple); margin-bottom: 25px; font-weight: 900;">HUB FOCUS</div>
+            <div class="picker-row">
                 <div class="picker-col">
                     <button class="btn-adj" onclick="ajustar('h', 1)"><i data-lucide="chevron-up"></i></button>
-                    <div class="val-display" id="h-val">00</div>
+                    <div class="box"><span id="h-val">00</span></div>
                     <button class="btn-adj" onclick="ajustar('h', -1)"><i data-lucide="chevron-down"></i></button>
-                    <div class="label">HORAS</div>
+                    <small style="font-size: 8px; color: #444;">HORAS</small>
                 </div>
+                <div style="font-size: 30px; font-family: 'Orbitron'; color: var(--dim-purple);">:</div>
                 <div class="picker-col">
                     <button class="btn-adj" onclick="ajustar('m', 5)"><i data-lucide="chevron-up"></i></button>
-                    <div class="val-display" id="m-val">25</div>
+                    <div class="box"><span id="m-val">25</span></div>
                     <button class="btn-adj" onclick="ajustar('m', -5)"><i data-lucide="chevron-down"></i></button>
-                    <div class="label">MINUTOS</div>
+                    <small style="font-size: 8px; color: #444;">MINS</small>
                 </div>
             </div>
-            <div class="xp-preview">RECOMPENSA: <span id="xp-num">10</span> XP</div>
+            <div style="color: #ffd700; font-size: 11px; font-weight: 900; background: rgba(255,215,0,0.05); padding: 5px 15px; border-radius: 50px; display: inline-block;">VALENDO <span id="xp-num">10</span> XP</div>
         </div>
 
-        <div id="timer-running">25:00</div>
+        <div id="clock-active" class="clock-wrapper">
+            <div id="main-time">00:00</div>
+            <div id="seconds-tiny">00</div>
+        </div>
 
-        <div class="actions">
-            <button class="btn-main btn-start" id="btn-start" onclick="iniciar()">INICIAR FOCO</button>
-            <button class="btn-main btn-pause" id="btn-pause" onclick="pausar()">PAUSAR</button>
-            <button class="btn-main btn-exit" id="btn-exit" onclick="abrirModal()">DESISTIR</button>
+        <div class="controls">
+            <button id="btn-start" class="btn btn-start" onclick="iniciar()">INICIAR</button>
+            <button id="btn-pause" class="btn" style="display:none; background: #222; color: #fff;" onclick="pausar()">PAUSAR</button>
+            <button id="btn-quit" class="btn-exit" style="display:none" onclick="abrirModal()">DESISTIR</button>
         </div>
     </main>
 
     <div id="modal-quit">
         <div class="modal-card">
-            <h2 style="margin:0 0 10px 0">Interromper?</h2>
-            <p style="color:#888; margin-bottom:30px">Você ganhará apenas metade do XP proporcional.</p>
-            <button class="btn-main btn-start" style="width:100%" onclick="fecharModal()">VOLTAR AO FOCO</button>
-            <button class="btn-main" style="background:none; color:#ff4444; width:100%; margin-top:10px" onclick="confirmarSair()">SAIR MESMO ASSIM</button>
+            <h3>Parar agora?</h3>
+            <p>Você perde 50% do XP proporcional.</p>
+            <button class="btn btn-start" style="width:100%" onclick="fecharModal()">VOLTAR</button>
+            <button class="btn-exit" style="width:100%; border:none; color:#ff4444" onclick="confirmarSair()">DESISTIR</button>
         </div>
     </div>
 
     <script type="module" src="foco-logica.js"></script>
     <script>
-        // Scripts de UI rápidos
         window.ajustar = (tipo, amt) => {
             const el = document.getElementById(tipo + '-val');
             let val = parseInt(el.innerText) + amt;
             if(tipo === 'h') { if(val < 0) val = 12; if(val > 12) val = 0; }
             else { if(val < 0) val = 55; if(val > 55) val = 0; }
             el.innerText = val < 10 ? '0'+val : val;
-            
             const h = parseInt(document.getElementById('h-val').innerText);
             const m = parseInt(document.getElementById('m-val').innerText);
             document.getElementById('xp-num').innerText = Math.floor(((h * 60 + m) / 25) * 10);
