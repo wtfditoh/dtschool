@@ -1,13 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword,
-    setPersistence, 
-    browserLocalPersistence 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// --- CONFIGURAÇÃO (COLOQUE SEUS DADOS AQUI) ---
 const firebaseConfig = {
     apiKey: "SUA_API_KEY",
     authDomain: "SEU_PROJETO.firebaseapp.com",
@@ -20,62 +13,60 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// --- SELETORES ---
-const inputEmail = document.getElementById('user-email');
-const inputPass = document.getElementById('user-pass');
-const monster = document.getElementById('monster-ui');
 const status = document.getElementById('login-status');
+const monster = document.getElementById('monster-ui');
+const card = document.querySelector('.login-card');
 
-// --- ANIMAÇÃO DO MONSTRINHO (REVISADA) ---
-if (monster && inputEmail && inputPass) {
-    inputEmail.addEventListener('focus', () => {
-        monster.classList.add('looking');
-        monster.classList.remove('shame');
-    });
-
-    inputPass.addEventListener('focus', () => {
-        monster.classList.add('shame');
-        monster.classList.remove('looking');
-    });
-
-    [inputEmail, inputPass].forEach(el => {
-        el.addEventListener('blur', () => monster.classList.remove('shame', 'looking'));
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (!monster.classList.contains('shame')) {
-            const pupils = document.querySelectorAll('.pupil');
-            let x = (e.clientX / window.innerWidth - 0.5) * 10;
-            let y = (e.clientY / window.innerHeight - 0.5) * 10;
-            pupils.forEach(p => p.style.transform = `translate(${x}px, ${y}px)`);
-        }
-    });
+function mostrarErro(msg) {
+    status.innerText = "⚠ " + msg;
+    card.classList.add('shake-error');
+    setTimeout(() => card.classList.remove('shake-error'), 400);
 }
 
-// --- FUNÇÃO DE LOGIN ---
+// ANIMAÇÕES DO MONSTRINHO
+const inputEmail = document.getElementById('user-email');
+const inputPass = document.getElementById('user-pass');
+
+if (monster && inputEmail && inputPass) {
+    inputEmail.addEventListener('focus', () => monster.classList.add('looking'));
+    inputPass.addEventListener('focus', () => monster.classList.add('shame'));
+    [inputEmail, inputPass].forEach(el => el.addEventListener('blur', () => {
+        monster.classList.remove('looking', 'shame');
+    }));
+}
+
+// LOGIN
 window.tentarLogar = async () => {
     const email = inputEmail.value;
     const pass = inputPass.value;
+    const manter = document.getElementById('keep-logged').checked;
+
+    if (!email || !pass) return mostrarErro("Vazio? Aí não né, patrão!");
+
     try {
-        await setPersistence(auth, browserLocalPersistence);
+        await setPersistence(auth, manter ? browserLocalPersistence : browserSessionPersistence);
         await signInWithEmailAndPassword(auth, email, pass);
         window.location.href = 'index.html';
-    } catch (e) { status.innerText = "Erro no login: " + e.code; }
+    } catch (e) { mostrarErro("E-mail ou senha incorretos!"); }
 };
 
-// --- FUNÇÃO DE CADASTRO ---
+// CADASTRO
 window.realizarCadastro = async () => {
+    const nome = document.getElementById('user-name').value.trim();
     const email = inputEmail.value;
     const pass = inputPass.value;
-    if (pass.length < 6) { status.innerText = "Senha deve ter 6+ dígitos"; return; }
+
+    if (!nome || !email || !pass) return mostrarErro("Preencha tudo para o Ranking!");
+
     try {
-        await createUserWithEmailAndPassword(auth, email, pass);
-        alert("Conta criada! Redirecionando...");
+        const res = await createUserWithEmailAndPassword(auth, email, pass);
+        await updateProfile(res.user, { displayName: nome });
+        localStorage.setItem('dt_user_name', nome);
         window.location.href = 'index.html';
-    } catch (e) { status.innerText = "Erro ao cadastrar: " + e.code; }
+    } catch (e) { mostrarErro("Erro ao criar conta!"); }
 };
 
 window.entrarComoVisitante = () => {
-    localStorage.setItem('dt_user_phone', 'visitante');
+    localStorage.setItem('dt_user_name', 'Visitante');
     window.location.href = 'index.html';
 };
