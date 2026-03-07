@@ -1,19 +1,42 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = { /* Suas Chaves aqui */ };
+const firebaseConfig = {
+    apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+    authDomain: "dt-scho0l.firebaseapp.com",
+    projectId: "dt-scho0l",
+    storageBucket: "dt-scho0l.firebasestorage.app",
+    messagingSenderId: "78578509391",
+    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const userPhone = localStorage.getItem('dt_user_phone');
 
 let timer, segs = 0, total = 0, isPaused = false;
 
+// Elementos
 const setup = document.getElementById('setup-view');
 const active = document.getElementById('active-clock');
-const startBtn = document.getElementById('btn-start');
-const pauseBtn = document.getElementById('btn-pause');
-const quitBtn = document.getElementById('btn-quit');
+const btnStart = document.getElementById('btn-start');
+const btnPause = document.getElementById('btn-pause');
+const btnQuit = document.getElementById('btn-quit');
 
+// Ajuste de Tempo
+const adjust = (t, a) => {
+    const el = document.getElementById(t + '-val');
+    let v = parseInt(el.innerText) + a;
+    if(t==='h'){ if(v<0) v=12; if(v>12) v=0; }
+    else { if(v<0) v=55; if(v>55) v=0; }
+    el.innerText = v < 10 ? '0'+v : v;
+    
+    const h = parseInt(document.getElementById('h-val').innerText);
+    const m = parseInt(document.getElementById('m-val').innerText);
+    document.getElementById('xp-num').innerText = Math.floor(((h*60+m)/25)*10);
+};
+
+// Iniciar
 const start = () => {
     const h = parseInt(document.getElementById('h-val').innerText);
     const m = parseInt(document.getElementById('m-val').innerText);
@@ -23,13 +46,10 @@ const start = () => {
     total = segs;
 
     setup.style.display = 'none';
-    startBtn.style.display = 'none';
+    btnStart.style.display = 'none';
     active.style.display = 'flex';
-    pauseBtn.style.display = 'block';
-    quitBtn.style.display = 'block';
-    
-    // Efeito de imersão total
-    document.body.style.background = "#020202";
+    btnPause.style.display = 'block';
+    btnQuit.style.display = 'block';
 
     timer = setInterval(() => {
         if (!isPaused) {
@@ -53,7 +73,20 @@ const finish = async (win) => {
     window.location.reload();
 };
 
-startBtn.onclick = start;
-pauseBtn.onclick = () => { isPaused = !isPaused; pauseBtn.innerText = isPaused ? "CONTINUAR" : "PAUSAR SESSÃO"; };
-quitBtn.onclick = () => document.getElementById('modal-quit').style.display = 'flex';
+// Atribuição de Eventos (O segredo do funcionamento)
+document.getElementById('h-up').onclick = () => adjust('h', 1);
+document.getElementById('h-down').onclick = () => adjust('h', -1);
+document.getElementById('m-up').onclick = () => adjust('m', 5);
+document.getElementById('m-down').onclick = () => adjust('m', -5);
+document.getElementById('back-nav').onclick = () => window.history.back();
+
+btnStart.onclick = start;
+btnPause.onclick = () => {
+    isPaused = !isPaused;
+    btnPause.innerText = isPaused ? "RETOMAR" : "PAUSAR";
+};
+btnQuit.onclick = () => document.getElementById('modal-quit').style.display = 'flex';
+document.getElementById('btn-resume').onclick = () => document.getElementById('modal-quit').style.display = 'none';
 document.getElementById('btn-confirm-quit').onclick = () => finish(false);
+
+lucide.createIcons();
