@@ -18,16 +18,40 @@ body {
     flex-direction: column;
 }
 
-/* HEADER */
+/* HEADER - MENU DISCRETO */
 .header-minimal { 
     flex-shrink: 0; 
-    padding: 10px 20px; 
+    padding: 15px 20px; 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
 }
 
-/* ÁREA DO CRONÔMETRO */
+.btn-icon-top {
+    background: none;
+    border: none;
+    color: #222; /* Cinza bem escuro para discrição */
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    transition: 0.3s;
+}
+
+.btn-icon-top:active {
+    color: #8a2be2; /* Roxo ao tocar */
+    transform: scale(1.1);
+}
+
+.label-header {
+    font-weight: 900; 
+    font-size: 8px; 
+    letter-spacing: 3px; 
+    color: #1a1a1a; 
+    text-transform: uppercase;
+}
+
+/* VIEWPORT */
 .timer-viewport {
     flex: 1; 
     position: relative; 
@@ -35,7 +59,6 @@ body {
     flex-direction: column;
     align-items: center; 
     justify-content: center; 
-    min-height: 0;
 }
 
 .canvas-timer {
@@ -65,13 +88,8 @@ body {
     filter: drop-shadow(0 0 10px #8a2be2);
 }
 
-.progress-bg { 
-    stroke: #0a0a0a; 
-    stroke-width: 6; 
-    fill: transparent; 
-}
+.progress-bg { stroke: #0a0a0a; stroke-width: 6; fill: transparent; }
 
-/* CONTEÚDO DENTRO DO CÍRCULO */
 .timer-content { 
     position: absolute; 
     z-index: 5; 
@@ -95,26 +113,10 @@ body {
     text-shadow: 0 0 15px rgba(138, 43, 226, 0.4); 
 }
 
-.unit-adjust { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-}
+.unit-adjust { display: flex; flex-direction: column; align-items: center; }
+.btn-arrow { background: none; border: none; color: #1a1a1a; cursor: pointer; padding: 5px; }
 
-.btn-arrow { 
-    background: none; 
-    border: none; 
-    color: #222; 
-    cursor: pointer; 
-    padding: 5px; 
-    transition: 0.2s; 
-}
-
-.btn-arrow:active { 
-    color: #8a2be2; 
-}
-
-/* ÁREA DE XP SLIM (AJUSTADA) */
+/* XP BADGE SLIM */
 .xp-badge {
     background: rgba(138, 43, 226, 0.05); 
     border: 1px solid rgba(138, 43, 226, 0.15);
@@ -163,26 +165,7 @@ body {
     font-size: 14px; 
     background: #8a2be2; 
     color: white; 
-    cursor: pointer;
 }
 
-.btn-pause { 
-    background: #111; 
-    border: 1px solid #222; 
-    margin-top: 5px; 
-}
-
-.btn-quit-label { 
-    background: none; 
-    border: none; 
-    color: #444; 
-    font-weight: 800; 
-    font-size: 11px; 
-    padding: 10px; 
-    cursor: pointer; 
-    text-transform: uppercase; 
-}
-
-/* MODAL */
-#modal-confirm h2 { color: white; font-weight: 900; }
-#modal-confirm p { color: #666; font-size: 13px; }
+.btn-pause { background: #111; border: 1px solid #222; }
+.btn-quit-label { background: none; border: none; color: #333; font-weight: 800; font-size: 11px; padding: 10px; cursor: pointer; text-transform: uppercase; }
