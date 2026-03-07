@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ranking Global - Hub Brain</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="menu.css"> <link rel="stylesheet" href="ranking.css">
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="ranking.css">
     <style>
-        /* Ajuste para o Header ocupar a tela toda */
+        /* Ajuste para o Header ocupar a tela toda e centralizar o título */
         .ranking-header {
             display: flex;
             align-items: center;
@@ -22,7 +23,6 @@
             z-index: 1000;
         }
 
-        /* Botão de menu padrão Hub Brain */
         #open-menu {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid #222;
@@ -35,7 +35,6 @@
             justify-content: center;
         }
 
-        /* Título centralizado */
         .header-title {
             position: absolute;
             left: 50%;
@@ -45,6 +44,12 @@
             letter-spacing: 2px;
             color: white;
             white-space: nowrap;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .header-title .purple {
+            color: #8a2be2;
         }
     </style>
 </head>
@@ -57,8 +62,7 @@
         
         <h1 class="header-title">RANKING <span class="purple">GLOBAL</span></h1>
         
-        <div style="width: 44px;"></div>
-    </header>
+        <div style="width: 44px;"></div> </header>
 
     <button class="btn-help-floating" onclick="abrirAjudaXP()">
         <i data-lucide="help-circle"></i>
@@ -75,15 +79,31 @@
             <div class="xp-rules-scroll">
                 <div class="xp-section">
                     <div class="xp-tag">📊 DESEMPENHO ACADÊMICO</div>
-                    <p class="section-desc">Suas notas definem sua base. Notas altas garantem bônus massivos.</p>
+                    <p class="section-desc">Suas notas definem sua base. Notas altas garantem bônus massivos, notas baixas punem severamente.</p>
                     <div class="rule-box pos"><span>+100</span> <p><strong>Nota 10:</strong> Excelência máxima.</p></div>
+                    <div class="rule-box pos"><span>+50</span> <p><strong>Nota 8.0 a 9.9:</strong> Aluno de Elite.</p></div>
+                    <div class="rule-box pos"><span>+20</span> <p><strong>Nota 6.0 a 7.9:</strong> Dever cumprido.</p></div>
+                    <div class="rule-box neg"><span>-20</span> <p><strong>Nota 4.0 a 5.9:</strong> Zona de risco.</p></div>
+                    <div class="rule-box neg"><span>-50</span> <p><strong>Nota 0.1 a 3.9:</strong> Crise acadêmica.</p></div>
                     <div class="rule-box neg"><span>-100</span> <p><strong>Nota 0:</strong> Desistência ou erro grave.</p></div>
                 </div>
 
                 <div class="xp-section">
                     <div class="xp-tag">🤖 SIMULADOS COM IA</div>
-                    <div class="rule-box pos"><span>+150</span> <p><strong>Gabarito (10/10):</strong> Mestre.</p></div>
-                    <div class="rule-box neg"><span>-80</span> <p><strong>0 a 2 acertos:</strong> Falta de base.</p></div>
+                    <p class="section-desc">Testes de 10 questões gerados por inteligência artificial. O maior multiplicador de XP.</p>
+                    <div class="rule-box pos"><span>+150</span> <p><strong>Gabarito (10/10):</strong> Mestre do Conhecimento.</p></div>
+                    <div class="rule-box pos"><span>+60</span> <p><strong>7 a 9 acertos:</strong> Ótimo desempenho.</p></div>
+                    <div class="rule-box neg"><span>-30</span> <p><strong>3 a 4 acertos:</strong> Falta de estudo.</p></div>
+                    <div class="rule-box neg"><span>-80</span> <p><strong>0 a 2 acertos:</strong> Chute ou falta de base.</p></div>
+                </div>
+
+                <div class="xp-section">
+                    <div class="xp-tag">📅 AGENDA E ROTINA</div>
+                    <p class="section-desc">Ser organizado também dá pontos. A inatividade remove sua glória.</p>
+                    <div class="rule-box pos"><span>+15</span> <p><strong>Atividade Concluída:</strong> Foco total.</p></div>
+                    <div class="rule-box pos"><span>+40</span> <p><strong>Horário Montado:</strong> Planejamento semanal.</p></div>
+                    <div class="rule-box neg"><span>-25</span> <p><strong>Atraso:</strong> Procrastinação detectada.</p></div>
+                    <div class="rule-box pos"><span>+5</span> <p><strong>Check-in Diário:</strong> Constância no app.</p></div>
                 </div>
 
                 <div class="xp-section">
@@ -91,11 +111,12 @@
                     <div class="patente-item"><span>0 - 500</span> <p>Novato 🟢</p></div>
                     <div class="patente-item"><span>501 - 1500</span> <p>Estudioso 🔵</p></div>
                     <div class="patente-item"><span>1501 - 4000</span> <p>Veterano 🟣</p></div>
+                    <div class="patente-item"><span>4001 - 8000</span> <p>Cérebro de Elite ⚡</p></div>
                     <div class="patente-item"><span>+8000</span> <p>Lenda do Hub 🏆</p></div>
                 </div>
             </div>
 
-            <button onclick="fecharAjudaXP()" class="btn-close-modal">ENTENDIDO!</button>
+            <button onclick="fecharAjudaXP()" class="btn-close-modal">ENTENDIDO, VOU AO TOPO!</button>
         </div>
     </div>
 
