@@ -10,30 +10,31 @@
 </head>
 <body>
 
-    <header>
+    <header style="padding: 20px;">
         <button onclick="window.history.back()" style="background:none; border:none; color:white;">
             <i data-lucide="arrow-left"></i>
         </button>
-        <div style="font-size: 10px; letter-spacing: 3px; font-weight: 900; color: #8a2be2;">DEEP WORK</div>
-        <div style="width: 24px;"></div>
     </header>
 
     <main class="main-content">
-        <div id="setup-view" class="picker-wrap">
-            <div class="unit-group">
-                <button class="arrow-btn" onclick="adjust('h', 1)"><i data-lucide="chevron-up" size="36"></i></button>
-                <div class="number-display" id="h-val">00</div>
-                <button class="arrow-btn" onclick="adjust('h', -1)"><i data-lucide="chevron-down" size="36"></i></button>
-                <span class="label-text">HORAS</span>
+        <div id="setup-view" style="text-align: center;">
+            <div class="picker-container">
+                <div class="unit-column">
+                    <button class="arrow-icon" onclick="adjust('h', 1)"><i data-lucide="chevron-up" size="36"></i></button>
+                    <div class="num-val" id="h-val">00</div>
+                    <button class="arrow-icon" onclick="adjust('h', -1)"><i data-lucide="chevron-down" size="36"></i></button>
+                    <span class="label-sub">HORAS</span>
+                </div>
+                <div class="separator">:</div>
+                <div class="unit-column">
+                    <button class="arrow-icon" onclick="adjust('m', 5)"><i data-lucide="chevron-up" size="36"></i></button>
+                    <div class="num-val" id="m-val">25</div>
+                    <button class="arrow-icon" onclick="adjust('m', -5)"><i data-lucide="chevron-down" size="36"></i></button>
+                    <span class="label-sub">MINUTOS</span>
+                </div>
             </div>
-
-            <div style="font-family: 'Orbitron'; font-size: 35px; color: #1a1a1a; margin-top: -20px;">:</div>
-
-            <div class="unit-group">
-                <button class="arrow-btn" onclick="adjust('m', 5)"><i data-lucide="chevron-up" size="36"></i></button>
-                <div class="number-display" id="m-val">25</div>
-                <button class="arrow-btn" onclick="adjust('m', -5)"><i data-lucide="chevron-down" size="36"></i></button>
-                <span class="label-text">MINUTOS</span>
+            <div id="xp-preview" style="color:#ffd700; font-size:11px; font-weight:900; margin-top:35px; letter-spacing:1px;">
+                RECOMPENSA: <span id="xp-num">10</span> XP
             </div>
         </div>
 
@@ -41,22 +42,20 @@
             <span id="big-time">00:00</span>
             <span id="small-sec">00</span>
         </div>
-
-        <div id="xp-display" class="xp-tag">RECOMPENSA: <span id="xp-num">10</span> XP</div>
     </main>
 
-    <div class="footer-actions">
-        <button id="btn-start" class="btn btn-start">INICIAR FOCO</button>
-        <button id="btn-pause" class="btn btn-pause" style="display:none">PAUSAR</button>
-        <button id="btn-quit" class="btn btn-quit" style="display:none">DESISTIR</button>
-    </div>
+    <footer class="footer-area">
+        <button id="btn-start" class="btn-base btn-purple">INICIAR FOCO</button>
+        <button id="btn-pause" class="btn-base btn-white" style="display:none">PAUSAR</button>
+        <button id="btn-quit" class="btn-base btn-ghost" style="display:none">DESISTIR</button>
+    </footer>
 
-    <div id="modal-quit" class="modal-overlay">
-        <div class="modal-content">
+    <div id="modal-quit" class="modal-bg">
+        <div class="modal-box">
             <h3 style="margin-bottom:10px">Interromper?</h3>
-            <p style="color:#666; font-size:14px; margin-bottom:25px">Você receberá apenas metade do XP proporcional.</p>
-            <button class="btn btn-start" onclick="document.getElementById('modal-quit').style.display='none'">VOLTAR</button>
-            <button class="btn btn-quit" style="color:#ff4444; border:none" id="btn-confirm-quit">DESISTIR</button>
+            <p style="color:#666; font-size:13px; margin-bottom:25px">O XP proporcional será cortado pela metade.</p>
+            <button class="btn-base btn-purple" onclick="document.getElementById('modal-quit').style.display='none'">VOLTAR</button>
+            <button class="btn-base btn-ghost" style="color:#ff4444; border:none" id="btn-confirm-quit">SAIR</button>
         </div>
     </div>
 
@@ -68,7 +67,6 @@
             if(t==='h'){ if(v<0) v=12; if(v>12) v=0; }
             else { if(v<0) v=55; if(v>55) v=0; }
             el.innerText = v < 10 ? '0'+v : v;
-            
             const h = parseInt(document.getElementById('h-val').innerText);
             const m = parseInt(document.getElementById('m-val').innerText);
             document.getElementById('xp-num').innerText = Math.floor(((h*60+m)/25)*10);
