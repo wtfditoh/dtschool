@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Grade Horária - Hub Brain</title>
+    
+    <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="grade-estilo.css">
     
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -18,15 +20,17 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        /* Padronização do Header Hub Brain */
         .glass-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; height: 70px; background: #0a0a0a !important;
             border-bottom: 1px solid rgba(138, 43, 226, 0.3);
-            position: sticky; top: 0; z-index: 100;
+            position: sticky; top: 0; z-index: 1000;
         }
-        .hub-logo-container { display: flex; align-items: center; gap: 10px; }
+        .hub-logo-container { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .hub-logo-text { font-weight: 900; font-size: 19px; color: white; text-transform: uppercase; }
         .hub-logo-text.purple { color: #8a2be2; }
+        
         .btn-notif { background: none; border: none; color: #8a2be2; cursor: pointer; padding: 10px; transition: 0.3s; }
         .btn-notif:active { transform: scale(0.8); color: white; }
         
@@ -53,14 +57,16 @@
 <body class="bg-dark">
 
     <header class="glass-header">
-        <button onclick="window.location.href='index.html'" style="background:none; border:none; color:white; cursor:pointer;">
-            <i data-lucide="chevron-left"></i>
+        <button id="open-menu" class="btn-menu">
+            <i data-lucide="menu"></i>
         </button>
+
         <div class="hub-logo-container">
             <span class="hub-logo-text">Hub</span>
             <i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i>
             <span class="hub-logo-text purple">Brain</span>
         </div>
+
         <button onclick="ativarNotificacoesReal()" class="btn-notif" title="Ativar Notificações">
             <i data-lucide="bell"></i>
         </button>
@@ -132,18 +138,14 @@
         <div class="modal-content-grade">
             <h3 style="color:#8a2be2; text-align:center; margin-bottom:15px;">Dicas de Notificação 🔔</h3>
             <p style="color:white; font-size:13px; line-height:1.6; margin-bottom:15px;">Para o Hub Brain te avisar mesmo com o app fechado:</p>
-            
             <div style="text-align:left; background:rgba(255,255,255,0.05); padding:15px; border-radius:12px;">
                 <p style="color:#b388ff; font-size:12px; font-weight:bold; margin-bottom:5px;">No Android (Geral):</p>
                 <p style="color:#bbb; font-size:11px; margin-bottom:10px;">Vá em Configurações > Apps > Hub Brain > Bateria > <b>Sem Restrições</b>.</p>
-                
                 <p style="color:#b388ff; font-size:12px; font-weight:bold; margin-bottom:5px;">No iPhone:</p>
                 <p style="color:#bbb; font-size:11px; margin-bottom:10px;">Toque no ícone de "Compartilhar" e selecione <b>"Adicionar à Tela de Início"</b>.</p>
-                
                 <p style="color:#b388ff; font-size:12px; font-weight:bold; margin-bottom:5px;">Permissão:</p>
                 <p style="color:#bbb; font-size:11px;">Certifique-se de que o <b>sino</b> no topo da página foi clicado e aceito.</p>
             </div>
-
             <button onclick="fecharAjudaBateria()" class="btn-salvar" style="width:100%; margin-top:20px;">Entendi, valeu!</button>
         </div>
     </div>
@@ -166,16 +168,22 @@
         <span id="toast-message">Notificações Ativadas!</span>
     </div>
 
+    <script src="menu.js"></script>
     <script type="module" src="grade-logica.js"></script>
     <script>
-        // Garante que as funções exportadas via 'window' no grade-logica.js funcionem
         function ativarNotificacoesReal() {
             if (typeof window.ativarNotificacoesReal === 'function') {
                 window.ativarNotificacoesReal();
-            } else {
-                console.log("Aguardando carregamento da lógica...");
             }
         }
+        
+        // Mantive os modais básicos de ajuda aqui caso não estejam no módulo
+        window.abrirAjudaBateria = () => document.getElementById('modal-ajuda-bateria').style.display = 'flex';
+        window.fecharAjudaBateria = () => document.getElementById('modal-ajuda-bateria').style.display = 'none';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) lucide.createIcons();
+        });
     </script>
 </body>
 </html>
