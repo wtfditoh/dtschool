@@ -1,0 +1,125 @@
+/* ESTRUTURA DO MENU LATERAL */
+.side-menu {
+    position: fixed; 
+    top: 0; 
+    left: -280px; 
+    width: 280px; 
+    height: 100%;
+    background: #0a0a0a; 
+    z-index: 20000; 
+    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-right: 1px solid rgba(138, 43, 226, 0.2); 
+    padding: 30px 20px;
+    display: flex; 
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.side-menu.open { 
+    left: 0; 
+    box-shadow: 20px 0 50px rgba(0,0,0,0.8); 
+}
+
+/* CABEÇALHO DO MENU */
+.menu-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 40px; 
+}
+
+.menu-title { 
+    font-weight: 900; 
+    letter-spacing: 2px; 
+    font-size: 18px; 
+    color: white;
+}
+
+.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138,43,226,0.3); }
+
+/* LINKS DE NAVEGAÇÃO */
+.menu-links { flex-grow: 1; }
+
+.menu-links a {
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    color: #666;
+    text-decoration: none; 
+    padding: 15px; 
+    border-radius: 16px;
+    margin-bottom: 8px; 
+    font-weight: 800; 
+    font-size: 14px; 
+    transition: 0.3s;
+}
+
+.menu-links a i { width: 20px; height: 20px; }
+
+.menu-links a.active { 
+    background: rgba(138, 43, 226, 0.1); 
+    color: #8a2be2; 
+    border: 1px solid rgba(138, 43, 226, 0.2); 
+}
+
+.menu-links a:hover:not(.active) { 
+    color: #fff; 
+    background: rgba(255,255,255,0.03); 
+}
+
+/* BOTÃO DE FECHAR */
+#close-menu {
+    background: none;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#close-menu:hover { color: #ff4444; }
+
+/* OVERLAY (FUNDO ESCURO) */
+.menu-overlay {
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0,0,0,0.6); 
+    backdrop-filter: blur(5px);
+    display: none; 
+    z-index: 19999; 
+}
+
+.menu-overlay.active { display: block; }
+
+/* FOOTER DO MENU (BOTÃO SAIR) */
+.menu-footer { margin-top: auto; }
+
+.btn-logout-menu {
+    width: 100%; 
+    background: rgba(255,68,68,0.05); 
+    border: 1px solid rgba(255,68,68,0.1);
+    color: #ff4444; 
+    padding: 15px; 
+    border-radius: 14px; 
+    cursor: pointer;
+    font-weight: 800; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px;
+    transition: 0.3s;
+}
+
+.btn-logout-menu:hover { background: rgba(255,68,68,0.15); }
+
+/* BOTÃO DO MENU NO HEADER DAS PÁGINAS */
+.btn-menu { 
+    background: rgba(255,255,255,0.03); 
+    border: 1px solid #222; 
+    color: white; 
+    padding: 10px; 
+    border-radius: 12px; 
+    cursor: pointer; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
