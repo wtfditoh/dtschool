@@ -17,28 +17,18 @@
                     <div class="eye-ball"><div class="pupil"></div></div>
                 </div>
             </div>
-            <div class="monster-hands">
-                <div class="m-hand"></div>
-                <div class="m-hand"></div>
-            </div>
+            <div class="monster-hands"><div class="m-hand"></div><div class="m-hand"></div></div>
         </div>
 
         <div class="login-card">
             <div class="logo-area">
-                <div class="hub-symbol">
-                    <i data-lucide="brain-circuit" style="width: 30px; height: 30px; color: var(--primary);"></i>
-                </div>
+                <div class="hub-symbol"><i data-lucide="brain-circuit"></i></div>
                 <h2>HUB <span style="color: var(--primary);">BRAIN</span></h2>
                 <p>DOMINE SUA ROTINA</p>
             </div>
 
-            <div class="input-group">
-                <input type="email" id="user-email" placeholder="E-mail de estudante" class="input-ia">
-            </div>
-
-            <div class="input-group">
-                <input type="password" id="user-pass" placeholder="Sua senha" class="input-ia">
-            </div>
+            <input type="email" id="user-email" placeholder="E-mail de estudante" class="input-ia">
+            <input type="password" id="user-pass" placeholder="Sua senha" class="input-ia">
 
             <div class="keep-row">
                 <input type="checkbox" id="keep-logged" checked>
@@ -48,12 +38,13 @@
             <div id="login-status" class="status-msg"></div>
 
             <button onclick="tentarLogar()" class="btn-acessar">
-                Acessar minha conta <i data-lucide="arrow-right" style="width: 18px;"></i>
+                <span>Acessar minha conta</span>
+                <i data-lucide="arrow-right"></i>
             </button>
 
             <div class="footer-links">
                 <a href="cadastro.html" class="create-acc">Não tem conta? Criar agora</a>
-                <button onclick="entrarComoVisitante()" class="btn-visitante">Continuar como Visitante</button>
+                <button type="button" onclick="entrarComoVisitante()" class="btn-visitante">Continuar como Visitante</button>
             </div>
         </div>
     </div>
