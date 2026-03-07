@@ -2,79 +2,163 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Hub Brain - Scanner Oficial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub Brain - Scanner de Horários 2.0</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background: #0a0a0a; color: white; font-family: sans-serif; padding: 20px; }
-        .purple { color: #8a2be2; }
-        .grid-debug { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
-        .day-column { background: #111; border: 1px solid #333; padding: 10px; border-radius: 10px; }
-        .aula { background: #1a1a1a; padding: 8px; margin: 5px 0; border-left: 3px solid #8a2be2; font-size: 12px; }
-        #status { font-weight: bold; margin: 20px 0; color: #8a2be2; }
-        .preview-img { max-width: 100%; border-radius: 10px; border: 1px solid #333; }
+        :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #111; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        h1 { text-align: center; letter-spacing: 2px; }
+        .purple { color: var(--primary); }
+        
+        /* Área de Upload */
+        .upload-container {
+            border: 2px dashed #333;
+            background: var(--card);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        .upload-container:hover { border-color: var(--primary); background: #151515; }
+
+        /* Grade de Horários */
+        .timetable {
+            display: grid;
+            grid-template-columns: 80px repeat(5, 1fr);
+            gap: 10px;
+            overflow-x: auto;
+            background: var(--card);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #222;
+        }
+        .header-day { text-align: center; font-weight: 800; padding: 10px; color: var(--primary); text-transform: uppercase; font-size: 12px; }
+        .time-label { display: flex; align-items: center; justify-content: center; font-size: 11px; color: #666; font-weight: bold; border-right: 1px solid #222; }
+        
+        /* Célula da Grade */
+        .cell {
+            background: #0d0d0d;
+            border: 1px solid #222;
+            min-height: 60px;
+            border-radius: 8px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .aula-card {
+            background: rgba(138, 43, 226, 0.15);
+            border: 1px solid var(--primary);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: grab;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
+
+        #status { text-align: center; margin-bottom: 20px; font-weight: bold; color: var(--primary); }
+        .btn-save { display: block; width: 200px; margin: 30px auto; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; }
     </style>
 </head>
 <body>
+
     <h1>SCANNER <span class="purple">SIGEDUC</span></h1>
-    <input type="file" id="arquivo" accept="image/*">
-    <div id="status">Aguardando print...</div>
     
-    <div class="grid-debug" id="resultado">
+    <div class="upload-container" onclick="document.getElementById('file-input').click()">
+        <i data-lucide="upload-cloud" style="width: 48px; height: 48px; margin-bottom: 10px;"></i>
+        <p>Clique para subir o Print do seu Horário</p>
+        <input type="file" id="file-input" accept="image/*" hidden>
+    </div>
+
+    <div id="status"></div>
+
+    <div class="timetable" id="grid">
+        <div></div> <div class="header-day">Segunda</div>
+        <div class="header-day">Terça</div>
+        <div class="header-day">Quarta</div>
+        <div class="header-day">Quinta</div>
+        <div class="header-day">Sexta</div>
+
         </div>
 
+    <button class="btn-save" onclick="alert('Salvo no Firebase!')">SALVAR GRADE</button>
+
     <script>
-        const input = document.getElementById('arquivo');
+        const grid = document.getElementById('grid');
         const status = document.getElementById('status');
-        const resultado = document.getElementById('resultado');
+        const fileInput = document.getElementById('file-input');
 
-        const dias = ["2ª Feira", "3ª Feira", "4ª Feira", "5ª Feira", "6ª Feira"];
+        const horas = ["13:00", "13:50", "14:40", "15:50", "16:40", "17:30"];
+        const materiasConhecidas = [
+            "QUÍMICA", "FÍSICA", "HISTÓRIA", "SOCIOLOGIA", "BIOLOGIA", 
+            "MATEMÁTICA", "GEOGRAFIA", "FILOSOFIA", "ARTES", "INGLÊS", 
+            "PORTUGUÊS", "ESPANHOL", "EDUCAÇÃO FÍSICA"
+        ];
 
-        input.onchange = async (e) => {
+        // 1. Gerar a Grade Vazia
+        for (let h = 0; h < 6; h++) {
+            const label = document.createElement('div');
+            label.className = 'time-label';
+            label.innerText = `${h+1}º (${horas[h]})`;
+            grid.appendChild(label);
+
+            for (let d = 0; d < 5; d++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.id = `cell-${h}-${d}`; // h = hora, d = dia
+                grid.appendChild(cell);
+            }
+        }
+
+        fileInput.onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
-            status.innerText = "🧠 Analisando estrutura da tabela...";
-            resultado.innerHTML = "";
-
-            const worker = await Tesseract.createWorker('por');
-            const { data } = await worker.recognize(file);
+            status.innerText = "🧠 IA Lendo o Print... aguarde 10s";
             
-            status.innerText = "✅ Processamento Concluído!";
-            organizarAgenda(data.lines);
+            const worker = await Tesseract.createWorker('por');
+            const { data: { text } } = await worker.recognize(file);
+            status.innerText = "✅ Leitura concluída! Organizando aulas...";
+
+            const linhas = text.toUpperCase().split('\n');
+            distribuirAulas(linhas);
             await worker.terminate();
         };
 
-        function organizarAgenda(linhas) {
-            // Criamos 5 containers para os dias
-            dias.forEach(dia => {
-                const col = document.createElement('div');
-                col.className = 'day-column';
-                col.innerHTML = `<strong class="purple">${dia}</strong><br><br>`;
-                col.id = dia.replace(" ", "");
-                resultado.appendChild(col);
+        function distribuirAulas(linhas) {
+            let aulasEncontradas = [];
+
+            linhas.forEach(linha => {
+                materiasConhecidas.forEach(materia => {
+                    if (linha.includes(materia)) {
+                        aulasEncontradas.push(materia);
+                    }
+                });
             });
 
-            // Lógica de distribuição por posição horizontal (X)
-            linhas.forEach(linha => {
-                const texto = linha.text.trim();
-                if (texto.length < 4) return; // Ignora lixo
+            // Remove duplicatas
+            const aulasUnicas = [...new Set(aulasEncontradas)];
 
-                // Identifica o dia baseado na posição X da linha na imagem
-                // Dividimos a largura em 5 partes
-                const x = linha.bbox.x0;
-                const larguraTotal = 1000; // Base teórica
-                const indexDia = Math.floor((x / larguraTotal) * 5);
-                const diaAlvo = dias[indexDia] ? dias[indexDia].replace(" ", "") : null;
-
-                if (diaAlvo) {
-                    const div = document.createElement('div');
-                    div.className = 'aula';
-                    // Limpa o nome do professor se ele aparecer (texto entre parênteses ou na linha de baixo)
-                    div.innerText = texto.split('\n')[0]; 
-                    document.getElementById(diaAlvo).appendChild(div);
+            // Preenche a grade automaticamente para teste (depois você move)
+            aulasUnicas.forEach((aula, index) => {
+                const cellId = `cell-${index % 6}-${Math.floor(index / 6)}`;
+                const targetCell = document.getElementById(cellId);
+                if (targetCell) {
+                    targetCell.innerHTML = `<div class="aula-card" draggable="true">${aula}</div>`;
                 }
             });
+            
+            lucide.createIcons();
         }
+
+        lucide.createIcons();
     </script>
 </body>
 </html>
