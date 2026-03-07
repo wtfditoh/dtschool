@@ -23,6 +23,16 @@ const updateCircle = (percent) => {
     circle.style.strokeDashoffset = offset;
 };
 
+// FUNÇÃO DE XP QUE AGORA FUNCIONA
+const updateXPPreview = () => {
+    const h = parseInt(document.getElementById('h-val').innerText);
+    const m = parseInt(document.getElementById('m-val').innerText);
+    const totalMin = (h * 60) + m;
+    // 10 XP a cada 25 min
+    const xp = Math.floor((totalMin / 25) * 10);
+    document.getElementById('xp-num').innerText = xp;
+};
+
 const start = () => {
     const h = parseInt(document.getElementById('h-val').innerText);
     const m = parseInt(document.getElementById('m-val').innerText);
@@ -44,13 +54,9 @@ const start = () => {
             const hrs = Math.floor(segs / 3600);
             const mins = Math.floor((segs % 3600) / 60);
             const s = segs % 60;
-            
-            // Exibe horas apenas se houver
             document.getElementById('main-time').innerText = 
                 `${hrs > 0 ? hrs + ':' : ''}${mins < 10 ? '0'+mins : mins}:${s < 10 ? '0'+s : s}`;
-            
             updateCircle((segs / total) * 100);
-
             if (segs <= 0) finish(true);
         }
     }, 1000);
@@ -65,17 +71,21 @@ const finish = async (win) => {
     window.location.reload();
 };
 
-document.getElementById('btn-start').onclick = start;
-document.getElementById('h-up').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v<12) v++; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; };
-document.getElementById('h-down').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v>0) v--; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; };
-document.getElementById('m-up').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v<55) v+=5; document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; };
-document.getElementById('m-down').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v>0) v-=5; document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; };
+// Eventos de Ajuste
+document.getElementById('h-up').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v<12) v++; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; updateXPPreview(); };
+document.getElementById('h-down').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v>0) v--; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; updateXPPreview(); };
+document.getElementById('m-up').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v<55) v+=5; document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; updateXPPreview(); };
+document.getElementById('m-down').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v>0) v-=5; document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; updateXPPreview(); };
 
+// Botões de Ação
+document.getElementById('btn-start').onclick = start;
 document.getElementById('btn-pause').onclick = () => {
     isPaused = !isPaused;
-    document.getElementById('btn-pause').innerText = isPaused ? "RESUME" : "PAUSE";
+    document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR";
 };
 document.getElementById('btn-quit').onclick = () => window.location.reload();
 document.getElementById('back-nav').onclick = () => window.history.back();
 
+// Inicialização
+updateXPPreview();
 lucide.createIcons();
