@@ -1,250 +1,45 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700;900&display=swap');
 
-/* ============================================================
-   1. CONFIGURAÇÕES BASE
-   ============================================================ */
-* { 
-    box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent; 
-    margin: 0; 
-    padding: 0; 
-}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+body { background: #000; color: white; font-family: 'Inter', sans-serif; height: 100svh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
 
-body { 
-    background: #000; 
-    color: white; 
-    font-family: 'Inter', sans-serif; 
-    height: 100svh; 
-    width: 100vw;
-    overflow: hidden; 
-    display: flex; 
-    flex-direction: column; 
-}
+/* --- HEADER --- */
+.header-minimal { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+.btn-icon-top { background: none; border: none; color: #1a1a1a; cursor: pointer; }
+.label-header { font-weight: 900; font-size: 9px; letter-spacing: 3px; color: #1a1a1a; text-transform: uppercase; }
 
-/* ============================================================
-   2. HEADER (TÍTULO DISCRETO)
-   ============================================================ */
-.header-minimal { 
-    padding: 20px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-}
+/* --- TIMER VIEWPORT --- */
+.timer-viewport { flex: 1; display: flex; align-items: center; justify-content: center; padding-bottom: 40px; }
+.canvas-timer { position: relative; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; }
 
-.btn-icon-top { 
-    background: none; 
-    border: none; 
-    color: #1a1a1a; /* Cinza muito escuro para quase sumir no preto */
-    cursor: pointer; 
-}
+.progress-ring { position: absolute; transform: rotate(-90deg); width: 100%; height: 100%; }
+.progress-ring__circle { stroke: #8a2be2; stroke-width: 6; fill: transparent; stroke-dasharray: 816.8; stroke-dashoffset: 816.8; stroke-linecap: round; transition: 1s linear; }
+.progress-bg { stroke: #0a0a0a; stroke-width: 6; fill: transparent; }
 
-.label-header { 
-    font-weight: 900; 
-    font-size: 9px; 
-    letter-spacing: 3px; 
-    color: #1a1a1a; /* Texto "Modo Foco" bem discreto */
-    text-transform: uppercase; 
-}
+/* --- RELÓGIO (MAIS COMPACTO) --- */
+.timer-content { position: absolute; width: 100%; z-index: 10; text-align: center; }
+.digital-clock { font-family: 'Share Tech Mono', monospace; display: flex; align-items: center; justify-content: center; }
+.unit-adjust { display: flex; flex-direction: column; align-items: center; width: 75px; }
+.unit-adjust span { font-size: 60px; line-height: 0.9; margin: 2px 0; color: #fff; }
+.clock-separator { font-size: 40px; opacity: 0.1; margin: 0 2px; padding-bottom: 10px; }
 
-/* ============================================================
-   3. ÁREA DO CRONÓMETRO (CANVAS)
-   ============================================================ */
-.timer-viewport { 
-    flex: 1; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-}
-
-.canvas-timer { 
-    position: relative; 
-    width: 300px; 
-    height: 300px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-}
-
-.progress-ring { 
-    position: absolute; 
-    transform: rotate(-90deg); 
-    width: 100%; 
-    height: 100%; 
-}
-
-.progress-ring__circle { 
-    stroke: #8a2be2; 
-    stroke-width: 6; 
-    fill: transparent; 
-    stroke-dasharray: 816.8; 
-    stroke-dashoffset: 816.8; 
-    stroke-linecap: round; 
-    transition: 1s linear; 
-}
-
-.progress-bg { 
-    stroke: #0a0a0a; 
-    stroke-width: 6; 
-    fill: transparent; 
-}
-
-.timer-content { 
-    position: absolute; 
-    width: 100%; 
-    z-index: 10; 
-    text-align: center;
-}
-
-/* ============================================================
-   4. RELÓGIO DIGITAL E AJUSTES (ALINHAMENTO)
-   ============================================================ */
-.digital-clock { 
-    font-family: 'Share Tech Mono', monospace; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-}
-
-.unit-adjust { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    width: 75px; 
-}
-
-.unit-adjust span { 
-    font-size: 55px; 
-    line-height: 1; 
-    margin: 12px 0; 
-    color: #fff;
-}
-
-.clock-separator { 
-    font-size: 40px; 
-    opacity: 0.1; 
-    margin: 0 5px; 
-    padding-bottom: 8px;
-}
-
-.btn-arrow { 
-    background: none; 
-    border: none; 
-    color: #111; /* Setas escuras */
-    cursor: pointer; 
-    padding: 5px; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
+.btn-arrow { background: none; border: none; color: #111; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; }
 .btn-arrow:active { color: #8a2be2; }
 
-/* ============================================================
-   5. ESTIMATIVA DE XP
-   ============================================================ */
-.xp-preview-box { 
-    margin-top: 25px; 
-    text-align: center; 
-}
+/* --- ESTIMATIVA XP (APROXIMADA) --- */
+.xp-preview-box { margin-top: 5px; text-align: center; }
+.xp-preview-label { font-size: 8px; font-weight: 900; color: #333; letter-spacing: 2px; }
+.xp-preview-value { font-family: 'Share Tech Mono', monospace; font-size: 19px; color: #ffd700; margin-top: 2px; }
 
-.xp-preview-label { 
-    font-size: 8px; 
-    font-weight: 900; 
-    color: #333; 
-    letter-spacing: 2px; 
-}
+/* --- FOOTER E BOTÕES --- */
+.footer-area { padding: 20px 25px 60px; display: flex; flex-direction: column; gap: 12px; }
+.btn-main { width: 100%; padding: 18px; border-radius: 100px; border: none; font-weight: 900; font-size: 14px; background: #8a2be2; color: white; cursor: pointer; }
+.btn-pause { background: #000; border: 1px solid #1a1a1a; }
+.btn-quit-label { background: none; border: none; color: #222; font-weight: 800; font-size: 10px; letter-spacing: 1px; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
 
-.xp-preview-value { 
-    font-family: 'Share Tech Mono', monospace; 
-    font-size: 18px; 
-    color: #ffd700; /* Dourado para o XP */
-    margin-top: 4px; 
-}
-
-/* ============================================================
-   6. FOOTER E BOTÕES
-   ============================================================ */
-.footer-area { 
-    padding: 20px 25px 60px; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 12px; 
-}
-
-.btn-main { 
-    width: 100%; 
-    padding: 18px; 
-    border-radius: 100px; 
-    border: none; 
-    font-weight: 900; 
-    font-size: 14px;
-    background: #8a2be2; 
-    color: white; 
-    cursor: pointer; 
-}
-
-.btn-pause { 
-    background: #000; 
-    border: 1px solid #1a1a1a; 
-}
-
-.btn-quit-label { 
-    background: none; 
-    border: none; 
-    color: #222; 
-    font-weight: 800; 
-    font-size: 10px; 
-    letter-spacing: 1px; 
-    cursor: pointer; 
-    margin-top: 10px;
-    text-transform: uppercase;
-}
-
-/* ============================================================
-   7. MODAL DE DESISTIR (DESIGN LIMPO)
-   ============================================================ */
-.modal-overlay {
-    position: fixed; 
-    inset: 0; 
-    background: rgba(0,0,0,0.95);
-    z-index: 20000; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    padding: 20px;
-}
-
-.modal-card {
-    background: #0a0a0a; 
-    border: 1px solid #1a1a1a; 
-    padding: 40px 25px;
-    border-radius: 35px; 
-    text-align: center; 
-    width: 100%; 
-    max-width: 300px;
-}
-
-.modal-card h2 { 
-    font-size: 18px; 
-    font-weight: 900; 
-    margin-bottom: 12px; 
-    color: white; 
-}
-
-.modal-card p { 
-    font-size: 12px; 
-    color: #444; 
-    margin-bottom: 30px; 
-    line-height: 1.5; 
-}
-
-.btn-danger-text { 
-    background: none; 
-    border: none; 
-    color: #ff4444; 
-    margin-top: 20px; 
-    font-weight: 800; 
-    font-size: 11px; 
-    cursor: pointer; 
-    text-transform: uppercase;
-}
+/* --- MODAL --- */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal-card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 40px 25px; border-radius: 35px; text-align: center; width: 100%; max-width: 300px; }
+.modal-card h2 { font-size: 18px; font-weight: 900; margin-bottom: 12px; color: white; }
+.modal-card p { font-size: 12px; color: #444; margin-bottom: 30px; line-height: 1.5; }
+.btn-danger-text { background: none; border: none; color: #ff4444; margin-top: 20px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; }
