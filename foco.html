@@ -3,92 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Focus</title>
+    <title>Hub Focus - Deep Work</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="menu.css">
     <style>
-        :root { --purple: #8a2be2; --bg: #000; --card: #111; }
-        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        
-        .header-foco { padding: 20px; display: flex; align-items: center; justify-content: space-between; }
-        .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-
-        /* SELETOR ESTILO PICKER */
-        .picker-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .picker-box { display: flex; flex-direction: column; align-items: center; }
-        .picker-box select { 
-            background: var(--card); border: 1px solid #222; color: #fff; font-size: 32px; 
-            font-weight: 900; padding: 15px; border-radius: 15px; appearance: none; text-align: center; width: 80px; outline: none;
+        :root { 
+            --deep-purple: #0a0514; 
+            --neon-purple: #8a2be2;
+            --glass: rgba(138, 43, 226, 0.1);
         }
-        .picker-label { font-size: 10px; color: var(--purple); font-weight: 800; margin-top: 8px; letter-spacing: 1px; }
-        .picker-sep { font-size: 30px; font-weight: 900; color: #333; margin-top: -25px; }
+        
+        body { 
+            background: var(--deep-purple); 
+            color: #fff; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            overflow: hidden;
+            transition: background 1s ease;
+        }
+
+        .header-foco { padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+
+        /* CONTROLES DE AJUSTE CUSTOMIZADOS */
+        .picker-grid { display: flex; gap: 30px; margin-bottom: 20px; align-items: center; }
+        .picker-col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        
+        .val-display { 
+            font-size: 50px; font-weight: 900; color: #fff; 
+            text-shadow: 0 0 15px rgba(138, 43, 226, 0.5); 
+            background: var(--glass); width: 90px; height: 90px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 20px; border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .btn-adj {
+            background: rgba(255,255,255,0.05); border: none; color: #fff;
+            width: 45px; height: 45px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        .btn-adj:active { background: var(--neon-purple); transform: scale(0.9); }
+
+        .label { font-size: 10px; letter-spacing: 2px; color: var(--neon-purple); font-weight: 800; margin-top: 5px; }
 
         /* XP PREVIEW */
-        .xp-display { background: rgba(138, 43, 226, 0.1); border: 1px solid rgba(138, 43, 226, 0.2); padding: 10px 25px; border-radius: 50px; color: #ffd700; font-weight: 900; font-size: 13px; margin-top: 10px; }
+        .xp-preview {
+            background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 8px 20px; border-radius: 50px; color: #ffd700;
+            font-size: 12px; font-weight: 900; margin-top: 15px;
+        }
 
-        /* TIMER ATIVO */
-        #timer-display { font-size: 90px; font-weight: 900; letter-spacing: -4px; margin: 20px 0; display: none; }
+        /* TIMER RUNNING */
+        #timer-running { 
+            font-size: 100px; font-weight: 900; letter-spacing: -5px; 
+            display: none; text-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
+        }
 
-        /* BOTÕES */
-        .btn-foco { width: 100%; max-width: 300px; padding: 20px; border-radius: 20px; border: none; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.3s; margin-top: 30px; }
-        .btn-start { background: var(--purple); color: #fff; box-shadow: 0 10px 25px rgba(138, 43, 226, 0.3); }
+        /* BOTÕES DE AÇÃO */
+        .actions { width: 100%; max-width: 300px; margin-top: 40px; display: flex; flex-direction: column; gap: 12px; }
+        
+        .btn-main {
+            padding: 20px; border-radius: 18px; border: none; font-weight: 900;
+            font-size: 15px; cursor: pointer; transition: 0.3s;
+        }
+        .btn-start { background: var(--neon-purple); color: #fff; box-shadow: 0 10px 30px rgba(138, 43, 226, 0.3); }
         .btn-pause { background: #fff; color: #000; display: none; }
-        .btn-exit { background: transparent; color: #555; border: 1px solid #222; display: none; margin-top: 15px; }
+        .btn-exit { background: transparent; color: #555; border: 1px solid #222; display: none; }
 
         /* MODAL */
-        #modal-desistir { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-body { background: #111; padding: 30px; border-radius: 25px; width: 80%; max-width: 320px; border: 1px solid #222; }
+        #modal-quit {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(10, 5, 20, 0.98); display: none;
+            justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal-card { background: #161021; padding: 40px 30px; border-radius: 30px; text-align: center; border: 1px solid #2a1b4d; width: 80%; }
     </style>
 </head>
 <body>
 
     <header class="header-foco">
-        <button id="open-menu" style="background:none; border:none; color:white;"><i data-lucide="menu"></i></button>
-        <div style="font-weight: 900; letter-spacing: 2px; font-size: 12px;">HUB <span style="color:var(--purple)">FOCUS</span></div>
+        <button onclick="window.location.href='index.html'" style="background:none; border:none; color:white;"><i data-lucide="arrow-left"></i></button>
+        <div style="font-weight: 900; font-size: 12px; letter-spacing: 2px;">HUB <span style="color:var(--neon-purple)">FOCUS</span></div>
         <div style="width:24px"></div>
     </header>
 
-    <main class="main-content">
-        <div id="setup-ui">
-            <div class="picker-container">
-                <div class="picker-box">
-                    <select id="h-pick" onchange="atualizarXP()">
-                        </select>
-                    <div class="picker-label">HORAS</div>
+    <main class="main-container" id="bg-container">
+        
+        <div id="setup-ui" style="text-align: center;">
+            <div class="picker-grid">
+                <div class="picker-col">
+                    <button class="btn-adj" onclick="ajustar('h', 1)"><i data-lucide="chevron-up"></i></button>
+                    <div class="val-display" id="h-val">00</div>
+                    <button class="btn-adj" onclick="ajustar('h', -1)"><i data-lucide="chevron-down"></i></button>
+                    <div class="label">HORAS</div>
                 </div>
-                <div class="picker-sep">:</div>
-                <div class="picker-box">
-                    <select id="m-pick" onchange="atualizarXP()">
-                        </select>
-                    <div class="picker-label">MINUTOS</div>
+                <div class="picker-col">
+                    <button class="btn-adj" onclick="ajustar('m', 5)"><i data-lucide="chevron-up"></i></button>
+                    <div class="val-display" id="m-val">25</div>
+                    <button class="btn-adj" onclick="ajustar('m', -5)"><i data-lucide="chevron-down"></i></button>
+                    <div class="label">MINUTOS</div>
                 </div>
             </div>
-            <div class="xp-display">GANHO ESTIMADO: <span id="xp-preview-val">10</span> XP</div>
-            <button class="btn-foco btn-start" onclick="iniciarSessao()">INICIAR FOCO</button>
+            <div class="xp-preview">RECOMPENSA: <span id="xp-num">10</span> XP</div>
         </div>
 
-        <div id="timer-display">25:00</div>
-        <button class="btn-foco btn-pause" id="btn-pause" onclick="pausarRetomar()">PAUSAR</button>
-        <button class="btn-foco btn-exit" id="btn-exit" onclick="abrirModal()">DESISTIR</button>
+        <div id="timer-running">25:00</div>
+
+        <div class="actions">
+            <button class="btn-main btn-start" id="btn-start" onclick="iniciar()">INICIAR FOCO</button>
+            <button class="btn-main btn-pause" id="btn-pause" onclick="pausar()">PAUSAR</button>
+            <button class="btn-main btn-exit" id="btn-exit" onclick="abrirModal()">DESISTIR</button>
+        </div>
     </main>
 
-    <div id="modal-desistir">
-        <div class="modal-body">
-            <h2 style="margin-top:0">Parar agora?</h2>
-            <p style="color:#777; font-size:14px; margin-bottom:30px">Você receberá apenas 50% do XP pelo tempo que já estudou.</p>
-            <button class="btn-foco btn-start" onclick="fecharModal()">VOLTAR</button>
-            <button class="btn-foco" style="background:#ff4444; color:#fff; margin-top:10px" onclick="desistirReal()">DESISTIR</button>
+    <div id="modal-quit">
+        <div class="modal-card">
+            <h2 style="margin:0 0 10px 0">Interromper?</h2>
+            <p style="color:#888; margin-bottom:30px">Você ganhará apenas metade do XP proporcional.</p>
+            <button class="btn-main btn-start" style="width:100%" onclick="fecharModal()">VOLTAR AO FOCO</button>
+            <button class="btn-main" style="background:none; color:#ff4444; width:100%; margin-top:10px" onclick="confirmarSair()">SAIR MESMO ASSIM</button>
         </div>
     </div>
 
-    <script src="menu.js"></script>
     <script type="module" src="foco-logica.js"></script>
     <script>
-        // Popular selects
-        const hS = document.getElementById('h-pick');
-        const mS = document.getElementById('m-pick');
-        for(let i=0; i<=12; i++) hS.innerHTML += `<option value="${i}">${i < 10 ? '0'+i : i}</option>`;
-        for(let i=0; i<=55; i+=5) mS.innerHTML += `<option value="${i}" ${i==25?'selected':''}>${i < 10 ? '0'+i : i}</option>`;
+        // Scripts de UI rápidos
+        window.ajustar = (tipo, amt) => {
+            const el = document.getElementById(tipo + '-val');
+            let val = parseInt(el.innerText) + amt;
+            if(tipo === 'h') { if(val < 0) val = 12; if(val > 12) val = 0; }
+            else { if(val < 0) val = 55; if(val > 55) val = 0; }
+            el.innerText = val < 10 ? '0'+val : val;
+            
+            const h = parseInt(document.getElementById('h-val').innerText);
+            const m = parseInt(document.getElementById('m-val').innerText);
+            document.getElementById('xp-num').innerText = Math.floor(((h * 60 + m) / 25) * 10);
+        };
         lucide.createIcons();
     </script>
 </body>
