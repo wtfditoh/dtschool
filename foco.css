@@ -29,7 +29,7 @@ body {
 }
 .progress-bg { stroke: #0a0a0a; stroke-width: 6; fill: transparent; }
 
-.timer-content { position: absolute; z-index: 5; text-align: center; width: 100%; }
+.timer-content { position: absolute; z-index: 5; text-align: center; width: 100%; padding: 0 40px; }
 
 .digital-clock {
     font-family: 'Share Tech Mono', monospace;
@@ -40,29 +40,19 @@ body {
 
 .unit-adjust { display: flex; flex-direction: column; align-items: center; }
 .btn-arrow { background: none; border: none; color: #222; cursor: pointer; padding: 8px; transition: 0.2s; }
-.btn-arrow:active { color: #8a2be2; transform: scale(1.2); }
 
 .xp-badge {
-    background: rgba(138, 43, 226, 0.1); border: 1px solid rgba(138, 43, 226, 0.3);
-    padding: 6px 15px; border-radius: 50px; color: #ffd700; font-size: 10px;
-    font-weight: 900; margin-top: 20px; display: inline-block; letter-spacing: 1px;
+    background: rgba(138, 43, 226, 0.05); border: 1px solid rgba(138, 43, 226, 0.2);
+    padding: 10px; border-radius: 20px; margin-top: 15px; display: inline-block; width: 140px;
 }
+.xp-label { font-size: 8px; font-weight: 900; color: #444; display: block; letter-spacing: 1px; margin-bottom: 4px; }
+.xp-value { font-size: 14px; font-weight: 900; color: #ffd700; font-family: 'Share Tech Mono'; }
 
-.footer-area { 
-    flex-shrink: 0; width: 100%; padding: 10px 25px 30px;
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-}
+.footer-area { flex-shrink: 0; width: 100%; padding: 10px 25px 30px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 
 .btn-main {
     width: 100%; max-width: 300px; padding: 16px; border-radius: 100px; border: none;
     font-weight: 900; font-size: 14px; background: #8a2be2; color: white; cursor: pointer;
-    transition: 0.3s;
 }
-.btn-main:active { opacity: 0.8; transform: scale(0.98); }
-
 .btn-pause { background: #111; border: 1px solid #222; margin-top: 5px; }
-
-.btn-quit-label {
-    background: none; border: none; color: #444; font-weight: 800;
-    font-size: 11px; padding: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
-}
+.btn-quit-label { background: none; border: none; color: #444; font-weight: 800; font-size: 11px; padding: 10px; cursor: pointer; text-transform: uppercase; }
