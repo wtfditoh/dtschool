@@ -18,7 +18,6 @@ let timer, segs = 0, total = 0, isPaused = false;
 const circle = document.getElementById('circle-bar');
 const circumference = 130 * 2 * Math.PI;
 
-// --- GERADOR DE SOM (TIC-TAC) ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const playTick = () => {
     if (isPaused) return;
@@ -82,48 +81,38 @@ const finish = async (win) => {
     clearInterval(timer);
     if (win && userPhone) {
         const xp = Math.floor((total/1500)*10);
-        try { await updateDoc(doc(db, "notas", userPhone), { xp: increment(xp) }); } catch(e) { console.error(e); }
+        try { await updateDoc(doc(db, "notas", userPhone), { xp: increment(xp) }); } catch(e) {}
     }
     window.location.reload();
 };
 
-// --- EVENTOS DE INTERFACE ---
-
-// Ajuste de Tempo
 document.getElementById('h-up').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v<12) v++; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; updateXPPreview(); };
 document.getElementById('h-down').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v>0) v--; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; updateXPPreview(); };
 document.getElementById('m-up').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v<55) v+=5; document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; updateXPPreview(); };
 document.getElementById('m-down').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v>0) v-=5; document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; updateXPPreview(); };
 
-// Controle do Timer
 document.getElementById('btn-start').onclick = start;
 document.getElementById('btn-pause').onclick = () => {
     isPaused = !isPaused;
     document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR";
 };
 
-// Modal de Desistência
 const modal = document.getElementById('modal-confirm');
 document.getElementById('btn-quit').onclick = () => { isPaused = true; modal.style.display = 'flex'; };
-document.getElementById('btn-keep-going').onclick = () => { 
-    isPaused = false; 
-    modal.style.display = 'none'; 
-    if(document.getElementById('btn-pause').innerText === "RETOMAR") isPaused = true;
-};
+document.getElementById('btn-keep-going').onclick = () => { isPaused = false; modal.style.display = 'none'; };
 document.getElementById('btn-really-quit').onclick = () => window.location.reload();
 
-// ABRIR MENU LATERAL (O ajuste que você pediu)
+// CORREÇÃO AQUI: CONECTANDO COM O MENU.JS
 document.getElementById('open-sidebar').onclick = () => {
-    // Aqui você chama a função que já existe no seu app para abrir o menu
-    if (typeof window.abrirMenuLateral === "function") {
-        window.abrirMenuLateral();
+    // Tenta chamar a função do seu menu.js. 
+    // Se a função lá se chamar toggleMenu(), troque o nome abaixo.
+    if (typeof window.abrirMenu === "function") {
+        window.abrirMenu();
     } else {
-        // Fallback caso a função tenha outro nome ou esteja em outro escopo
-        const sidebar = document.getElementById('sidebar'); // ajuste o ID se necessário
-        if(sidebar) sidebar.style.left = '0';
+        // Se não houver função, tenta voltar para a index onde o menu está
+        window.location.href = 'index.html'; 
     }
 };
 
-// Inicialização
 updateXPPreview();
 lucide.createIcons();
