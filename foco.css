@@ -2,138 +2,134 @@
 * {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
 }
 
 body {
-    background: #05020a; /* Roxo quase preto */
+    background: #05020a;
     color: #fff;
     font-family: 'Inter', sans-serif;
     height: 100vh;
+    width: 100vw;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
-header {
-    height: 70px;
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
+/* Centralizador mestre */
 .main-content {
     flex: 1;
+    position: relative; /* Para os filhos flutuarem com precisão */
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 20px;
 }
 
-/* ESCOLHA DE TEMPO - LIMPO E ALINHADO */
-.picker-wrap {
+/* Seletor de tempo - Travado no centro */
+.picker-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 30px;
+    gap: 15px;
 }
 
-.unit-group {
+.unit-column {
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 85px;
 }
 
-.number-display {
+.num-val {
     font-family: 'Orbitron', sans-serif;
-    font-size: 60px;
+    font-size: 62px; /* Tamanho fixo */
     font-weight: 900;
     color: #fff;
     line-height: 1;
-    margin: 10px 0;
+    margin: 5px 0;
+    text-align: center;
 }
 
-.arrow-btn {
+.arrow-icon {
     background: none;
     border: none;
     color: #8a2be2;
+    padding: 5px;
     cursor: pointer;
-    padding: 10px;
+    transition: 0.2s;
     display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
-.label-text {
-    font-size: 9px;
+.arrow-icon:active { opacity: 0.5; transform: scale(1.2); }
+
+.label-sub {
+    font-size: 8px;
     letter-spacing: 2px;
-    color: #333;
+    color: #444;
     font-weight: 800;
+    margin-top: 5px;
 }
 
-/* RELÓGIO ATIVO - FOCO TOTAL */
+.separator {
+    font-family: 'Orbitron';
+    font-size: 30px;
+    color: #1a1a1a;
+    margin-top: -15px;
+}
+
+/* Relógio Ativo */
 #active-clock {
     display: none;
     font-family: 'Orbitron', sans-serif;
     color: #8a2be2;
-    text-shadow: 0 0 30px rgba(138, 43, 226, 0.5);
+    text-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
     align-items: baseline;
 }
 
-#big-time { font-size: 100px; letter-spacing: -3px; }
-#small-sec { font-size: 35px; margin-left: 10px; opacity: 0.4; }
+#big-time { font-size: 100px; letter-spacing: -2px; }
+#small-sec { font-size: 35px; margin-left: 8px; opacity: 0.4; }
 
-.xp-tag {
-    color: #ffd700;
-    font-size: 11px;
-    font-weight: 900;
-    margin-top: 40px;
-    letter-spacing: 1px;
-}
-
-/* RODAPÉ E BOTÕES */
-.footer-actions {
-    padding: 30px 20px;
+/* Rodapé travado embaixo */
+.footer-area {
+    padding: 30px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     width: 100%;
-    max-width: 350px;
+    max-width: 400px;
     margin: 0 auto;
 }
 
-.btn {
+.btn-base {
     width: 100%;
     padding: 20px;
     border-radius: 18px;
     border: none;
     font-weight: 900;
-    font-size: 15px;
+    font-size: 14px;
     cursor: pointer;
-    transition: 0.2s;
 }
 
-.btn-start { background: #8a2be2; color: #fff; box-shadow: 0 10px 25px rgba(138, 43, 226, 0.3); }
-.btn-pause { background: #fff; color: #000; }
-.btn-quit { background: none; color: #444; border: 1px solid #222; margin-top: 15px; }
+.btn-purple { background: #8a2be2; color: #fff; }
+.btn-white { background: #fff; color: #000; }
+.btn-ghost { background: transparent; color: #444; border: 1px solid #222; margin-top: 10px; }
 
-/* MODAL DE DESISTÊNCIA */
-.modal-overlay {
+/* Modal */
+.modal-bg {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.95);
+    background: rgba(0,0,0,0.98);
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 100;
+    z-index: 999;
 }
-
-.modal-content {
+.modal-box {
     background: #0e0e0e;
     padding: 30px;
     border-radius: 25px;
-    border: 1px solid #1a1a1a;
     width: 85%;
-    max-width: 320px;
+    max-width: 300px;
     text-align: center;
+    border: 1px solid #1a1a1a;
 }
