@@ -3,68 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain - Scanner Inteligente</title>
+    <title>Hub Brain - Organizador de Horários</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root { --purple: #8a2be2; --bg: #0a0a0a; --card: #111; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         
-        h2 { text-align: center; letter-spacing: 1px; margin: 10px 0; }
-        .purple { color: var(--purple); }
-        
-        /* Botão Estilizado */
         .btn-upload {
-            background: var(--purple); color: white; border: none; padding: 14px 28px;
-            border-radius: 30px; font-weight: bold; cursor: pointer; margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3); width: 80%; max-width: 300px;
+            background: var(--purple); color: white; border: none; padding: 12px 24px;
+            border-radius: 30px; font-weight: bold; cursor: pointer; margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3); width: 100%; max-width: 300px;
         }
 
-        /* Grade Compacta */
+        /* Área de Matérias Detectadas */
+        #lista-materias {
+            display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+            margin-bottom: 20px; min-height: 40px; padding: 10px; border: 1px dashed #333; border-radius: 10px;
+        }
+        .materia-item {
+            background: var(--purple); color: white; padding: 6px 12px; border-radius: 20px;
+            font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .materia-item.selecionada { outline: 3px solid white; transform: scale(1.1); }
+
+        /* Grade */
         .timetable {
             display: grid; grid-template-columns: 40px repeat(5, 1fr);
             gap: 4px; width: 100%; max-width: 500px;
-            background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid #222;
+            background: var(--card); padding: 8px; border-radius: 12px;
         }
-        .header { font-size: 9px; color: var(--purple); text-align: center; font-weight: 800; padding-bottom: 5px; }
         .cell {
-            background: #000; border: 1px solid #1a1a1a; height: 50px;
-            border-radius: 4px; font-size: 8px; display: flex; align-items: center;
-            justify-content: center; text-align: center; font-weight: bold; padding: 2px;
-            position: relative;
+            background: #000; border: 1px solid #222; height: 55px;
+            border-radius: 4px; font-size: 9px; display: flex; align-items: center;
+            justify-content: center; text-align: center; font-weight: bold; cursor: pointer;
         }
-        .hour-label { color: #444; font-size: 9px; display: flex; align-items: center; justify-content: center; }
-        
-        .materia-tag {
-            color: #fff; background: rgba(138, 43, 226, 0.25);
-            border: 1px solid var(--purple); width: 95%; padding: 4px 0;
-            border-radius: 3px; font-size: 7px; text-transform: uppercase;
-        }
+        .header { font-size: 10px; color: var(--purple); text-align: center; font-weight: bold; }
+        .materia-no-grid { color: #fff; text-transform: uppercase; font-size: 8px; }
 
-        #status { margin: 10px; font-size: 12px; color: var(--purple); font-weight: bold; height: 18px; text-align: center; }
+        #status { margin-bottom: 10px; font-size: 12px; color: var(--purple); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h2>HUB <span class="purple">SCANNER</span></h2>
-    <div id="status">Aguardando print do horário...</div>
+    <h2 style="margin: 5px 0;">HUB <span style="color:var(--purple)">SCANNER</span></h2>
+    <div id="status">Suba o print para extrair as matérias</div>
 
-    <button class="btn-upload" onclick="document.getElementById('img-input').click()">ESCOLHER PRINT</button>
+    <button class="btn-upload" onclick="document.getElementById('img-input').click()">SUBIR HORÁRIO</button>
     <input type="file" id="img-input" accept="image/*" hidden>
+
+    <div id="lista-materias"></div>
 
     <div class="timetable" id="grid">
         <div class="header">H</div>
         <div class="header">2ª</div><div class="header">3ª</div><div class="header">4ª</div><div class="header">5ª</div><div class="header">6ª</div>
-        </div>
+    </div>
+
+    <button class="btn-upload" style="margin-top:20px; background:#222;" onclick="location.reload()">REINICIAR</button>
 
     <script>
         const grid = document.getElementById('grid');
+        const listaDiv = document.getElementById('lista-materias');
         const materiasBase = ["QUIMICA", "FISICA", "HISTORIA", "BIOLOGIA", "MATEMATICA", "GEOGRAFIA", "PORTUGUES", "FILOSOFIA", "SOCIOLOGIA", "ARTES", "INGLES", "ESPANHOL", "EDUCACAO"];
+        
+        let materiaSelecionada = null;
 
-        // Criar estrutura da grade
+        // Criar Grade
         for(let h=1; h<=6; h++) {
-            grid.innerHTML += `<div class="hour-label">${h}º</div>`;
+            grid.innerHTML += `<div style="color:#555; font-size:10px; display:flex; align-items:center; justify-content:center;">${h}º</div>`;
             for(let d=0; d<5; d++) {
-                grid.innerHTML += `<div class="cell" id="slot-${h}-${d}"></div>`;
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.onclick = () => {
+                    if(materiaSelecionada) {
+                        cell.innerHTML = `<span class="materia-no-grid">${materiaSelecionada.innerText}</span>`;
+                        materiaSelecionada.classList.remove('selecionada');
+                        materiaSelecionada = null;
+                    } else {
+                        cell.innerHTML = '';
+                    }
+                };
+                grid.appendChild(cell);
             }
         }
 
@@ -72,61 +90,37 @@
             const file = e.target.files[0];
             if(!file) return;
 
-            const status = document.getElementById('status');
-            status.innerText = "🧠 SINCRONIZANDO TABELA...";
-            
-            // Limpa a grade para novo scan
-            document.querySelectorAll('.cell').forEach(c => c.innerHTML = '');
+            document.getElementById('status').innerText = "🧠 EXTRAINDO DISCIPLINAS...";
+            listaDiv.innerHTML = "";
 
             const worker = await Tesseract.createWorker('por');
             const { data } = await worker.recognize(file);
             
-            // --- LÓGICA DE CALIBRAGEM POR ÂNCORA ---
-            let anchorY = 0; // Topo da tabela (onde estão os dias)
-            let anchorX = 0; // Início da tabela à esquerda
-            let imgWidth = data.blocks[0].bbox.x1;
-            let imgHeight = data.blocks[0].bbox.y1;
-
-            // Busca a posição das palavras "Feira" para saber onde a tabela começa de verdade
-            data.words.forEach(w => {
-                const t = w.text.toUpperCase();
-                if(t.includes("FEIRA") || t.includes("EGUNDA") || t.includes("TERCA")) {
-                    if(anchorY === 0 || w.bbox.y1 < anchorY) anchorY = w.bbox.y1;
-                    if(anchorX === 0 || w.bbox.x0 < anchorX) anchorX = w.bbox.x0;
-                }
-            });
-
-            // Se não achar âncora, usa valores padrão para não quebrar
-            if(anchorY === 0) anchorY = imgHeight * 0.2; 
-            if(anchorX === 0) anchorX = imgWidth * 0.1;
-
-            const areaUtilH = imgHeight - anchorY;
-            const areaUtilW = imgWidth - anchorX;
+            let encontradas = new Set();
 
             data.words.forEach(word => {
                 let txt = word.text.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                
                 materiasBase.forEach(m => {
-                    if(txt.includes(m)) {
-                        // Calcula a coluna baseada na distância da âncora X
-                        let col = Math.floor(((word.bbox.x0 - anchorX) / areaUtilW) * 5);
-                        
-                        // Calcula a linha baseada na distância da âncora Y (abaixo dos nomes dos dias)
-                        let row = Math.floor(((word.bbox.y0 - anchorY) / areaUtilH) * 6) + 1;
-
-                        // Travas de segurança para manter dentro da grade 6x5
-                        col = Math.max(0, Math.min(4, col));
-                        row = Math.max(1, Math.min(6, row));
-
-                        const celula = document.getElementById(`slot-${row}-${col}`);
-                        if(celula && !celula.innerText.includes(m)) {
-                            celula.innerHTML = `<div class="materia-tag">${m}</div>`;
-                        }
-                    }
+                    if(txt.includes(m)) encontradas.add(m);
                 });
             });
 
-            status.innerText = "✅ MAPEADO COM SUCESSO!";
+            if(encontradas.size === 0) {
+                document.getElementById('status').innerText = "❌ Nenhuma matéria detectada. Tente outro print.";
+            } else {
+                document.getElementById('status').innerText = "✅ Clique na matéria, depois no horário:";
+                encontradas.forEach(m => {
+                    const span = document.createElement('span');
+                    span.className = 'materia-item';
+                    span.innerText = m;
+                    span.onclick = () => {
+                        if(materiaSelecionada) materiaSelecionada.classList.remove('selecionada');
+                        materiaSelecionada = span;
+                        span.classList.add('selecionada');
+                    };
+                    listaDiv.appendChild(span);
+                });
+            }
             await worker.terminate();
         };
     </script>
