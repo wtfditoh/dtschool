@@ -11,7 +11,7 @@
 
     <header class="header-minimal">
         <button id="back-nav" style="background:none; border:none; color:white;"><i data-lucide="chevron-left"></i></button>
-        <span style="font-weight: 900; font-size: 9px; letter-spacing: 3px; color: #222;">FOCUS</span>
+        <span style="font-weight: 900; font-size: 9px; letter-spacing: 2px; color: #222;">MODO FOCO</span>
         <div style="width: 24px;"></div>
     </header>
 
@@ -26,32 +26,32 @@
                 <div id="setup-view">
                     <div class="digital-clock">
                         <div class="unit-adjust">
-                            <button class="btn-arrow" id="h-up"><i data-lucide="chevron-up" size="24"></i></button>
+                            <button class="btn-arrow" id="h-up"><i data-lucide="plus" size="20"></i></button>
                             <span id="h-val">00</span>
-                            <button class="btn-arrow" id="h-down"><i data-lucide="chevron-down" size="24"></i></button>
+                            <button class="btn-arrow" id="h-down"><i data-lucide="minus" size="20"></i></button>
                         </div>
-                        <div style="margin: 0 5px; opacity: 0.3;">:</div>
+                        <div style="opacity: 0.2; margin: 0 5px;">:</div>
                         <div class="unit-adjust">
-                            <button class="btn-arrow" id="m-up"><i data-lucide="chevron-up" size="24"></i></button>
+                            <button class="btn-arrow" id="m-up"><i data-lucide="plus" size="20"></i></button>
                             <span id="m-val">25</span>
-                            <button class="btn-arrow" id="m-down"><i data-lucide="chevron-down" size="24"></i></button>
+                            <button class="btn-arrow" id="m-down"><i data-lucide="minus" size="20"></i></button>
                         </div>
                     </div>
-                    <p class="hint-text">SET TIME</p>
+                    <div class="xp-badge">RECOMPENSA: <span id="xp-num">10</span> XP</div>
                 </div>
 
                 <div id="active-clock" style="display: none;">
                     <div class="digital-clock" id="main-time">00:25</div>
-                    <p class="hint-text" style="color:#8a2be2">FOCUSING</p>
+                    <div class="xp-badge" style="border-color: #ffd70033;">FOCO ATIVO</div>
                 </div>
             </div>
         </div>
     </main>
 
     <footer class="footer-area">
-        <button id="btn-start" class="btn-main">START SESSION</button>
-        <button id="btn-pause" class="btn-main btn-pause" style="display:none">PAUSE</button>
-        <button id="btn-quit" class="btn-quit" style="display:none">QUIT SESSION</button>
+        <button id="btn-start" class="btn-main">INICIAR SESSÃO</button>
+        <button id="btn-pause" class="btn-main btn-pause" style="display:none">PAUSAR</button>
+        <button id="btn-quit" class="btn-quit" style="display:none">DESISTIR</button>
     </footer>
 
     <script type="module" src="foco-logica.js"></script>
