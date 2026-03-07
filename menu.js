@@ -1,6 +1,5 @@
-// menu.js - O Coração da Navegação do Hub Brain
+// menu.js - O Coração da Navegação do Hub Brain com PWA
 const criarMenuGlobal = () => {
-    // 1. Criar o HTML do Menu Lateral com TODAS as suas páginas
     const menuHTML = `
         <div id="side-menu" class="side-menu">
             <div class="menu-header">
@@ -18,6 +17,10 @@ const criarMenuGlobal = () => {
                 <a href="ranking.html" id="link-ranking"><i data-lucide="trophy"></i> Ranking</a>
             </nav>
             <div class="menu-footer">
+                <button id="install-app-btn" class="btn-install-menu" style="display: none;">
+                    <i data-lucide="download-cloud"></i> Baixar App
+                </button>
+                
                 <button id="btn-logout-sidebar" class="btn-logout-menu">
                     <i data-lucide="log-out"></i> Sair da Conta
                 </button>
@@ -26,32 +29,22 @@ const criarMenuGlobal = () => {
         <div id="menu-overlay" class="menu-overlay"></div>
     `;
 
-    // 2. Injetar o menu no início do body
     document.body.insertAdjacentHTML('afterbegin', menuHTML);
 
-    // 3. Seleção de elementos
     const sideMenu = document.getElementById('side-menu');
     const menuOverlay = document.getElementById('menu-overlay');
-    const btnOpen = document.getElementById('open-menu'); // Deve existir no Header das páginas
+    const btnOpen = document.getElementById('open-menu');
     const btnClose = document.getElementById('close-menu');
     const btnLogout = document.getElementById('btn-logout-sidebar');
+    const btnInstall = document.getElementById('install-app-btn');
 
-    // 4. Lógica de Abrir/Fechar
-    const abrirMenu = () => {
-        sideMenu.classList.add('open');
-        menuOverlay.classList.add('active');
-    };
-
-    const fecharMenu = () => {
-        sideMenu.classList.remove('open');
-        menuOverlay.classList.remove('active');
-    };
+    const abrirMenu = () => { sideMenu.classList.add('open'); menuOverlay.classList.add('active'); };
+    const fecharMenu = () => { sideMenu.classList.remove('open'); menuOverlay.classList.remove('active'); };
 
     if (btnOpen) btnOpen.onclick = abrirMenu;
     if (btnClose) btnClose.onclick = fecharMenu;
     if (menuOverlay) menuOverlay.onclick = fecharMenu;
 
-    // 5. Lógica de Logout (Garante que funciona em todas as telas)
     if (btnLogout) {
         btnLogout.onclick = () => {
             localStorage.clear();
@@ -59,10 +52,28 @@ const criarMenuGlobal = () => {
         };
     }
 
-    // 6. Marcar link ativo baseado na URL atual
+    // --- LÓGICA DE INSTALAÇÃO DO APP ---
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (btnInstall) btnInstall.style.display = 'flex'; // Só mostra se puder instalar
+    });
+
+    if (btnInstall) {
+        btnInstall.onclick = async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') btnInstall.style.display = 'none';
+                deferredPrompt = null;
+            }
+        };
+    }
+
+    // Marcar link ativo
     const path = window.location.pathname;
-    const paginas = ['index', 'agenda', 'estudos', 'horario', 'perfil', 'ranking'];
-    
+    const paginas = ['index', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco'];
     paginas.forEach(pg => {
         if (path.includes(pg)) {
             const link = document.getElementById(`link-${pg}`);
@@ -70,18 +81,9 @@ const criarMenuGlobal = () => {
         }
     });
 
-    // Especial para a Home caso o path seja apenas "/"
-    if (path === '/' || path.endsWith('/')) {
-        document.getElementById('link-index')?.classList.add('active');
-    }
-
-    // 7. Renderizar ícones do Lucide
-    if (window.lucide) {
-        lucide.createIcons();
-    }
+    if (window.lucide) lucide.createIcons();
 };
 
-// Inicializa quando o DOM estiver pronto
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', criarMenuGlobal);
 } else {
