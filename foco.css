@@ -1,5 +1,4 @@
-/* foco.css */
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;900&display=swap');
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
@@ -25,7 +24,7 @@ body {
 .progress-ring__circle {
     stroke: #8a2be2; stroke-width: 6; fill: transparent;
     stroke-dasharray: 816.8; stroke-dashoffset: 816.8;
-    stroke-linecap: round; transition: stroke-dashoffset 0.5s ease;
+    stroke-linecap: round; transition: stroke-dashoffset 0.5s linear;
     filter: drop-shadow(0 0 10px #8a2be2);
 }
 .progress-bg { stroke: #0a0a0a; stroke-width: 6; fill: transparent; }
@@ -40,12 +39,13 @@ body {
 #active-clock .digital-clock { font-size: 60px; color: #8a2be2; text-shadow: 0 0 15px rgba(138, 43, 226, 0.4); }
 
 .unit-adjust { display: flex; flex-direction: column; align-items: center; }
-.btn-arrow { background: none; border: none; color: #222; cursor: pointer; padding: 5px; }
+.btn-arrow { background: none; border: none; color: #222; cursor: pointer; padding: 8px; transition: 0.2s; }
+.btn-arrow:active { color: #8a2be2; transform: scale(1.2); }
 
 .xp-badge {
     background: rgba(138, 43, 226, 0.1); border: 1px solid rgba(138, 43, 226, 0.3);
     padding: 6px 15px; border-radius: 50px; color: #ffd700; font-size: 10px;
-    font-weight: 900; margin-top: 20px; display: inline-block;
+    font-weight: 900; margin-top: 20px; display: inline-block; letter-spacing: 1px;
 }
 
 .footer-area { 
@@ -55,13 +55,14 @@ body {
 
 .btn-main {
     width: 100%; max-width: 300px; padding: 16px; border-radius: 100px; border: none;
-    font-weight: 900; font-size: 14px; background: #8a2be2; color: white;
+    font-weight: 900; font-size: 14px; background: #8a2be2; color: white; cursor: pointer;
+    transition: 0.3s;
 }
+.btn-main:active { opacity: 0.8; transform: scale(0.98); }
 
 .btn-pause { background: #111; border: 1px solid #222; margin-top: 5px; }
 
-/* BOTÃO DESISTIR VOLTOU */
 .btn-quit-label {
     background: none; border: none; color: #444; font-weight: 800;
-    font-size: 11px; padding: 10px; cursor: pointer; text-transform: uppercase;
+    font-size: 11px; padding: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
 }
