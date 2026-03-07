@@ -2,112 +2,101 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Hub Brain Scanner v3</title>
+    <title>Scanner Hub Brain - Calibrado</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        body { background: #0a0a0a; color: white; font-family: 'Inter', system-ui; padding: 10px; margin: 0; }
+        body { background: #0a0a0a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .purple { color: #8a2be2; }
+        #status { margin: 10px; font-weight: bold; color: #8a2be2; }
         
-        /* Layout Compacto */
-        .container { max-width: 600px; margin: 0 auto; }
-        .upload-zone { border: 2px dashed #333; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; cursor: pointer; }
-        
-        .grid-agenda {
+        /* Grade Compacta */
+        .timetable {
             display: grid;
-            grid-template-columns: 60px repeat(5, 1fr);
-            gap: 4px;
+            grid-template-columns: 50px repeat(5, 1fr);
+            gap: 5px;
+            width: 100%;
+            max-width: 500px;
             background: #111;
-            padding: 8px;
+            padding: 10px;
             border-radius: 12px;
-            font-size: 10px;
         }
-        .header { color: #8a2be2; font-weight: 900; text-align: center; padding-bottom: 5px; text-transform: uppercase; font-size: 9px; }
-        .hour-tag { color: #555; display: flex; align-items: center; justify-content: center; font-weight: bold; border-right: 1px solid #222; }
-        
-        .cell { 
-            background: #000; border: 1px solid #222; height: 50px; 
-            border-radius: 5px; display: flex; align-items: center; 
-            justify-content: center; text-align: center; overflow: hidden;
-            padding: 2px;
+        .cell {
+            background: #000;
+            border: 1px solid #222;
+            height: 45px;
+            border-radius: 4px;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
         }
-        .materia {
-            background: rgba(138, 43, 226, 0.2);
-            color: #fff; border: 1px solid #8a2be2;
-            border-radius: 3px; font-size: 8px; width: 100%;
-            padding: 2px 0; font-weight: bold;
-        }
-        #status { text-align: center; font-size: 12px; margin: 10px 0; color: #8a2be2; height: 20px; }
+        .header { font-size: 10px; color: #8a2be2; text-align: center; padding-bottom: 5px; }
+        .materia { color: #fff; background: #8a2be233; border: 1px solid #8a2be2; width: 90%; padding: 2px; border-radius: 3px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2 style="text-align: center;">SCANNER <span class="purple">SIGEDUC</span></h2>
-    <div id="status"></div>
+    <h2>SCANNER <span class="purple">SIGEDUC</span></h2>
+    <input type="file" id="upload" accept="image/*">
+    <div id="status">Aguardando print...</div>
 
-    <div class="upload-zone" onclick="document.getElementById('img').click()">
-        Clique para subir o print do Horário
-        <input type="file" id="img" accept="image/*" hidden>
-    </div>
-
-    <div class="grid-agenda" id="grade">
-        <div class="header">HORA</div>
+    <div class="timetable" id="grid">
+        <div class="header">H</div>
         <div class="header">SEG</div><div class="header">TER</div><div class="header">QUA</div><div class="header">QUI</div><div class="header">SEX</div>
         </div>
-</div>
 
-<script>
-const materiasPermitidas = ["QUIMICA", "FISICA", "HISTORIA", "BIOLOGIA", "MATEMATICA", "GEOGRAFIA", "PORTUGUES", "FILOSOFIA", "SOCIOLOGIA", "ARTES", "INGLES", "ESPANHOL", "EDUCACAO"];
-const horasVespertino = ["13:00", "13:50", "14:40", "15:50", "16:40", "17:30"];
+    <script>
+        const materiasOk = ["QUIMICA", "FISICA", "HISTORIA", "BIOLOGIA", "MATEMATICA", "GEOGRAFIA", "PORTUGUES", "FILOSOFIA", "SOCIOLOGIA", "ARTES", "INGLES", "ESPANHOL", "EDUCACAO"];
+        const grid = document.getElementById('grid');
 
-// Criar grade 6x5
-const grade = document.getElementById('grade');
-for(let h=0; h<6; h++) {
-    grade.innerHTML += `<div class="hour-tag">${horasVespertino[h]}</div>`;
-    for(let d=0; d<5; d++) {
-        grade.innerHTML += `<div class="cell" id="slot-${h}-${d}"></div>`;
-    }
-}
-
-document.getElementById('img').onchange = async (e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-
-    const status = document.getElementById('status');
-    status.innerText = "🧠 Lendo dados...";
-
-    const worker = await Tesseract.createWorker('por');
-    const { data } = await worker.recognize(file);
-    
-    // Pegar dimensões reais da imagem
-    const imgW = data.blocks[0].bbox.x1;
-    const imgH = data.blocks[0].bbox.y1;
-
-    data.words.forEach(word => {
-        let txt = word.text.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        
-        materiasPermitidas.forEach(m => {
-            if(txt.includes(m)) {
-                // CALCULO DE COORDENADA MELHORADO
-                // Divide a imagem em fatias proporcionais
-                let col = Math.floor(((word.bbox.x0 + word.bbox.x1) / 2 / imgW) * 5.5);
-                let row = Math.floor(((word.bbox.y0 + word.bbox.y1) / 2 / imgH) * 7.5);
-
-                // Ajuste de offset (o SIGEduc tem cabeçalhos que pulamos)
-                col = Math.max(0, Math.min(4, col - 1)); 
-                row = Math.max(0, Math.min(5, row - 2));
-
-                const celula = document.getElementById(`slot-${row}-${col}`);
-                if(celula && !celula.innerText.includes(m)) {
-                    celula.innerHTML = `<div class="materia">${m}</div>`;
-                }
+        // Criar a grade
+        for(let h=1; h<=6; h++) {
+            grid.innerHTML += `<div style="color:#444; font-size:10px; display:flex; align-items:center; justify-content:center;">${h}º</div>`;
+            for(let d=0; d<5; d++) {
+                grid.innerHTML += `<div class="cell" id="slot-${h}-${d}"></div>`;
             }
-        });
-    });
+        }
 
-    status.innerText = "✅ Finalizado!";
-    await worker.terminate();
-};
-</script>
+        document.getElementById('upload').onchange = async (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            document.getElementById('status').innerText = "🧠 ESCANEANDO POSIÇÕES...";
+            
+            const worker = await Tesseract.createWorker('por');
+            const { data } = await worker.recognize(file);
+            
+            // 1. Achar os limites da tabela na imagem
+            const imgW = data.blocks[0].bbox.x1;
+            const imgH = data.blocks[0].bbox.y1;
+
+            data.words.forEach(word => {
+                let txt = word.text.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                
+                materiasOk.forEach(m => {
+                    if(txt.includes(m)) {
+                        // CALCULO DE COORDENADA (A MÁGICA)
+                        // Ajustamos a sensibilidade para bater com o seu print do SIGEduc
+                        let col = Math.floor(((word.bbox.x0 / imgW) * 100) / 18); // Divide em 5 colunas de ~18%
+                        let row = Math.floor(((word.bbox.y0 / imgH) * 100) / 14); // Divide em 6 linhas de ~14%
+
+                        // Limites de segurança
+                        col = Math.max(0, Math.min(4, col - 1)); 
+                        row = Math.max(1, Math.min(6, row - 1));
+
+                        const celula = document.getElementById(`slot-${row}-${col}`);
+                        if(celula && !celula.innerText.includes(m)) {
+                            celula.innerHTML = `<div class="materia">${m}</div>`;
+                        }
+                    }
+                });
+            });
+
+            document.getElementById('status').innerText = "✅ MAPEADO!";
+            await worker.terminate();
+        };
+    </script>
 </body>
 </html>
