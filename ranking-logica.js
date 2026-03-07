@@ -35,22 +35,35 @@ async function carregarRanking() {
 }
 
 function renderizar(lista) {
+    // Renderiza o Top 3
     for(let i=0; i<3; i++) {
         const u = lista[i];
         if(u) {
             document.getElementById(`p${i+1}-name`).innerText = u.nome;
             document.getElementById(`p${i+1}-score`).innerText = u.xp;
-            document.getElementById(`avatar-p${i+1}`).innerHTML = i === 0 ? `<i data-lucide="crown" class="crown-icon"></i><i data-lucide="${u.avatar}"></i>` : `<i data-lucide="${u.avatar}"></i>`;
+            
+            const avatarFrame = document.getElementById(`avatar-p${i+1}`);
+            if (i === 0) {
+                avatarFrame.innerHTML = `<i data-lucide="crown" class="crown-icon"></i><i data-lucide="${u.avatar}" style="width: 50px; height: 50px;"></i>`;
+            } else {
+                avatarFrame.innerHTML = `<i data-lucide="${u.avatar}" style="width: 35px; height: 35px;"></i>`;
+            }
         }
     }
+
+    // Renderiza o resto da lista em cards
     const container = document.getElementById('lista-ranking');
     container.innerHTML = lista.slice(3).map((u, i) => `
         <div class="rank-item">
             <span class="rank-pos">${i + 4}º</span>
-            <div class="rank-info"><span class="rank-name">${u.nome}</span><span class="rank-patente">${getPatente(u.xp)} • ${u.xp} XP</span></div>
-            <i data-lucide="${u.avatar}" style="width:16px; opacity:0.2;"></i>
+            <div class="rank-info">
+                <span class="rank-name">${u.nome}</span>
+                <span class="rank-patente">${getPatente(u.xp)} • ${u.xp} XP</span>
+            </div>
+            <i data-lucide="${u.avatar}" style="width:22px; height:22px; color:#8a2be2; opacity:0.6;"></i>
         </div>
     `).join('') || '<p style="text-align:center; padding:20px; color:#444;">Sem mais competidores.</p>';
+    
     if(window.lucide) lucide.createIcons();
 }
 
