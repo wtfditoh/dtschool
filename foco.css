@@ -1,69 +1,109 @@
 /* foco.css */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
 body { 
     background: #000; 
     color: white; font-family: 'Inter', sans-serif; 
-    height: 100vh; overflow: hidden;
-    display: flex; flex-direction: column; align-items: center;
+    height: 100vh; width: 100vw; overflow: hidden;
+    display: flex; flex-direction: column;
 }
 
-/* HEADER */
-.header-minimal { width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+.header-minimal { flex-shrink: 0; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
 
-/* CONTAINER DO RELÓGIO CIRCULAR */
-.timer-container {
-    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    position: relative; width: 100%;
+/* VIEWPORT DINÂMICA: Ajusta o tamanho do conteúdo baseado na altura da tela */
+.timer-viewport {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0; 
 }
 
-/* A BARRA CIRCULAR (SVG) */
-.progress-ring { transform: rotate(-90deg); position: absolute; z-index: 1; }
+.canvas-timer {
+    position: relative;
+    /* O círculo encolhe se a tela for muito baixa */
+    width: clamp(250px, 70vh, 320px);
+    height: clamp(250px, 70vh, 320px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-ring {
+    position: absolute;
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
 .progress-ring__circle {
-    stroke: #8a2be2; stroke-width: 8; fill: transparent;
-    stroke-dasharray: 816.8; stroke-dashoffset: 816.8;
-    stroke-linecap: round; transition: stroke-dashoffset 1s linear;
-    filter: drop-shadow(0 0 10px #8a2be2);
+    stroke: #8a2be2;
+    stroke-width: 6;
+    fill: transparent;
+    stroke-dasharray: 816.8; 
+    stroke-dashoffset: 816.8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.3s ease;
+    filter: drop-shadow(0 0 12px #8a2be2);
 }
-.progress-bg { stroke: #111; stroke-width: 8; fill: transparent; }
 
-/* NÚMEROS ESTILO DIGITAL NEON */
+.progress-bg { stroke: #0a0a0a; stroke-width: 6; fill: transparent; }
+
+/* CONTEÚDO COM A NOVA FONTE DIGITAL */
+.timer-content {
+    position: absolute;
+    z-index: 5;
+    text-align: center;
+}
+
 .digital-clock {
-    font-family: 'Orbitron', sans-serif; font-weight: 900;
-    color: #8a2be2; text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 5; position: relative;
+    font-family: 'Share Tech Mono', monospace; /* Fonte de Relógio Real */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
 }
 
-#setup-view .digital-clock { font-size: 60px; gap: 10px; }
-#active-clock .digital-clock { font-size: 75px; flex-direction: column; }
+#setup-view .digital-clock { font-size: 55px; gap: 2px; }
+#active-clock .digital-clock { font-size: 70px; color: #8a2be2; text-shadow: 0 0 20px rgba(138, 43, 226, 0.4); }
 
 .unit-adjust { display: flex; flex-direction: column; align-items: center; }
 
 .btn-arrow {
-    background: none; border: none; color: #333; cursor: pointer; padding: 10px;
+    background: none; border: none; color: #333; cursor: pointer; padding: 5px;
+    transition: 0.2s;
 }
-.btn-arrow:active { color: #8a2be2; }
+.btn-arrow:active { color: #8a2be2; transform: scale(1.2); }
 
-/* TEXTOS AUXILIARES */
-.hint-text { font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 2px; margin-top: 15px; }
+.hint-text { 
+    font-size: 9px; color: #444; text-transform: uppercase; 
+    letter-spacing: 3px; margin-top: 5px; font-weight: 800;
+}
 
-/* RODAPÉ E BOTÕES */
-.footer-area { width: 100%; padding: 20px 30px 50px; display: flex; flex-direction: column; gap: 15px; z-index: 10; }
+/* RODAPÉ BLINDADO: Nunca sai da tela */
+.footer-area { 
+    flex-shrink: 0; 
+    padding: 10px 30px 30px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    gap: 8px;
+}
 
 .btn-main {
-    width: 100%; padding: 20px; border-radius: 50px; border: none;
-    font-weight: 900; font-size: 14px; letter-spacing: 1px;
-    background: #8a2be2; color: white; cursor: pointer;
+    width: 100%; max-width: 320px; padding: 18px; border-radius: 100px; border: none;
+    font-weight: 900; font-size: 14px; background: #8a2be2; color: white;
+    box-shadow: 0 10px 20px rgba(138, 43, 226, 0.2);
 }
 
-.btn-pause { background: rgba(255,255,255,0.05); border: 1px solid #222; color: #fff; }
+.btn-pause { background: #111; border: 1px solid #222; margin-top: 5px; }
 
-.btn-quit { background: none; border: none; color: #333; font-weight: 700; font-size: 12px; margin-top: 10px; }
-
-/* MODAL */
-.modal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.98);
-    display: none; align-items: center; justify-content: center; z-index: 1000;
+.btn-quit { 
+    background: none; color: #333; font-weight: 700; font-size: 11px; 
+    padding: 10px; border: none; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 1px;
 }
-.modal-content { text-align: center; padding: 30px; width: 80%; }
