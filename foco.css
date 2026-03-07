@@ -169,3 +169,83 @@ body {
 
 .btn-pause { background: #111; border: 1px solid #222; }
 .btn-quit-label { background: none; border: none; color: #333; font-weight: 800; font-size: 11px; padding: 10px; cursor: pointer; text-transform: uppercase; }
+
+/* --- ESTILO DO MENU LATERAL (SIDEBAR) --- */
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px; /* Esconde o menu para a esquerda */
+    width: 280px;
+    height: 100%;
+    background: #0a0a0a; /* Fundo preto igual ao app */
+    z-index: 2000;
+    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-right: 1px solid #1a1a1a;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Quando o menu ganha a classe 'active', ele desliza para dentro */
+.sidebar.active {
+    left: 0;
+    box-shadow: 10px 0 50px rgba(0,0,0,0.8);
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 40px;
+}
+
+#close-sidebar {
+    background: none;
+    border: none;
+    color: #444;
+    cursor: pointer;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sidebar-menu a {
+    color: #666;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: 0.3s;
+}
+
+.sidebar-menu a.active {
+    color: #8a2be2; /* Cor roxa para a página atual */
+}
+
+.sidebar-menu a:active {
+    color: #fff;
+}
+
+/* Fundo escuro que aparece atrás do menu */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1999;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
