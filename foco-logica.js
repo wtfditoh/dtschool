@@ -1,70 +1,82 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = { /* Sua Config Aqui */ };
+// COLE SUA CONFIG AQUI
+const firebaseConfig = {
+    apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+    authDomain: "dt-scho0l.firebaseapp.com",
+    projectId: "dt-scho0l",
+    storageBucket: "dt-scho0l.firebasestorage.app",
+    messagingSenderId: "78578509391",
+    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const userPhone = localStorage.getItem('dt_user_phone');
 
 let timer;
-let segundosRestantes = 0;
+let segs = 0;
 let totalOriginal = 0;
 let isPaused = false;
 
-window.iniciarFoco = () => {
-    const h = parseInt(document.getElementById('select-h').value);
-    const m = parseInt(document.getElementById('select-m').value);
-    
-    segundosRestantes = (h * 3600) + (m * 60);
-    totalOriginal = segundosRestantes;
-    
-    document.getElementById('setup-area').style.display = 'none';
-    document.getElementById('active-area').style.display = 'block';
-    document.getElementById('xp-target').innerText = Math.floor(((h * 60 + m) / 25) * 10);
-    
-    runTimer();
+window.atualizarXP = () => {
+    const h = parseInt(document.getElementById('h-pick').value);
+    const m = parseInt(document.getElementById('m-pick').value);
+    const xp = Math.floor(((h * 60 + m) / 25) * 10);
+    document.getElementById('xp-preview-val').innerText = xp;
 };
 
-function runTimer() {
+window.iniciarSessao = () => {
+    const h = parseInt(document.getElementById('h-pick').value);
+    const m = parseInt(document.getElementById('m-pick').value);
+    if(h === 0 && m === 0) return alert("Escolha um tempo!");
+
+    segs = (h * 3600) + (m * 60);
+    totalOriginal = segs;
+
+    document.getElementById('setup-ui').style.display = 'none';
+    document.getElementById('timer-display').style.display = 'block';
+    document.getElementById('btn-pause').style.display = 'block';
+    document.getElementById('btn-exit').style.display = 'block';
+
     timer = setInterval(() => {
         if(!isPaused) {
-            segundosRestantes--;
-            atualizarRelogio();
-            if(segundosRestantes <= 0) finalizar(true);
+            segs--;
+            renderTime();
+            if(segs <= 0) finalizar(true);
         }
     }, 1000);
-}
+};
 
-function atualizarRelogio() {
-    const h = Math.floor(segundosRestantes / 3600);
-    const m = Math.floor((segundosRestantes % 3600) / 60);
-    const s = segundosRestantes % 60;
+function renderTime() {
+    const hrs = Math.floor(segs / 3600);
+    const min = Math.floor((segs % 3600) / 60);
+    const scs = segs % 60;
     document.getElementById('timer-display').innerText = 
-        `${h > 0 ? h + ':' : ''}${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+        `${hrs > 0 ? hrs+':' : ''}${min < 10 ? '0'+min : min}:${scs < 10 ? '0'+scs : scs}`;
 }
 
-window.togglePause = () => {
+window.pausarRetomar = () => {
     isPaused = !isPaused;
     document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR";
 };
 
-window.abrirModal = () => document.getElementById('modal-exit').style.display = 'flex';
-window.fecharModal = () => document.getElementById('modal-exit').style.display = 'none';
-
-window.confirmarDesistencia = () => {
-    fecharModal();
-    finalizar(false);
-};
+window.abrirModal = () => document.getElementById('modal-desistir').style.display = 'flex';
+window.fecharModal = () => document.getElementById('modal-desistir').style.display = 'none';
+window.desistirReal = () => { fecharModal(); finalizar(false); };
 
 async function finalizar(concluiu) {
     clearInterval(timer);
-    const minPassados = (totalOriginal - segundosRestantes) / 60;
-    let xp = Math.floor((minPassados / 25) * 10);
+    const minEstudados = (totalOriginal - segs) / 60;
+    let xp = Math.floor((minEstudados / 25) * 10);
     if(!concluiu) xp = Math.floor(xp / 2);
 
     if(xp > 0 && userPhone) {
-        await updateDoc(doc(db, "notas", userPhone), { xp: increment(xp) });
-        alert(concluiu ? `Foco finalizado! +${xp} XP` : `Interrompido. +${xp} XP creditados.`);
+        try {
+            await updateDoc(doc(db, "notas", userPhone), { xp: increment(xp) });
+            alert(concluiu ? `Incrível! +${xp} XP ganhos!` : `Parou cedo, mas ganhou +${xp} XP.`);
+        } catch(e) { console.error(e); }
     }
-    location.reload(); // Reseta para a tela inicial
+    window.location.reload();
 }
