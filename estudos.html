@@ -9,10 +9,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - IA</title>
+    
+    <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="ia-estilo.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
-        /* Estilo para manter o padrão Hub Brain no topo da IA */
+        /* Ajuste do Header para o padrão IA */
         .dt-header {
             display: flex;
             align-items: center;
@@ -34,6 +37,7 @@
             font-weight: 900;
             letter-spacing: 1px;
             font-size: 18px;
+            color: white;
         }
 
         .hub-symbol-mini {
@@ -44,20 +48,17 @@
             display: flex;
         }
 
-        .dt-menu-btn {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 10px;
-        }
+        /* Sobrescrevendo o fundo para o tema IA */
+        body { background: #05020a !important; margin: 0; }
+        
+        .purple-text { color: #8a2be2; }
     </style>
 </head>
-<body style="background: #05020a !important; margin: 0;">
+<body>
 
     <header class="dt-header">
-        <button class="dt-menu-btn" onclick="window.location.href='index.html'">
-            <i data-lucide="arrow-left"></i>
+        <button id="open-menu" class="btn-menu">
+            <i data-lucide="menu"></i>
         </button>
 
         <div class="hub-logo-ia">
@@ -65,11 +66,11 @@
             <div class="hub-symbol-mini">
                 <i data-lucide="brain-circuit" style="color: #8a2be2; width: 18px; height: 18px;"></i>
             </div>
-            <span style="color: #8a2be2;">BRAIN</span>
+            <span class="purple-text">BRAIN</span>
         </div>
 
-        <button class="dt-btn-lixeira" onclick="abrirModalLixeira()" style="background:none; border:none; color:#666;">
-            <i data-lucide="trash-2" style="width: 20px;"></i>
+        <button class="dt-btn-lixeira" onclick="abrirModalLixeira()" style="background:none; border:none; color:#666; cursor:pointer;">
+            <i data-lucide="trash-2" style="width: 22px;"></i>
         </button>
     </header>
 
@@ -98,7 +99,8 @@
 
     <div id="modal-lixeira" class="dt-modal-overlay" style="display: none;">
         <div class="dt-modal-box">
-            <h3>Limpar Histórico?</h3>
+            <h3 style="color: white;">Limpar Histórico?</h3>
+            <p style="color: #666; font-size: 14px;">Isso apagará o chat e o simulado atual.</p>
             <div class="dt-modal-footer">
                 <button class="dt-btn-cancelar" onclick="fecharModalLixeira()">Sair</button>
                 <button class="dt-btn-confirmar" onclick="confirmarLimpeza()">Limpar</button>
@@ -108,15 +110,22 @@
 
     <div id="modal-aviso" class="dt-modal-overlay" style="display: none;">
         <div class="dt-modal-box">
-            <p id="txt-aviso"></p>
+            <p id="txt-aviso" style="color: white;"></p>
             <button class="dt-btn-gerar" onclick="fecharAviso()">OK</button>
         </div>
     </div>
 
+    <script src="menu.js"></script>
     <script type="module" src="ia-logica.js"></script>
     <script>
-        // Importante para carregar os novos ícones (setinha e cérebro)
-        lucide.createIcons();
+        // Funções de interface da IA (não removidas)
+        window.abrirModalLixeira = () => document.getElementById('modal-lixeira').style.display = 'flex';
+        window.fecharModalLixeira = () => document.getElementById('modal-lixeira').style.display = 'none';
+        window.fecharAviso = () => document.getElementById('modal-aviso').style.display = 'none';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) lucide.createIcons();
+        });
     </script>
 </body>
 </html>
