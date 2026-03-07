@@ -3,183 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Modo Foco - Hub Brain</title>
+    <title>Hub Focus</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="menu.css">
     <style>
-        body {
-            background: #000;
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+        :root { --purple: #8a2be2; --bg: #000; --card: #111; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        
+        .header-foco { padding: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+
+        /* SELETOR ESTILO PICKER */
+        .picker-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .picker-box { display: flex; flex-direction: column; align-items: center; }
+        .picker-box select { 
+            background: var(--card); border: 1px solid #222; color: #fff; font-size: 32px; 
+            font-weight: 900; padding: 15px; border-radius: 15px; appearance: none; text-align: center; width: 80px; outline: none;
         }
+        .picker-label { font-size: 10px; color: var(--purple); font-weight: 800; margin-top: 8px; letter-spacing: 1px; }
+        .picker-sep { font-size: 30px; font-weight: 900; color: #333; margin-top: -25px; }
 
-        .foco-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+        /* XP PREVIEW */
+        .xp-display { background: rgba(138, 43, 226, 0.1); border: 1px solid rgba(138, 43, 226, 0.2); padding: 10px 25px; border-radius: 50px; color: #ffd700; font-weight: 900; font-size: 13px; margin-top: 10px; }
 
-        /* Configuração do Tempo (Antes de começar) */
-        .setup-area {
-            text-align: center;
-            width: 100%;
-            max-width: 300px;
-        }
+        /* TIMER ATIVO */
+        #timer-display { font-size: 90px; font-weight: 900; letter-spacing: -4px; margin: 20px 0; display: none; }
 
-        .setup-title {
-            font-size: 12px;
-            letter-spacing: 2px;
-            color: #8a2be2;
-            margin-bottom: 30px;
-            font-weight: 800;
-        }
+        /* BOTÕES */
+        .btn-foco { width: 100%; max-width: 300px; padding: 20px; border-radius: 20px; border: none; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.3s; margin-top: 30px; }
+        .btn-start { background: var(--purple); color: #fff; box-shadow: 0 10px 25px rgba(138, 43, 226, 0.3); }
+        .btn-pause { background: #fff; color: #000; display: none; }
+        .btn-exit { background: transparent; color: #555; border: 1px solid #222; display: none; margin-top: 15px; }
 
-        .time-selectors {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 40px;
-        }
-
-        .select-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        select {
-            background: #111;
-            border: 1px solid #222;
-            color: #fff;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 20px;
-            font-weight: 700;
-            outline: none;
-            appearance: none;
-            text-align: center;
-        }
-
-        .label { font-size: 10px; color: #555; font-weight: 700; }
-
-        /* Timer Ativo (Aparece quando inicia) */
-        .active-timer {
-            display: none;
-            text-align: center;
-        }
-
-        #timer-display {
-            font-size: 80px;
-            font-weight: 900;
-            letter-spacing: -2px;
-            margin: 0;
-        }
-
-        .xp-badge {
-            background: rgba(138, 43, 226, 0.1);
-            color: #8a2be2;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 800;
-            margin-top: 10px;
-            display: inline-block;
-        }
-
-        /* Botões */
-        .btn-foco {
-            width: 100%;
-            max-width: 280px;
-            padding: 18px;
-            border-radius: 15px;
-            border: none;
-            font-weight: 800;
-            font-size: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-top: 40px;
-        }
-
-        .btn-primary { background: #8a2be2; color: #fff; }
-        .btn-outline { background: transparent; color: #444; border: 1px solid #222; margin-top: 15px; }
-
-        /* Modal Desistir */
-        #modal-exit {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-card {
-            background: #111;
-            padding: 30px;
-            border-radius: 20px;
-            width: 80%;
-            max-width: 320px;
-            text-align: center;
-        }
+        /* MODAL */
+        #modal-desistir { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-body { background: #111; padding: 30px; border-radius: 25px; width: 80%; max-width: 320px; border: 1px solid #222; }
     </style>
 </head>
 <body>
 
-    <div class="foco-container">
-        
-        <div id="setup-area" class="setup-area">
-            <div class="setup-title">DEFINIR TEMPO DE FOCO</div>
-            <div class="time-selectors">
-                <div class="select-group">
-                    <select id="select-h">
-                        <option value="0">00</option>
-                        <option value="1">01</option>
-                        <option value="2">02</option>
-                        <option value="3">03</option>
-                    </select>
-                    <span class="label">HORAS</span>
+    <header class="header-foco">
+        <button id="open-menu" style="background:none; border:none; color:white;"><i data-lucide="menu"></i></button>
+        <div style="font-weight: 900; letter-spacing: 2px; font-size: 12px;">HUB <span style="color:var(--purple)">FOCUS</span></div>
+        <div style="width:24px"></div>
+    </header>
+
+    <main class="main-content">
+        <div id="setup-ui">
+            <div class="picker-container">
+                <div class="picker-box">
+                    <select id="h-pick" onchange="atualizarXP()">
+                        </select>
+                    <div class="picker-label">HORAS</div>
                 </div>
-                <div class="select-group">
-                    <select id="select-m">
-                        <option value="15">15</option>
-                        <option value="25" selected>25</option>
-                        <option value="30">30</option>
-                        <option value="45">45</option>
-                        <option value="50">50</option>
-                    </select>
-                    <span class="label">MINUTOS</span>
+                <div class="picker-sep">:</div>
+                <div class="picker-box">
+                    <select id="m-pick" onchange="atualizarXP()">
+                        </select>
+                    <div class="picker-label">MINUTOS</div>
                 </div>
             </div>
-            <button class="btn-foco btn-primary" onclick="iniciarFoco()">INICIAR SESSÃO</button>
+            <div class="xp-display">GANHO ESTIMADO: <span id="xp-preview-val">10</span> XP</div>
+            <button class="btn-foco btn-start" onclick="iniciarSessao()">INICIAR FOCO</button>
         </div>
 
-        <div id="active-area" class="active-timer">
-            <p id="timer-display">00:00</p>
-            <div class="xp-badge">VALENDO <span id="xp-target">0</span> XP</div>
-            <button class="btn-foco btn-primary" id="btn-pause" onclick="togglePause()">PAUSAR</button>
-            <button class="btn-foco btn-outline" onclick="abrirModal()">DESISTIR</button>
-        </div>
+        <div id="timer-display">25:00</div>
+        <button class="btn-foco btn-pause" id="btn-pause" onclick="pausarRetomar()">PAUSAR</button>
+        <button class="btn-foco btn-exit" id="btn-exit" onclick="abrirModal()">DESISTIR</button>
+    </main>
 
-    </div>
-
-    <div id="modal-exit">
-        <div class="modal-card">
-            <h3 style="margin-top:0">Interromper?</h3>
-            <p style="color:#666; font-size: 14px;">Você receberá apenas metade do XP proporcional.</p>
-            <button class="btn-foco btn-primary" style="margin-top:20px" onclick="fecharModal()">VOLTAR</button>
-            <button class="btn-foco btn-outline" style="border-color:#ff4444; color:#ff4444" onclick="confirmarDesistencia()">DESISTIR</button>
+    <div id="modal-desistir">
+        <div class="modal-body">
+            <h2 style="margin-top:0">Parar agora?</h2>
+            <p style="color:#777; font-size:14px; margin-bottom:30px">Você receberá apenas 50% do XP pelo tempo que já estudou.</p>
+            <button class="btn-foco btn-start" onclick="fecharModal()">VOLTAR</button>
+            <button class="btn-foco" style="background:#ff4444; color:#fff; margin-top:10px" onclick="desistirReal()">DESISTIR</button>
         </div>
     </div>
 
     <script src="menu.js"></script>
     <script type="module" src="foco-logica.js"></script>
+    <script>
+        // Popular selects
+        const hS = document.getElementById('h-pick');
+        const mS = document.getElementById('m-pick');
+        for(let i=0; i<=12; i++) hS.innerHTML += `<option value="${i}">${i < 10 ? '0'+i : i}</option>`;
+        for(let i=0; i<=55; i+=5) mS.innerHTML += `<option value="${i}" ${i==25?'selected':''}>${i < 10 ? '0'+i : i}</option>`;
+        lucide.createIcons();
+    </script>
 </body>
 </html>
