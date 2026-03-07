@@ -18,116 +18,57 @@ let timer, segs = 0, total = 0, isPaused = false;
 const circle = document.getElementById('circle-bar');
 const circumference = 130 * 2 * Math.PI;
 
-// --- FUNÇÃO DE XP (Sincronizada com o novo CSS) ---
 const updateXPPreview = () => {
     const h = parseInt(document.getElementById('h-val').innerText);
     const m = parseInt(document.getElementById('m-val').innerText);
-    const totalMin = (h * 60) + m;
-    // Lógica: 10 XP a cada 25 minutos
-    const xp = Math.floor((totalMin / 25) * 10);
-    const xpElement = document.getElementById('xp-num');
-    if(xpElement) xpElement.innerText = xp;
+    const xp = Math.floor(((h * 60) + m) / 25 * 10);
+    document.getElementById('xp-num').innerText = xp;
 };
 
-// --- CONTROLE DO CÍRCULO ---
-const updateCircle = (percent) => {
-    const offset = circumference - (percent / 100 * circumference);
-    circle.style.strokeDashoffset = offset;
+const updateCircle = (p) => {
+    circle.style.strokeDashoffset = circumference - (p / 100 * circumference);
 };
 
-// --- LOGICA DO CRONÔMETRO ---
-const start = () => {
+document.getElementById('btn-start').onclick = () => {
     const h = parseInt(document.getElementById('h-val').innerText);
     const m = parseInt(document.getElementById('m-val').innerText);
     if(h === 0 && m === 0) return;
-
-    segs = (h * 3600) + (m * 60);
-    total = segs;
-    updateCircle(100);
-
+    segs = (h * 3600) + (m * 60); total = segs;
     document.getElementById('setup-view').style.display = 'none';
-    document.getElementById('btn-start').style.display = 'none';
     document.getElementById('active-clock').style.display = 'block';
+    document.getElementById('btn-start').style.display = 'none';
     document.getElementById('btn-pause').style.display = 'block';
     document.getElementById('btn-quit').style.display = 'block';
-
+    updateCircle(100);
     timer = setInterval(() => {
-        if (!isPaused) {
+        if(!isPaused){
             segs--;
-            const hrs = Math.floor(segs / 3600);
             const mins = Math.floor((segs % 3600) / 60);
             const s = segs % 60;
-            
-            document.getElementById('main-time').innerText = 
-                `${hrs > 0 ? hrs + ':' : ''}${mins < 10 ? '0'+mins : mins}:${s < 10 ? '0'+s : s}`;
-            
-            updateCircle((segs / total) * 100);
-            
-            if (segs <= 0) finish(true);
+            document.getElementById('main-time').innerText = `${mins}:${s < 10 ? '0'+s : s}`;
+            updateCircle((segs/total)*100);
+            if(segs <= 0) finish();
         }
     }, 1000);
 };
 
-const finish = async (win) => {
+const finish = async () => {
     clearInterval(timer);
-    if (win && userPhone) {
-        const xpGanho = Math.floor((total / 1500) * 10);
-        try {
-            await updateDoc(doc(db, "notas", userPhone), {
-                xp: increment(xpGanho)
-            });
-        } catch (e) {
-            console.error("Erro ao salvar XP:", e);
-        }
+    if(userPhone) {
+        const xp = Math.floor(total/1500*10);
+        await updateDoc(doc(db, "notas", userPhone), { xp: increment(xp) });
     }
-    window.location.reload();
+    location.reload();
 };
 
-// --- EVENTOS DOS BOTÕES DE AJUSTE ---
-document.getElementById('h-up').onclick = () => { 
-    let v = parseInt(document.getElementById('h-val').innerText); 
-    if(v < 12) v++; 
-    document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; 
-    updateXPPreview(); 
-};
-document.getElementById('h-down').onclick = () => { 
-    let v = parseInt(document.getElementById('h-val').innerText); 
-    if(v > 0) v--; 
-    document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; 
-    updateXPPreview(); 
-};
-document.getElementById('m-up').onclick = () => { 
-    let v = parseInt(document.getElementById('m-val').innerText); 
-    if(v < 55) v += 5; 
-    document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; 
-    updateXPPreview(); 
-};
-document.getElementById('m-down').onclick = () => { 
-    let v = parseInt(document.getElementById('m-val').innerText); 
-    if(v > 0) v -= 5; 
-    document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; 
-    updateXPPreview(); 
-};
+document.getElementById('h-up').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v<12) v++; document.getElementById('h-val').innerText = v<10?'0'+v:v; updateXPPreview(); };
+document.getElementById('h-down').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v>0) v--; document.getElementById('h-val').innerText = v<10?'0'+v:v; updateXPPreview(); };
+document.getElementById('m-up').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v<55) v+=5; document.getElementById('m-val').innerText = v<10?'0'+v:v; updateXPPreview(); };
+document.getElementById('m-down').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v>0) v-=5; document.getElementById('m-val').innerText = v<10?'0'+v:v; updateXPPreview(); };
 
-// --- CONTROLES DA SESSÃO ---
-document.getElementById('btn-start').onclick = start;
+document.getElementById('btn-pause').onclick = () => { isPaused = !isPaused; document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR"; };
+document.getElementById('btn-quit').onclick = () => { isPaused = true; document.getElementById('modal-confirm').style.display = 'flex'; };
+document.getElementById('btn-keep-going').onclick = () => { isPaused = false; document.getElementById('modal-confirm').style.display = 'none'; };
+document.getElementById('btn-really-quit').onclick = () => location.reload();
 
-document.getElementById('btn-pause').onclick = () => {
-    isPaused = !isPaused;
-    document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR";
-};
-
-// --- MODAL DESISTIR ---
-const modal = document.getElementById('modal-confirm');
-document.getElementById('btn-quit').onclick = () => { 
-    isPaused = true; 
-    modal.style.display = 'flex'; 
-};
-document.getElementById('btn-keep-going').onclick = () => { 
-    isPaused = false; 
-    modal.style.display = 'none'; 
-};
-document.getElementById('btn-really-quit').onclick = () => window.location.reload();
-
-// Inicializa a estimativa ao carregar
 updateXPPreview();
