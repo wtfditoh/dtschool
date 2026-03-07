@@ -2,163 +2,116 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Brain - Scanner de Horários 2.0</title>
+    <title>Scanner Hub Brain - Precisão Total</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #111; }
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
-        h1 { text-align: center; letter-spacing: 2px; }
-        .purple { color: var(--primary); }
+        :root { --purple: #8a2be2; --bg: #0a0a0a; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .purple { color: var(--purple); }
+        .container { max-width: 900px; margin: 0 auto; }
         
-        /* Área de Upload */
-        .upload-container {
-            border: 2px dashed #333;
-            background: var(--card);
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-            max-width: 600px;
-            margin: 0 auto 30px;
-        }
-        .upload-container:hover { border-color: var(--primary); background: #151515; }
-
-        /* Grade de Horários */
-        .timetable {
+        /* Grade Estilizada */
+        .grid-horario {
             display: grid;
-            grid-template-columns: 80px repeat(5, 1fr);
-            gap: 10px;
-            overflow-x: auto;
-            background: var(--card);
-            padding: 15px;
+            grid-template-columns: 100px repeat(5, 1fr);
+            gap: 5px;
+            background: #111;
+            padding: 10px;
             border-radius: 15px;
             border: 1px solid #222;
         }
-        .header-day { text-align: center; font-weight: 800; padding: 10px; color: var(--primary); text-transform: uppercase; font-size: 12px; }
-        .time-label { display: flex; align-items: center; justify-content: center; font-size: 11px; color: #666; font-weight: bold; border-right: 1px solid #222; }
-        
-        /* Célula da Grade */
-        .cell {
-            background: #0d0d0d;
-            border: 1px solid #222;
-            min-height: 60px;
-            border-radius: 8px;
-            padding: 5px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+        .header { text-align: center; font-weight: 900; padding: 10px; color: var(--purple); font-size: 12px; }
+        .cell { 
+            background: #050505; border: 1px solid #222; min-height: 80px; 
+            border-radius: 8px; padding: 5px; font-size: 10px; position: relative;
         }
-        .aula-card {
-            background: rgba(138, 43, 226, 0.15);
-            border: 1px solid var(--primary);
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: grab;
-            animation: fadeIn 0.5s ease;
+        .materia-tag {
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid var(--purple);
+            padding: 5px; border-radius: 4px;
+            margin-bottom: 3px; font-weight: bold;
+            text-transform: uppercase;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
-
-        #status { text-align: center; margin-bottom: 20px; font-weight: bold; color: var(--primary); }
-        .btn-save { display: block; width: 200px; margin: 30px auto; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; }
+        .btn-upload {
+            background: var(--purple); color: white; border: none; padding: 15px 30px;
+            border-radius: 12px; font-weight: 900; cursor: pointer; display: block; margin: 20px auto;
+        }
+        #status { text-align: center; font-weight: bold; color: var(--purple); height: 20px; }
     </style>
 </head>
 <body>
 
-    <h1>SCANNER <span class="purple">SIGEDUC</span></h1>
-    
-    <div class="upload-container" onclick="document.getElementById('file-input').click()">
-        <i data-lucide="upload-cloud" style="width: 48px; height: 48px; margin-bottom: 10px;"></i>
-        <p>Clique para subir o Print do seu Horário</p>
-        <input type="file" id="file-input" accept="image/*" hidden>
-    </div>
-
+<div class="container">
+    <h1 style="text-align: center;">HUB <span class="purple">SCANNER</span></h1>
     <div id="status"></div>
+    
+    <button class="btn-upload" onclick="document.getElementById('img-input').click()">SUBIR PRINT DO HORÁRIO</button>
+    <input type="file" id="img-input" accept="image/*" hidden>
 
-    <div class="timetable" id="grid">
-        <div></div> <div class="header-day">Segunda</div>
-        <div class="header-day">Terça</div>
-        <div class="header-day">Quarta</div>
-        <div class="header-day">Quinta</div>
-        <div class="header-day">Sexta</div>
-
+    <div class="grid-horario" id="grade">
+        <div class="header">HORA</div>
+        <div class="header">SEG</div>
+        <div class="header">TER</div>
+        <div class="header">QUA</div>
+        <div class="header">QUI</div>
+        <div class="header">SEX</div>
         </div>
+</div>
 
-    <button class="btn-save" onclick="alert('Salvo no Firebase!')">SALVAR GRADE</button>
+<script>
+const grid = document.getElementById('grade');
+const status = document.getElementById('status');
+const horas = ["13:00", "13:50", "14:40", "15:50", "16:40", "17:30"];
+const materiasBase = ["QUIMICA", "FISICA", "HISTORIA", "BIOLOGIA", "MATEMATICA", "GEOGRAFIA", "PORTUGUES", "FILOSOFIA", "SOCIOLOGIA", "ARTES", "INGLES", "ESPANHOL", "EDUCACAO"];
 
-    <script>
-        const grid = document.getElementById('grid');
-        const status = document.getElementById('status');
-        const fileInput = document.getElementById('file-input');
+// Criar grade vazia
+for(let i=0; i<6; i++) {
+    grid.innerHTML += `<div class="cell" style="display:flex;align-items:center;justify-content:center;color:#444">${horas[i]}</div>`;
+    for(let j=0; j<5; j++) {
+        grid.innerHTML += `<div class="cell" id="c-${i}-${j}"></div>`;
+    }
+}
 
-        const horas = ["13:00", "13:50", "14:40", "15:50", "16:40", "17:30"];
-        const materiasConhecidas = [
-            "QUÍMICA", "FÍSICA", "HISTÓRIA", "SOCIOLOGIA", "BIOLOGIA", 
-            "MATEMÁTICA", "GEOGRAFIA", "FILOSOFIA", "ARTES", "INGLÊS", 
-            "PORTUGUÊS", "ESPANHOL", "EDUCAÇÃO FÍSICA"
-        ];
+document.getElementById('img-input').onchange = async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
 
-        // 1. Gerar a Grade Vazia
-        for (let h = 0; h < 6; h++) {
-            const label = document.createElement('div');
-            label.className = 'time-label';
-            label.innerText = `${h+1}º (${horas[h]})`;
-            grid.appendChild(label);
+    status.innerText = "🧠 MAPEANDO COORDENADAS DA TABELA...";
+    
+    const worker = await Tesseract.createWorker('por');
+    const { data } = await worker.recognize(file);
+    
+    // Pegar largura total da imagem para calcular as colunas
+    const width = data.blocks[0].bbox.x1; 
+    const height = data.blocks[0].bbox.y1;
 
-            for (let d = 0; d < 5; d++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.id = `cell-${h}-${d}`; // h = hora, d = dia
-                grid.appendChild(cell);
-            }
-        }
+    data.lines.forEach(line => {
+        let texto = line.text.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        
+        // Verifica se na linha existe alguma matéria
+        materiasBase.forEach(materia => {
+            if(texto.includes(materia)) {
+                // CALCULAR COLUNA (0 a 4) baseado no X
+                // O SIGEduc tem uma margem na esquerda, então ajustamos o cálculo
+                let posX = (line.bbox.x0 + line.bbox.x1) / 2;
+                let col = Math.floor((posX / width) * 5);
+                
+                // CALCULAR LINHA (0 a 5) baseado no Y
+                let posY = (line.bbox.y0 + line.bbox.y1) / 2;
+                let row = Math.floor((posY / height) * 6);
 
-        fileInput.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            status.innerText = "🧠 IA Lendo o Print... aguarde 10s";
-            
-            const worker = await Tesseract.createWorker('por');
-            const { data: { text } } = await worker.recognize(file);
-            status.innerText = "✅ Leitura concluída! Organizando aulas...";
-
-            const linhas = text.toUpperCase().split('\n');
-            distribuirAulas(linhas);
-            await worker.terminate();
-        };
-
-        function distribuirAulas(linhas) {
-            let aulasEncontradas = [];
-
-            linhas.forEach(linha => {
-                materiasConhecidas.forEach(materia => {
-                    if (linha.includes(materia)) {
-                        aulasEncontradas.push(materia);
-                    }
-                });
-            });
-
-            // Remove duplicatas
-            const aulasUnicas = [...new Set(aulasEncontradas)];
-
-            // Preenche a grade automaticamente para teste (depois você move)
-            aulasUnicas.forEach((aula, index) => {
-                const cellId = `cell-${index % 6}-${Math.floor(index / 6)}`;
-                const targetCell = document.getElementById(cellId);
-                if (targetCell) {
-                    targetCell.innerHTML = `<div class="aula-card" draggable="true">${aula}</div>`;
+                // Injetar na célula correta
+                const celula = document.getElementById(`c-${row}-${col}`);
+                if(celula && !celula.innerText.includes(materia)) {
+                    celula.innerHTML += `<div class="materia-tag">${materia}</div>`;
                 }
-            });
-            
-            lucide.createIcons();
-        }
+            }
+        });
+    });
 
-        lucide.createIcons();
-    </script>
+    status.innerText = "✅ HORÁRIO MAPEADO!";
+    await worker.terminate();
+};
+</script>
 </body>
 </html>
