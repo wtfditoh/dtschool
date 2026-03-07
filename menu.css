@@ -123,3 +123,39 @@
     align-items: center;
     justify-content: center;
 }
+
+/* BOTÃO DE INSTALAÇÃO NO MENU */
+.btn-install-menu {
+    width: 100%;
+    background: rgba(138, 43, 226, 0.1); /* Roxo bem suave */
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    color: #8a2be2;
+    padding: 15px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 800;
+    display: none; /* JS controla a exibição */
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.btn-install-menu:hover {
+    background: rgba(138, 43, 226, 0.2);
+    border-color: #8a2be2;
+}
+
+.btn-install-menu i {
+    width: 18px;
+    height: 18px;
+}
+
+/* Ajuste para o Footer do Menu */
+.menu-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
