@@ -5,27 +5,61 @@
     margin: 0; padding: 0;
 }
 
-body {
-    background: #05020a;
-    color: #fff;
-    font-family: 'Inter', sans-serif;
-    height: 100vh;
-    width: 100vw;
+body { 
+    background: #080808; 
+    background: radial-gradient(circle at top right, #1a0b2e, #080808);
+    color: white; 
+    font-family: 'Inter', sans-serif; 
+    height: 100vh; 
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
 }
 
-/* Centralizador mestre */
-.main-content {
-    flex: 1;
-    position: relative; /* Para os filhos flutuarem com precisão */
+.container {
+    padding: 20px;
+    max-width: 450px;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+}
+
+/* HEADER PADRÃO PERFIL */
+.perfil-header { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 30px; 
+    padding-top: 10px;
+}
+.perfil-header h2 { font-weight: 900; font-size: 18px; letter-spacing: 2px; margin: 0; }
+.purple { color: #8a2be2; text-shadow: 0 0 15px rgba(138,43,226,0.5); }
+.btn-back { 
+    background: rgba(255,255,255,0.03); 
+    border: 1px solid #222; 
+    color: white; 
+    padding: 10px; 
+    border-radius: 12px; 
+    cursor: pointer;
+    display: flex;
     align-items: center;
 }
 
-/* Seletor de tempo - Travado no centro */
+/* CARD DE AJUSTE (Estilo perfil-card) */
+.timer-card { 
+    background: rgba(255, 255, 255, 0.02); 
+    border: 1px solid rgba(138, 43, 226, 0.15); 
+    border-radius: 35px; 
+    padding: 40px 20px; 
+    margin: auto 0;
+    text-align: center;
+    position: relative;
+    backdrop-filter: blur(10px);
+}
+
+/* SELETOR DE TEMPO */
 .picker-container {
     display: flex;
     align-items: center;
@@ -37,99 +71,114 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 85px;
+    width: 90px;
 }
 
 .num-val {
     font-family: 'Orbitron', sans-serif;
-    font-size: 62px; /* Tamanho fixo */
+    font-size: 58px;
     font-weight: 900;
     color: #fff;
     line-height: 1;
-    margin: 5px 0;
-    text-align: center;
+    margin: 10px 0;
+    text-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
 }
 
 .arrow-icon {
-    background: none;
-    border: none;
+    background: rgba(138, 43, 226, 0.1);
+    border: 1px solid rgba(138, 43, 226, 0.2);
     color: #8a2be2;
-    padding: 5px;
+    width: 45px;
+    height: 45px;
+    border-radius: 14px;
     cursor: pointer;
-    transition: 0.2s;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
 }
-
-.arrow-icon:active { opacity: 0.5; transform: scale(1.2); }
+.arrow-icon:active { transform: scale(0.9); background: #8a2be2; color: white; }
 
 .label-sub {
-    font-size: 8px;
-    letter-spacing: 2px;
+    font-size: 10px;
     color: #444;
-    font-weight: 800;
-    margin-top: 5px;
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: 1px;
 }
 
-.separator {
-    font-family: 'Orbitron';
-    font-size: 30px;
-    color: #1a1a1a;
-    margin-top: -15px;
-}
+.separator { font-family: 'Orbitron'; font-size: 30px; color: #222; margin-top: -15px; }
 
-/* Relógio Ativo */
+/* RELÓGIO ATIVO (Aquele roxo que você curtiu) */
 #active-clock {
     display: none;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
     font-family: 'Orbitron', sans-serif;
     color: #8a2be2;
-    text-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
-    align-items: baseline;
+    text-shadow: 0 0 30px rgba(138, 43, 226, 0.6);
 }
+#big-time { font-size: 90px; letter-spacing: -3px; font-weight: 900; }
+#small-sec { font-size: 30px; margin-left: 10px; opacity: 0.5; }
 
-#big-time { font-size: 100px; letter-spacing: -2px; }
-#small-sec { font-size: 35px; margin-left: 8px; opacity: 0.4; }
-
-/* Rodapé travado embaixo */
-.footer-area {
-    padding: 30px 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-.btn-base {
-    width: 100%;
-    padding: 20px;
-    border-radius: 18px;
-    border: none;
+/* XP PREVIEW (Estilo dash xp) */
+.xp-preview-box {
+    background: rgba(138, 43, 226, 0.05);
+    border: 1px solid rgba(138, 43, 226, 0.2);
+    padding: 12px 20px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: 30px;
+    font-size: 11px;
     font-weight: 900;
-    font-size: 14px;
-    cursor: pointer;
+    color: #ffd700;
 }
 
-.btn-purple { background: #8a2be2; color: #fff; }
-.btn-white { background: #fff; color: #000; }
-.btn-ghost { background: transparent; color: #444; border: 1px solid #222; margin-top: 10px; }
+/* BOTÕES (Padrão btn-save) */
+.footer-actions { padding: 30px 0; }
 
-/* Modal */
-.modal-bg {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.98);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
+.btn-main { 
+    width: 100%; 
+    background: #8a2be2; 
+    color: white; 
+    border: none; 
+    padding: 20px; 
+    border-radius: 18px; 
+    font-weight: 900; 
+    font-size: 16px;
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px;
+    box-shadow: 0 10px 25px rgba(138, 43, 226, 0.3);
 }
-.modal-box {
-    background: #0e0e0e;
-    padding: 30px;
-    border-radius: 25px;
-    width: 85%;
-    max-width: 300px;
-    text-align: center;
-    border: 1px solid #1a1a1a;
+
+.btn-outline { 
+    width: 100%; 
+    background: none; 
+    border: 1px solid rgba(255, 68, 68, 0.2); 
+    color: #ff4444; 
+    padding: 18px; 
+    border-radius: 18px; 
+    margin-top: 15px; 
+    font-weight: 800; 
+    cursor: pointer; 
+}
+
+/* MODAL AVATAR STYLE */
+.modal-overlay { 
+    position: fixed; inset: 0; 
+    background: rgba(0,0,0,0.92); 
+    z-index: 10001; 
+    display: none; 
+    align-items: center; 
+    justify-content: center; 
+    backdrop-filter: blur(10px); 
+}
+.modal-card { 
+    background: #111; border: 1px solid #222; 
+    padding: 35px 25px; border-radius: 35px; 
+    width: 85%; max-width: 350px; text-align: center;
 }
