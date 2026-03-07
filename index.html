@@ -2,7 +2,6 @@
 <html lang="pt-br">
 <head>
     <script>
-    // Bloqueio de acesso se não estiver logado
     if (!localStorage.getItem('dt_user_phone')) {
         window.location.href = 'login.html';
     }
@@ -17,11 +16,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="estilo.css?v=12.0">
+    
     <style>
-        /* =========================================
-           TOPO PADRÃO HUB BRAIN (CLICÁVEL)
-        ========================================= */
+        /* MANTENDO SEUS ESTILOS ORIGINAIS DE ANIMAÇÃO E MODAIS */
         .glass-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
@@ -34,9 +34,8 @@
             transition: transform 0.1s; -webkit-tap-highlight-color: transparent;
         }
         .hub-logo-container:active { transform: scale(0.92); }
-        
         .hub-logo-text { font-weight: 900; font-size: 19px; letter-spacing: 1px; color: white; text-transform: uppercase; }
-        .hub-logo-text.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138, 43, 226, 0.3); }
+        .hub-logo-text.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138,43,226,0.3); }
         
         .hub-symbol { 
             background: rgba(138, 43, 226, 0.1); padding: 6px; border-radius: 10px; 
@@ -57,10 +56,6 @@
             display: flex; align-items: center; justify-content: center; 
         }
 
-        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1001; }
-        #overlay.active { display:block; }
-
-        /* ESTILO DO ERRO NO INPUT */
         .input-error { border: 2px solid #ff4444 !important; animation: shake 0.4s; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -68,55 +63,34 @@
             75% { transform: translateX(5px); }
         }
 
-        /* =========================================
-           ESTILO PREMIUM DO MODAL DITOH (ORBITAL DESIGN)
-        ========================================= */
+        /* MODAL DITOH PREMIUM */
         .modal-dono-overlay {
             display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
-            backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
-            background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px; perspective: 1000px; 
+            backdrop-filter: blur(25px) saturate(180%); background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px;
         }
-
         .modal-dono-card {
             border: 1px solid rgba(138, 43, 226, 0.3); background: rgba(15, 15, 15, 0.8); 
             border-radius: 30px; width: 100%; max-width: 320px; padding: 40px 25px; text-align: center; 
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.2);
             animation: brotarCard 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            opacity: 0; transform: scale(0.8) translateY(30px);
         }
+        @keyframes brotarCard { from { opacity: 0; transform: scale(0.8) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-        @keyframes brotarCard {
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .ditoh-core-orbital {
-            width: 100px; height: 100px; margin: 0 auto 25px; 
-            display: flex; align-items: center; justify-content: center; position: relative;
-        }
-
-        .orbital-ring {
-            position: absolute; border-radius: 50%; border: 2px solid transparent;
-            border-top-color: #8a2be2; border-bottom-color: #8a2be2;
-        }
-
+        .ditoh-core-orbital { width: 100px; height: 100px; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .orbital-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; border-top-color: #8a2be2; border-bottom-color: #8a2be2; }
         .ring-1 { width: 100%; height: 100%; animation: spin 2s linear infinite; opacity: 0.6; }
         .ring-2 { width: 80%; height: 80%; animation: spin-reverse 1.5s linear infinite; opacity: 0.8; border-left-color: #8a2be2; border-right-color: #8a2be2; border-top-color: transparent; border-bottom-color: transparent; }
-
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes spin-reverse { to { transform: rotate(-360deg); } }
-
-        .core-glow {
-            width: 50px; height: 50px; background: rgba(138, 43, 226, 0.2);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.6);
-        }
+        .core-glow { width: 50px; height: 50px; background: rgba(138, 43, 226, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(138, 43, 226, 0.6); }
     </style>
 </head>
 <body>
-    <div id="overlay" onclick="toggleMenu()"></div>
 
     <header class="glass-header">
-        <button onclick="toggleMenu()" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;"><i data-lucide="menu"></i></button>
+        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;">
+            <i data-lucide="menu"></i>
+        </button>
         
         <div class="hub-logo-container" onclick="abrirSobreDono()">
             <span class="hub-logo-text">Hub</span>
@@ -128,26 +102,6 @@
 
         <button onclick="abrirModal()" class="btn-add-main">+</button>
     </header>
-
-    <nav id="menu-lateral" class="drawer" style="z-index: 1002;">
-        <div class="drawer-header">
-            <div class="logo-box">
-                <i data-lucide="brain-circuit" style="color: #8a2be2; width: 18px; margin-right: 5px;"></i>
-                <span class="logo-text">HUB <span style="color: #8a2be2;">BRAIN</span></span>
-            </div>
-            <button onclick="toggleMenu()" class="btn-close-box" style="background:none; border:none; color:white;"><i data-lucide="x"></i></button>
-        </div>
-        <button onclick="toggleMenu();" class="nav-item active"><i data-lucide="layout-grid"></i> Notas</button>
-        <button onclick="window.location.href='ranking.html'" class="nav-item"><i data-lucide="trophy"></i> Ranking Global</button>
-        <button onclick="window.location.href='perfil.html'" class="nav-item"><i data-lucide="user"></i> Meu Perfil</button>
-        <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 10px 0;"></div>
-        <button onclick="window.location.href='horario.html'" class="nav-item"><i data-lucide="calendar-clock"></i> Horário das Aulas</button>
-        <button onclick="window.location.href='agenda.html'" class="nav-item"><i data-lucide="calendar"></i> Agenda</button>
-        <button onclick="window.location.href='estudos.html'" class="nav-item"><i data-lucide="book-open"></i> Estudar com IA</button>
-        <button onclick="localStorage.clear(); window.location.href='login.html';" class="nav-item" style="color: #ff4444; margin-top: 20px;">
-            <i data-lucide="log-out"></i> Sair
-        </button>
-    </nav>
 
     <main class="container">
         <div class="stats-row">
@@ -166,21 +120,17 @@
                     <i data-lucide="zap" style="color: white; width: 28px; height: 28px; filter: drop-shadow(0 0 8px #8a2be2);"></i>
                 </div>
             </div>
-
             <h3 style="color: white; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 2px;">DITOH</h3>
             <p style="color: #8a2be2; font-weight: bold; margin: 5px 0 20px 0; font-size: 12px; letter-spacing: 4px; text-transform: uppercase;">Founder & Dev</p>
-            
             <div style="background: rgba(138, 43, 226, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border-left: 4px solid #8a2be2; text-align: left;">
                 <p style="color: #eee; font-size: 13px; font-style: italic; line-height: 1.6; margin: 0;">
                     "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."
                 </p>
             </div>
-
-            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; color: white; font-size: 15px; margin-bottom: 30px; background: rgba(255,255,255,0.05); padding: 14px; border-radius: 15px; border: 1px solid rgba(138, 43, 226, 0.2); transition: 0.3s;">
+            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; color: white; font-size: 15px; margin-bottom: 30px; background: rgba(255,255,255,0.05); padding: 14px; border-radius: 15px; border: 1px solid rgba(138, 43, 226, 0.2);">
                 <i data-lucide="instagram" style="width: 18px; color: #8a2be2;"></i>
                 <span style="font-weight: 600;">@wtfditoh</span>
             </a>
-
             <button onclick="fecharSobreDono()" style="width: 100%; background: #8a2be2; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase;">Voltar</button>
         </div>
     </div>
@@ -201,7 +151,6 @@
         <div class="modal-content" style="background:#111; padding:30px; border-radius:20px; border:1px solid rgba(255,68,68,0.3); text-align:center; max-width:300px;">
             <div id="aviso-icon" style="margin-bottom:15px;"><i data-lucide="trash-2" style="width:45px; height:45px; color:#ff4444;"></i></div>
             <h3 style="color:white; margin-bottom:10px;">Excluir Disciplina?</h3>
-            <p style="color:#888; font-size:14px; margin-bottom:25px;">Essa ação não pode ser desfeita e todos os dados serão perdidos.</p>
             <div style="display:flex; gap:10px;">
                 <button onclick="fecharModalExcluir()" style="flex:1; background:#222; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Cancelar</button>
                 <button onclick="confirmarExclusao()" style="flex:1; background:#ff4444; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Excluir</button>
@@ -209,9 +158,10 @@
         </div>
     </div>
 
+    <script src="menu.js"></script> 
     <script type="module" src="funcoes.js?v=12.0"></script>
+    
     <script>
-        // LÓGICA DO INPUT E AVISO
         function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
@@ -219,10 +169,9 @@
                 input.classList.add('input-error');
                 aviso.style.display = 'block';
             } else {
-                confirmarNovaMateria(); // Chama a função do funcoes.js
+                confirmarNovaMateria(); 
             }
         }
-
         function limparErroInput() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
@@ -231,28 +180,13 @@
                 aviso.style.display = 'none';
             }
         }
-
-        function abrirSobreDono() {
-            document.getElementById('modal-dono').style.display = 'flex';
-            if(window.lucide) lucide.createIcons();
-        }
-        function fecharSobreDono() {
-            document.getElementById('modal-dono').style.display = 'none';
-        }
-        document.getElementById('modal-dono').onclick = function(e) {
-            if (e.target === this) fecharSobreDono();
-        };
-
+        function abrirSobreDono() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
+        function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
+        
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
-            });
+            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log(err)); });
         }
         document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
-        window.toggleMenu = function() {
-            document.getElementById('menu-lateral').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('active');
-        };
     </script>
 </body>
 </html>
