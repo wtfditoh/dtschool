@@ -1,118 +1,53 @@
 :root {
     --primary: #8a2be2;
     --primary-light: #a052ee;
-    --bg-dark: #0a0a0a;
+    --bg: #0a0a0a;
     --glass: rgba(255, 255, 255, 0.05);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    background-color: var(--bg-dark);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    color: white;
-    overflow: hidden;
+    background-color: var(--bg);
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; font-family: 'Segoe UI', sans-serif; color: white;
 }
 
-.wrapper {
-    width: 100%;
-    max-width: 320px; /* Reduzi a largura para ficar mais elegante */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+.wrapper { width: 100%; max-width: 320px; display: flex; flex-direction: column; align-items: center; }
 
-/* --- MONSTRINHO AJUSTADO (MENOR E CENTRALIZADO) --- */
-.monster-box {
-    position: relative;
-    width: 80px; /* Reduzi de 130px para 80px */
-    height: 80px;
-    z-index: 10;
-    margin-bottom: -10px;
-}
-
-.monster-body {
-    width: 100%;
-    height: 100%;
-    background: var(--primary);
-    border-radius: 30px 30px 10px 10px;
-    position: relative;
-    border: 2px solid rgba(255,255,255,0.1);
-    box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
-}
-
-.horns::before, .horns::after {
-    content: ''; position: absolute; top: -10px; width: 12px; height: 20px;
-    background: var(--primary); border-radius: 50% 50% 0 0;
-}
-.horns::before { left: 10px; transform: rotate(-20deg); }
-.horns::after { right: 10px; transform: rotate(20deg); }
-
-.eyes-container {
-    display: flex; justify-content: center; gap: 8px; margin-top: 22px;
-}
+/* MONSTRINHO */
+.monster-box { position: relative; width: 85px; height: 85px; z-index: 10; margin-bottom: -10px; }
+.monster-body { width: 100%; height: 100%; background: var(--primary); border-radius: 30px 30px 12px 12px; border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 0 20px rgba(138, 43, 226, 0.4); position: relative; }
+.horns::before, .horns::after { content: ''; position: absolute; top: -10px; width: 12px; height: 20px; background: var(--primary); border-radius: 50% 50% 0 0; }
+.horns::before { left: 10px; transform: rotate(-20deg); } .horns::after { right: 10px; transform: rotate(20deg); }
+.eyes-container { display: flex; justify-content: center; gap: 8px; margin-top: 25px; }
 .eye-ball { width: 18px; height: 18px; background: white; border-radius: 50%; position: relative; }
-.pupil { width: 8px; height: 8px; background: #000; border-radius: 50%; position: absolute; top: 5px; left: 5px; transition: 0.1s; }
+.pupil { width: 8px; height: 8px; background: #000; border-radius: 50%; position: absolute; top: 5px; left: 5px; }
+.monster-hands { position: absolute; width: 100%; top: 40px; display: flex; justify-content: space-between; pointer-events: none; }
+.m-hand { width: 28px; height: 28px; background: var(--primary-light); border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); transition: 0.4s ease; transform: translateY(40px); opacity: 0; }
 
-.m-hand { 
-    width: 25px; height: 25px; background: var(--primary-light); 
-    border-radius: 50%; position: absolute; top: 40px;
-    transition: 0.4s ease; transform: translateY(40px); opacity: 0;
-}
-.m-hand:nth-child(1) { left: -5px; }
-.m-hand:nth-child(2) { right: -5px; }
-
-/* Animações corrigidas */
-.shame .m-hand { transform: translateY(-15px); opacity: 1; }
+/* ANIMAÇÕES MONSTRINHO */
+.shame .m-hand { transform: translateY(-10px); opacity: 1; }
 .shame .eyes-container { opacity: 0; }
+.looking .pupil { transform: translateY(3px); }
 
-/* --- CARD DE LOGIN REDUZIDO --- */
-.login-card {
-    background: var(--glass);
-    backdrop-filter: blur(15px);
-    width: 100%;
-    padding: 30px 20px;
-    border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.1);
-    text-align: center;
-}
+/* CARD */
+.login-card { background: var(--glass); backdrop-filter: blur(15px); width: 100%; padding: 35px 25px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+.hub-symbol { margin-bottom: 15px; }
+.logo-area h2 { font-size: 22px; font-weight: 900; }
+.logo-area p { color: #555; font-size: 10px; margin-bottom: 20px; font-weight: bold; }
 
-.hub-symbol { margin-bottom: 10px; }
-.logo-area h2 { font-size: 20px; font-weight: 900; margin-bottom: 2px; }
-.logo-area p { font-size: 10px; color: #666; letter-spacing: 1px; margin-bottom: 20px; }
+/* INPUTS E BOTÕES */
+.input-ia { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #333; padding: 13px; border-radius: 12px; color: white; font-size: 14px; margin-bottom: 12px; outline: none; text-align: center; }
+.input-ia:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(138, 43, 226, 0.2); }
+.btn-acessar { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 
-.input-ia {
-    width: 100%;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid #333;
-    padding: 12px;
-    border-radius: 10px;
-    color: white;
-    font-size: 14px;
-    margin-bottom: 12px;
-    outline: none;
-    text-align: center;
-}
+/* ERRO E SHAKE */
+.status-msg { min-height: 18px; font-size: 11px; color: #ff4444; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; }
+.shake-error { animation: shake 0.4s ease-in-out; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 
-.btn-acessar {
-    width: 100%;
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 14px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 5px;
-}
-
-.footer-links { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
+.footer-links { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
 .create-acc { color: var(--primary-light); font-size: 13px; text-decoration: none; font-weight: bold; }
 .btn-visitante { color: #444; background: none; border: none; font-size: 12px; text-decoration: underline; cursor: pointer; }
-
-#login-status { color: #ff4444; font-size: 11px; margin-bottom: 5px; min-height: 12px; }
+.keep-row { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: #666; margin-bottom: 15px; }
