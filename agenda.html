@@ -10,43 +10,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Agenda</title>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="estilo.css?v=12.0">
     <link rel="stylesheet" href="agenda-estilo.css">
+    
     <style>
-        /* Topo Padrão Hub Brain */
+        /* Topo Padrão Hub Brain com Suporte ao Menu */
         .glass-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            height: 70px;
-            background: rgba(10, 10, 10, 0.8) !important;
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(138, 43, 226, 0.2);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
+            backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+            position: sticky; top: 0; z-index: 1000;
         }
 
-        .hub-logo-container { display: flex; align-items: center; gap: 8px; }
+        .hub-logo-container { display: flex; align-items: center; gap: 8px; cursor: pointer; }
         .hub-logo-text { font-weight: 900; font-size: 18px; letter-spacing: 1px; color: white; text-transform: uppercase; }
         .hub-logo-text.purple { color: #8a2be2; }
         .hub-symbol-mini { 
-            background: rgba(138, 43, 226, 0.1); 
-            padding: 5px; 
-            border-radius: 8px; 
-            border: 1px solid rgba(138, 43, 226, 0.3); 
-            display: flex; 
+            background: rgba(138, 43, 226, 0.1); padding: 5px; border-radius: 8px; 
+            border: 1px solid rgba(138, 43, 226, 0.3); display: flex; 
         }
 
         .mes-indicador { 
-            text-align: center; 
-            padding: 20px 0 10px; 
-            font-size: 12px; 
-            font-weight: 800; 
-            letter-spacing: 3px; 
-            color: #666; 
-            text-transform: uppercase; 
+            text-align: center; padding: 20px 0 10px; font-size: 11px; 
+            font-weight: 800; letter-spacing: 3px; color: #666; text-transform: uppercase; 
         }
 
         .fab-button { 
@@ -54,12 +42,7 @@
             box-shadow: 0 4px 20px rgba(138, 43, 226, 0.4) !important; 
         }
 
-        /* Estilo para o input quando houver erro */
-        .input-erro {
-            border: 1px solid #ff4444 !important;
-            animation: shake 0.3s;
-        }
-
+        .input-erro { border: 1px solid #ff4444 !important; animation: shake 0.3s; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -68,9 +51,10 @@
     </style>
 </head>
 <body class="bg-dark">
+
     <header class="glass-header">
-        <button onclick="window.location.href='index.html'" class="btn-icon">
-            <i data-lucide="arrow-left"></i>
+        <button id="open-menu" class="btn-menu">
+            <i data-lucide="menu"></i>
         </button>
         
         <div class="hub-logo-container">
@@ -81,7 +65,7 @@
             <span class="hub-logo-text purple">Brain</span>
         </div>
 
-        <div style="width: 38px;"></div>
+        <div style="width: 40px;"></div>
     </header>
 
     <main class="container-agenda">
@@ -141,43 +125,34 @@
         </div>
     </div>
 
+    <script src="menu.js"></script>
     <script type="module" src="agenda-logica.js"></script>
     
     <script>
-        // 1. VALIDAÇÃO INTELIGENTE (ADEUS AVISO DO CHROME)
+        // MANTENDO TODA A SUA LÓGICA DE VALIDAÇÃO E INTERFACE
         function validarEAdicionar() {
             const nomeInput = document.getElementById('tarefa-nome');
             const btn = document.getElementById('btn-salvar-agenda');
             const textoOriginal = "Agendar";
 
             if (!nomeInput.value.trim()) {
-                // Efeito visual de erro
                 btn.style.background = "#ff4444";
                 btn.innerText = "Preencha o título!";
                 nomeInput.classList.add('input-erro');
 
-                // Volta ao normal após 2 segundos
                 setTimeout(() => {
                     btn.style.background = "#8a2be2";
                     btn.innerText = textoOriginal;
                     nomeInput.classList.remove('input-erro');
                 }, 2000);
-                
-                return; // Bloqueia o envio
+                return;
             }
-
-            // Se estiver ok, chama a função do arquivo externo
-            if (typeof adicionarTarefa === "function") {
-                adicionarTarefa();
-            }
+            if (typeof adicionarTarefa === "function") { adicionarTarefa(); }
         }
 
-        // 2. CORREÇÃO DE DATA (PARA MARCAR DIA 1 E NÃO DIA 2)
         function ajustarInterface() {
             const hojeBR = new Date().toLocaleDateString('pt-BR', {day: '2-digit'});
-            
             setTimeout(() => {
-                // Corrige o quadradinho no calendário
                 const todosOsDias = document.querySelectorAll('.calendar-day, .day, div[data-day]');
                 todosOsDias.forEach(quadrado => {
                     quadrado.classList.remove('today', 'active', 'current');
@@ -194,16 +169,14 @@
                     }
                 });
 
-                // Atualiza o texto do mês no topo
                 const dataFormatada = new Date().toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'});
                 const elementoMes = document.getElementById('mes-topo');
                 if(elementoMes) elementoMes.innerText = dataFormatada.toUpperCase();
                 
-                lucide.createIcons();
+                if(window.lucide) lucide.createIcons();
             }, 400);
         }
 
-        // Eventos de carregamento
         window.addEventListener('load', ajustarInterface);
         document.addEventListener('click', (e) => {
             if (e.target.closest('.btn-nav-clean')) {
