@@ -2,41 +2,54 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub Brain - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Brain - Login de Elite</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="login.css">
 </head>
 <body>
+    <div class="background-glow"></div>
     <div class="wrapper">
-        <div class="monster-box" id="monster-ui">
-            <svg viewBox="0 0 120 120" class="monster-svg">
-                <ellipse cx="60" cy="115" rx="35" ry="5" fill="rgba(0,0,0,0.3)" />
-                
-                <path d="M25,110 Q25,20 60,20 Q95,20 95,110 Z" class="monster-body" fill="#8a2be2" />
-                
-                <g class="eyes">
-                    <circle cx="45" cy="60" r="12" fill="white" />
-                    <circle cx="75" cy="60" r="12" fill="white" />
-                    <circle cx="45" cy="60" r="6" fill="black" class="pupil" id="eye-l" />
-                    <circle cx="75" cy="60" r="6" fill="black" class="pupil" id="eye-r" />
-                    
-                    <rect x="30" y="45" width="25" height="0" fill="#8a2be2" class="lid" />
-                    <rect x="65" y="45" width="25" height="0" fill="#8a2be2" class="lid" />
-                </g>
-            </svg>
-            <div class="hands">
-                <div class="hand l"></div>
-                <div class="hand r"></div>
+        <div class="monster-container" id="monster-ui">
+            <div class="monster-body">
+                <div class="monster-eyes">
+                    <div class="eye"><div class="pupil"></div><div class="lid"></div></div>
+                    <div class="eye"><div class="pupil"></div><div class="lid"></div></div>
+                </div>
+                <div class="monster-mouth"></div>
+            </div>
+            <div class="monster-hands">
+                <div class="hand left"></div>
+                <div class="hand right"></div>
             </div>
         </div>
 
         <div class="login-card">
-            <h2>HUB <span class="purple">BRAIN</span></h2>
-            <input type="email" id="user-email" placeholder="E-mail" class="input-ia">
-            <input type="password" id="user-pass" placeholder="Senha" class="input-ia">
-            <div id="login-status" class="status-msg"></div>
-            <button onclick="tentarLogar()" class="btn-acessar">ENTRAR</button>
+            <div class="header-auth">
+                <h1>HUB <span class="purple-neon">BRAIN</span></h1>
+                <p>AUTENTICAÇÃO DE ACESSO</p>
+            </div>
+
+            <div class="input-group">
+                <i data-lucide="mail"></i>
+                <input type="email" id="user-email" placeholder="E-mail do Estudante">
+            </div>
+
+            <div class="input-group">
+                <i data-lucide="lock"></i>
+                <input type="password" id="user-pass" placeholder="Senha de Acesso">
+            </div>
+
+            <div id="login-status" class="status-alert"></div>
+
+            <button onclick="tentarLogar()" class="btn-main">
+                LOGAR NO SISTEMA <i data-lucide="chevron-right"></i>
+            </button>
+
+            <div class="auth-footer">
+                <span>Não tem conta? <a href="cadastro.html">Criar Agora</a></span>
+                <button onclick="entrarComoVisitante()" class="btn-guest">Entrar como Visitante</button>
+            </div>
         </div>
     </div>
     <script type="module" src="login-logica.js"></script>
