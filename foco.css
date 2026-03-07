@@ -1,58 +1,188 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;900&display=swap');
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-
-body { 
-    background: #000; color: white; font-family: 'Inter', sans-serif; 
-    height: 100svh; width: 100vw; overflow: hidden;
-    display: flex; flex-direction: column;
+* { 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+    margin: 0; 
+    padding: 0; 
 }
 
-.header-minimal { flex-shrink: 0; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+body { 
+    background: #000; 
+    color: white; 
+    font-family: 'Inter', sans-serif; 
+    height: 100svh; 
+    width: 100vw; 
+    overflow: hidden;
+    display: flex; 
+    flex-direction: column;
+}
 
+/* HEADER */
+.header-minimal { 
+    flex-shrink: 0; 
+    padding: 10px 20px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+/* ÁREA DO CRONÔMETRO */
 .timer-viewport {
-    flex: 1; position: relative; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; min-height: 0;
+    flex: 1; 
+    position: relative; 
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+    min-height: 0;
 }
 
 .canvas-timer {
-    position: relative; width: 280px; height: 280px;
-    display: flex; align-items: center; justify-content: center;
+    position: relative; 
+    width: 280px; 
+    height: 280px;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
 }
 
-.progress-ring { position: absolute; transform: rotate(-90deg); width: 100%; height: 100%; }
+.progress-ring { 
+    position: absolute; 
+    transform: rotate(-90deg); 
+    width: 100%; 
+    height: 100%; 
+}
+
 .progress-ring__circle {
-    stroke: #8a2be2; stroke-width: 6; fill: transparent;
-    stroke-dasharray: 816.8; stroke-dashoffset: 816.8;
-    stroke-linecap: round; transition: stroke-dashoffset 0.5s linear;
+    stroke: #8a2be2; 
+    stroke-width: 6; 
+    fill: transparent;
+    stroke-dasharray: 816.8; 
+    stroke-dashoffset: 816.8;
+    stroke-linecap: round; 
+    transition: stroke-dashoffset 1s linear;
     filter: drop-shadow(0 0 10px #8a2be2);
 }
-.progress-bg { stroke: #0a0a0a; stroke-width: 6; fill: transparent; }
 
-.timer-content { position: absolute; z-index: 5; text-align: center; width: 100%; padding: 0 40px; }
+.progress-bg { 
+    stroke: #0a0a0a; 
+    stroke-width: 6; 
+    fill: transparent; 
+}
+
+/* CONTEÚDO DENTRO DO CÍRCULO */
+.timer-content { 
+    position: absolute; 
+    z-index: 5; 
+    text-align: center; 
+    width: 100%; 
+}
 
 .digital-clock {
     font-family: 'Share Tech Mono', monospace;
-    color: #fff; display: flex; align-items: center; justify-content: center; line-height: 1;
+    color: #fff; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    line-height: 1;
 }
+
 #setup-view .digital-clock { font-size: 50px; }
-#active-clock .digital-clock { font-size: 60px; color: #8a2be2; text-shadow: 0 0 15px rgba(138, 43, 226, 0.4); }
-
-.unit-adjust { display: flex; flex-direction: column; align-items: center; }
-.btn-arrow { background: none; border: none; color: #222; cursor: pointer; padding: 8px; transition: 0.2s; }
-
-.xp-badge {
-    background: rgba(138, 43, 226, 0.05); border: 1px solid rgba(138, 43, 226, 0.2);
-    padding: 10px; border-radius: 20px; margin-top: 15px; display: inline-block; width: 140px;
+#active-clock .digital-clock { 
+    font-size: 60px; 
+    color: #8a2be2; 
+    text-shadow: 0 0 15px rgba(138, 43, 226, 0.4); 
 }
-.xp-label { font-size: 8px; font-weight: 900; color: #444; display: block; letter-spacing: 1px; margin-bottom: 4px; }
-.xp-value { font-size: 14px; font-weight: 900; color: #ffd700; font-family: 'Share Tech Mono'; }
 
-.footer-area { flex-shrink: 0; width: 100%; padding: 10px 25px 30px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.unit-adjust { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+
+.btn-arrow { 
+    background: none; 
+    border: none; 
+    color: #222; 
+    cursor: pointer; 
+    padding: 5px; 
+    transition: 0.2s; 
+}
+
+.btn-arrow:active { 
+    color: #8a2be2; 
+}
+
+/* ÁREA DE XP SLIM (AJUSTADA) */
+.xp-badge {
+    background: rgba(138, 43, 226, 0.05); 
+    border: 1px solid rgba(138, 43, 226, 0.15);
+    padding: 4px 12px; 
+    border-radius: 8px; 
+    margin-top: 8px; 
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.xp-label { 
+    font-size: 7px; 
+    font-weight: 900; 
+    color: #444; 
+    text-transform: uppercase;
+    letter-spacing: 1px; 
+    margin-bottom: 2px;
+}
+
+.xp-value { 
+    font-size: 13px; 
+    font-weight: 900; 
+    color: #ffd700; 
+    font-family: 'Share Tech Mono', monospace; 
+}
+
+/* RODAPÉ */
+.footer-area { 
+    flex-shrink: 0; 
+    width: 100%; 
+    padding: 10px 25px 30px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 10px; 
+}
 
 .btn-main {
-    width: 100%; max-width: 300px; padding: 16px; border-radius: 100px; border: none;
-    font-weight: 900; font-size: 14px; background: #8a2be2; color: white; cursor: pointer;
+    width: 100%; 
+    max-width: 300px; 
+    padding: 16px; 
+    border-radius: 100px; 
+    border: none;
+    font-weight: 900; 
+    font-size: 14px; 
+    background: #8a2be2; 
+    color: white; 
+    cursor: pointer;
 }
-.btn-pause { background: #111; border: 1px solid #222; margin-top: 5px; }
-.btn-quit-label { background: none; border: none; color: #444; font-weight: 800; font-size: 11px; padding: 10px; cursor: pointer; text-transform: uppercase; }
+
+.btn-pause { 
+    background: #111; 
+    border: 1px solid #222; 
+    margin-top: 5px; 
+}
+
+.btn-quit-label { 
+    background: none; 
+    border: none; 
+    color: #444; 
+    font-weight: 800; 
+    font-size: 11px; 
+    padding: 10px; 
+    cursor: pointer; 
+    text-transform: uppercase; 
+}
+
+/* MODAL */
+#modal-confirm h2 { color: white; font-weight: 900; }
+#modal-confirm p { color: #666; font-size: 13px; }
