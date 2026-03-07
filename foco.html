@@ -11,67 +11,52 @@
 <body>
 
     <header class="header-minimal">
-        <button onclick="window.history.back()" style="background:none; border:none; color:white;"><i data-lucide="chevron-left"></i></button>
-        <span style="font-weight: 900; font-size: 10px; letter-spacing: 3px;">FOCUS MODE</span>
+        <button id="back-nav" style="background:none; border:none; color:white; cursor:pointer;"><i data-lucide="chevron-left"></i></button>
+        <span style="font-weight: 900; font-size: 10px; letter-spacing: 3px;">MODO FOCO</span>
         <div style="width: 24px;"></div>
     </header>
 
     <main class="timer-viewport">
-        <div id="setup-view" style="text-align: center;">
+        <div id="setup-view">
             <div class="picker-modern">
                 <div class="unit-box">
-                    <button class="adjust-btn" onclick="adjust('h', 1)"><i data-lucide="plus" size="18"></i></button>
+                    <button class="adjust-btn" id="h-up"><i data-lucide="plus" size="18"></i></button>
                     <div class="num-display" id="h-val">00</div>
-                    <button class="adjust-btn" onclick="adjust('h', -1)"><i data-lucide="minus" size="18"></i></button>
-                    <span class="label-hint">Hrs</span>
+                    <button class="adjust-btn" id="h-down"><i data-lucide="minus" size="18"></i></button>
+                    <span class="label-hint">Horas</span>
                 </div>
                 <div class="dot-sep">:</div>
                 <div class="unit-box">
-                    <button class="adjust-btn" onclick="adjust('m', 5)"><i data-lucide="plus" size="18"></i></button>
+                    <button class="adjust-btn" id="m-up"><i data-lucide="plus" size="18"></i></button>
                     <div class="num-display" id="m-val">25</div>
-                    <button class="adjust-btn" onclick="adjust('m', -5)"><i data-lucide="minus" size="18"></i></button>
-                    <span class="label-hint">Min</span>
+                    <button class="adjust-btn" id="m-down"><i data-lucide="minus" size="18"></i></button>
+                    <span class="label-hint">Minutos</span>
                 </div>
             </div>
-            <div style="margin-top: 40px; color: #ffd700; font-weight: 900; font-size: 12px; opacity: 0.8;">
-                POTENCIAL: <span id="xp-num">10</span> XP
-            </div>
+            <div class="xp-preview-box">VALENDO <span id="xp-num">10</span> XP</div>
         </div>
 
         <div id="active-clock">
-            <div id="main-time">00:00</div>
-            <div id="sec-strip">SECONDS: <span id="small-sec">00</span></div>
+            <div id="main-time">00:25</div>
+            <div id="sec-strip"><span id="small-sec">00</span>s</div>
         </div>
     </main>
 
     <footer class="actions-area">
-        <button id="btn-start" class="btn-glass">COMEÇAR AGORA</button>
-        <button id="btn-pause" class="btn-glass" style="display:none; background: #fff; color: #000;">PAUSAR SESSÃO</button>
-        <button id="btn-quit" class="btn-quit" style="display:none">INTERROMPER</button>
+        <button id="btn-start" class="btn-glass">INICIAR SESSÃO</button>
+        <button id="btn-pause" class="btn-glass" style="display:none; background: #fff; color: #000;">PAUSAR</button>
+        <button id="btn-quit" class="btn-quit" style="display:none">DESISTIR</button>
     </footer>
 
     <div id="modal-quit" class="glass-overlay">
         <div class="glass-card">
-            <h2 style="font-weight:900; margin-bottom:15px;">DESISTIR?</h2>
-            <p style="color:#888; font-size:14px; margin-bottom:35px; line-height: 1.6;">O tempo é o seu recurso mais valioso. Se sair agora, perderá metade do seu XP.</p>
-            <button class="btn-glass" style="width:100%" onclick="document.getElementById('modal-quit').style.display='none'">VOLTAR AO TRABALHO</button>
+            <h2 style="font-weight:900; margin-bottom:15px;">PARAR?</h2>
+            <p style="color:#888; font-size:14px; margin-bottom:35px;">Você perderá metade do XP se sair agora.</p>
+            <button class="btn-glass" style="width:100%" id="btn-resume">CONTINUAR</button>
             <button id="btn-confirm-quit" style="background:none; border:none; color:#ff4444; margin-top:20px; font-weight:800; cursor:pointer;">SAIR MESMO ASSIM</button>
         </div>
     </div>
 
     <script type="module" src="foco-logica.js"></script>
-    <script>
-        window.adjust = (t, a) => {
-            const el = document.getElementById(t + '-val');
-            let v = parseInt(el.innerText) + a;
-            if(t==='h'){ if(v<0) v=12; if(v>12) v=0; }
-            else { if(v<0) v=55; if(v>55) v=0; }
-            el.innerText = v < 10 ? '0'+v : v;
-            const h = parseInt(document.getElementById('h-val').innerText);
-            const m = parseInt(document.getElementById('m-val').innerText);
-            document.getElementById('xp-num').innerText = Math.floor(((h*60+m)/25)*10);
-        };
-        lucide.createIcons();
-    </script>
 </body>
 </html>
