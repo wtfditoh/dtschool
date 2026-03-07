@@ -27,7 +27,7 @@ const start = () => {
     document.getElementById('setup-view').style.display = 'none';
     document.getElementById('btn-start').style.display = 'none';
     document.getElementById('active-clock').style.display = 'flex';
-    document.getElementById('btn-pause').style.display = 'block';
+    document.getElementById('btn-pause').style.display = 'flex';
     document.getElementById('btn-quit').style.display = 'block';
 
     timer = setInterval(() => {
@@ -52,7 +52,7 @@ const finalize = async (done) => {
     if (xp > 0 && userPhone) {
         try {
             await updateDoc(doc(db, "notas", userPhone), { xp: increment(xp) });
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Erro XP:", e); }
     }
     window.location.reload();
 };
@@ -60,7 +60,10 @@ const finalize = async (done) => {
 document.getElementById('btn-start').onclick = start;
 document.getElementById('btn-pause').onclick = () => {
     isPaused = !isPaused;
-    document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR";
+    document.getElementById('btn-pause').innerHTML = isPaused ? 
+        '<i data-lucide="play" fill="black"></i> RETOMAR' : 
+        '<i data-lucide="pause" fill="black"></i> PAUSAR';
+    lucide.createIcons();
 };
 document.getElementById('btn-quit').onclick = () => document.getElementById('modal-quit').style.display = 'flex';
 document.getElementById('btn-confirm-quit').onclick = () => finalize(false);
