@@ -6,17 +6,45 @@
     <title>Deep Focus</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="foco.css">
-    </head>
+    
+    <style>
+        .sidebar {
+            position: fixed !important;
+            top: 0 !important;
+            left: -280px !important;
+            width: 280px !important;
+            height: 100% !important;
+            background: #0a0a0a !important;
+            z-index: 9999 !important;
+            transition: transform 0.3s ease !important;
+            display: flex !important;
+            flex-direction: column !important;
+            border-right: 1px solid #1a1a1a !important;
+        }
+        .sidebar.active {
+            transform: translateX(280px) !important;
+        }
+        .overlay {
+            position: fixed !important;
+            inset: 0 !important;
+            background: rgba(0,0,0,0.7) !important;
+            z-index: 9998 !important;
+            display: none;
+            backdrop-filter: blur(4px);
+        }
+        .overlay.active { display: block !important; }
+    </style>
+</head>
 <body>
 
     <div id="sidebar" class="sidebar">
-        <div class="sidebar-header">
-            <button id="close-sidebar"><i data-lucide="x"></i></button>
+        <div class="sidebar-header" style="padding: 20px; display: flex; justify-content: flex-end;">
+            <button id="close-sidebar" style="background:none; border:none; color:#444;"><i data-lucide="x"></i></button>
         </div>
-        <nav class="sidebar-menu">
-            <a href="index.html">Notas</a>
-            <a href="foco.html" class="active">Foco</a>
-            </nav>
+        <nav class="sidebar-menu" style="display: flex; flex-direction: column; padding: 20px; gap: 20px;">
+            <a href="index.html" style="color: #666; text-decoration: none; font-weight: 900; font-size: 14px; text-transform: uppercase;">Notas</a>
+            <a href="foco.html" style="color: #8a2be2; text-decoration: none; font-weight: 900; font-size: 14px; text-transform: uppercase;">Foco</a>
+        </nav>
     </div>
     <div id="overlay" class="overlay"></div>
 
@@ -24,9 +52,7 @@
         <button id="open-sidebar" class="btn-icon-top">
             <i data-lucide="menu" size="22"></i>
         </button>
-        
         <span class="label-header">FOCUS MODE</span>
-        
         <div style="width: 32px;"></div>
     </header>
 
@@ -74,7 +100,7 @@
         <button id="btn-quit" class="btn-quit-label" style="display:none">DESISTIR</button>
     </footer>
 
-    <div id="modal-confirm" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.98); z-index:1000; align-items:center; justify-content:center; padding:30px;">
+    <div id="modal-confirm" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.98); z-index:10000; align-items:center; justify-content:center; padding:30px;">
         <div style="background:#0a0a0a; border:1px solid #1a1a1a; padding:30px; border-radius:30px; text-align:center; width:100%; max-width:300px;">
             <h2 style="font-weight:900; margin-bottom:10px; color:white; font-size:18px;">PARAR AGORA?</h2>
             <p style="color:#444; font-size:12px; margin-bottom:25px; line-height:1.5;">O tempo focado e seu bônus de XP serão perdidos.</p>
@@ -83,10 +109,12 @@
         </div>
     </div>
 
-    <script>lucide.createIcons();</script>
+    <script>
+        // Inicializa ícones imediatamente
+        lucide.createIcons();
+    </script>
     
     <script src="menu.js"></script> 
-    
     <script type="module" src="foco-logica.js"></script>
 </body>
 </html>
