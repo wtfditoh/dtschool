@@ -6,76 +6,73 @@
     <title>Meu Perfil - Hub Brain</title>
     
     <link rel="stylesheet" href="menu.css">
-    <link rel="stylesheet" href="perfil.css">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="perfil.css"> <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        body { margin: 0; padding: 0; background: #0a0a0a !important; color: white; }
+        /* SOBREPOSIÇÃO PARA CORRIGIR O BUG DO FUNDO E DO HEADER */
+        body { background: #0a0a0a !important; margin: 0; padding: 0; }
 
         .perfil-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; height: 70px; background: rgba(15, 15, 15, 0.95);
-            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
-            position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(15px);
-            width: 100%; box-sizing: border-box;
+            padding: 0 15px; height: 70px; 
+            background: rgba(15, 15, 15, 0.98) !important;
+            border-bottom: 1px solid rgba(138, 43, 226, 0.4) !important;
+            position: sticky; top: 0; z-index: 2000; width: 100%; box-sizing: border-box;
         }
 
-        /* CHAMADA DO RANKING - ESTILO GLASS DEGRADÊ */
-        .chamada-ranking-glass {
+        /* CARD GLASS QUE PULSA (SÓ ESTE DEVE APARECER) */
+        .chamada-ranking-novo {
             margin: 20px 15px;
             padding: 20px;
-            background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(255, 255, 255, 0.05));
-            border: 1px solid rgba(138, 43, 226, 0.4);
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.25), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(138, 43, 226, 0.5);
             border-radius: 20px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
             text-align: center;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: pulse-glass 2.5s infinite ease-in-out;
         }
 
-        .chamada-ranking-glass p {
-            color: white;
-            font-weight: 900;
-            font-size: 17px;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            text-shadow: 0 2px 10px rgba(138, 43, 226, 0.8);
+        @keyframes pulse-glass {
+            0% { transform: scale(1); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+            50% { transform: scale(1.02); box-shadow: 0 15px 40px rgba(138, 43, 226, 0.3); }
+            100% { transform: scale(1); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
         }
 
-        /* TOAST DE BLOQUEIO */
-        .toast-red {
+        .chamada-ranking-novo p {
+            color: #fff; font-weight: 900; font-size: 16px; margin: 0;
+            text-transform: uppercase; letter-spacing: 2px;
+            text-shadow: 0 0 12px rgba(138, 43, 226, 0.8);
+        }
+
+        /* TOAST DE ERRO (MUITO VISÍVEL) */
+        #erro-visitante {
             position: fixed; top: 85px; left: 50%; transform: translateX(-50%);
-            background: #ff4444; color: white; padding: 12px 25px;
-            border-radius: 50px; font-size: 13px; font-weight: 800;
-            z-index: 9999; box-shadow: 0 10px 20px rgba(255, 68, 68, 0.4);
-            display: none; animation: slideDown 0.4s forwards;
+            background: #ff4444; color: white; padding: 15px 30px;
+            border-radius: 12px; font-weight: 900; font-size: 14px;
+            z-index: 9999; box-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
+            display: none; border: 2px solid white;
         }
 
-        @keyframes slideDown {
-            from { opacity: 0; transform: translate(-50%, -20px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
-
-        /* Ajuste para o header colado */
-        .perfil-container { padding: 0 !important; }
-        .perfil-card { margin: 15px !important; }
+        /* Esconder qualquer frase duplicada vinda do JS antigo */
+        .frase-antiga, .hint-ranking, #display-ranking-hint { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="aviso-visitante" class="toast-red">⚠️ ACESSO NEGADO: MODO VISITANTE</div>
+    <div id="erro-visitante">🛑 ACESSO NEGADO: MODO VISITANTE</div>
 
     <header class="perfil-header">
         <button id="open-menu" class="btn-menu">
             <i data-lucide="menu"></i>
         </button>
-        <h2 style="font-size: 15px; letter-spacing: 3px; margin: 0;">MEU <span style="color: #8a2be2;">PERFIL</span></h2>
+        <h2 style="font-size: 14px; letter-spacing: 3px; color: white;">MEU <span style="color: #8a2be2;">PERFIL</span></h2>
         <div style="width: 42px;"></div>
     </header>
 
-    <div class="perfil-container">
+    <div class="perfil-container" style="padding: 1px 0;">
         
-        <div class="chamada-ranking-glass">
+        <div class="chamada-ranking-novo">
             <p>🚀 SUBIR NAS PATENTES!</p>
         </div>
 
@@ -89,17 +86,17 @@
                 </button>
             </div>
 
-            <p class="user-phone-display" id="display-phone">Carregando...</p>
+            <p class="user-phone-display" id="display-phone" style="text-align: center; color: #888;">Carregando...</p>
 
             <div class="form-group">
-                <label>COMO QUERES SER CHAMADO?</label>
+                <label style="color: #8a2be2; font-size: 10px; font-weight: 800;">COMO QUERES SER CHAMADO?</label>
                 <div class="input-wrapper">
                     <i data-lucide="signature" class="input-icon"></i>
                     <input type="text" id="user-name-input" placeholder="Teu Nickname">
                 </div>
             </div>
 
-            <button id="btn-trava-visitante" class="btn-save">
+            <button id="btn-block-visitante" class="btn-save" style="margin-top: 20px;">
                 <i data-lucide="check-circle"></i> SALVAR ALTERAÇÕES
             </button>
         </div>
@@ -111,58 +108,59 @@
         </button>
     </div>
 
-    <div id="modal-avatar" class="modal-avatar-overlay" style="display:none;">
-        <div class="modal-avatar-card">
-            <h3 style="color:white; text-align:center;">ÍCONES HUB</h3>
-            <div class="avatar-grid">
-                <div class="avatar-option" onclick="window.selecionarAvatar('user')"><i data-lucide="user"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('zap')"><i data-lucide="zap"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('brain-circuit')"><i data-lucide="brain-circuit"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('rocket')"><i data-lucide="rocket"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('flame')"><i data-lucide="flame"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('trophy')"><i data-lucide="trophy"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('crown')"><i data-lucide="crown"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('ghost')"><i data-lucide="ghost"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('sword')"><i data-lucide="sword"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('target')"><i data-lucide="target"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('skull')"><i data-lucide="skull"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('gem')"><i data-lucide="gem"></i></div>
-            </div>
-            <button onclick="window.fecharGaleria()" class="btn-fechar-galeria">VOLTAR</button>
-        </div>
-    </div>
-
     <script src="menu.js"></script>
     <script type="module" src="perfil-logica.js"></script>
 
     <script>
-        // BLOQUEIO SUPREMO
-        document.getElementById('btn-trava-visitante').addEventListener('click', function(e) {
+        // SOLUÇÃO FINAL PARA O BLOQUEIO
+        document.getElementById('btn-block-visitante').addEventListener('click', function(e) {
             const phone = localStorage.getItem('dt_user_phone');
             
-            if (phone === '00000000000' || !phone) {
-                // Impede QUALQUER coisa de acontecer
-                e.preventDefault();
-                e.stopImmediatePropagation(); 
-
-                const aviso = document.getElementById('aviso-visitante');
-                aviso.style.display = 'block';
+            // Verificação agressiva
+            if (phone === '00000000000' || !phone || phone.includes('teste')) {
+                const erro = document.getElementById('erro-visitante');
+                erro.style.display = 'block';
                 
-                if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
-                setTimeout(() => { aviso.style.display = 'none'; }, 3000);
-                return false;
+                // Tremer o ecrã
+                document.body.style.animation = "shake 0.2s ease-in-out 2";
+                
+                setTimeout(() => { 
+                    erro.style.display = 'none'; 
+                    document.body.style.animation = "";
+                }, 3000);
+                
+                return; // Mata a execução aqui
             }
 
-            // Se for real, chama a função do arquivo externo manualmente
-            if (window.salvarPerfilFirebase) {
-                window.salvarPerfilFirebase();
+            // Se for real, tenta chamar a função de salvar do teu ficheiro 'perfil-logica.js'
+            // Normalmente chamamos a função global definida no módulo
+            if (window.salvarPerfilReal) {
+                window.salvarPerfilReal();
             }
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // Força a limpeza de frases duplicadas que o JS possa injetar
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                // Procura por textos repetidos e remove
+                const frases = document.querySelectorAll('p, span, div');
+                frases.forEach(el => {
+                    if(el.innerText.includes("patente") && !el.closest('.chamada-ranking-novo')) {
+                        el.style.display = 'none';
+                    }
+                });
+            }, 500);
             if(window.lucide) lucide.createIcons();
         });
     </script>
+
+    <style>
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
 </body>
 </html>
