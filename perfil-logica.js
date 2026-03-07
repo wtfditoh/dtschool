@@ -44,7 +44,7 @@ async function carregarPerfilOficial(userFirebase) {
     
     // VERIFICA SE É VISITANTE
     if (userType === 'local' || !userFirebase) {
-        getEl('display-id').innerText = `#HB-VISITANTE`;
+        getEl('display-id').innerText = `VISITANTE`;
         getEl('user-name-input').value = "Visitante";
         statsContainer.innerHTML = `
             <div class="xp-card">
