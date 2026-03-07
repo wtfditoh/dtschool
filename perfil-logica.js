@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function carregarPerfilOficial() {
     const statsContainer = getEl('area-stats');
-    if (userType === 'local') {
-        getEl('display-phone').innerText = `VISITANTE`;
+    if (userType === 'local' || userPhone === '00000000000') {
+        getEl('display-phone').innerText = `HUB • GUEST`;
         statsContainer.innerHTML = `<div class="xp-card"><p class="hint">Entre para subir nas patentes!</p></div>`;
         return;
     }
@@ -53,7 +53,6 @@ async function carregarPerfilOficial() {
             const d = meuDoc.data();
             const xp = d.xp || 0;
 
-            // --- LÓGICA DAS PATENTES OFICIAIS ---
             let pNome, pMin, pMax, pCor;
 
             if (xp <= 500) { 
@@ -121,13 +120,25 @@ window.selecionarAvatar = (icon) => {
     lucide.createIcons();
     window.fecharGaleria();
 };
+
 getEl('btn-salvar-perfil').onclick = async () => {
+    if (userType === 'local' || userPhone === '00000000000') {
+        showToast("Visitantes não podem salvar alterações", "error");
+        return;
+    }
+
     const nome = getEl('user-name-input').value;
     const avatar = getEl('avatar-icon').getAttribute('data-lucide');
+    
     try {
-        await setDoc(doc(db, "notas", userPhone), { nome, avatar }, { merge: true });
+        // AJUSTE: updateDoc mantém seu XP intacto!
+        await updateDoc(doc(db, "notas", userPhone), { nome, avatar });
         showToast("Perfil Atualizado!");
-        setTimeout(() => window.location.href = 'index.html', 1000);
-    } catch(e) { showToast("Erro ao salvar", "error"); }
+        // REMOVIDO: window.location.href = 'index.html' (agora você continua no perfil)
+    } catch(e) { 
+        console.error(e);
+        showToast("Erro ao salvar", "error"); 
+    }
 };
+
 window.logout = () => { localStorage.clear(); window.location.href = 'login.html'; };
