@@ -1,130 +1,66 @@
-/* RESET E CORES */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-html, body {
+body {
     width: 100%;
     min-height: 100vh;
-    background: radial-gradient(circle at center, #1a0b2e 0%, #050505 70%, #020202 100%) no-repeat fixed !important;
+    background: radial-gradient(circle at center, #11081f 0%, #050505 70%, #020202 100%) no-repeat fixed;
     color: #ffffff;
     font-family: 'Inter', sans-serif;
-    overflow-x: hidden;
 }
 
-.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138, 43, 226, 0.6); }
+.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138, 43, 226, 0.5); }
 
-/* CONTAINER DO RANKING */
-.ranking-wrapper { padding: 20px; max-width: 500px; margin: 0 auto; }
-
-/* PODIUM - DESIGN DE ELITE */
-.podium-container { 
-    display: flex; 
-    align-items: flex-end; 
-    justify-content: center; 
-    gap: 15px; 
-    margin: 50px 0 40px; 
-    height: 180px; 
+/* HEADER */
+.ranking-header { 
+    display: flex; align-items: center; padding: 0 20px; height: 70px; 
+    background: #0a0a0a; border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+    position: sticky; top: 0; z-index: 1000;
 }
 
-.podium-slot { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    width: 30%; 
-    position: relative;
-}
+#open-menu { background: rgba(255, 255, 255, 0.03); border: 1px solid #222; color: white; padding: 10px; border-radius: 12px; cursor: pointer; }
+.header-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 16px; font-weight: 800; letter-spacing: 1px; }
 
-/* AVATAR FRAMES */
+/* PODIUM ESTILIZADO */
+.podium-container { display: flex; align-items: flex-end; justify-content: center; gap: 10px; margin: 50px 0 40px; height: 180px; }
+.podium-slot { width: 32%; display: flex; flex-direction: column; align-items: center; position: relative; }
+
 .avatar-frame { 
-    width: 65px; height: 65px; border-radius: 50%; 
-    background: rgba(138, 43, 226, 0.05); 
-    border: 2px solid rgba(138, 43, 226, 0.3); 
-    display: flex; align-items: center; justify-content: center; 
-    position: relative; margin-bottom: 12px;
-    backdrop-filter: blur(10px);
+    width: 65px; height: 65px; border-radius: 50%; border: 2px solid #333;
+    background: rgba(255, 255, 255, 0.02); display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
 }
 
-/* PRIMEIRO LUGAR DESTAQUE */
-.podium-slot.first .avatar-frame { 
-    width: 95px; height: 95px; 
-    border-color: #f1c40f; 
-    box-shadow: 0 0 30px rgba(241, 196, 15, 0.3);
-    animation: gold-pulse 2s infinite ease-in-out;
-}
+/* CORES DOS LUGARES */
+.first .avatar-frame { width: 95px; height: 95px; border-color: #f1c40f; box-shadow: 0 0 25px rgba(241, 196, 15, 0.3); }
+.second .avatar-frame { border-color: #bdc3c7; box-shadow: 0 0 15px rgba(189, 195, 199, 0.2); }
+.third .avatar-frame { border-color: #cd7f32; box-shadow: 0 0 15px rgba(205, 127, 50, 0.2); }
 
-@keyframes gold-pulse {
-    0% { box-shadow: 0 0 20px rgba(241, 196, 15, 0.2); }
-    50% { box-shadow: 0 0 40px rgba(241, 196, 15, 0.5); }
-    100% { box-shadow: 0 0 20px rgba(241, 196, 15, 0.2); }
-}
+.crown-icon { position: absolute; top: -30px; color: #f1c40f; width: 35px; filter: drop-shadow(0 0 8px #f1c40f); }
 
-.crown-icon { 
-    position: absolute; 
-    top: -30px; 
-    color: #f1c40f; 
-    width: 35px !important; 
-    height: 35px !important;
-    filter: drop-shadow(0 0 10px rgba(241,196,15,0.8));
-    z-index: 10;
-}
+.p-name { font-size: 11px; font-weight: 900; color: #fff; margin-bottom: 5px; text-transform: uppercase; }
+.p-xp { padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 900; border: 1px solid rgba(255,255,255,0.1); }
 
-.p-name { font-size: 12px; font-weight: 900; color: white; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-.p-xp { 
-    background: rgba(255,255,255,0.05); 
-    border: 1px solid rgba(138,43,226,0.3); 
-    padding: 4px 12px; 
-    border-radius: 20px; 
-    font-size: 10px; 
-    font-weight: 900; 
-    color: #a855f7; 
-}
-.p-xp.gold { border-color: #f1c40f; color: #f1c40f; background: rgba(241, 196, 15, 0.1); }
+/* TAGS DE XP METÁLICAS */
+.p-xp.gold { color: #f1c40f; border-color: #f1c40f; background: rgba(241, 196, 15, 0.1); }
+.p-xp.silver { color: #bdc3c7; border-color: #bdc3c7; background: rgba(189, 195, 199, 0.1); }
+.p-xp.bronze { color: #cd7f32; border-color: #cd7f32; background: rgba(205, 127, 50, 0.1); }
 
-/* LISTA RANKING (CARDS) */
-.ranking-list-container { 
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 120px;
-}
-
+/* LISTA ABAIXO */
+.ranking-list-container { display: flex; flex-direction: column; gap: 10px; padding-bottom: 100px; }
 .rank-item { 
-    display: flex; 
-    align-items: center; 
-    padding: 18px; 
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(138, 43, 226, 0.15);
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    transition: 0.3s ease;
+    display: flex; align-items: center; padding: 18px; 
+    background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px; border-left: 4px solid #8a2be2;
 }
 
-.rank-item:hover { transform: translateX(5px); border-color: #8a2be2; }
+.rank-pos { width: 40px; font-weight: 900; color: #555; font-style: italic; }
+.rank-name { font-weight: 800; font-size: 15px; color: #eee; }
+.rank-patente { font-size: 10px; font-weight: 900; color: #8a2be2; text-transform: uppercase; }
 
-.rank-pos { 
-    width: 40px; 
-    font-weight: 900; 
-    font-size: 14px;
-    color: rgba(138, 43, 226, 0.6); 
-    font-style: italic; 
-}
-
-.rank-info { flex: 1; margin-left: 10px; }
-.rank-name { display: block; font-weight: 800; font-size: 15px; color: #eee; }
-.rank-patente { 
-    font-size: 9px; 
-    font-weight: 900; 
-    text-transform: uppercase; 
-    color: #8a2be2; 
-    letter-spacing: 1px;
-}
-
-/* BOTÃO HELP */
+/* BOTÃO AJUDA MODERNO */
 .btn-help-floating {
-    position: fixed; bottom: 30px; right: 20px; 
-    width: 55px; height: 55px;
-    background: #8a2be2; 
-    border: none; border-radius: 18px; 
-    color: white; display: flex; align-items: center; justify-content: center; 
-    z-index: 1000; box-shadow: 0 10px 25px rgba(138, 43, 226, 0.4);
-    cursor: pointer;
-    }
+    position: fixed; bottom: 30px; right: 20px; width: 50px; height: 50px;
+    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%; color: #8a2be2; display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(10px); z-index: 1000; transition: 0.3s;
+}
+.btn-help-floating:active { transform: scale(0.9); }
