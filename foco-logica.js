@@ -16,12 +16,9 @@ const userPhone = localStorage.getItem('dt_user_phone');
 
 let timer, segs = 0, total = 0, isPaused = false;
 const circle = document.getElementById('circle-bar');
-const radius = circle.r.baseVal.value;
-const circumference = radius * 2 * Math.PI;
+const circumference = 130 * 2 * Math.PI;
 
-circle.style.strokeDasharray = `${circumference} ${circumference}`;
-
-const setProgress = (percent) => {
+const updateCircle = (percent) => {
     const offset = circumference - (percent / 100 * circumference);
     circle.style.strokeDashoffset = offset;
 };
@@ -33,6 +30,7 @@ const start = () => {
 
     segs = (h * 3600) + (m * 60);
     total = segs;
+    updateCircle(100);
 
     document.getElementById('setup-view').style.display = 'none';
     document.getElementById('btn-start').style.display = 'none';
@@ -43,11 +41,15 @@ const start = () => {
     timer = setInterval(() => {
         if (!isPaused) {
             segs--;
-            const mins = Math.floor(segs / 60);
+            const hrs = Math.floor(segs / 3600);
+            const mins = Math.floor((segs % 3600) / 60);
             const s = segs % 60;
-            document.getElementById('main-time').innerText = `${mins < 10 ? '0'+mins : mins}:${s < 10 ? '0'+s : s}`;
             
-            setProgress((segs / total) * 100);
+            // Exibe horas apenas se houver
+            document.getElementById('main-time').innerText = 
+                `${hrs > 0 ? hrs + ':' : ''}${mins < 10 ? '0'+mins : mins}:${s < 10 ? '0'+s : s}`;
+            
+            updateCircle((segs / total) * 100);
 
             if (segs <= 0) finish(true);
         }
@@ -63,21 +65,17 @@ const finish = async (win) => {
     window.location.reload();
 };
 
-// Eventos
 document.getElementById('btn-start').onclick = start;
-document.getElementById('h-up').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); v++; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; };
+document.getElementById('h-up').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v<12) v++; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; };
 document.getElementById('h-down').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v>0) v--; document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; };
 document.getElementById('m-up').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v<55) v+=5; document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; };
 document.getElementById('m-down').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v>0) v-=5; document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; };
 
 document.getElementById('btn-pause').onclick = () => {
     isPaused = !isPaused;
-    document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR";
+    document.getElementById('btn-pause').innerText = isPaused ? "RESUME" : "PAUSE";
 };
-
-document.getElementById('btn-quit').onclick = () => document.getElementById('modal-quit').style.display = 'flex';
-document.getElementById('btn-resume').onclick = () => document.getElementById('modal-quit').style.display = 'none';
-document.getElementById('btn-confirm-quit').onclick = () => finish(false);
+document.getElementById('btn-quit').onclick = () => window.location.reload();
 document.getElementById('back-nav').onclick = () => window.history.back();
 
 lucide.createIcons();
