@@ -18,23 +18,29 @@ let timer, segs = 0, total = 0, isPaused = false;
 const circle = document.getElementById('circle-bar');
 const circumference = 130 * 2 * Math.PI;
 
-// --- SOM DE CLIQUE POTENTE ---
+// --- SISTEMA DE SOM (Otimizado: 1 toque por segundo, som encorpado) ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
 const playTick = () => {
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     
-    osc.type = 'square'; // Som mais "seco" e audível
-    osc.frequency.setValueAtTime(400, audioCtx.currentTime); 
+    // Voltamos para 'sine' (mais suave), mas com frequência de 300Hz (mais encorpado/grave que o anterior)
+    osc.type = 'sine'; 
+    osc.frequency.setValueAtTime(300, audioCtx.currentTime); 
     
-    gain.gain.setValueAtTime(0.3, audioCtx.currentTime); // Volume aumentado
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+    // Volume alto (0.5 é bem forte para um tique)
+    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+    // Fade out rápido para criar o efeito de estalido de relógio
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
     
     osc.connect(gain);
     gain.connect(audioCtx.destination);
+    
     osc.start();
-    osc.stop(audioCtx.currentTime + 0.04);
+    osc.stop(audioCtx.currentTime + 0.1);
 };
 
 const updateXP = () => {
@@ -61,10 +67,11 @@ document.getElementById('btn-start').onclick = () => {
     circle.style.strokeDasharray = circumference;
     circle.style.strokeDashoffset = 0;
 
+    // Intervalo fixo de 1 segundo (1000ms)
     timer = setInterval(() => {
         if(!isPaused){
             segs--;
-            playTick(); // Dispara 1x por segundo
+            playTick(); // Toca exatamente junto com a mudança do segundo
             
             const hrs = Math.floor(segs / 3600);
             const mins = Math.floor((segs % 3600) / 60);
