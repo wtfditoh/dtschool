@@ -5,10 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Deep Focus</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="foco.css">
-    
     <style>
-        /* Estilo crítico para garantir que o menu suma do topo */
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;900&display=swap');
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        
+        body { 
+            background: #000; color: white; font-family: 'Inter', sans-serif; 
+            height: 100svh; width: 100vw; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- SIDEBAR SISTEMA --- */
         .sidebar {
             position: fixed !important;
             top: 0 !important;
@@ -17,14 +25,13 @@
             height: 100vh !important;
             background: #0a0a0a !important;
             z-index: 9999 !important;
-            transition: transform 0.3s ease-in-out !important;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
             border-right: 1px solid #1a1a1a !important;
             display: flex !important;
             flex-direction: column !important;
         }
-        .sidebar.active {
-            transform: translateX(280px) !important;
-        }
+        .sidebar.active { transform: translateX(280px) !important; }
+
         .overlay {
             position: fixed !important;
             inset: 0 !important;
@@ -34,9 +41,73 @@
             backdrop-filter: blur(5px);
         }
         .overlay.active { display: block !important; }
+
+        .sidebar-header { padding: 25px; display: flex; justify-content: flex-end; }
+        .sidebar-menu { display: flex; flex-direction: column; padding: 0 30px; gap: 25px; }
+        .sidebar-menu a { 
+            color: #444; text-decoration: none; font-weight: 900; 
+            font-size: 14px; text-transform: uppercase; letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        .sidebar-menu a.active { color: #8a2be2; }
+
+        /* --- LAYOUT FOCO --- */
+        .header-minimal { flex-shrink: 0; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-icon-top { background: none; border: none; color: #1a1a1a; cursor: pointer; padding: 8px; display: flex; align-items: center; }
+        .label-header { font-weight: 900; font-size: 8px; letter-spacing: 3px; color: #1a1a1a; text-transform: uppercase; }
+
+        .timer-viewport { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .canvas-timer { position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; }
+        
+        .progress-ring { position: absolute; transform: rotate(-90deg); width: 100%; height: 100%; }
+        .progress-ring__circle {
+            stroke: #8a2be2; stroke-width: 6; fill: transparent;
+            stroke-dasharray: 816.8; stroke-dashoffset: 816.8;
+            stroke-linecap: round; transition: stroke-dashoffset 1s linear;
+            filter: drop-shadow(0 0 10px #8a2be2);
+        }
+        .progress-bg { stroke: #0a0a0a; stroke-width: 6; fill: transparent; }
+
+        .timer-content { position: absolute; z-index: 5; text-align: center; width: 100%; }
+        .digital-clock { font-family: 'Share Tech Mono', monospace; color: #fff; display: flex; align-items: center; justify-content: center; line-height: 1; }
+        #setup-view .digital-clock { font-size: 50px; }
+        #active-clock .digital-clock { font-size: 60px; color: #8a2be2; text-shadow: 0 0 15px rgba(138, 43, 226, 0.4); }
+
+        .unit-adjust { display: flex; flex-direction: column; align-items: center; }
+        .btn-arrow { background: none; border: none; color: #1a1a1a; cursor: pointer; padding: 5px; }
+
+        .xp-badge {
+            background: rgba(138, 43, 226, 0.05); border: 1px solid rgba(138, 43, 226, 0.15);
+            padding: 4px 12px; border-radius: 8px; margin-top: 8px; display: inline-flex;
+            flex-direction: column; align-items: center;
+        }
+        .xp-label { font-size: 7px; font-weight: 900; color: #444; letter-spacing: 1px; margin-bottom: 2px; }
+        .xp-value { font-size: 13px; font-weight: 900; color: #ffd700; font-family: 'Share Tech Mono', monospace; }
+
+        .footer-area { flex-shrink: 0; width: 100%; padding: 10px 25px 30px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .btn-main {
+            width: 100%; max-width: 300px; padding: 16px; border-radius: 100px; border: none;
+            font-weight: 900; font-size: 14px; background: #8a2be2; color: white; cursor: pointer;
+        }
+        .btn-pause { background: #111; border: 1px solid #222; }
+        .btn-quit-label { background: none; border: none; color: #333; font-weight: 800; font-size: 11px; padding: 10px; cursor: pointer; text-transform: uppercase; }
     </style>
 </head>
 <body>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <button id="close-sidebar" style="background:none; border:none; color:#444; cursor:pointer;">
+                <i data-lucide="x" size="24"></i>
+            </button>
+        </div>
+        <nav class="sidebar-menu">
+            <a href="index.html">Notas</a>
+            <a href="foco.html" class="active">Deep Focus</a>
+            <a href="#">Configurações</a>
+        </nav>
+    </div>
+    <div id="overlay" class="overlay"></div>
 
     <header class="header-minimal">
         <button id="open-sidebar" class="btn-icon-top">
@@ -76,9 +147,7 @@
 
                 <div id="active-clock" style="display: none;">
                     <div class="digital-clock" id="main-time">00:25</div>
-                    <div class="xp-badge" style="border-color: #ffd70033;">
-                        <span class="xp-label">SESSÃO ATIVA</span>
-                    </div>
+                    <div class="xp-badge"><span class="xp-label">SESSÃO ATIVA</span></div>
                 </div>
             </div>
         </div>
@@ -90,30 +159,15 @@
         <button id="btn-quit" class="btn-quit-label" style="display:none">DESISTIR</button>
     </footer>
 
-    <div id="sidebar" class="sidebar">
-        <div class="sidebar-header" style="padding: 20px; text-align: right;">
-            <button id="close-sidebar" style="background:none; border:none; color:#444; cursor:pointer;">
-                <i data-lucide="x" size="24"></i>
-            </button>
-        </div>
-        <nav class="sidebar-menu" style="padding: 0 30px; display: flex; flex-direction: column; gap: 25px;">
-            <a href="index.html" style="color: #666; text-decoration: none; font-weight: 900; font-size: 14px; text-transform: uppercase;">Notas</a>
-            <a href="foco.html" style="color: #8a2be2; text-decoration: none; font-weight: 900; font-size: 14px; text-transform: uppercase;">Foco</a>
-        </nav>
-    </div>
-    <div id="overlay" class="overlay"></div>
-
     <div id="modal-confirm" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.98); z-index:10000; align-items:center; justify-content:center; padding:30px;">
         <div style="background:#0a0a0a; border:1px solid #1a1a1a; padding:30px; border-radius:30px; text-align:center; width:100%; max-width:300px;">
             <h2 style="font-weight:900; margin-bottom:10px; color:white; font-size:18px;">PARAR AGORA?</h2>
-            <p style="color:#444; font-size:12px; margin-bottom:25px; line-height:1.5;">O tempo focado e seu bônus de XP serão perdidos.</p>
+            <p style="color:#444; font-size:12px; margin-bottom:25px; line-height:1.5;">O progresso será perdido.</p>
             <button id="btn-keep-going" class="btn-main">CONTINUAR</button>
-            <button id="btn-really-quit" style="background:none; border:none; color:#ff4444; margin-top:20px; font-weight:800; cursor:pointer; text-transform:uppercase; font-size:10px; letter-spacing:1px;">SIM, DESISTIR</button>
+            <button id="btn-really-quit" style="background:none; border:none; color:#ff4444; margin-top:20px; font-weight:800; cursor:pointer; text-transform:uppercase; font-size:10px; letter-spacing:1px;">DESISTIR</button>
         </div>
     </div>
 
-    <script>lucide.createIcons();</script>
-    <script src="menu.js"></script> 
     <script type="module" src="foco-logica.js"></script>
 </body>
 </html>
