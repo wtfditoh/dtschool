@@ -1,6 +1,6 @@
 // menu.js - O Coração da Navegação do Hub Brain
 const criarMenuGlobal = () => {
-    // 1. Criar o HTML do Menu Lateral
+    // 1. Criar o HTML do Menu Lateral com TODAS as suas páginas
     const menuHTML = `
         <div id="side-menu" class="side-menu">
             <div class="menu-header">
@@ -8,14 +8,16 @@ const criarMenuGlobal = () => {
                 <button id="close-menu"><i data-lucide="x"></i></button>
             </div>
             <nav class="menu-links">
-                <a href="index.html" id="link-notas"><i data-lucide="layout-dashboard"></i> Notas</a>
+                <a href="index.html" id="link-index"><i data-lucide="layout-dashboard"></i> Notas</a>
+                <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
+                <a href="estudos.html" id="link-estudos"><i data-lucide="brain-circuit"></i> Estudos & IA</a>
+                <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
                 <a href="perfil.html" id="link-perfil"><i data-lucide="user"></i> Perfil</a>
                 <a href="ranking.html" id="link-ranking"><i data-lucide="trophy"></i> Ranking</a>
-                <a href="calendario.html" id="link-cal"><i data-lucide="calendar"></i> Calendário</a>
             </nav>
             <div class="menu-footer">
-                <button onclick="window.logout()" class="btn-logout-menu">
-                    <i data-lucide="log-out"></i> Sair
+                <button id="btn-logout-sidebar" class="btn-logout-menu">
+                    <i data-lucide="log-out"></i> Sair da Conta
                 </button>
             </div>
         </div>
@@ -25,36 +27,61 @@ const criarMenuGlobal = () => {
     // 2. Injetar o menu no início do body
     document.body.insertAdjacentHTML('afterbegin', menuHTML);
 
-    // 3. Lógica de Abrir/Fechar
+    // 3. Seleção de elementos
     const sideMenu = document.getElementById('side-menu');
     const menuOverlay = document.getElementById('menu-overlay');
-    const btnOpen = document.getElementById('open-menu');
+    const btnOpen = document.getElementById('open-menu'); // Deve existir no Header das páginas
     const btnClose = document.getElementById('close-menu');
+    const btnLogout = document.getElementById('btn-logout-sidebar');
 
-    if (btnOpen) {
-        btnOpen.onclick = () => {
-            sideMenu.classList.add('open');
-            menuOverlay.classList.add('active');
-        };
-    }
+    // 4. Lógica de Abrir/Fechar
+    const abrirMenu = () => {
+        sideMenu.classList.add('open');
+        menuOverlay.classList.add('active');
+    };
 
-    const fechar = () => {
+    const fecharMenu = () => {
         sideMenu.classList.remove('open');
         menuOverlay.classList.remove('active');
     };
 
-    if (btnClose) btnClose.onclick = fechar;
-    if (menuOverlay) menuOverlay.onclick = fechar;
+    if (btnOpen) btnOpen.onclick = abrirMenu;
+    if (btnClose) btnClose.onclick = fecharMenu;
+    if (menuOverlay) menuOverlay.onclick = fecharMenu;
 
-    // 4. Marcar link ativo baseado na página atual
+    // 5. Lógica de Logout (Garante que funciona em todas as telas)
+    if (btnLogout) {
+        btnLogout.onclick = () => {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        };
+    }
+
+    // 6. Marcar link ativo baseado na URL atual
     const path = window.location.pathname;
-    if (path.includes('index')) document.getElementById('link-notas')?.classList.add('active');
-    if (path.includes('perfil')) document.getElementById('link-perfil')?.classList.add('active');
-    if (path.includes('ranking')) document.getElementById('link-ranking')?.classList.add('active');
+    const paginas = ['index', 'agenda', 'estudos', 'horario', 'perfil', 'ranking'];
+    
+    paginas.forEach(pg => {
+        if (path.includes(pg)) {
+            const link = document.getElementById(`link-${pg}`);
+            if (link) link.classList.add('active');
+        }
+    });
 
-    // Re-renderizar ícones do Lucide para o menu novo
-    if (window.lucide) lucide.createIcons();
+    // Especial para a Home caso o path seja apenas "/"
+    if (path === '/' || path.endsWith('/')) {
+        document.getElementById('link-index')?.classList.add('active');
+    }
+
+    // 7. Renderizar ícones do Lucide
+    if (window.lucide) {
+        lucide.createIcons();
+    }
 };
 
 // Inicializa quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', criarMenuGlobal);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', criarMenuGlobal);
+} else {
+    criarMenuGlobal();
+}
