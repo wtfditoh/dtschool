@@ -16,7 +16,7 @@ const db = getFirestore(app);
 const userPhone = localStorage.getItem('dt_user_phone');
 const API_KEY = "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";
 
-// VARIÁVEIS DE CONTROLE DE XP
+// VARIÁVEIS DE CONTROLE DE XP (ADICIONADAS)
 let acertosSimulado = 0;
 let respondidasSimulado = 0;
 
@@ -29,7 +29,7 @@ window.addEventListener('load', () => {
     }
 });
 
-// 1. MENU LATERAL (Conecta com os 3 traços)
+// 1. MENU LATERAL
 window.abrirSeuMenuLateral = function() {
     const menu = document.querySelector('.dt-sidebar') || document.querySelector('nav');
     if(menu) menu.classList.toggle('open');
@@ -42,10 +42,11 @@ window.trocarAba = function(aba) {
     
     document.getElementById('painel-' + aba).classList.add('active');
     document.getElementById('tab-' + aba).classList.add('active');
-    document.getElementById('header-titulo').innerText = aba === 'simulado' ? 'Simulado IA' : 'Tira-Dúvidas';
+    const header = document.getElementById('header-titulo');
+    if(header) header.innerText = aba === 'simulado' ? 'Simulado IA' : 'Tira-Dúvidas';
 }
 
-// 3. LIXEIRA CUSTOMIZADA (O modal bonitão)
+// 3. LIXEIRA CUSTOMIZADA
 window.abrirModalLixeira = function() { 
     document.getElementById('modal-lixeira').style.display = 'flex'; 
 }
@@ -63,19 +64,23 @@ window.confirmarLimpeza = function() {
 
 // 4. AVISOS
 window.mostrarAviso = function(txt) {
-    document.getElementById('txt-aviso').innerText = txt;
-    document.getElementById('modal-aviso').style.display = 'flex';
+    const aviso = document.getElementById('modal-aviso');
+    const txtAviso = document.getElementById('txt-aviso');
+    if(aviso && txtAviso) {
+        txtAviso.innerText = txt;
+        aviso.style.display = 'flex';
+    }
 }
 window.fecharAviso = function() { 
     document.getElementById('modal-aviso').style.display = 'none'; 
 }
 
-// FUNÇÃO PARA PROCESSAR O XP NO FINAL
-async function processarXPSimulado() {
+// LÓGICA DE XP (REGRAS DO USUÁRIO)
+async function aplicarXPSimulado() {
     let xpFinal = 0;
     if (acertosSimulado === 10) xpFinal = 150;
     else if (acertosSimulado >= 7) xpFinal = 60;
-    else if (acertosSimulado >= 5) xpFinal = 20;
+    else if (acertosSimulado >= 5) xpFinal = 20; // Neutro/Pequeno ganho
     else if (acertosSimulado >= 3) xpFinal = -30;
     else xpFinal = -80;
 
@@ -83,17 +88,16 @@ async function processarXPSimulado() {
         try {
             const userRef = doc(db, "notas", userPhone);
             await updateDoc(userRef, { xp: increment(xpFinal) });
-            window.mostrarAviso(`Simulado encerrado! ${acertosSimulado}/10 acertos. XP: ${xpFinal > 0 ? '+' : ''}${xpFinal}`);
-        } catch (e) { console.error("Erro Firebase XP:", e); }
+            window.mostrarAviso(`Simulado Concluído! Acertos: ${acertosSimulado}/10. Ranking: ${xpFinal > 0 ? '+' : ''}${xpFinal} XP`);
+        } catch (e) { console.error("Erro XP:", e); }
     }
 }
 
-// 5. SIMULADO COM CORES (VERDE/VERMELHO) + XP
+// 5. SIMULADO COM CORES (VERDE/VERMELHO)
 window.gerarSimulado = async function() {
     const tema = document.getElementById('campo-tema').value;
     if(!tema) return window.mostrarAviso("⚠️ Digite um tema primeiro!");
     
-    // Reset de contagem
     acertosSimulado = 0;
     respondidasSimulado = 0;
 
@@ -111,7 +115,8 @@ window.gerarSimulado = async function() {
         });
 
         const d = await res.json();
-        const json = JSON.parse(d.choices[0].message.content.match(/\[.*\]/s)[0]);
+        const rawContent = d.choices[0].message.content;
+        const json = JSON.parse(rawContent.match(/\[.*\]/s)[0]);
         container.innerHTML = "";
 
         json.forEach((q, i) => {
@@ -129,7 +134,6 @@ window.gerarSimulado = async function() {
                     
                     respondidasSimulado++;
 
-                    // A MÁGICA DAS CORES E XP AQUI
                     if (idx === q.c) {
                         acertosSimulado++;
                         btn.style.setProperty('background-color', '#1b4d2e', 'important');
@@ -146,23 +150,26 @@ window.gerarSimulado = async function() {
                     aula.innerHTML = `<b>🎓 Mini Aula:</b><br>${q.e}`;
                     div.appendChild(aula);
 
-                    // Se terminou as 10, dispara o XP
+                    // VERIFICA SE CHEGOU AO FIM
                     if (respondidasSimulado === 10) {
-                        processarXPSimulado();
+                        aplicarXPSimulado();
                     }
                 };
                 div.appendChild(btn);
             });
             container.appendChild(div);
         });
-    } catch(e) { container.innerHTML = "Erro ao gerar simulado. Tente novamente."; }
+    } catch(e) { 
+        console.error(e);
+        container.innerHTML = "Erro ao gerar simulado. Tente novamente."; 
+    }
 }
 
 // 6. CHAT TIRA-DÚVIDAS
 window.enviarMensagem = async function() {
     const input = document.getElementById('chat-input');
     const box = document.getElementById('chat-box');
-    if(!input.value) return;
+    if(!input || !input.value) return;
 
     const texto = input.value;
     input.value = "";
@@ -183,5 +190,7 @@ window.enviarMensagem = async function() {
         box.innerHTML += `<div class="dt-bolha ia">${respIA}</div>`;
         box.scrollTop = box.scrollHeight;
         localStorage.setItem('dt_chat_hist', box.innerHTML);
-    } catch(e) { box.innerHTML += `<div class="dt-bolha ia">Erro ao responder.</div>`; }
+    } catch(e) { 
+        box.innerHTML += `<div class="dt-bolha ia">Erro ao responder.</div>`; 
+    }
 }
