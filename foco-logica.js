@@ -14,73 +14,53 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const userPhone = localStorage.getItem('dt_user_phone');
 
-let timer;
-let segs = 0;
-let totalOriginal = 0;
-let isPaused = false;
+let timer, segs=0, total=0, isPaused=false;
 
-// Seleção de Elementos
-const setupUI = document.getElementById('setup-ui');
-const clockActive = document.getElementById('clock-active');
-const btnStart = document.getElementById('btn-start');
-const btnPause = document.getElementById('btn-pause');
-const btnQuit = document.getElementById('btn-quit');
-const modalQuit = document.getElementById('modal-quit');
+const setup = document.getElementById('setup-view');
+const active = document.getElementById('active-timer');
+const startBtn = document.getElementById('btn-start');
+const pauseBtn = document.getElementById('btn-pause');
+const quitBtn = document.getElementById('btn-quit');
 
-// FUNÇÕES DE AÇÃO
-const iniciar = () => {
+const start = () => {
     const h = parseInt(document.getElementById('h-val').innerText);
     const m = parseInt(document.getElementById('m-val').innerText);
-    if (h === 0 && m === 0) return alert("Defina um tempo!");
+    if(h===0 && m===0) return;
 
-    segs = (h * 3600) + (m * 60);
-    totalOriginal = segs;
+    segs = (h*3600) + (m*60);
+    total = segs;
 
-    setupUI.style.display = 'none';
-    btnStart.style.display = 'none';
-    clockActive.style.display = 'flex';
-    btnPause.style.display = 'block';
-    btnQuit.style.display = 'block';
+    setup.style.display = 'none';
+    startBtn.style.display = 'none';
+    active.style.display = 'flex';
+    pauseBtn.style.display = 'block';
+    quitBtn.style.display = 'block';
 
     timer = setInterval(() => {
-        if (!isPaused) {
+        if(!isPaused) {
             segs--;
-            renderTime();
-            if (segs <= 0) finalizar(true);
+            const hrs = Math.floor(segs / 3600);
+            const min = Math.floor((segs % 3600) / 60);
+            const s = segs % 60;
+            document.getElementById('main-time').innerText = `${hrs>0?hrs+':':''}${min<10?'0'+min:min}`;
+            document.getElementById('sec-time').innerText = s<10?'0'+s:s;
+            if(segs<=0) finish(true);
         }
     }, 1000);
 };
 
-const renderTime = () => {
-    const h = Math.floor(segs / 3600);
-    const m = Math.floor((segs % 3600) / 60);
-    const s = segs % 60;
-    document.getElementById('main-time').innerText = `${h > 0 ? h + ':' : ''}${m < 10 ? '0' + m : m}`;
-    document.getElementById('seconds-tiny').innerText = s < 10 ? '0' + s : s;
-};
-
-const pausar = () => {
-    isPaused = !isPaused;
-    btnPause.innerText = isPaused ? "RETOMAR" : "PAUSAR";
-};
-
-const finalizar = async (concluiu) => {
+const finish = async (win) => {
     clearInterval(timer);
-    const minPassados = (totalOriginal - segs) / 60;
-    let xp = Math.floor((minPassados / 25) * 10);
-    if (!concluiu) xp = Math.floor(xp / 2);
-
-    if (xp > 0 && userPhone) {
-        try {
-            await updateDoc(doc(db, "notas", userPhone), { xp: increment(xp) });
-        } catch (e) { console.error(e); }
-    }
+    const passed = (total - segs) / 60;
+    let xp = Math.floor((passed/25)*10);
+    if(!win) xp = Math.floor(xp/2);
+    if(xp>0 && userPhone) await updateDoc(doc(db, "notas", userPhone), { xp: increment(xp) });
     window.location.reload();
 };
 
-// Event Listeners (Garante que os botões funcionem)
-if (btnStart) btnStart.onclick = iniciar;
-if (btnPause) btnPause.onclick = pausar;
-if (btnQuit) btnQuit.onclick = () => modalQuit.style.display = 'flex';
-document.getElementById('btn-voltar').onclick = () => modalQuit.style.display = 'none';
-document.getElementById('btn-confirm-exit').onclick = () => finalizar(false);
+// Eventos
+startBtn.onclick = start;
+pauseBtn.onclick = () => { isPaused = !isPaused; pauseBtn.innerText = isPaused ? "RETOMAR" : "PAUSAR"; };
+quitBtn.onclick = () => document.getElementById('modal').style.display = 'flex';
+document.getElementById('btn-resume').onclick = () => document.getElementById('modal').style.display = 'none';
+document.getElementById('btn-confirm-quit').onclick = () => finish(false);
