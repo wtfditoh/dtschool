@@ -18,37 +18,39 @@ let timer, segs = 0, total = 0, isPaused = false;
 const circle = document.getElementById('circle-bar');
 const circumference = 130 * 2 * Math.PI;
 
-// --- SISTEMA DE SOM (Tick-Tack) ---
+// --- SOM DE CLIQUE POTENTE ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const playTick = () => {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(120, audioCtx.currentTime); 
-    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+    
+    osc.type = 'square'; // Som mais "seco" e audível
+    osc.frequency.setValueAtTime(400, audioCtx.currentTime); 
+    
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime); // Volume aumentado
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.04);
 };
 
-// --- ATUALIZAR ESTIMATIVA DE XP ---
 const updateXP = () => {
     const h = parseInt(document.getElementById('h-val').innerText);
     const m = parseInt(document.getElementById('m-val').innerText);
     const totalMin = (h * 60) + m;
-    const xp = Math.floor(totalMin / 25 * 10);
-    document.getElementById('xp-num').innerText = xp;
+    document.getElementById('xp-num').innerText = Math.floor(totalMin / 25 * 10);
 };
 
-// --- LOGICA DO TIMER ---
 document.getElementById('btn-start').onclick = () => {
     const h = parseInt(document.getElementById('h-val').innerText);
     const m = parseInt(document.getElementById('m-val').innerText);
     if(h === 0 && m === 0) return;
 
     if (audioCtx.state === 'suspended') audioCtx.resume();
-
-    segs = (h * 3600) + (m * 60);
-    total = segs;
+    segs = (h * 3600) + (m * 60); total = segs;
 
     document.getElementById('setup-view').style.display = 'none';
     document.getElementById('active-clock').style.display = 'block';
@@ -62,7 +64,8 @@ document.getElementById('btn-start').onclick = () => {
     timer = setInterval(() => {
         if(!isPaused){
             segs--;
-            playTick();
+            playTick(); // Dispara 1x por segundo
+            
             const hrs = Math.floor(segs / 3600);
             const mins = Math.floor((segs % 3600) / 60);
             const s = segs % 60;
@@ -71,7 +74,6 @@ document.getElementById('btn-start').onclick = () => {
                 `${hrs > 0 ? hrs + ':' : ''}${mins < 10 ? '0'+mins : mins}:${s < 10 ? '0'+s : s}`;
             
             circle.style.strokeDashoffset = (circumference - (segs / total) * circumference);
-            
             if(segs <= 0) finish(true);
         }
     }, 1000);
@@ -83,48 +85,20 @@ const finish = async (win) => {
         const xpGanho = Math.floor(total / 1500 * 10);
         try {
             await updateDoc(doc(db, "notas", userPhone), { xp: increment(xpGanho) });
-        } catch(e) { console.error(e); }
+        } catch(e) { console.error("Erro Firebase:", e); }
     }
     location.reload();
 };
 
-// --- CONTROLES DE INTERFACE ---
-document.getElementById('h-up').onclick = () => { 
-    let v = parseInt(document.getElementById('h-val').innerText); 
-    if(v < 12) v++; 
-    document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; updateXP(); 
-};
-document.getElementById('h-down').onclick = () => { 
-    let v = parseInt(document.getElementById('h-val').innerText); 
-    if(v > 0) v--; 
-    document.getElementById('h-val').innerText = v < 10 ? '0'+v : v; updateXP(); 
-};
-document.getElementById('m-up').onclick = () => { 
-    let v = parseInt(document.getElementById('m-val').innerText); 
-    if(v < 55) v += 5; 
-    document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; updateXP(); 
-};
-document.getElementById('m-down').onclick = () => { 
-    let v = parseInt(document.getElementById('m-val').innerText); 
-    if(v > 0) v -= 5; 
-    document.getElementById('m-val').innerText = v < 10 ? '0'+v : v; updateXP(); 
-};
+// Controles de ajuste
+document.getElementById('h-up').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v<12) v++; document.getElementById('h-val').innerText = v<10?'0'+v:v; updateXP(); };
+document.getElementById('h-down').onclick = () => { let v = parseInt(document.getElementById('h-val').innerText); if(v>0) v--; document.getElementById('h-val').innerText = v<10?'0'+v:v; updateXP(); };
+document.getElementById('m-up').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v<55) v+=5; document.getElementById('m-val').innerText = v<10?'0'+v:v; updateXP(); };
+document.getElementById('m-down').onclick = () => { let v = parseInt(document.getElementById('m-val').innerText); if(v>0) v-=5; document.getElementById('m-val').innerText = v<10?'0'+v:v; updateXP(); };
 
-document.getElementById('btn-pause').onclick = () => { 
-    isPaused = !isPaused; 
-    document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR"; 
-};
-
-document.getElementById('btn-quit').onclick = () => { 
-    isPaused = true; 
-    document.getElementById('modal-confirm').style.display = 'flex'; 
-};
-
-document.getElementById('btn-keep-going').onclick = () => { 
-    isPaused = false; 
-    document.getElementById('modal-confirm').style.display = 'none'; 
-};
-
+document.getElementById('btn-pause').onclick = () => { isPaused = !isPaused; document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR"; };
+document.getElementById('btn-quit').onclick = () => { isPaused = true; document.getElementById('modal-confirm').style.display = 'flex'; };
+document.getElementById('btn-keep-going').onclick = () => { isPaused = false; document.getElementById('modal-confirm').style.display = 'none'; };
 document.getElementById('btn-really-quit').onclick = () => location.reload();
 
 updateXP();
