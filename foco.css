@@ -1,184 +1,80 @@
 /* foco.css */
-* {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    margin: 0; padding: 0;
-}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
 body { 
-    background: #080808; 
-    background: radial-gradient(circle at top right, #1a0b2e, #080808);
-    color: white; 
-    font-family: 'Inter', sans-serif; 
-    height: 100vh; 
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    background: #050505; 
+    background: radial-gradient(circle at center, #120520 0%, #050505 100%);
+    color: white; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center;
 }
 
-.container {
-    padding: 20px;
-    max-width: 450px;
-    margin: 0 auto;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+/* HEADER DISCRETO */
+.header-minimal { width: 100%; padding: 25px; display: flex; justify-content: space-between; align-items: center; opacity: 0.6; }
+
+/* ÁREA DO CRONÔMETRO */
+.timer-viewport { 
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; 
 }
 
-/* HEADER PADRÃO PERFIL */
-.perfil-header { 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    margin-bottom: 30px; 
-    padding-top: 10px;
-}
-.perfil-header h2 { font-weight: 900; font-size: 18px; letter-spacing: 2px; margin: 0; }
-.purple { color: #8a2be2; text-shadow: 0 0 15px rgba(138,43,226,0.5); }
-.btn-back { 
-    background: rgba(255,255,255,0.03); 
-    border: 1px solid #222; 
-    color: white; 
-    padding: 10px; 
-    border-radius: 12px; 
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-}
+/* ESCOLHA DE TEMPO - ESTILO FLUTUANTE */
+.picker-modern { display: flex; align-items: center; gap: 10px; }
+.unit-box { display: flex; flex-direction: column; align-items: center; }
 
-/* CARD DE AJUSTE (Estilo perfil-card) */
-.timer-card { 
-    background: rgba(255, 255, 255, 0.02); 
-    border: 1px solid rgba(138, 43, 226, 0.15); 
-    border-radius: 35px; 
-    padding: 40px 20px; 
-    margin: auto 0;
-    text-align: center;
-    position: relative;
-    backdrop-filter: blur(10px);
-}
-
-/* SELETOR DE TEMPO */
-.picker-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-}
-
-.unit-column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 90px;
-}
-
-.num-val {
+.num-display {
     font-family: 'Orbitron', sans-serif;
-    font-size: 58px;
-    font-weight: 900;
-    color: #fff;
-    line-height: 1;
-    margin: 10px 0;
-    text-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+    font-size: 80px; font-weight: 700; color: #fff;
+    line-height: 1; margin: 10px 0;
+    text-shadow: 0 0 40px rgba(138, 43, 226, 0.3);
 }
 
-.arrow-icon {
-    background: rgba(138, 43, 226, 0.1);
-    border: 1px solid rgba(138, 43, 226, 0.2);
-    color: #8a2be2;
-    width: 45px;
-    height: 45px;
-    border-radius: 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.3s;
-}
-.arrow-icon:active { transform: scale(0.9); background: #8a2be2; color: white; }
-
-.label-sub {
-    font-size: 10px;
-    color: #444;
-    text-transform: uppercase;
-    font-weight: 900;
-    letter-spacing: 1px;
+.adjust-btn {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(138,43,226,0.2);
+    color: #8a2be2; width: 50px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 
-.separator { font-family: 'Orbitron'; font-size: 30px; color: #222; margin-top: -15px; }
+.dot-sep { font-family: 'Orbitron'; font-size: 40px; color: #222; margin-top: -15px; }
+.label-hint { font-size: 9px; letter-spacing: 4px; color: #444; font-weight: 900; text-transform: uppercase; }
 
-/* RELÓGIO ATIVO (Aquele roxo que você curtiu) */
+/* RELÓGIO ATIVO - ESTILO "DEEP FOCUS" */
 #active-clock {
-    display: none;
-    flex-direction: row;
-    align-items: baseline;
-    justify-content: center;
+    display: none; flex-direction: column; align-items: center;
+}
+
+#main-time {
     font-family: 'Orbitron', sans-serif;
-    color: #8a2be2;
-    text-shadow: 0 0 30px rgba(138, 43, 226, 0.6);
-}
-#big-time { font-size: 90px; letter-spacing: -3px; font-weight: 900; }
-#small-sec { font-size: 30px; margin-left: 10px; opacity: 0.5; }
-
-/* XP PREVIEW (Estilo dash xp) */
-.xp-preview-box {
-    background: rgba(138, 43, 226, 0.05);
-    border: 1px solid rgba(138, 43, 226, 0.2);
-    padding: 12px 20px;
-    border-radius: 20px;
-    display: inline-block;
-    margin-top: 30px;
-    font-size: 11px;
-    font-weight: 900;
-    color: #ffd700;
+    font-size: 110px; font-weight: 900; letter-spacing: -6px;
+    background: linear-gradient(to bottom, #fff, #8a2be2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 30px rgba(138, 43, 226, 0.5));
 }
 
-/* BOTÕES (Padrão btn-save) */
-.footer-actions { padding: 30px 0; }
-
-.btn-main { 
-    width: 100%; 
-    background: #8a2be2; 
-    color: white; 
-    border: none; 
-    padding: 20px; 
-    border-radius: 18px; 
-    font-weight: 900; 
-    font-size: 16px;
-    cursor: pointer; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    gap: 10px;
-    box-shadow: 0 10px 25px rgba(138, 43, 226, 0.3);
+#sec-strip {
+    font-family: 'Orbitron'; font-size: 20px; color: #8a2be2;
+    margin-top: -10px; font-weight: 700; letter-spacing: 2px;
 }
 
-.btn-outline { 
-    width: 100%; 
-    background: none; 
-    border: 1px solid rgba(255, 68, 68, 0.2); 
-    color: #ff4444; 
-    padding: 18px; 
-    border-radius: 18px; 
-    margin-top: 15px; 
-    font-weight: 800; 
-    cursor: pointer; 
+/* FOOTER E BOTÕES */
+.actions-area { width: 100%; padding: 40px 30px; display: flex; flex-direction: column; gap: 12px; }
+
+.btn-glass {
+    background: #8a2be2; color: white; border: none; padding: 22px;
+    border-radius: 24px; font-weight: 900; font-size: 15px; letter-spacing: 1px;
+    box-shadow: 0 15px 35px rgba(138, 43, 226, 0.25);
 }
 
-/* MODAL AVATAR STYLE */
-.modal-overlay { 
-    position: fixed; inset: 0; 
-    background: rgba(0,0,0,0.92); 
-    z-index: 10001; 
-    display: none; 
-    align-items: center; 
-    justify-content: center; 
-    backdrop-filter: blur(10px); 
+.btn-quit {
+    background: rgba(255, 68, 68, 0.05); color: #ff4444; border: 1px solid rgba(255, 68, 68, 0.1);
+    padding: 15px; border-radius: 18px; font-weight: 800; font-size: 12px; margin-top: 10px;
 }
-.modal-card { 
-    background: #111; border: 1px solid #222; 
-    padding: 35px 25px; border-radius: 35px; 
-    width: 85%; max-width: 350px; text-align: center;
+
+/* MODAL MODERNO */
+.glass-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(15px);
+    display: none; align-items: center; justify-content: center; z-index: 1000;
+}
+.glass-card {
+    background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.05);
+    padding: 40px 30px; border-radius: 40px; width: 85%; text-align: center;
 }
