@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// COLE SUA CONFIG AQUI
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
     authDomain: "dt-scho0l.firebaseapp.com",
@@ -20,25 +19,21 @@ let segs = 0;
 let totalOriginal = 0;
 let isPaused = false;
 
-window.atualizarXP = () => {
-    const h = parseInt(document.getElementById('h-pick').value);
-    const m = parseInt(document.getElementById('m-pick').value);
-    const xp = Math.floor(((h * 60 + m) / 25) * 10);
-    document.getElementById('xp-preview-val').innerText = xp;
-};
-
-window.iniciarSessao = () => {
-    const h = parseInt(document.getElementById('h-pick').value);
-    const m = parseInt(document.getElementById('m-pick').value);
-    if(h === 0 && m === 0) return alert("Escolha um tempo!");
+window.iniciar = () => {
+    const h = parseInt(document.getElementById('h-val').innerText);
+    const m = parseInt(document.getElementById('m-val').innerText);
+    if(h === 0 && m === 0) return;
 
     segs = (h * 3600) + (m * 60);
     totalOriginal = segs;
 
+    // UI Change
     document.getElementById('setup-ui').style.display = 'none';
-    document.getElementById('timer-display').style.display = 'block';
+    document.getElementById('btn-start').style.display = 'none';
+    document.getElementById('timer-running').style.display = 'block';
     document.getElementById('btn-pause').style.display = 'block';
     document.getElementById('btn-exit').style.display = 'block';
+    document.body.style.background = "#05020a"; // Fica mais escuro
 
     timer = setInterval(() => {
         if(!isPaused) {
@@ -50,32 +45,31 @@ window.iniciarSessao = () => {
 };
 
 function renderTime() {
-    const hrs = Math.floor(segs / 3600);
-    const min = Math.floor((segs % 3600) / 60);
-    const scs = segs % 60;
-    document.getElementById('timer-display').innerText = 
-        `${hrs > 0 ? hrs+':' : ''}${min < 10 ? '0'+min : min}:${scs < 10 ? '0'+scs : scs}`;
+    const h = Math.floor(segs / 3600);
+    const m = Math.floor((segs % 3600) / 60);
+    const s = segs % 60;
+    document.getElementById('timer-running').innerText = 
+        `${h > 0 ? h+':' : ''}${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
 }
 
-window.pausarRetomar = () => {
+window.pausar = () => {
     isPaused = !isPaused;
     document.getElementById('btn-pause').innerText = isPaused ? "RETOMAR" : "PAUSAR";
 };
 
-window.abrirModal = () => document.getElementById('modal-desistir').style.display = 'flex';
-window.fecharModal = () => document.getElementById('modal-desistir').style.display = 'none';
-window.desistirReal = () => { fecharModal(); finalizar(false); };
+window.abrirModal = () => document.getElementById('modal-quit').style.display = 'flex';
+window.fecharModal = () => document.getElementById('modal-quit').style.display = 'none';
+window.confirmarSair = () => { fecharModal(); finalizar(false); };
 
 async function finalizar(concluiu) {
     clearInterval(timer);
-    const minEstudados = (totalOriginal - segs) / 60;
-    let xp = Math.floor((minEstudados / 25) * 10);
+    const minPassados = (totalOriginal - segs) / 60;
+    let xp = Math.floor((minPassados / 25) * 10);
     if(!concluiu) xp = Math.floor(xp / 2);
 
     if(xp > 0 && userPhone) {
         try {
             await updateDoc(doc(db, "notas", userPhone), { xp: increment(xp) });
-            alert(concluiu ? `Incrível! +${xp} XP ganhos!` : `Parou cedo, mas ganhou +${xp} XP.`);
         } catch(e) { console.error(e); }
     }
     window.location.reload();
