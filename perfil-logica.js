@@ -15,8 +15,9 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const userPhone = localStorage.getItem('dt_user_phone');
-const userType = localStorage.getItem('dt_user_type');
+// AJUSTE: Pegando o identificador correto (nome/email) e definindo tipo
+const userName = localStorage.getItem('dt_user_name'); 
+const userType = (userName === 'Visitante') ? 'local' : 'oficial';
 
 const getEl = id => document.getElementById(id);
 
@@ -31,6 +32,7 @@ window.showToast = (msg, type = "success") => {
     setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
 };
 
+// AJUSTE: Nova trava de segurança que aceita Visitante
 onAuthStateChanged(auth, (user) => {
     if (user || userType === 'local') {
         carregarPerfilOficial(user);
@@ -54,7 +56,7 @@ async function carregarPerfilOficial(userFirebase) {
     }
 
     try {
-        // DEFINE O ID (8 DÍGITOS DO UID)
+        const userEmail = userFirebase.email; // Usando o e-mail do Firebase como ID
         const shortID = userFirebase.uid.substring(0, 8).toUpperCase();
         getEl('display-id').innerText = `#HB-${shortID}`;
 
@@ -63,14 +65,16 @@ async function carregarPerfilOficial(userFirebase) {
         let todos = [];
         querySnapshot.forEach(doc => todos.push({ id: doc.id, xp: doc.data().xp || 0 }));
         todos.sort((a, b) => b.xp - a.xp);
-        const minhaPosicao = todos.findIndex(u => u.id === userPhone) + 1;
+        
+        // AJUSTE: Busca pela posição usando o e-mail
+        const minhaPosicao = todos.findIndex(u => u.id === userEmail) + 1;
 
-        const meuDoc = await getDoc(doc(db, "notas", userPhone));
+        // AJUSTE: Busca o documento usando o e-mail
+        const meuDoc = await getDoc(doc(db, "notas", userEmail));
         if (meuDoc.exists()) {
             const d = meuDoc.data();
             const xp = d.xp || 0;
 
-            // PATENTES
             let pNome, pMin, pMax, pCor;
             if (xp <= 500) { pNome = "Novato 🟢"; pMin = 0; pMax = 500; pCor = "#2ecc71"; }
             else if (xp <= 1500) { pNome = "Estudioso 🔵"; pMin = 501; pMax = 1500; pCor = "#3498db"; }
@@ -81,7 +85,6 @@ async function carregarPerfilOficial(userFirebase) {
             const progressoRelativo = ((xp - pMin) / (pMax - pMin)) * 100;
             const faltaParaProxima = pMax - xp;
 
-            // DESEMPENHO
             const materias = d.materias || [];
             let desempenho = 0;
             if (materias.length > 0) {
@@ -89,7 +92,6 @@ async function carregarPerfilOficial(userFirebase) {
                 desempenho = Math.round((soma / materias.length) * 10);
             }
 
-            // CARREGA NOME (Prioriza o do Firestore, senão usa o displayName do monstrinho)
             getEl('user-name-input').value = d.nome || userFirebase.displayName || "";
             if(d.avatar) {
                 getEl('avatar-icon').setAttribute('data-lucide', d.avatar);
@@ -130,7 +132,7 @@ window.abrirGaleria = () => getEl('modal-avatar').style.display = 'flex';
 window.fecharGaleria = () => getEl('modal-avatar').style.display = 'none';
 window.selecionarAvatar = (icon) => {
     getEl('avatar-icon').setAttribute('data-lucide', icon);
-    lucide.createIcons();
+    if(window.lucide) lucide.createIcons();
     window.fecharGaleria();
 };
 
@@ -139,10 +141,14 @@ getEl('btn-salvar-perfil').onclick = async () => {
         showToast("Visitantes não podem salvar alterações", "error");
         return;
     }
+    const user = auth.currentUser;
+    if(!user) return;
+    
     const nome = getEl('user-name-input').value;
     const avatar = getEl('avatar-icon').getAttribute('data-lucide');
     try {
-        await updateDoc(doc(db, "notas", userPhone), { nome, avatar });
+        // AJUSTE: Salvando usando o e-mail como chave
+        await updateDoc(doc(db, "notas", user.email), { nome, avatar });
         showToast("Perfil Atualizado!");
     } catch(e) { 
         console.error(e);
