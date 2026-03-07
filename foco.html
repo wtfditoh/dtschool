@@ -28,17 +28,18 @@
                 <div id="setup-view">
                     <div class="digital-clock">
                         <div class="unit-adjust">
-                            <button class="btn-arrow" id="h-up"><i data-lucide="plus" size="18"></i></button>
+                            <button class="btn-arrow" id="h-up"><i data-lucide="plus"></i></button>
                             <span id="h-val">00</span>
-                            <button class="btn-arrow" id="h-down"><i data-lucide="minus" size="18"></i></button>
+                            <button class="btn-arrow" id="h-down"><i data-lucide="minus"></i></button>
                         </div>
                         <div style="opacity: 0.2; margin: 0 5px;">:</div>
                         <div class="unit-adjust">
-                            <button class="btn-arrow" id="m-up"><i data-lucide="plus" size="18"></i></button>
+                            <button class="btn-arrow" id="m-up"><i data-lucide="plus"></i></button>
                             <span id="m-val">25</span>
-                            <button class="btn-arrow" id="m-down"><i data-lucide="minus" size="18"></i></button>
+                            <button class="btn-arrow" id="m-down"><i data-lucide="minus"></i></button>
                         </div>
                     </div>
+                    
                     <div class="xp-preview-box">
                         <span class="xp-preview-label">ESTIMATIVA</span>
                         <div class="xp-preview-value"><span id="xp-num">10</span> XP</div>
@@ -48,7 +49,7 @@
                 <div id="active-clock" style="display: none;">
                     <div class="digital-clock" id="main-time">00:25</div>
                     <div class="xp-preview-box">
-                        <span class="xp-preview-label">SESSÃO ATIVA</span>
+                        <span class="xp-preview-label" style="color: #8a2be2">SESSÃO ATIVA</span>
                     </div>
                 </div>
             </div>
@@ -61,11 +62,12 @@
         <button id="btn-quit" class="btn-quit-label" style="display:none">DESISTIR</button>
     </footer>
 
-    <div id="modal-confirm" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:20000; align-items:center; justify-content:center; padding:30px;">
-        <div style="background:#0a0a0a; border:1px solid #1a1a1a; padding:30px; border-radius:30px; text-align:center; width:100%; max-width:300px;">
-            <h2 style="font-weight:900; margin-bottom:10px; color:white; font-size:18px;">PARAR AGORA?</h2>
+    <div id="modal-confirm" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.98); z-index:20000; align-items:center; justify-content:center;">
+        <div class="modal-card">
+            <h2>PARAR AGORA?</h2>
+            <p>Seu bônus de XP será perdido.</p>
             <button id="btn-keep-going" class="btn-main">CONTINUAR</button>
-            <button id="btn-really-quit" style="background:none; border:none; color:#ff4444; margin-top:20px; font-weight:800; cursor:pointer; text-transform:uppercase; font-size:10px;">DESISTIR</button>
+            <button id="btn-really-quit" class="btn-danger">DESISTIR</button>
         </div>
     </div>
 
