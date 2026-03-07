@@ -1,7 +1,9 @@
-/* RESET E FUNDO HUB BRAIN */
+/* 1. RESET E FUNDO GLOBAL */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
 body { 
-    background: #0a0a0a !important; /* Cor padrão que você pediu */
-    background-image: radial-gradient(circle at top right, rgba(138, 43, 226, 0.15), #0a0a0a) !important;
+    background: #0a0a0a !important; 
+    background-image: radial-gradient(circle at top right, rgba(138, 43, 226, 0.12), #0a0a0a) !important;
     color: white; 
     margin: 0; 
     font-family: 'Inter', sans-serif; 
@@ -9,101 +11,151 @@ body {
     overflow-x: hidden;
 }
 
-/* CONTAINER */
-.perfil-container { padding: 0 20px 20px; max-width: 450px; margin: 0 auto; text-align: center; }
-
-/* HEADER FIXADO (Para não bugar com o menu) */
+/* 2. HEADER "EDGE-TO-EDGE" */
 .perfil-header { 
     display: flex; 
     align-items: center; 
     justify-content: space-between; 
     height: 70px;
-    background: rgba(10, 10, 10, 0.95);
-    border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+    padding: 0 15px;
+    background: rgba(10, 10, 10, 0.98) !important;
+    border-bottom: 1px solid rgba(138, 43, 226, 0.3) !important;
     position: sticky;
     top: 0;
-    z-index: 1000;
-    backdrop-filter: blur(10px);
+    z-index: 2000;
+    backdrop-filter: blur(15px);
+    width: 100%;
 }
 
-/* CARD DE CHAMADA (O GLASS QUE PULSA) */
+.perfil-header h2 { 
+    font-weight: 900; 
+    font-size: 14px; 
+    letter-spacing: 3px; 
+    margin: 0; 
+    text-transform: uppercase;
+}
+
+/* 3. CHAMADA RANKING - ESTILO GLASS COM PULSO */
 .chamada-ranking-novo {
-    margin: 20px 0;
+    margin: 20px 15px;
     padding: 22px;
     background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(255, 255, 255, 0.03));
-    border: 1px solid rgba(138, 43, 226, 0.4);
+    border: 1px solid rgba(138, 43, 226, 0.5);
     border-radius: 25px;
-    backdrop-filter: blur(15px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     animation: glowPulse 3s infinite ease-in-out;
 }
 
 @keyframes glowPulse {
-    0%, 100% { transform: scale(1); border-color: rgba(138, 43, 226, 0.4); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); }
-    50% { transform: scale(1.02); border-color: rgba(138, 43, 226, 0.8); box-shadow: 0 0 20px rgba(138, 43, 226, 0.2); }
+    0%, 100% { transform: scale(1); border-color: rgba(138, 43, 226, 0.4); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+    50% { transform: scale(1.03); border-color: rgba(138, 43, 226, 0.9); box-shadow: 0 0 25px rgba(138, 43, 226, 0.3); }
 }
 
 .chamada-ranking-novo p {
-    color: #fff; font-weight: 900; font-size: 15px; margin: 0;
-    text-transform: uppercase; letter-spacing: 2px;
-    text-shadow: 0 0 10px rgba(138, 43, 226, 0.8);
+    color: #fff; 
+    font-weight: 900; 
+    font-size: 16px; 
+    margin: 0;
+    text-transform: uppercase; 
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px rgba(138, 43, 226, 1);
 }
 
-/* CARD PRINCIPAL DO PERFIL */
+/* 4. CONTAINER E CARDS */
+.perfil-container { padding: 0 15px 30px; max-width: 480px; margin: 0 auto; }
+
 .perfil-card { 
-    background: rgba(255, 255, 255, 0.03); 
+    background: rgba(255, 255, 255, 0.02); 
     border: 1px solid rgba(255, 255, 255, 0.05); 
-    border-radius: 35px; 
-    padding: 35px 20px; 
+    border-radius: 30px; 
+    padding: 30px 20px; 
     margin-bottom: 20px;
     backdrop-filter: blur(5px);
 }
 
-/* AVATAR */
+/* 5. AVATAR E CÂMERA */
 .avatar-section { position: relative; width: 110px; height: 110px; margin: 0 auto 15px; }
 .avatar-wrapper { 
     width: 100%; height: 100%; 
-    background: rgba(10, 10, 10, 0.6); 
+    background: rgba(138, 43, 226, 0.05); 
     border-radius: 50%; 
     border: 2px solid #8a2be2; 
     display: flex; align-items: center; justify-content: center; 
-    box-shadow: 0 0 30px rgba(138, 43, 226, 0.3); 
+    box-shadow: 0 0 30px rgba(138, 43, 226, 0.2); 
 }
 #avatar-icon { width: 50px; height: 50px; color: #8a2be2; }
 
-/* INPUTS ESTILIZADOS */
+.btn-edit-photo { 
+    position: absolute !important; bottom: 0; right: 0; 
+    background: #8a2be2 !important; border: 3px solid #0a0a0a !important; 
+    color: white !important; width: 36px; height: 36px; border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;
+}
+
+/* 6. INPUTS (REMOÇÃO DO FUNDO BRANCO) */
+.form-group { text-align: left; margin-bottom: 20px; }
+.form-group label { font-size: 10px; color: #8a2be2; font-weight: 800; margin-bottom: 8px; display: block; padding-left: 5px; }
+
 .input-wrapper { 
-    background: rgba(0,0,0,0.3); 
-    border: 1px solid rgba(138, 43, 226, 0.2); 
-    border-radius: 18px; 
-    transition: 0.3s;
+    background: rgba(0,0,0,0.4) !important; 
+    border: 1px solid rgba(138, 43, 226, 0.2) !important; 
+    border-radius: 18px; display: flex; align-items: center; padding: 0 15px; 
 }
-.input-wrapper:focus-within { border-color: #8a2be2; background: rgba(138, 43, 226, 0.05); }
-
-/* STATS BOXES */
-.stat-box { 
-    background: rgba(138, 43, 226, 0.03) !important; 
-    border: 1px solid rgba(138, 43, 226, 0.1) !important; 
-    border-radius: 22px !important;
+.input-wrapper input { 
+    background: transparent !important; border: none !important; color: white !important; 
+    padding: 16px 10px; width: 100%; outline: none; font-weight: 700; font-size: 15px; 
 }
 
-/* BOTÃO SALVAR (O seu roxo icônico) */
+/* 7. BOTÕES (FIX PARA NÃO FICAREM BRANCOS) */
 .btn-save { 
-    background: #8a2be2 !important; 
-    box-shadow: 0 10px 20px rgba(138, 43, 226, 0.3); 
-    transition: 0.3s;
+    width: 100% !important; background: #8a2be2 !important; 
+    color: white !important; border: none !important; padding: 18px !important; 
+    border-radius: 20px !important; font-weight: 900 !important; cursor: pointer !important;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 10px 20px rgba(138, 43, 226, 0.3) !important;
+    margin-top: 10px; transition: 0.3s;
 }
-.btn-save:active { transform: scale(0.95); opacity: 0.8; }
+.btn-save:active { transform: scale(0.96); }
 
-/* ERRO VISITANTE (Estilo Pílula Flutuante) */
+.btn-logout { 
+    width: 100% !important; background: rgba(255, 68, 68, 0.05) !important; 
+    border: 1px solid rgba(255, 68, 68, 0.2) !important; color: #ff4444 !important; 
+    padding: 16px !important; border-radius: 18px !important; margin-top: 20px !important; 
+    font-weight: 800 !important; cursor: pointer !important;
+}
+
+/* 8. DASHBOARD XP E STATS (VINDOS DO JS) */
+.xp-card { 
+    background: rgba(255, 255, 255, 0.02) !important; 
+    border: 1px solid rgba(138, 43, 226, 0.2) !important; 
+    padding: 20px; border-radius: 25px; margin-bottom: 15px; text-align: left;
+}
+.xp-bar-bg { background: rgba(0,0,0,0.5) !important; height: 10px; border-radius: 10px; overflow: hidden; margin: 12px 0; border: 1px solid #222; }
+.xp-bar-fill { height: 100%; transition: 1.5s ease-in-out; }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stat-box { 
+    background: rgba(255,255,255,0.02) !important; 
+    border: 1px solid rgba(255,255,255,0.05) !important; 
+    padding: 18px; border-radius: 22px; text-align: center;
+}
+
+/* 9. AVISO DE ERRO (VISITANTE) */
 #erro-visitante {
     position: fixed; top: 85px; left: 50%; transform: translateX(-50%);
-    background: #ff4444; color: white; padding: 14px 28px;
-    border-radius: 50px; font-weight: 900; font-size: 13px;
-    z-index: 9999; box-shadow: 0 10px 30px rgba(255, 68, 68, 0.5);
-    border: 2px solid rgba(255,255,255,0.2);
-    display: none;
-    animation: slideIn 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+    background: #ff4444 !important; color: white !important; 
+    padding: 12px 25px; border-radius: 50px; font-weight: 900; font-size: 13px;
+    z-index: 9999; box-shadow: 0 10px 30px rgba(255, 68, 68, 0.4);
+    border: 2px solid white; display: none;
 }
 
-@keyframes slideIn { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+/* 10. MODAL AVATAR */
+.modal-avatar-overlay { 
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95); 
+    z-index: 10001; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); 
+}
+.modal-avatar-card { background: #0f0f0f; border: 1px solid #222; padding: 25px; border-radius: 30px; width: 90%; max-width: 360px; }
+.avatar-option { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 18px; border: 2px solid transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.avatar-option:hover { border-color: #8a2be2; background: rgba(138,43,226,0.1); }
