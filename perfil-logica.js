@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function carregarPerfilOficial() {
     const statsContainer = getEl('area-stats');
     if (userType === 'local' || userPhone === '00000000000') {
-        getEl('display-phone').innerText = `HUB • GUEST`;
+        getEl('display-phone').innerText = `visitante`;
         statsContainer.innerHTML = `<div class="xp-card"><p class="hint">Entre para subir nas patentes!</p></div>`;
         return;
     }
