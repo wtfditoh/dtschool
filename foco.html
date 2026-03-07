@@ -10,9 +10,13 @@
 <body>
 
     <header class="header-minimal">
-        <button id="back-nav" style="background:none; border:none; color:white; cursor:pointer;"><i data-lucide="chevron-left"></i></button>
-        <span style="font-weight: 900; font-size: 9px; letter-spacing: 2px; color: #222;">MODO FOCO</span>
-        <div style="width: 24px;"></div>
+        <button id="open-sidebar" class="btn-icon-top">
+            <i data-lucide="menu" size="22"></i>
+        </button>
+        
+        <span class="label-header">FOCUS MODE</span>
+        
+        <div style="width: 32px;"></div>
     </header>
 
     <main class="timer-viewport">
@@ -26,19 +30,19 @@
                 <div id="setup-view">
                     <div class="digital-clock">
                         <div class="unit-adjust">
-                            <button class="btn-arrow" id="h-up"><i data-lucide="plus" size="20"></i></button>
+                            <button class="btn-arrow" id="h-up"><i data-lucide="plus" size="18"></i></button>
                             <span id="h-val">00</span>
-                            <button class="btn-arrow" id="h-down"><i data-lucide="minus" size="20"></i></button>
+                            <button class="btn-arrow" id="h-down"><i data-lucide="minus" size="18"></i></button>
                         </div>
                         <div style="opacity: 0.2; margin: 0 5px;">:</div>
                         <div class="unit-adjust">
-                            <button class="btn-arrow" id="m-up"><i data-lucide="plus" size="20"></i></button>
+                            <button class="btn-arrow" id="m-up"><i data-lucide="plus" size="18"></i></button>
                             <span id="m-val">25</span>
-                            <button class="btn-arrow" id="m-down"><i data-lucide="minus" size="20"></i></button>
+                            <button class="btn-arrow" id="m-down"><i data-lucide="minus" size="18"></i></button>
                         </div>
                     </div>
                     <div class="xp-badge">
-                        <span class="xp-label">GANHO ESTIMADO</span>
+                        <span class="xp-label">ESTIMATIVA</span>
                         <div class="xp-value"><span id="xp-num">10</span> XP</div>
                     </div>
                 </div>
@@ -56,15 +60,15 @@
     <footer class="footer-area">
         <button id="btn-start" class="btn-main">INICIAR SESSÃO</button>
         <button id="btn-pause" class="btn-main btn-pause" style="display:none">PAUSAR</button>
-        <button id="btn-quit" class="btn-quit-label" style="display:none">DESISTIR DA SESSÃO</button>
+        <button id="btn-quit" class="btn-quit-label" style="display:none">DESISTIR</button>
     </footer>
 
-    <div id="modal-confirm" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1000; align-items:center; justify-content:center; padding:30px;">
+    <div id="modal-confirm" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.98); z-index:1000; align-items:center; justify-content:center; padding:30px;">
         <div style="background:#0a0a0a; border:1px solid #1a1a1a; padding:30px; border-radius:30px; text-align:center; width:100%; max-width:300px;">
-            <h2 style="font-weight:900; margin-bottom:10px; color:white;">PARAR AGORA?</h2>
-            <p style="color:#666; font-size:13px; margin-bottom:25px;">Seu progresso atual e o bônus de XP serão perdidos.</p>
-            <button id="btn-keep-going" class="btn-main">CONTINUAR FOCADO</button>
-            <button id="btn-really-quit" style="background:none; border:none; color:#ff4444; margin-top:20px; font-weight:800; cursor:pointer; text-transform:uppercase; font-size:11px;">SIM, DESISTIR</button>
+            <h2 style="font-weight:900; margin-bottom:10px; color:white; font-size:18px;">PARAR AGORA?</h2>
+            <p style="color:#444; font-size:12px; margin-bottom:25px; line-height:1.5;">O tempo focado e seu bônus de XP serão perdidos.</p>
+            <button id="btn-keep-going" class="btn-main">CONTINUAR</button>
+            <button id="btn-really-quit" style="background:none; border:none; color:#ff4444; margin-top:20px; font-weight:800; cursor:pointer; text-transform:uppercase; font-size:10px; letter-spacing:1px;">SIM, DESISTIR</button>
         </div>
     </div>
 
