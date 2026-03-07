@@ -1,15 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
-    authDomain: "dt-scho0l.firebaseapp.com",
-    projectId: "dt-scho0l",
-    storageBucket: "dt-scho0l.firebasestorage.app",
-    messagingSenderId: "78578509391",
-    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
-};
-
+const firebaseConfig = { /* Sua Configuração do Firebase aqui */ };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const userPhone = localStorage.getItem('dt_user_phone');
@@ -27,13 +19,11 @@ window.iniciar = () => {
     segs = (h * 3600) + (m * 60);
     totalOriginal = segs;
 
-    // UI Change
     document.getElementById('setup-ui').style.display = 'none';
     document.getElementById('btn-start').style.display = 'none';
-    document.getElementById('timer-running').style.display = 'block';
+    document.getElementById('clock-active').style.display = 'flex';
     document.getElementById('btn-pause').style.display = 'block';
-    document.getElementById('btn-exit').style.display = 'block';
-    document.body.style.background = "#05020a"; // Fica mais escuro
+    document.getElementById('btn-quit').style.display = 'block';
 
     timer = setInterval(() => {
         if(!isPaused) {
@@ -48,8 +38,11 @@ function renderTime() {
     const h = Math.floor(segs / 3600);
     const m = Math.floor((segs % 3600) / 60);
     const s = segs % 60;
-    document.getElementById('timer-running').innerText = 
-        `${h > 0 ? h+':' : ''}${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+    
+    // Mostra Horas se houver, senão apenas MM:SS
+    document.getElementById('main-time').innerText = 
+        `${h > 0 ? h + ':' : ''}${m < 10 ? '0'+m : m}`;
+    document.getElementById('seconds-tiny').innerText = s < 10 ? '0'+s : s;
 }
 
 window.pausar = () => {
