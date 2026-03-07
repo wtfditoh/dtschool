@@ -10,41 +10,46 @@
 <body>
     <div class="wrapper">
         <div class="monster-box" id="monster-ui">
-            <div class="monster-body">
-                <div class="horns"></div>
-                <div class="eyes-container">
-                    <div class="eye-ball"><div class="pupil"></div></div>
-                    <div class="eye-ball"><div class="pupil"></div></div>
-                </div>
+            <svg viewBox="0 0 120 120" class="monster-svg">
+                <defs>
+                    <radialGradient id="grad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#a052ee" />
+                        <stop offset="100%" style="stop-color:#8a2be2" />
+                    </radialGradient>
+                </defs>
+                <path d="M20,100 Q20,30 60,30 Q100,30 100,100 Z" class="monster-body-path" />
+                <path d="M35,35 Q25,15 15,30" fill="none" stroke="#8a2be2" stroke-width="5" stroke-linecap="round" />
+                <path d="M85,35 Q95,15 105,30" fill="none" stroke="#8a2be2" stroke-width="5" stroke-linecap="round" />
+                <g class="eyes-wrap">
+                    <circle cx="45" cy="65" r="10" fill="white" />
+                    <circle cx="75" cy="65" r="10" fill="white" />
+                    <circle cx="45" cy="65" r="5" fill="black" class="pupil" />
+                    <circle cx="75" cy="65" r="5" fill="black" class="pupil" />
+                    <rect x="35" y="55" width="20" height="0" fill="#8a2be2" class="lid" />
+                    <rect x="65" y="55" width="20" height="0" fill="#8a2be2" class="lid" />
+                </g>
+            </svg>
+            <div class="hands-container">
+                <div class="hand left"></div>
+                <div class="hand right"></div>
             </div>
-            <div class="monster-hands"><div class="m-hand"></div><div class="m-hand"></div></div>
         </div>
 
         <div class="login-card">
             <div class="logo-area">
-                <div class="hub-symbol"><i data-lucide="brain-circuit"></i></div>
                 <h2>HUB <span style="color: var(--primary);">BRAIN</span></h2>
                 <p>DOMINE SUA ROTINA</p>
             </div>
-
             <input type="email" id="user-email" placeholder="E-mail de estudante" class="input-ia">
             <input type="password" id="user-pass" placeholder="Sua senha" class="input-ia">
-
-            <div class="keep-row">
-                <input type="checkbox" id="keep-logged" checked>
-                <label for="keep-logged">Manter conectado</label>
-            </div>
-
             <div id="login-status" class="status-msg"></div>
-
             <button onclick="tentarLogar()" class="btn-acessar">
                 <span>Acessar minha conta</span>
                 <i data-lucide="arrow-right"></i>
             </button>
-
             <div class="footer-links">
-                <a href="cadastro.html" class="create-acc">Não tem conta? Criar agora</a>
-                <button type="button" onclick="entrarComoVisitante()" class="btn-visitante">Continuar como Visitante</button>
+                <a href="cadastro.html" class="create-acc">Criar agora</a>
+                <button type="button" onclick="entrarComoVisitante()" class="btn-visitante">Visitante</button>
             </div>
         </div>
     </div>
