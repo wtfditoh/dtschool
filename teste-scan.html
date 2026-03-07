@@ -3,96 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain - Scanner SIGEduc</title>
+    <title>Hub Brain - Scanner SIGEduc Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root { --purple: #8a2be2; --bg: #0a0a0a; --card: #111; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         
-        h2 { text-align: center; letter-spacing: 1px; margin-bottom: 10px; }
-        .purple { color: var(--purple); }
-        
-        /* Botão de Upload Estilizado */
         .btn-upload {
-            background: var(--purple);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            margin-bottom: 20px;
+            background: var(--purple); color: white; border: none; padding: 12px 24px;
+            border-radius: 30px; font-weight: bold; cursor: pointer; margin-bottom: 20px;
             box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
-            transition: 0.3s;
         }
-        .btn-upload:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(138, 43, 226, 0.5); }
 
-        /* Grade Compacta */
         .timetable {
-            display: grid;
-            grid-template-columns: 40px repeat(5, 1fr);
-            gap: 3px;
-            width: 100%;
-            max-width: 480px;
-            background: var(--card);
-            padding: 8px;
-            border-radius: 12px;
-            border: 1px solid #222;
+            display: grid; grid-template-columns: 40px repeat(5, 1fr);
+            gap: 4px; width: 100%; max-width: 500px;
+            background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid #222;
         }
         .cell {
-            background: #000;
-            border: 1px solid #1a1a1a;
-            height: 40px;
-            border-radius: 4px;
-            font-size: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-weight: bold;
-            overflow: hidden;
-            padding: 2px;
+            background: #000; border: 1px solid #1a1a1a; height: 50px;
+            border-radius: 4px; font-size: 8px; display: flex; align-items: center;
+            justify-content: center; text-align: center; font-weight: bold; padding: 2px;
         }
-        .header { font-size: 9px; color: var(--purple); text-align: center; font-weight: 800; padding-bottom: 3px; text-transform: uppercase; }
-        .hour-label { color: #555; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        
-        /* Tag da Matéria */
+        .header { font-size: 9px; color: var(--purple); text-align: center; font-weight: 800; padding-bottom: 5px; }
         .materia-tag {
-            color: #fff;
-            background: rgba(138, 43, 226, 0.2);
-            border: 1px solid var(--purple);
-            width: 100%;
-            padding: 2px 0;
-            border-radius: 3px;
-            font-size: 7px;
-            text-transform: uppercase;
+            color: #fff; background: rgba(138, 43, 226, 0.3);
+            border: 1px solid var(--purple); width: 100%; padding: 3px 0;
+            border-radius: 3px; font-size: 7px;
         }
-
-        #status { margin: 10px; font-size: 12px; color: var(--purple); font-weight: bold; height: 15px; }
+        #status { margin: 10px; font-size: 12px; color: var(--purple); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h2>HUB <span class="purple">SCANNER</span></h2>
-    <div id="status"></div>
+    <h2 style="margin-bottom: 5px;">HUB <span style="color:var(--purple)">SCANNER</span></h2>
+    <div id="status">Aguardando print...</div>
 
     <button class="btn-upload" onclick="document.getElementById('img-input').click()">SUBIR PRINT DO HORÁRIO</button>
     <input type="file" id="img-input" accept="image/*" hidden>
 
     <div class="timetable" id="grid">
         <div class="header">H</div>
-        <div class="header">SEG</div><div class="header">TER</div><div class="header">QUA</div><div class="header">QUI</div><div class="header">SEX</div>
-        </div>
+        <div class="header">2ª</div><div class="header">3ª</div><div class="header">4ª</div><div class="header">5ª</div><div class="header">6ª</div>
+    </div>
 
     <script>
         const grid = document.getElementById('grid');
-        // Lista de matérias que aparecem no seu print
-        const listaMaterias = ["QUIMICA", "FISICA", "HISTORIA", "BIOLOGIA", "MATEMATICA", "GEOGRAFIA", "PORTUGUES", "FILOSOFIA", "SOCIOLOGIA", "ARTES", "INGLES", "ESPANHOL", "EDUCACAO"];
+        const materiasOk = ["QUIMICA", "FISICA", "HISTORIA", "BIOLOGIA", "MATEMATICA", "GEOGRAFIA", "PORTUGUES", "FILOSOFIA", "SOCIOLOGIA", "ARTES", "INGLES", "ESPANHOL", "EDUCACAO"];
 
-        // Criar grade vazia (6 linhas x 5 dias)
         for(let h=1; h<=6; h++) {
-            grid.innerHTML += `<div class="hour-label">${h}º</div>`;
+            grid.innerHTML += `<div style="color:#555; font-size:9px; display:flex; align-items:center; justify-content:center;">${h}º</div>`;
             for(let d=0; d<5; d++) {
                 grid.innerHTML += `<div class="cell" id="slot-${h}-${d}"></div>`;
             }
@@ -102,40 +62,41 @@
             const file = e.target.files[0];
             if(!file) return;
 
-            const status = document.getElementById('status');
-            status.innerText = "🧠 MAPEANDO HORÁRIO... (AGUARDE)";
-            
-            // Limpar grade anterior
+            document.getElementById('status').innerText = "🧠 CALIBRANDO E ESCANEANDO...";
             document.querySelectorAll('.cell').forEach(c => c.innerHTML = '');
 
             const worker = await Tesseract.createWorker('por');
             const { data } = await worker.recognize(file);
             
-            // Dimensões da imagem para cálculo proporcional
-            const imgW = data.blocks[0].bbox.x1;
-            const imgH = data.blocks[0].bbox.y1;
+            // BUSCAR LIMITES REAIS DA TABELA (Calibragem)
+            let xMin = 9999, xMax = 0, yMin = 9999, yMax = 0;
+            
+            data.words.forEach(w => {
+                const t = w.text.toUpperCase();
+                if(t.includes("FEIRA") || materiasOk.some(m => t.includes(m))) {
+                    xMin = Math.min(xMin, w.bbox.x0);
+                    xMax = Math.max(xMax, w.bbox.x1);
+                    yMin = Math.min(yMin, w.bbox.y0);
+                    yMax = Math.max(yMax, w.bbox.y1);
+                }
+            });
+
+            const tableW = xMax - xMin;
+            const tableH = yMax - yMin;
 
             data.words.forEach(word => {
-                // Limpa o texto (remove acentos e deixa maiúsculo)
                 let txt = word.text.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 
-                listaMaterias.forEach(m => {
+                materiasOk.forEach(m => {
                     if(txt.includes(m)) {
-                        // CALCULO DE COORDENADA CALIBRADO PARA O SIGEDUC
-                        
-                        // COLUNA: Divide a largura em 5 partes, considerando a margem esquerda (H)
-                        // A primeira coluna começa por volta de 15% da imagem
-                        let col = Math.floor(((word.bbox.x0 / imgW) * 100 - 15) / 17); 
-                        
-                        // LINHA: Divide a altura em 6 partes, pulando o cabeçalho azul (~10%)
-                        let row = Math.floor(((word.bbox.y0 / imgH) * 100 - 10) / 15);
+                        // Cálculo proporcional baseado nos limites detectados
+                        let col = Math.floor(((word.bbox.x0 - xMin) / tableW) * 5);
+                        let row = Math.floor(((word.bbox.y0 - yMin) / tableH) * 7); // 6 horários + cabeçalho
 
-                        // Limites de segurança (para não sair da grade 6x5)
-                        col = Math.max(0, Math.min(4, col)); 
+                        col = Math.max(0, Math.min(4, col));
                         row = Math.max(1, Math.min(6, row));
 
                         const celula = document.getElementById(`slot-${row}-${col}`);
-                        // Evita duplicar a mesma matéria na célula
                         if(celula && !celula.innerText.includes(m)) {
                             celula.innerHTML = `<div class="materia-tag">${m}</div>`;
                         }
@@ -143,7 +104,7 @@
                 });
             });
 
-            status.innerText = "✅ HORÁRIO MAPEADO!";
+            document.getElementById('status').innerText = "✅ MAPEADO COM SUCESSO!";
             await worker.terminate();
         };
     </script>
