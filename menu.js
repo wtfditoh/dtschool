@@ -12,6 +12,8 @@ const criarMenuGlobal = () => {
                 <a href="index.html" id="link-index"><i data-lucide="layout-dashboard"></i> Notas</a>
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
                 <a href="estudos.html" id="link-estudos"><i data-lucide="brain-circuit"></i> Estudos & IA</a>
+                <a href="foco.html" id="link-foco" class="foco-highlight"><i data-lucide="timer"></i> 
+                    <span>Modo Foco <small class="xp-badge">+XP</small></span></a>
                 <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
                 <a href="ranking.html" id="link-ranking"><i data-lucide="trophy"></i> Ranking</a>
             </nav>
