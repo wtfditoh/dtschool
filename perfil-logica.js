@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -12,6 +13,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+
 const userPhone = localStorage.getItem('dt_user_phone');
 const userType = localStorage.getItem('dt_user_type');
 
@@ -28,20 +31,34 @@ window.showToast = (msg, type = "success") => {
     setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (!userPhone) return window.location.href = 'login.html';
-    carregarPerfilOficial();
+onAuthStateChanged(auth, (user) => {
+    if (user || userType === 'local') {
+        carregarPerfilOficial(user);
+    } else {
+        window.location.href = 'login.html';
+    }
 });
 
-async function carregarPerfilOficial() {
+async function carregarPerfilOficial(userFirebase) {
     const statsContainer = getEl('area-stats');
-    if (userType === 'local' || userPhone === '00000000000') {
-        getEl('display-phone').innerText = `ID: visitante`;
-        statsContainer.innerHTML = `<div class="xp-card"><p class="hint">Entre para subir nas patentes!</p></div>`;
+    
+    // VERIFICA SE É VISITANTE
+    if (userType === 'local' || !userFirebase) {
+        getEl('display-id').innerText = `#HB-VISITANTE`;
+        getEl('user-name-input').value = "Visitante";
+        statsContainer.innerHTML = `
+            <div class="xp-card">
+                <p class="hint" style="text-align:center;">Entre para subir nas patentes e entrar no ranking global!</p>
+            </div>`;
         return;
     }
 
     try {
+        // DEFINE O ID (8 DÍGITOS DO UID)
+        const shortID = userFirebase.uid.substring(0, 8).toUpperCase();
+        getEl('display-id').innerText = `#HB-${shortID}`;
+
+        // BUSCA DADOS NO FIRESTORE (XP E RANKING)
         const querySnapshot = await getDocs(collection(db, "notas"));
         let todos = [];
         querySnapshot.forEach(doc => todos.push({ id: doc.id, xp: doc.data().xp || 0 }));
@@ -53,23 +70,18 @@ async function carregarPerfilOficial() {
             const d = meuDoc.data();
             const xp = d.xp || 0;
 
+            // PATENTES
             let pNome, pMin, pMax, pCor;
-
-            if (xp <= 500) { 
-                pNome = "Novato 🟢"; pMin = 0; pMax = 500; pCor = "#2ecc71"; 
-            } else if (xp <= 1500) { 
-                pNome = "Estudioso 🔵"; pMin = 501; pMax = 1500; pCor = "#3498db"; 
-            } else if (xp <= 4000) { 
-                pNome = "Veterano 🟣"; pMin = 1501; pMax = 4000; pCor = "#9b59b6"; 
-            } else if (xp <= 8000) { 
-                pNome = "Cérebro de Elite ⚡"; pMin = 4001; pMax = 8000; pCor = "#f1c40f"; 
-            } else { 
-                pNome = "Lenda do Hub 🏆"; pMin = 8001; pMax = 20000; pCor = "#e74c3c"; 
-            }
+            if (xp <= 500) { pNome = "Novato 🟢"; pMin = 0; pMax = 500; pCor = "#2ecc71"; }
+            else if (xp <= 1500) { pNome = "Estudioso 🔵"; pMin = 501; pMax = 1500; pCor = "#3498db"; }
+            else if (xp <= 4000) { pNome = "Veterano 🟣"; pMin = 1501; pMax = 4000; pCor = "#9b59b6"; }
+            else if (xp <= 8000) { pNome = "Cérebro de Elite ⚡"; pMin = 4001; pMax = 8000; pCor = "#f1c40f"; }
+            else { pNome = "Lenda do Hub 🏆"; pMin = 8001; pMax = 20000; pCor = "#e74c3c"; }
 
             const progressoRelativo = ((xp - pMin) / (pMax - pMin)) * 100;
             const faltaParaProxima = pMax - xp;
 
+            // DESEMPENHO
             const materias = d.materias || [];
             let desempenho = 0;
             if (materias.length > 0) {
@@ -77,9 +89,12 @@ async function carregarPerfilOficial() {
                 desempenho = Math.round((soma / materias.length) * 10);
             }
 
-            getEl('user-name-input').value = d.nome || "";
-            getEl('display-phone').innerText = `ID: ${userPhone}`;
-            if(d.avatar) getEl('avatar-icon').setAttribute('data-lucide', d.avatar);
+            // CARREGA NOME (Prioriza o do Firestore, senão usa o displayName do monstrinho)
+            getEl('user-name-input').value = d.nome || userFirebase.displayName || "";
+            if(d.avatar) {
+                getEl('avatar-icon').setAttribute('data-lucide', d.avatar);
+                if(window.lucide) lucide.createIcons();
+            }
 
             statsContainer.innerHTML = `
                 <div class="xp-card">
@@ -94,7 +109,6 @@ async function carregarPerfilOficial() {
                         ${faltaParaProxima > 0 ? `Faltam ${faltaParaProxima} XP para subir de rank` : 'Nível máximo atingido!'}
                     </p>
                 </div>
-
                 <div class="stat-grid">
                     <div class="stat-box">
                         <span style="color:#f1c40f;">#${minhaPosicao}</span>
@@ -106,8 +120,7 @@ async function carregarPerfilOficial() {
                         <label>DESEMPENHO</label>
                         <p class="hint" style="margin-top:5px; font-size:8px;">Aproveitamento total</p>
                     </div>
-                </div>
-            `;
+                </div>`;
             if(window.lucide) lucide.createIcons();
         }
     } catch (e) { console.error(e); }
@@ -122,19 +135,15 @@ window.selecionarAvatar = (icon) => {
 };
 
 getEl('btn-salvar-perfil').onclick = async () => {
-    if (userType === 'local' || userPhone === '00000000000') {
+    if (userType === 'local') {
         showToast("Visitantes não podem salvar alterações", "error");
         return;
     }
-
     const nome = getEl('user-name-input').value;
     const avatar = getEl('avatar-icon').getAttribute('data-lucide');
-    
     try {
-        // AJUSTE: updateDoc mantém seu XP intacto!
         await updateDoc(doc(db, "notas", userPhone), { nome, avatar });
         showToast("Perfil Atualizado!");
-        // REMOVIDO: window.location.href = 'index.html' (agora você continua no perfil)
     } catch(e) { 
         console.error(e);
         showToast("Erro ao salvar", "error"); 
