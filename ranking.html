@@ -19,7 +19,7 @@
     </header>
 
     <button class="btn-help-floating" onclick="abrirAjudaXP()">
-        <i data-lucide="info"></i>
+        <i data-lucide="help-circle"></i>
     </button>
 
     <div id="modal-xp" class="modal-xp-overlay" style="display:none;">
@@ -27,26 +27,41 @@
             <div class="xp-header">
                 <i data-lucide="zap" class="purple" style="width: 32px; height: 32px;"></i>
                 <h3>SISTEMA DE <span class="purple">PONTUAÇÃO</span></h3>
-                <p>Entenda como subir no ranking global.</p>
+                <p>Regras oficiais para dominar o topo.</p>
             </div>
             
             <div class="xp-rules-scroll">
                 <div class="xp-section">
                     <div class="xp-tag">📊 DESEMPENHO ACADÊMICO</div>
                     <div class="rule-box pos"><span>+100</span> <p>Nota 10: Excelência.</p></div>
-                    <div class="rule-box neg"><span>-50</span> <p>Nota baixa: Crise.</p></div>
+                    <div class="rule-box pos"><span>+50</span> <p>Nota 8.0 a 9.9.</p></div>
+                    <div class="rule-box pos"><span>+20</span> <p>Nota 6.0 a 7.9.</p></div>
+                    <div class="rule-box neg"><span>-20</span> <p>Nota 4.0 a 5.9.</p></div>
+                    <div class="rule-box neg"><span>-50</span> <p>Nota abaixo de 3.9.</p></div>
                 </div>
 
                 <div class="xp-section">
                     <div class="xp-tag">🤖 SIMULADOS COM IA</div>
                     <div class="rule-box pos"><span>+150</span> <p>Gabarito (10/10).</p></div>
-                    <div class="rule-box neg"><span>-80</span> <p>Baixo acerto.</p></div>
+                    <div class="rule-box pos"><span>+60</span> <p>7 a 9 acertos.</p></div>
+                    <div class="rule-box neg"><span>-30</span> <p>3 a 4 acertos.</p></div>
+                    <div class="rule-box neg"><span>-80</span> <p>0 a 2 acertos.</p></div>
+                </div>
+
+                <div class="xp-section">
+                    <div class="xp-tag">📅 AGENDA E ROTINA</div>
+                    <div class="rule-box pos"><span>+15</span> <p>Atividade Concluída.</p></div>
+                    <div class="rule-box pos"><span>+40</span> <p>Horário Montado.</p></div>
+                    <div class="rule-box neg"><span>-25</span> <p>Atraso/Procrastinação.</p></div>
                 </div>
 
                 <div class="xp-section">
                     <div class="xp-tag">🎖️ AS PATENTES</div>
+                    <div class="patente-item"><span>0 - 500</span> <p>Novato 🟢</p></div>
+                    <div class="patente-item"><span>501 - 1500</span> <p>Estudioso 🔵</p></div>
+                    <div class="patente-item"><span>1501 - 4000</span> <p>Veterano 🟣</p></div>
+                    <div class="patente-item"><span>4001 - 8000</span> <p>Elite ⚡</p></div>
                     <div class="patente-item"><span>+8000</span> <p>Lenda do Hub 🏆</p></div>
-                    <div class="patente-item"><span>+4000</span> <p>Elite ⚡</p></div>
                 </div>
             </div>
 
@@ -57,11 +72,9 @@
     <div class="ranking-wrapper">
         <div class="podium-container">
             <div class="podium-slot second">
-                <div class="avatar-frame" id="avatar-p2">
-                    <i data-lucide="user"></i>
-                </div>
+                <div class="avatar-frame" id="avatar-p2"><i data-lucide="user"></i></div>
                 <p class="p-name" id="p2-name">---</p>
-                <div class="p-xp silver" id="p2-xp-box"><span id="p2-score">0</span> XP</div>
+                <div class="p-xp silver"><span id="p2-score">0</span> XP</div>
             </div>
 
             <div class="podium-slot first">
@@ -70,15 +83,13 @@
                     <i data-lucide="user"></i>
                 </div>
                 <p class="p-name" id="p1-name">---</p>
-                <div class="p-xp gold" id="p1-xp-box"><span id="p1-score">0</span> XP</div>
+                <div class="p-xp gold"><span id="p1-score">0</span> XP</div>
             </div>
 
             <div class="podium-slot third">
-                <div class="avatar-frame" id="avatar-p3">
-                    <i data-lucide="user"></i>
-                </div>
+                <div class="avatar-frame" id="avatar-p3"><i data-lucide="user"></i></div>
                 <p class="p-name" id="p3-name">---</p>
-                <div class="p-xp bronze" id="p3-xp-box"><span id="p3-score">0</span> XP</div>
+                <div class="p-xp bronze"><span id="p3-score">0</span> XP</div>
             </div>
         </div>
 
