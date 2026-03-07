@@ -12,17 +12,17 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// Pega os dados atuais do login
 const userPhone = localStorage.getItem('dt_user_phone');
 const userType = localStorage.getItem('dt_user_type');
 
 const getEl = id => document.getElementById(id);
 
-// Funções globais para o HTML acessar
 window.abrirGaleria = () => getEl('modal-avatar').style.display = 'flex';
 window.fecharGaleria = () => getEl('modal-avatar').style.display = 'none';
 window.selecionarAvatar = (icon) => {
-    const iconEl = getEl('avatar-icon');
-    iconEl.setAttribute('data-lucide', icon);
+    getEl('avatar-icon').setAttribute('data-lucide', icon);
     if(window.lucide) lucide.createIcons();
     window.fecharGaleria();
 };
@@ -38,26 +38,36 @@ document.addEventListener('DOMContentLoaded', () => {
 async function carregarPerfilOficial() {
     const statsContainer = getEl('area-stats');
     const displayPhone = getEl('display-phone');
+    const nameInput = getEl('user-name-input');
 
+    // MODO GUEST (VISITANTE)
     if (userType === 'local' || userPhone === '00000000000') {
-        displayPhone.innerText = `MODO VISITANTE`;
-        // REMOVI A INJEÇÃO DA FRASE AQUI PARA NÃO DUPLICAR COM O HTML
-        statsContainer.innerHTML = `<div class="xp-card" style="text-align:center; padding:30px; color:#666;">Crie uma conta para liberar suas estatísticas e ranking.</div>`;
+        displayPhone.innerText = `HUB • GUEST`;
+        statsContainer.innerHTML = `<div class="xp-card" style="text-align:center; padding:30px; color:#555; font-size:11px; font-weight:700;">RANKING INDISPONÍVEL EM MODO GUEST</div>`;
         return;
     }
 
     try {
+        // Busca todos para calcular Ranking
         const querySnapshot = await getDocs(collection(db, "notas"));
         let todos = [];
-        querySnapshot.forEach(doc => todos.push({ id: doc.id, xp: doc.data().xp || 0 }));
+        querySnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            todos.push({ id: docSnap.id, xp: data.xp || 0 });
+        });
         todos.sort((a, b) => b.xp - a.xp);
         const minhaPosicao = todos.findIndex(u => u.id === userPhone) + 1;
 
+        // Busca dados do usuário logado
         const meuDoc = await getDoc(doc(db, "notas", userPhone));
+        
         if (meuDoc.exists()) {
-            const d = d.data ? d.data() : meuDoc.data();
+            const d = meuDoc.data(); // CORRIGIDO AQUI
             const xp = d.xp || 0;
+            const nome = d.nome || "";
+            const avatar = d.avatar || "user";
 
+            // Lógica de Patentes
             let pNome, pMin, pMax, pCor;
             if (xp <= 500) { pNome = "Novato 🟢"; pMin = 0; pMax = 500; pCor = "#2ecc71"; }
             else if (xp <= 1500) { pNome = "Estudioso 🔵"; pMin = 501; pMax = 1500; pCor = "#3498db"; }
@@ -68,16 +78,21 @@ async function carregarPerfilOficial() {
             const progressoRelativo = Math.min(((xp - pMin) / (pMax - pMin)) * 100, 100);
             const faltaParaProxima = pMax - xp;
 
+            // Desempenho (Média das notas)
             const materias = d.materias || [];
             let desempenho = 0;
             if (materias.length > 0) {
-                const soma = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
+                const soma = materias.reduce((acc, m) => {
+                    const mediaMateria = (Number(m.n1||0)+Number(m.n2||0)+Number(m.n3||0)+Number(m.n4||0))/4;
+                    return acc + mediaMateria;
+                }, 0);
                 desempenho = Math.round((soma / materias.length) * 10);
             }
 
-            getEl('user-name-input').value = d.nome || "";
+            // Atualiza Interface
+            nameInput.value = nome;
             displayPhone.innerText = `ID: ${userPhone}`;
-            if(d.avatar) getEl('avatar-icon').setAttribute('data-lucide', d.avatar);
+            getEl('avatar-icon').setAttribute('data-lucide', avatar);
 
             statsContainer.innerHTML = `
                 <div class="xp-card">
@@ -104,8 +119,13 @@ async function carregarPerfilOficial() {
                 </div>
             `;
             if(window.lucide) lucide.createIcons();
+        } else {
+            console.log("Documento não encontrado para este telefone.");
+            displayPhone.innerText = `ID: ${userPhone}`;
         }
-    } catch (e) { console.error("Erro ao carregar perfil:", e); }
+    } catch (e) { 
+        console.error("Erro ao carregar perfil:", e); 
+    }
 }
 
 function configurarBotaoSalvar() {
@@ -113,18 +133,16 @@ function configurarBotaoSalvar() {
     if(!btn) return;
 
     btn.onclick = async () => {
-        // A TRAVA DE VISITANTE AQUI DENTRO DO JS:
         if (userType === 'local' || userPhone === '00000000000' || !userPhone) {
             const erroMsg = document.getElementById('erro-visitante');
             if(erroMsg) {
+                erroMsg.innerText = "ACESSO RESTRITO A MEMBROS";
                 erroMsg.style.display = 'block';
-                if(navigator.vibrate) navigator.vibrate(200);
                 setTimeout(() => erroMsg.style.display = 'none', 3000);
             }
-            return; // PARA A EXECUÇÃO AQUI
+            return;
         }
 
-        // Se for real, salva:
         const nome = getEl('user-name-input').value;
         const avatar = getEl('avatar-icon').getAttribute('data-lucide');
         
@@ -133,8 +151,7 @@ function configurarBotaoSalvar() {
 
         try {
             await setDoc(doc(db, "notas", userPhone), { nome, avatar }, { merge: true });
-            if(window.showToast) window.showToast("Perfil Atualizado!");
-            else alert("Perfil Atualizado!");
+            alert("Perfil Atualizado!");
             setTimeout(() => window.location.href = 'index.html', 1000);
         } catch(e) { 
             console.error(e);
