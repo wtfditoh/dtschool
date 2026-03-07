@@ -1,161 +1,63 @@
-/* 1. RESET E FUNDO GLOBAL */
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-body { 
-    background: #0a0a0a !important; 
-    background-image: radial-gradient(circle at top right, rgba(138, 43, 226, 0.12), #0a0a0a) !important;
-    color: white; 
-    margin: 0; 
-    font-family: 'Inter', sans-serif; 
-    min-height: 100vh; 
-    overflow-x: hidden;
+Body { 
+    background: #080808; 
+    background: radial-gradient(circle at top right, #1a0b2e, #080808);
+    color: white; margin: 0; font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden;
 }
 
-/* 2. HEADER "EDGE-TO-EDGE" */
-.perfil-header { 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    height: 70px;
-    padding: 0 15px;
-    background: rgba(10, 10, 10, 0.98) !important;
-    border-bottom: 1px solid rgba(138, 43, 226, 0.3) !important;
-    position: sticky;
-    top: 0;
-    z-index: 2000;
-    backdrop-filter: blur(15px);
-    width: 100%;
-}
+.perfil-container { padding: 20px; max-width: 450px; margin: 0 auto; text-align: center; }
 
-.perfil-header h2 { 
-    font-weight: 900; 
-    font-size: 14px; 
-    letter-spacing: 3px; 
-    margin: 0; 
-    text-transform: uppercase;
-}
+/* TOAST */
+#toast-container { position: fixed; top: 20px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 10000; pointer-events: none; }
+.toast { pointer-events: auto; background: rgba(15, 15, 15, 0.98); border: 1px solid #8a2be2; color: white; padding: 12px 20px; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); animation: slideDown 0.4s forwards; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
 
-/* 3. CHAMADA RANKING - ESTILO GLASS COM PULSO */
-.chamada-ranking-novo {
-    margin: 20px 15px;
-    padding: 22px;
-    background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(255, 255, 255, 0.03));
-    border: 1px solid rgba(138, 43, 226, 0.5);
-    border-radius: 25px;
-    backdrop-filter: blur(12px);
-    text-align: center;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    animation: glowPulse 3s infinite ease-in-out;
-}
+/* HEADER */
+.perfil-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
+.perfil-header h2 { font-weight: 900; font-size: 18px; letter-spacing: 2px; margin: 0; }
+.purple { color: #8a2be2; text-shadow: 0 0 15px rgba(138,43,226,0.5); }
+.btn-back { background: rgba(255,255,255,0.03); border: 1px solid #222; color: white; padding: 10px; border-radius: 12px; cursor: pointer; }
 
-@keyframes glowPulse {
-    0%, 100% { transform: scale(1); border-color: rgba(138, 43, 226, 0.4); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
-    50% { transform: scale(1.03); border-color: rgba(138, 43, 226, 0.9); box-shadow: 0 0 25px rgba(138, 43, 226, 0.3); }
-}
+/* CARD */
+.perfil-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(138, 43, 226, 0.15); border-radius: 35px; padding: 35px 20px; margin-bottom: 20px; position: relative; }
 
-.chamada-ranking-novo p {
-    color: #fff; 
-    font-weight: 900; 
-    font-size: 16px; 
-    margin: 0;
-    text-transform: uppercase; 
-    letter-spacing: 2px;
-    text-shadow: 0 0 15px rgba(138, 43, 226, 1);
-}
+/* AVATAR */
+.avatar-section { position: relative; width: 100px; height: 100px; margin: 0 auto 10px; }
+.avatar-wrapper { width: 100%; height: 100%; background: rgba(138, 43, 226, 0.05); border-radius: 50%; border: 2px solid #8a2be2; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(138, 43, 226, 0.2); }
+#avatar-icon { width: 45px; height: 45px; color: #8a2be2; }
+.btn-edit-photo { position: absolute; bottom: 0; right: 0; background: #8a2be2; border: 3px solid #080808; color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; }
 
-/* 4. CONTAINER E CARDS */
-.perfil-container { padding: 0 15px 30px; max-width: 480px; margin: 0 auto; }
+.user-phone-display { color: #444; font-weight: 800; font-size: 11px; letter-spacing: 1px; margin: 15px 0 25px; display: block; }
 
-.perfil-card { 
-    background: rgba(255, 255, 255, 0.02); 
-    border: 1px solid rgba(255, 255, 255, 0.05); 
-    border-radius: 30px; 
-    padding: 30px 20px; 
-    margin-bottom: 20px;
-    backdrop-filter: blur(5px);
-}
+/* INPUTS */
+.form-group { text-align: left; margin-bottom: 25px; }
+.form-group label { display: block; font-size: 11px; color: #666; font-weight: 900; margin-bottom: 8px; padding-left: 5px; }
+.input-wrapper { background: rgba(0,0,0,0.4); border: 1px solid #222; border-radius: 16px; display: flex; align-items: center; padding: 0 15px; }
+.input-icon { color: #8a2be2; width: 18px; }
+.input-wrapper input { background: transparent; border: none; color: white; padding: 16px 10px; width: 100%; outline: none; font-weight: 700; font-size: 15px; }
+.hint { font-size: 10px; color: #444; font-weight: 700; margin-top: 8px; padding-left: 5px; }
 
-/* 5. AVATAR E CÂMERA */
-.avatar-section { position: relative; width: 110px; height: 110px; margin: 0 auto 15px; }
-.avatar-wrapper { 
-    width: 100%; height: 100%; 
-    background: rgba(138, 43, 226, 0.05); 
-    border-radius: 50%; 
-    border: 2px solid #8a2be2; 
-    display: flex; align-items: center; justify-content: center; 
-    box-shadow: 0 0 30px rgba(138, 43, 226, 0.2); 
-}
-#avatar-icon { width: 50px; height: 50px; color: #8a2be2; }
+/* DASHBOARD XP */
+.xp-card { background: rgba(138, 43, 226, 0.05); border: 1px solid rgba(138, 43, 226, 0.2); padding: 20px; border-radius: 25px; margin-bottom: 15px; text-align: left; }
+.xp-bar-bg { background: rgba(0,0,0,0.5); height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0; border: 1px solid #222; }
+.xp-bar-fill { height: 100%; background: linear-gradient(90deg, #8a2be2, #00d2ff); box-shadow: 0 0 10px #8a2be2; transition: 1.5s ease-in-out; }
 
-.btn-edit-photo { 
-    position: absolute !important; bottom: 0; right: 0; 
-    background: #8a2be2 !important; border: 3px solid #0a0a0a !important; 
-    color: white !important; width: 36px; height: 36px; border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;
-}
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.stat-box { background: rgba(255,255,255,0.01); border: 1px solid #111; padding: 20px; border-radius: 25px; }
+.stat-box span { display: block; font-size: 24px; font-weight: 900; color: #8a2be2; }
+.stat-box label { font-size: 10px; color: #444; text-transform: uppercase; font-weight: 900; }
 
-/* 6. INPUTS (REMOÇÃO DO FUNDO BRANCO) */
-.form-group { text-align: left; margin-bottom: 20px; }
-.form-group label { font-size: 10px; color: #8a2be2; font-weight: 800; margin-bottom: 8px; display: block; padding-left: 5px; }
+.btn-save { width: 100%; background: #8a2be2; color: white; border: none; padding: 18px; border-radius: 18px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn-logout { width: 100%; background: none; border: 1px solid rgba(255, 68, 68, 0.1); color: #ff4444; padding: 18px; border-radius: 18px; margin-top: 25px; font-weight: 800; cursor: pointer; }
 
-.input-wrapper { 
-    background: rgba(0,0,0,0.4) !important; 
-    border: 1px solid rgba(138, 43, 226, 0.2) !important; 
-    border-radius: 18px; display: flex; align-items: center; padding: 0 15px; 
-}
-.input-wrapper input { 
-    background: transparent !important; border: none !important; color: white !important; 
-    padding: 16px 10px; width: 100%; outline: none; font-weight: 700; font-size: 15px; 
-}
+/* MODAL AVATAR */
+.modal-avatar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 10001; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+.modal-avatar-card { background: #111; border: 1px solid #222; padding: 30px; border-radius: 35px; width: 85%; max-width: 350px; }
+.avatar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 25px 0; max-height: 320px; overflow-y: auto; padding-right: 5px; }
+.avatar-option { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; cursor: pointer; border: 2px solid transparent; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
+.avatar-option:hover { border-color: #8a2be2; background: rgba(138,43,226,0.1); transform: scale(1.05); }
+.avatar-option i { color: white; width: 28px; height: 28px; }
+.btn-fechar-galeria { background: none; border: 1px solid #222; color: #555; padding: 12px; border-radius: 12px; font-weight: 800; cursor: pointer; width: 100%; }
 
-/* 7. BOTÕES (FIX PARA NÃO FICAREM BRANCOS) */
-.btn-save { 
-    width: 100% !important; background: #8a2be2 !important; 
-    color: white !important; border: none !important; padding: 18px !important; 
-    border-radius: 20px !important; font-weight: 900 !important; cursor: pointer !important;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    box-shadow: 0 10px 20px rgba(138, 43, 226, 0.3) !important;
-    margin-top: 10px; transition: 0.3s;
-}
-.btn-save:active { transform: scale(0.96); }
-
-.btn-logout { 
-    width: 100% !important; background: rgba(255, 68, 68, 0.05) !important; 
-    border: 1px solid rgba(255, 68, 68, 0.2) !important; color: #ff4444 !important; 
-    padding: 16px !important; border-radius: 18px !important; margin-top: 20px !important; 
-    font-weight: 800 !important; cursor: pointer !important;
-}
-
-/* 8. DASHBOARD XP E STATS (VINDOS DO JS) */
-.xp-card { 
-    background: rgba(255, 255, 255, 0.02) !important; 
-    border: 1px solid rgba(138, 43, 226, 0.2) !important; 
-    padding: 20px; border-radius: 25px; margin-bottom: 15px; text-align: left;
-}
-.xp-bar-bg { background: rgba(0,0,0,0.5) !important; height: 10px; border-radius: 10px; overflow: hidden; margin: 12px 0; border: 1px solid #222; }
-.xp-bar-fill { height: 100%; transition: 1.5s ease-in-out; }
-
-.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.stat-box { 
-    background: rgba(255,255,255,0.02) !important; 
-    border: 1px solid rgba(255,255,255,0.05) !important; 
-    padding: 18px; border-radius: 22px; text-align: center;
-}
-
-/* 9. AVISO DE ERRO (VISITANTE) */
-#erro-visitante {
-    position: fixed; top: 85px; left: 50%; transform: translateX(-50%);
-    background: #ff4444 !important; color: white !important; 
-    padding: 12px 25px; border-radius: 50px; font-weight: 900; font-size: 13px;
-    z-index: 9999; box-shadow: 0 10px 30px rgba(255, 68, 68, 0.4);
-    border: 2px solid white; display: none;
-}
-
-/* 10. MODAL AVATAR */
-.modal-avatar-overlay { 
-    position: fixed; inset: 0; background: rgba(0,0,0,0.95); 
-    z-index: 10001; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); 
-}
-.modal-avatar-card { background: #0f0f0f; border: 1px solid #222; padding: 25px; border-radius: 30px; width: 90%; max-width: 360px; }
-.avatar-option { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 18px; border: 2px solid transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.avatar-option:hover { border-color: #8a2be2; background: rgba(138,43,226,0.1); }
+/* SCROLLBAR */
+.avatar-grid::-webkit-scrollbar { width: 4px; }
+.avatar-grid::-webkit-scrollbar-thumb { background: #8a2be2; border-radius: 10px; }
