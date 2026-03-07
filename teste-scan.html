@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste de IA - Scanner Hub Brain</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        body { background: #0a0a0a; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
+        .box { border: 2px dashed #8a2be2; padding: 40px; border-radius: 20px; margin: 20px auto; max-width: 500px; cursor: pointer; }
+        .purple { color: #8a2be2; }
+        #log { background: #111; padding: 20px; border-radius: 10px; text-align: left; max-width: 600px; margin: 20px auto; font-family: monospace; overflow-y: auto; height: 300px; border: 1px solid #333; }
+        .loading { display: none; margin: 10px; color: gold; }
+    </style>
+</head>
+<body>
+    <h1>SCANNER <span class="purple">TESTER</span></h1>
+    <p>Suba o print do seu horário do SIGEduc aqui:</p>
+
+    <div class="box" onclick="document.getElementById('file-input').click()">
+        <p>Clique para selecionar o Print</p>
+        <input type="file" id="file-input" accept="image/*" hidden>
+    </div>
+
+    <div id="loading" class="loading">⏳ Processando imagem com IA... aguarde...</div>
+
+    <h3>Resultado da Leitura:</h3>
+    <div id="log">Aguardando imagem...</div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const log = document.getElementById('log');
+        const loading = document.getElementById('loading');
+
+        // Mapeamento de Horários Reais do Vespertino
+        const horasVespertino = {
+            "1": "13:00", "2": "13:50", "3": "14:40",
+            "4": "15:50", "5": "16:40", "6": "17:30"
+        };
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            log.innerHTML = "Iniciando Tesseract...";
+            loading.style.display = "block";
+
+            try {
+                // Inicia o motor de leitura
+                const worker = await Tesseract.createWorker('por');
+                const { data: { text } } = await worker.recognize(file);
+                
+                log.innerHTML = "<strong>Texto Bruto Identificado:</strong><br><br>" + text.replace(/\n/g, '<br>');
+                
+                console.log("Analisando siglas...");
+                processarHorario(text);
+
+                await worker.terminate();
+            } catch (err) {
+                log.innerHTML = "Erro na leitura: " + err;
+            } finally {
+                loading.style.display = "none";
+            }
+        });
+
+        function processarHorario(texto) {
+            log.innerHTML += "<br><hr><br><strong>🔍 BUSCANDO AULAS:</strong><br>";
+            
+            // Procura o padrão de horário (Ves_1, Ves_2, etc)
+            const regexHorario = /Ves_(\d)[\s\S]{1,50}/gi; 
+            let matches;
+            let encontrouAlgo = false;
+
+            while ((matches = regexHorario.exec(texto)) !== null) {
+                encontrouAlgo = true;
+                const numHorario = matches[1];
+                const trecho = matches[0].substring(0, 40); // Pega o texto perto da sigla
+                
+                log.innerHTML += `✅ Identificado: ${numHorario}º Horário (${horasVespertino[numHorario]}) <br> 
+                                  <small style="color:gray">Dados próximos: ${trecho}</small><br><br>`;
+            }
+
+            if(!encontrouAlgo) log.innerHTML += "❌ Nenhuma sigla Ves_ ou Mat_ encontrada.";
+        }
+    </script>
+</body>
+</html>
