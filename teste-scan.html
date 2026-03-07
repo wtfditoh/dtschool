@@ -2,114 +2,110 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Scanner Hub Brain - Precisão Total</title>
+    <title>Hub Brain Scanner v3</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        :root { --purple: #8a2be2; --bg: #0a0a0a; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .purple { color: var(--purple); }
-        .container { max-width: 900px; margin: 0 auto; }
+        body { background: #0a0a0a; color: white; font-family: 'Inter', system-ui; padding: 10px; margin: 0; }
+        .purple { color: #8a2be2; }
         
-        /* Grade Estilizada */
-        .grid-horario {
+        /* Layout Compacto */
+        .container { max-width: 600px; margin: 0 auto; }
+        .upload-zone { border: 2px dashed #333; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; cursor: pointer; }
+        
+        .grid-agenda {
             display: grid;
-            grid-template-columns: 100px repeat(5, 1fr);
-            gap: 5px;
+            grid-template-columns: 60px repeat(5, 1fr);
+            gap: 4px;
             background: #111;
-            padding: 10px;
-            border-radius: 15px;
-            border: 1px solid #222;
+            padding: 8px;
+            border-radius: 12px;
+            font-size: 10px;
         }
-        .header { text-align: center; font-weight: 900; padding: 10px; color: var(--purple); font-size: 12px; }
+        .header { color: #8a2be2; font-weight: 900; text-align: center; padding-bottom: 5px; text-transform: uppercase; font-size: 9px; }
+        .hour-tag { color: #555; display: flex; align-items: center; justify-content: center; font-weight: bold; border-right: 1px solid #222; }
+        
         .cell { 
-            background: #050505; border: 1px solid #222; min-height: 80px; 
-            border-radius: 8px; padding: 5px; font-size: 10px; position: relative;
+            background: #000; border: 1px solid #222; height: 50px; 
+            border-radius: 5px; display: flex; align-items: center; 
+            justify-content: center; text-align: center; overflow: hidden;
+            padding: 2px;
         }
-        .materia-tag {
+        .materia {
             background: rgba(138, 43, 226, 0.2);
-            border: 1px solid var(--purple);
-            padding: 5px; border-radius: 4px;
-            margin-bottom: 3px; font-weight: bold;
-            text-transform: uppercase;
+            color: #fff; border: 1px solid #8a2be2;
+            border-radius: 3px; font-size: 8px; width: 100%;
+            padding: 2px 0; font-weight: bold;
         }
-        .btn-upload {
-            background: var(--purple); color: white; border: none; padding: 15px 30px;
-            border-radius: 12px; font-weight: 900; cursor: pointer; display: block; margin: 20px auto;
-        }
-        #status { text-align: center; font-weight: bold; color: var(--purple); height: 20px; }
+        #status { text-align: center; font-size: 12px; margin: 10px 0; color: #8a2be2; height: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 style="text-align: center;">HUB <span class="purple">SCANNER</span></h1>
+    <h2 style="text-align: center;">SCANNER <span class="purple">SIGEDUC</span></h2>
     <div id="status"></div>
-    
-    <button class="btn-upload" onclick="document.getElementById('img-input').click()">SUBIR PRINT DO HORÁRIO</button>
-    <input type="file" id="img-input" accept="image/*" hidden>
 
-    <div class="grid-horario" id="grade">
+    <div class="upload-zone" onclick="document.getElementById('img').click()">
+        Clique para subir o print do Horário
+        <input type="file" id="img" accept="image/*" hidden>
+    </div>
+
+    <div class="grid-agenda" id="grade">
         <div class="header">HORA</div>
-        <div class="header">SEG</div>
-        <div class="header">TER</div>
-        <div class="header">QUA</div>
-        <div class="header">QUI</div>
-        <div class="header">SEX</div>
+        <div class="header">SEG</div><div class="header">TER</div><div class="header">QUA</div><div class="header">QUI</div><div class="header">SEX</div>
         </div>
 </div>
 
 <script>
-const grid = document.getElementById('grade');
-const status = document.getElementById('status');
-const horas = ["13:00", "13:50", "14:40", "15:50", "16:40", "17:30"];
-const materiasBase = ["QUIMICA", "FISICA", "HISTORIA", "BIOLOGIA", "MATEMATICA", "GEOGRAFIA", "PORTUGUES", "FILOSOFIA", "SOCIOLOGIA", "ARTES", "INGLES", "ESPANHOL", "EDUCACAO"];
+const materiasPermitidas = ["QUIMICA", "FISICA", "HISTORIA", "BIOLOGIA", "MATEMATICA", "GEOGRAFIA", "PORTUGUES", "FILOSOFIA", "SOCIOLOGIA", "ARTES", "INGLES", "ESPANHOL", "EDUCACAO"];
+const horasVespertino = ["13:00", "13:50", "14:40", "15:50", "16:40", "17:30"];
 
-// Criar grade vazia
-for(let i=0; i<6; i++) {
-    grid.innerHTML += `<div class="cell" style="display:flex;align-items:center;justify-content:center;color:#444">${horas[i]}</div>`;
-    for(let j=0; j<5; j++) {
-        grid.innerHTML += `<div class="cell" id="c-${i}-${j}"></div>`;
+// Criar grade 6x5
+const grade = document.getElementById('grade');
+for(let h=0; h<6; h++) {
+    grade.innerHTML += `<div class="hour-tag">${horasVespertino[h]}</div>`;
+    for(let d=0; d<5; d++) {
+        grade.innerHTML += `<div class="cell" id="slot-${h}-${d}"></div>`;
     }
 }
 
-document.getElementById('img-input').onchange = async (e) => {
+document.getElementById('img').onchange = async (e) => {
     const file = e.target.files[0];
     if(!file) return;
 
-    status.innerText = "🧠 MAPEANDO COORDENADAS DA TABELA...";
-    
+    const status = document.getElementById('status');
+    status.innerText = "🧠 Lendo dados...";
+
     const worker = await Tesseract.createWorker('por');
     const { data } = await worker.recognize(file);
     
-    // Pegar largura total da imagem para calcular as colunas
-    const width = data.blocks[0].bbox.x1; 
-    const height = data.blocks[0].bbox.y1;
+    // Pegar dimensões reais da imagem
+    const imgW = data.blocks[0].bbox.x1;
+    const imgH = data.blocks[0].bbox.y1;
 
-    data.lines.forEach(line => {
-        let texto = line.text.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    data.words.forEach(word => {
+        let txt = word.text.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         
-        // Verifica se na linha existe alguma matéria
-        materiasBase.forEach(materia => {
-            if(texto.includes(materia)) {
-                // CALCULAR COLUNA (0 a 4) baseado no X
-                // O SIGEduc tem uma margem na esquerda, então ajustamos o cálculo
-                let posX = (line.bbox.x0 + line.bbox.x1) / 2;
-                let col = Math.floor((posX / width) * 5);
-                
-                // CALCULAR LINHA (0 a 5) baseado no Y
-                let posY = (line.bbox.y0 + line.bbox.y1) / 2;
-                let row = Math.floor((posY / height) * 6);
+        materiasPermitidas.forEach(m => {
+            if(txt.includes(m)) {
+                // CALCULO DE COORDENADA MELHORADO
+                // Divide a imagem em fatias proporcionais
+                let col = Math.floor(((word.bbox.x0 + word.bbox.x1) / 2 / imgW) * 5.5);
+                let row = Math.floor(((word.bbox.y0 + word.bbox.y1) / 2 / imgH) * 7.5);
 
-                // Injetar na célula correta
-                const celula = document.getElementById(`c-${row}-${col}`);
-                if(celula && !celula.innerText.includes(materia)) {
-                    celula.innerHTML += `<div class="materia-tag">${materia}</div>`;
+                // Ajuste de offset (o SIGEduc tem cabeçalhos que pulamos)
+                col = Math.max(0, Math.min(4, col - 1)); 
+                row = Math.max(0, Math.min(5, row - 2));
+
+                const celula = document.getElementById(`slot-${row}-${col}`);
+                if(celula && !celula.innerText.includes(m)) {
+                    celula.innerHTML = `<div class="materia">${m}</div>`;
                 }
             }
         });
     });
 
-    status.innerText = "✅ HORÁRIO MAPEADO!";
+    status.innerText = "✅ Finalizado!";
     await worker.terminate();
 };
 </script>
