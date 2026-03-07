@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -44,7 +44,7 @@ onAuthStateChanged(auth, (user) => {
 async function carregarPerfilOficial(userFirebase) {
     const statsContainer = getEl('area-stats');
     
-    // VERIFICA SE É VISITANTE
+    // VERIFICA SE É VISITANTE - TRAVA DE ENTRADA
     if (userType === 'local' || !userFirebase) {
         getEl('display-id').innerText = `VISITANTE`;
         getEl('user-name-input').value = "Visitante";
@@ -56,21 +56,19 @@ async function carregarPerfilOficial(userFirebase) {
     }
 
     try {
-        const userEmail = userFirebase.email; // Usando o e-mail do Firebase como ID
+        const userEmail = userFirebase.email; 
         const shortID = userFirebase.uid.substring(0, 8).toUpperCase();
         getEl('display-id').innerText = `#HB-${shortID}`;
 
-        // BUSCA DADOS NO FIRESTORE (XP E RANKING)
         const querySnapshot = await getDocs(collection(db, "notas"));
         let todos = [];
         querySnapshot.forEach(doc => todos.push({ id: doc.id, xp: doc.data().xp || 0 }));
         todos.sort((a, b) => b.xp - a.xp);
         
-        // AJUSTE: Busca pela posição usando o e-mail
         const minhaPosicao = todos.findIndex(u => u.id === userEmail) + 1;
 
-        // AJUSTE: Busca o documento usando o e-mail
         const meuDoc = await getDoc(doc(db, "notas", userEmail));
+        
         if (meuDoc.exists()) {
             const d = meuDoc.data();
             const xp = d.xp || 0;
@@ -113,7 +111,7 @@ async function carregarPerfilOficial(userFirebase) {
                 </div>
                 <div class="stat-grid">
                     <div class="stat-box">
-                        <span style="color:#f1c40f;">#${minhaPosicao}</span>
+                        <span style="color:#f1c40f;">#${minhaPosicao > 0 ? minhaPosicao : '--'}</span>
                         <label>RANK GLOBAL</label>
                         <p class="hint" style="margin-top:5px; font-size:8px;">Posição no Hub</p>
                     </div>
@@ -124,6 +122,16 @@ async function carregarPerfilOficial(userFirebase) {
                     </div>
                 </div>`;
             if(window.lucide) lucide.createIcons();
+        } else {
+            // TRAVA DE CRIAÇÃO: Só cria o documento se NÃO for visitante
+            if (userType !== 'local') {
+                await setDoc(doc(db, "notas", userEmail), { 
+                    nome: userName || "Estudante", 
+                    xp: 0, 
+                    avatar: 'user',
+                    materias: []
+                });
+            }
         }
     } catch (e) { console.error(e); }
 }
@@ -147,7 +155,6 @@ getEl('btn-salvar-perfil').onclick = async () => {
     const nome = getEl('user-name-input').value;
     const avatar = getEl('avatar-icon').getAttribute('data-lucide');
     try {
-        // AJUSTE: Salvando usando o e-mail como chave
         await updateDoc(doc(db, "notas", user.email), { nome, avatar });
         showToast("Perfil Atualizado!");
     } catch(e) { 
