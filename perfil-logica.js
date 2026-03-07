@@ -30,45 +30,52 @@ window.showToast = (msg, type = "success") => {
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!userPhone) return window.location.href = 'login.html';
-    carregarPerfilReal();
+    carregarPerfilOficial();
 });
 
-async function carregarPerfilReal() {
+async function carregarPerfilOficial() {
     const statsContainer = getEl('area-stats');
     if (userType === 'local') {
         getEl('display-phone').innerText = `VISITANTE`;
-        statsContainer.innerHTML = `<div class="xp-card"><p class="hint">Crie uma conta para ver seu Rank!</p></div>`;
+        statsContainer.innerHTML = `<div class="xp-card"><p class="hint">Entre para subir nas patentes!</p></div>`;
         return;
     }
 
     try {
-        // 1. BUSCAR TODOS OS USUÁRIOS PARA CALCULAR O RANK REAL
         const querySnapshot = await getDocs(collection(db, "notas"));
-        let todosUsuarios = [];
-        querySnapshot.forEach(doc => {
-            todosUsuarios.push({ id: doc.id, xp: doc.data().xp || 0 });
-        });
+        let todos = [];
+        querySnapshot.forEach(doc => todos.push({ id: doc.id, xp: doc.data().xp || 0 }));
+        todos.sort((a, b) => b.xp - a.xp);
+        const minhaPosicao = todos.findIndex(u => u.id === userPhone) + 1;
 
-        // Ordenar por XP (Maior para menor)
-        todosUsuarios.sort((a, b) => b.xp - a.xp);
-        
-        // Achar minha posição
-        const minhaPosicao = todosUsuarios.findIndex(u => u.id === userPhone) + 1;
-
-        // 2. BUSCAR MEUS DADOS ESPECÍFICOS
         const meuDoc = await getDoc(doc(db, "notas", userPhone));
         if (meuDoc.exists()) {
             const d = meuDoc.data();
-            const xpTotal = d.xp || 0;
-            const nivel = Math.floor(xpTotal / 500) + 1;
-            const progresso = ((xpTotal % 500) / 500) * 100;
+            const xp = d.xp || 0;
 
-            // Lógica de FOCO (Média das notas)
+            // --- LÓGICA DAS PATENTES OFICIAIS ---
+            let pNome, pMin, pMax, pCor;
+
+            if (xp <= 500) { 
+                pNome = "Novato 🟢"; pMin = 0; pMax = 500; pCor = "#2ecc71"; 
+            } else if (xp <= 1500) { 
+                pNome = "Estudioso 🔵"; pMin = 501; pMax = 1500; pCor = "#3498db"; 
+            } else if (xp <= 4000) { 
+                pNome = "Veterano 🟣"; pMin = 1501; pMax = 4000; pCor = "#9b59b6"; 
+            } else if (xp <= 8000) { 
+                pNome = "Cérebro de Elite ⚡"; pMin = 4001; pMax = 8000; pCor = "#f1c40f"; 
+            } else { 
+                pNome = "Lenda do Hub 🏆"; pMin = 8001; pMax = 20000; pCor = "#e74c3c"; 
+            }
+
+            const progressoRelativo = ((xp - pMin) / (pMax - pMin)) * 100;
+            const faltaParaProxima = pMax - xp;
+
             const materias = d.materias || [];
-            let focoPorcentagem = 0;
+            let desempenho = 0;
             if (materias.length > 0) {
                 const soma = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
-                focoPorcentagem = Math.round((soma / materias.length) * 10); // Ex: média 8.5 vira 85%
+                desempenho = Math.round((soma / materias.length) * 10);
             }
 
             getEl('user-name-input').value = d.nome || "";
@@ -78,23 +85,27 @@ async function carregarPerfilReal() {
             statsContainer.innerHTML = `
                 <div class="xp-card">
                     <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:900;">
-                        <span style="color:#8a2be2;">NÍVEL ${nivel}</span>
-                        <span style="color:#444;">${xpTotal} XP</span>
+                        <span style="color:${pCor}; letter-spacing:1px;">PATENTE: ${pNome}</span>
+                        <span style="color:#444;">${xp} XP TOTAL</span>
                     </div>
-                    <div class="xp-bar-bg"><div class="xp-bar-fill" style="width: ${progresso}%"></div></div>
-                    <p class="hint" style="text-align:center; margin:0;">Faltam ${500 - (xpTotal % 500)} XP para o próximo nível</p>
+                    <div class="xp-bar-bg">
+                        <div class="xp-bar-fill" style="width: ${progressoRelativo}%; background: ${pCor}; box-shadow: 0 0 15px ${pCor}aa;"></div>
+                    </div>
+                    <p class="hint" style="text-align:center; margin:0;">
+                        ${faltaParaProxima > 0 ? `Faltam ${faltaParaProxima} XP para subir de rank` : 'Nível máximo atingido!'}
+                    </p>
                 </div>
 
                 <div class="stat-grid">
                     <div class="stat-box">
                         <span style="color:#f1c40f;">#${minhaPosicao}</span>
                         <label>RANK GLOBAL</label>
-                        <p class="hint" style="margin-top:5px; font-size:8px;">Sua posição real</p>
+                        <p class="hint" style="margin-top:5px; font-size:8px;">Posição no Hub</p>
                     </div>
                     <div class="stat-box">
-                        <span style="color:#00d2ff;">${focoPorcentagem}%</span>
-                        <label>FOCO</label>
-                        <p class="hint" style="margin-top:5px; font-size:8px;">Baseado em suas notas</p>
+                        <span style="color:#2ecc71;">${desempenho}%</span>
+                        <label>DESEMPENHO</label>
+                        <p class="hint" style="margin-top:5px; font-size:8px;">Aproveitamento total</p>
                     </div>
                 </div>
             `;
@@ -103,7 +114,6 @@ async function carregarPerfilReal() {
     } catch (e) { console.error(e); }
 }
 
-// Funções de interface permanecem as mesmas
 window.abrirGaleria = () => getEl('modal-avatar').style.display = 'flex';
 window.fecharGaleria = () => getEl('modal-avatar').style.display = 'none';
 window.selecionarAvatar = (icon) => {
