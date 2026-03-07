@@ -1,193 +1,90 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;900&display=swap');
 
-* { 
-    box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent; 
-    margin: 0; 
-    padding: 0; 
-}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
 body { 
-    background: #000; 
-    color: white; 
-    font-family: 'Inter', sans-serif; 
-    height: 100svh; 
-    width: 100vw; 
-    overflow: hidden;
-    display: flex; 
-    flex-direction: column;
+    background: #000; color: white; font-family: 'Inter', sans-serif; 
+    height: 100svh; width: 100vw; overflow: hidden;
+    display: flex; flex-direction: column;
 }
 
-/* --- ESTILO DO MENU LATERAL (SIDEBAR) --- */
-.sidebar {
-    position: fixed !important;
-    top: 0 !important;
-    left: -280px !important; /* Força o menu para fora da tela */
-    width: 280px !important;
-    height: 100% !important;
-    background: #0a0a0a !important;
-    z-index: 9999 !important; /* Garante que fica por cima de tudo */
-    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+/* --- ESTILO DO SEU MENU (menu.js) --- */
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -280px; /* Escondido */
+    width: 280px;
+    height: 100vh;
+    background: #0a0a0a;
+    z-index: 10001;
+    transition: all 0.3s ease;
     border-right: 1px solid #1a1a1a;
-    padding: 30px;
     display: flex;
     flex-direction: column;
 }
 
-.sidebar.active {
-    left: 0 !important;
+.side-menu.open {
+    left: 0; /* Abre ao adicionar a classe 'open' */
 }
 
-.sidebar-header {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 40px;
-}
+.menu-header { padding: 25px; display: flex; justify-content: space-between; align-items: center; }
+.menu-title { font-weight: 900; font-size: 16px; letter-spacing: 1px; }
+.purple { color: #8a2be2; }
+#close-menu { background: none; border: none; color: #444; cursor: pointer; }
 
-#close-sidebar {
-    background: none;
-    border: none;
-    color: #444;
-    cursor: pointer;
+.menu-links { display: flex; flex-direction: column; padding: 20px; gap: 10px; }
+.menu-links a { 
+    color: #666; text-decoration: none; padding: 12px; border-radius: 10px;
+    display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600;
 }
+.menu-links a.active { background: #111; color: #8a2be2; }
 
-.sidebar-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 10000;
+    display: none;
+    backdrop-filter: blur(5px);
 }
+.menu-overlay.active { display: block; }
 
-.sidebar-menu a {
-    color: #666;
-    text-decoration: none;
-    font-weight: 900;
-    font-size: 14px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
+/* --- ESTILO DO MODO FOCO --- */
+.header-minimal { flex-shrink: 0; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+.btn-icon-top { background: none; border: none; color: #1a1a1a; cursor: pointer; padding: 8px; display: flex; align-items: center; }
+.label-header { font-weight: 900; font-size: 8px; letter-spacing: 3px; color: #1a1a1a; text-transform: uppercase; }
 
-.sidebar-menu a.active { color: #8a2be2; }
-
-.overlay {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    background: rgba(0, 0, 0, 0.8) !important;
-    backdrop-filter: blur(4px);
-    z-index: 9998 !important;
-    opacity: 0;
-    visibility: hidden;
-    transition: 0.3s;
-}
-
-.overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* --- CABEÇALHO DO MODO FOCO --- */
-.header-minimal { 
-    flex-shrink: 0; 
-    padding: 15px 20px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-}
-
-.btn-icon-top {
-    background: none;
-    border: none;
-    color: #222;
-    cursor: pointer;
-    padding: 8px;
-    display: flex;
-    align-items: center;
-}
-
-.label-header {
-    font-weight: 900; 
-    font-size: 8px; 
-    letter-spacing: 3px; 
-    color: #1a1a1a; 
-    text-transform: uppercase;
-}
-
-/* --- ÁREA DO CRONÓMETRO --- */
-.timer-viewport {
-    flex: 1; 
-    position: relative; 
-    display: flex; 
-    flex-direction: column;
-    align-items: center; 
-    justify-content: center; 
-}
-
-.canvas-timer {
-    position: relative; 
-    width: 280px; 
-    height: 280px;
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-}
+.timer-viewport { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.canvas-timer { position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; }
 
 .progress-ring { position: absolute; transform: rotate(-90deg); width: 100%; height: 100%; }
 .progress-ring__circle {
-    stroke: #8a2be2; 
-    stroke-width: 6; 
-    fill: transparent;
-    stroke-dasharray: 816.8; 
-    stroke-dashoffset: 816.8;
-    stroke-linecap: round; 
-    transition: stroke-dashoffset 1s linear;
-    filter: drop-shadow(0 0 10px #8a2be2);
+    stroke: #8a2be2; stroke-width: 6; fill: transparent;
+    stroke-dasharray: 816.8; stroke-dashoffset: 816.8;
+    stroke-linecap: round; transition: stroke-dashoffset 1s linear;
 }
 .progress-bg { stroke: #0a0a0a; stroke-width: 6; fill: transparent; }
 
 .timer-content { position: absolute; z-index: 5; text-align: center; width: 100%; }
-
-.digital-clock {
-    font-family: 'Share Tech Mono', monospace;
-    color: #fff; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    line-height: 1;
-}
-
+.digital-clock { font-family: 'Share Tech Mono', monospace; color: #fff; display: flex; align-items: center; justify-content: center; line-height: 1; }
 #setup-view .digital-clock { font-size: 50px; }
-#active-clock .digital-clock { font-size: 60px; color: #8a2be2; text-shadow: 0 0 15px rgba(138, 43, 226, 0.4); }
+#active-clock .digital-clock { font-size: 60px; color: #8a2be2; }
 
 .unit-adjust { display: flex; flex-direction: column; align-items: center; }
 .btn-arrow { background: none; border: none; color: #1a1a1a; cursor: pointer; padding: 5px; }
 
-/* --- XP BADGE SLIM --- */
 .xp-badge {
-    background: rgba(138, 43, 226, 0.05); 
-    border: 1px solid rgba(138, 43, 226, 0.15);
-    padding: 4px 12px; 
-    border-radius: 8px; 
-    margin-top: 8px; 
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
+    background: rgba(138, 43, 226, 0.05); border: 1px solid rgba(138, 43, 226, 0.15);
+    padding: 4px 12px; border-radius: 8px; margin-top: 8px; display: inline-flex;
+    flex-direction: column; align-items: center;
 }
-
 .xp-label { font-size: 7px; font-weight: 900; color: #444; letter-spacing: 1px; margin-bottom: 2px; }
 .xp-value { font-size: 13px; font-weight: 900; color: #ffd700; font-family: 'Share Tech Mono', monospace; }
 
-/* --- RODAPÉ --- */
 .footer-area { flex-shrink: 0; width: 100%; padding: 10px 25px 30px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-
 .btn-main {
     width: 100%; max-width: 300px; padding: 16px; border-radius: 100px; border: none;
     font-weight: 900; font-size: 14px; background: #8a2be2; color: white; cursor: pointer;
 }
-
 .btn-pause { background: #111; border: 1px solid #222; }
 .btn-quit-label { background: none; border: none; color: #333; font-weight: 800; font-size: 11px; padding: 10px; cursor: pointer; text-transform: uppercase; }
-
-/* --- MODAL --- */
-#modal-confirm { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.98); z-index:10000; align-items:center; justify-content:center; padding:30px; }
