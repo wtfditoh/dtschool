@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain | Deep Focus</title>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="foco.css">
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
     <header class="header-minimal">
         <button id="open-menu" class="btn-icon-top">
-            <i data-lucide="menu"></i>
+            <i data-lucide="menu" size="22"></i>
         </button>
         <span class="label-header">MODO FOCO</span>
         <div style="width: 40px;"></div>
@@ -62,11 +65,12 @@
         <button id="btn-quit" class="btn-quit-label" style="display:none">DESISTIR</button>
     </footer>
 
-    <div id="modal-confirm" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:20000; align-items:center; justify-content:center;">
+    <div id="modal-confirm" class="modal-overlay" style="display:none;">
         <div class="modal-card">
-            <h2>PARAR?</h2>
+            <h2>PARAR AGORA?</h2>
+            <p>Seu progresso e bônus de XP serão perdidos.</p>
             <button id="btn-keep-going" class="btn-main">CONTINUAR</button>
-            <button id="btn-really-quit" class="btn-quit-label" style="color:red; margin-top:15px;">SAIR</button>
+            <button id="btn-really-quit" class="btn-danger-text">SIM, DESISTIR</button>
         </div>
     </div>
 
