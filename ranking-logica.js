@@ -31,7 +31,7 @@ async function carregarRanking() {
         });
         lista.sort((a, b) => b.xp - a.xp);
         renderizar(lista);
-    } catch (e) { console.error("Erro ao carregar ranking:", e); }
+    } catch (e) { console.error(e); }
 }
 
 function renderizar(lista) {
@@ -44,14 +44,14 @@ function renderizar(lista) {
             
             const frame = document.getElementById(`avatar-p${i+1}`);
             if (i === 0) {
-                frame.innerHTML = `<i data-lucide="crown" class="crown-icon"></i><i data-lucide="${u.avatar}" style="width:50px; height:50px;"></i>`;
+                frame.innerHTML = `<i data-lucide="crown" class="crown-icon"></i><i data-lucide="${u.avatar}" style="width:55px; height:55px;"></i>`;
             } else {
                 frame.innerHTML = `<i data-lucide="${u.avatar}" style="width:35px; height:35px;"></i>`;
             }
         }
     }
 
-    // Renderiza o resto da lista
+    // Renderiza o resto da lista abaixo do pódio
     const container = document.getElementById('lista-ranking');
     container.innerHTML = lista.slice(3).map((u, i) => `
         <div class="rank-item">
@@ -62,7 +62,7 @@ function renderizar(lista) {
             </div>
             <i data-lucide="${u.avatar}" style="width:20px; height:20px; color:#8a2be2; opacity:0.5;"></i>
         </div>
-    `).join('') || '<p style="text-align:center; padding:20px; color:#444;">Aguardando competidores...</p>';
+    `).join('') || '<p style="text-align:center; padding:20px; color:#444;">Nenhum outro competidor ainda.</p>';
     
     if(window.lucide) lucide.createIcons();
 }
