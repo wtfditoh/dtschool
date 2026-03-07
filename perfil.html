@@ -26,11 +26,12 @@
                 <div class="avatar-wrapper" id="avatar-display">
                     <i data-lucide="user" id="avatar-icon"></i>
                 </div>
-                <button class="btn-edit-photo" onclick="abrirGaleria()">
+                <div class="btn-edit-photo" onclick="abrirGaleria()">
                     <i data-lucide="camera" style="width:16px;"></i>
-                </button>
-                <p class="user-phone-display" id="display-phone">Carregando ID...</p>
+                </div>
             </div>
+
+            <p class="user-phone-display" id="display-phone">Carregando ID...</p>
 
             <div class="form-group">
                 <label>Como queres ser chamado?</label>
@@ -38,7 +39,7 @@
                     <i data-lucide="signature"></i>
                     <input type="text" id="user-name-input" placeholder="Teu Nickname">
                 </div>
-                <p class="hint">Este nome aparecerá no Ranking Global.</p>
+                <p class="hint" style="font-size: 10px; color: #666; margin-top: 5px;">Este nome aparecerá no Ranking Global.</p>
             </div>
 
             <button id="btn-salvar-perfil" class="btn-save">
@@ -47,15 +48,7 @@
         </div>
 
         <div class="perfil-stats">
-            <div class="stat-box">
-                <span id="stat-materias">0</span>
-                <label>Matérias</label>
             </div>
-            <div class="stat-box">
-                <span id="stat-media">0.0</span>
-                <label>Média Geral</label>
-            </div>
-        </div>
 
         <button onclick="logout()" class="btn-logout">
             <i data-lucide="log-out"></i> SAIR DA CONTA
@@ -64,7 +57,7 @@
 
     <div id="modal-avatar" class="modal-avatar-overlay" style="display:none;">
         <div class="modal-avatar-card">
-            <h3>ESCOLHA SEU ÍCONE</h3>
+            <h3 style="color: white; margin-bottom: 20px;">ESCOLHA SEU ÍCONE</h3>
             <div class="avatar-grid">
                 <div class="avatar-option" onclick="selecionarAvatar('user')"><i data-lucide="user"></i></div>
                 <div class="avatar-option" onclick="selecionarAvatar('zap')"><i data-lucide="zap"></i></div>
@@ -78,5 +71,12 @@
     </div>
 
     <script type="module" src="perfil-logica.js"></script>
+    
+    <script>
+        // Inicializa os ícones do Lucide no carregamento
+        window.addEventListener('load', () => {
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
 </body>
 </html>
