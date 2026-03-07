@@ -1,18 +1,6 @@
-:root {
-    --primary: #8a2be2;
-    --primary-light: #a052ee;
-    --bg: #0a0a0a;
-    --glass: rgba(255, 255, 255, 0.05);
-}
-
+:root { --primary: #8a2be2; --primary-light: #a052ee; --bg: #0a0a0a; --glass: rgba(255, 255, 255, 0.05); }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-    background-color: var(--bg);
-    display: flex; justify-content: center; align-items: center;
-    min-height: 100vh; font-family: 'Segoe UI', sans-serif; color: white;
-}
-
+body { background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
 .wrapper { width: 100%; max-width: 320px; display: flex; flex-direction: column; align-items: center; }
 
 /* MONSTRINHO */
@@ -25,28 +13,33 @@ body {
 .pupil { width: 8px; height: 8px; background: #000; border-radius: 50%; position: absolute; top: 5px; left: 5px; }
 .monster-hands { position: absolute; width: 100%; top: 40px; display: flex; justify-content: space-between; pointer-events: none; }
 .m-hand { width: 28px; height: 28px; background: var(--primary-light); border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); transition: 0.4s ease; transform: translateY(40px); opacity: 0; }
-
-/* ANIMAÇÕES MONSTRINHO */
 .shame .m-hand { transform: translateY(-10px); opacity: 1; }
 .shame .eyes-container { opacity: 0; }
 .looking .pupil { transform: translateY(3px); }
 
 /* CARD */
 .login-card { background: var(--glass); backdrop-filter: blur(15px); width: 100%; padding: 35px 25px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-.hub-symbol { margin-bottom: 15px; }
+.hub-symbol { margin-bottom: 10px; display: flex; justify-content: center; }
+.hub-symbol i { width: 30px; height: 30px; color: var(--primary); }
 .logo-area h2 { font-size: 22px; font-weight: 900; }
 .logo-area p { color: #555; font-size: 10px; margin-bottom: 20px; font-weight: bold; }
 
-/* INPUTS E BOTÕES */
+/* INPUTS */
 .input-ia { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #333; padding: 13px; border-radius: 12px; color: white; font-size: 14px; margin-bottom: 12px; outline: none; text-align: center; }
-.input-ia:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(138, 43, 226, 0.2); }
-.btn-acessar { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+.input-ia:focus { border-color: var(--primary); }
 
-/* ERRO E SHAKE */
+/* BOTÃO CORRIGIDO (ALINHAMENTO) */
+.btn-acessar { 
+    width: 100%; background: var(--primary); color: white; border: none; 
+    padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; 
+    display: flex; align-items: center; justify-content: center; gap: 10px; 
+}
+.btn-acessar i { width: 18px; height: 18px; display: block; }
+
+/* ERRO E OUTROS */
 .status-msg { min-height: 18px; font-size: 11px; color: #ff4444; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; }
 .shake-error { animation: shake 0.4s ease-in-out; }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
-
 .footer-links { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
 .create-acc { color: var(--primary-light); font-size: 13px; text-decoration: none; font-weight: bold; }
 .btn-visitante { color: #444; background: none; border: none; font-size: 12px; text-decoration: underline; cursor: pointer; }
