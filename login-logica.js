@@ -129,6 +129,7 @@ window.realizarCadastro = async () => {
 };
 
 window.entrarComoVisitante = () => {
+    localStorage.clear(); // Isso remove o 'dt_user_phone' antigo que trava tudo
     localStorage.setItem('dt_user_name', 'Visitante');
     window.location.href = 'index.html';
 };
