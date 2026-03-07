@@ -8,18 +8,19 @@
     <link rel="stylesheet" href="foco.css">
     
     <style>
+        /* Estilo crítico para garantir que o menu suma do topo */
         .sidebar {
             position: fixed !important;
             top: 0 !important;
             left: -280px !important;
             width: 280px !important;
-            height: 100% !important;
+            height: 100vh !important;
             background: #0a0a0a !important;
             z-index: 9999 !important;
-            transition: transform 0.3s ease !important;
+            transition: transform 0.3s ease-in-out !important;
+            border-right: 1px solid #1a1a1a !important;
             display: flex !important;
             flex-direction: column !important;
-            border-right: 1px solid #1a1a1a !important;
         }
         .sidebar.active {
             transform: translateX(280px) !important;
@@ -27,26 +28,15 @@
         .overlay {
             position: fixed !important;
             inset: 0 !important;
-            background: rgba(0,0,0,0.7) !important;
+            background: rgba(0,0,0,0.8) !important;
             z-index: 9998 !important;
             display: none;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(5px);
         }
         .overlay.active { display: block !important; }
     </style>
 </head>
 <body>
-
-    <div id="sidebar" class="sidebar">
-        <div class="sidebar-header" style="padding: 20px; display: flex; justify-content: flex-end;">
-            <button id="close-sidebar" style="background:none; border:none; color:#444;"><i data-lucide="x"></i></button>
-        </div>
-        <nav class="sidebar-menu" style="display: flex; flex-direction: column; padding: 20px; gap: 20px;">
-            <a href="index.html" style="color: #666; text-decoration: none; font-weight: 900; font-size: 14px; text-transform: uppercase;">Notas</a>
-            <a href="foco.html" style="color: #8a2be2; text-decoration: none; font-weight: 900; font-size: 14px; text-transform: uppercase;">Foco</a>
-        </nav>
-    </div>
-    <div id="overlay" class="overlay"></div>
 
     <header class="header-minimal">
         <button id="open-sidebar" class="btn-icon-top">
@@ -100,6 +90,19 @@
         <button id="btn-quit" class="btn-quit-label" style="display:none">DESISTIR</button>
     </footer>
 
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header" style="padding: 20px; text-align: right;">
+            <button id="close-sidebar" style="background:none; border:none; color:#444; cursor:pointer;">
+                <i data-lucide="x" size="24"></i>
+            </button>
+        </div>
+        <nav class="sidebar-menu" style="padding: 0 30px; display: flex; flex-direction: column; gap: 25px;">
+            <a href="index.html" style="color: #666; text-decoration: none; font-weight: 900; font-size: 14px; text-transform: uppercase;">Notas</a>
+            <a href="foco.html" style="color: #8a2be2; text-decoration: none; font-weight: 900; font-size: 14px; text-transform: uppercase;">Foco</a>
+        </nav>
+    </div>
+    <div id="overlay" class="overlay"></div>
+
     <div id="modal-confirm" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.98); z-index:10000; align-items:center; justify-content:center; padding:30px;">
         <div style="background:#0a0a0a; border:1px solid #1a1a1a; padding:30px; border-radius:30px; text-align:center; width:100%; max-width:300px;">
             <h2 style="font-weight:900; margin-bottom:10px; color:white; font-size:18px;">PARAR AGORA?</h2>
@@ -109,11 +112,7 @@
         </div>
     </div>
 
-    <script>
-        // Inicializa ícones imediatamente
-        lucide.createIcons();
-    </script>
-    
+    <script>lucide.createIcons();</script>
     <script src="menu.js"></script> 
     <script type="module" src="foco-logica.js"></script>
 </body>
