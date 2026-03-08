@@ -24,15 +24,27 @@ const inputPass = document.getElementById('user-pass');
 const pupils = document.querySelectorAll('.pupil');
 const checkManter = document.getElementById('manter-conectado');
 
-function mostrarErro(msg) {
-    if (status) { status.innerText = "⚠ " + msg; status.style.opacity = "1"; }
-    if (card) card.classList.add('shake-error');
-    if (monster) monster.classList.add('angry');
+// FUNÇÃO DE MENSAGENS (ERRO OU SUCESSO)
+function avisar(msg, tipo = "erro") {
+    if (!status) return;
+    
+    status.innerText = (tipo === "erro" ? "⚠ " : "✓ ") + msg;
+    status.classList.remove('sucesso');
+    
+    if (tipo === "sucesso") {
+        status.classList.add('sucesso');
+    } else {
+        if (card) card.classList.add('shake-error');
+        if (monster) monster.classList.add('angry');
+    }
+
+    status.style.opacity = "1";
+
     setTimeout(() => {
-        if (status) status.style.opacity = "0";
+        status.style.opacity = "0";
         if (monster) monster.classList.remove('angry');
         if (card) card.classList.remove('shake-error');
-    }, 3000);
+    }, 4000);
 }
 
 // OLHOS DO MONSTRO
@@ -44,19 +56,10 @@ document.addEventListener('mousemove', (e) => {
     }
 });
 
-// REAÇÕES AO FOCO
 if (inputEmail && inputPass) {
-    inputEmail.addEventListener('focus', () => {
-        monster.classList.add('looking');
-        monster.classList.remove('shame');
-    });
-    inputPass.addEventListener('focus', () => {
-        monster.classList.add('shame');
-        monster.classList.remove('looking');
-    });
-    [inputEmail, inputPass].forEach(el => el.addEventListener('blur', () => {
-        monster.classList.remove('looking', 'shame');
-    }));
+    inputEmail.addEventListener('focus', () => { monster.classList.add('looking'); monster.classList.remove('shame'); });
+    inputPass.addEventListener('focus', () => { monster.classList.add('shame'); monster.classList.remove('looking'); });
+    [inputEmail, inputPass].forEach(el => el.addEventListener('blur', () => monster.classList.remove('looking', 'shame')));
 }
 
 // LOGIN
@@ -64,35 +67,53 @@ window.tentarLogar = async (e) => {
     if (e) e.preventDefault();
     const email = inputEmail.value.trim();
     const pass = inputPass.value;
-    if (!email || !pass) return mostrarErro("Vazio? Aí não né, patrão!");
+    if (!email || !pass) return avisar("Faltam dados, mestre!");
 
     try {
         await signOut(auth);
-        const persistencia = (checkManter && checkManter.checked) 
-            ? browserLocalPersistence 
-            : browserSessionPersistence;
-
+        const persistencia = (checkManter && checkManter.checked) ? browserLocalPersistence : browserSessionPersistence;
         await setPersistence(auth, persistencia);
         const res = await signInWithEmailAndPassword(auth, email, pass);
         localStorage.setItem('dt_user_name', res.user.displayName || "Estudante");
         window.location.replace('index.html');
+    } catch (error) { avisar("E-mail ou senha inválidos!"); }
+};
+
+// CADASTRO (COM AVISO DE ERRO AGORA)
+window.realizarCadastro = async (e) => {
+    if (e) e.preventDefault();
+    const nomeInput = document.getElementById('user-name');
+    const nome = nomeInput ? nomeInput.value.trim() : "";
+    const email = inputEmail.value.trim();
+    const pass = inputPass.value;
+
+    if (!nome || !email || !pass) {
+        return avisar("Preencha todos os campos!");
+    }
+
+    try {
+        const res = await createUserWithEmailAndPassword(auth, email, pass);
+        await updateProfile(res.user, { displayName: nome });
+        localStorage.setItem('dt_user_name', nome);
+        await setDoc(doc(db, "notas", email), {
+            nome: nome, xp: 0, avatar: "user", materias: [], email: email, criadoEm: serverTimestamp()
+        });
+        window.location.replace('index.html');
     } catch (error) {
-        console.error(error);
-        mostrarErro("E-mail ou senha inválidos!");
+        avisar("Erro ao criar conta. E-mail já existe?");
     }
 };
 
-// RECUPERAR SENHA
+// RECUPERAR SENHA (SEM ALERT FEIO)
 window.executarRecuperacao = async () => {
     const email = inputEmail.value.trim();
-    if (!email) return mostrarErro("Digite o e-mail no campo acima!");
+    if (!email) return avisar("Digite o e-mail primeiro!");
 
     try {
         await sendPasswordResetEmail(auth, email);
-        alert("Sucesso! Link de recuperação enviado para: " + email);
+        avisar("Link enviado! Olhe seu e-mail.", "sucesso");
     } catch (error) {
-        console.error(error);
-        mostrarErro("Erro ao enviar e-mail!");
+        avisar("Erro ao enviar link de recuperação.");
     }
 };
 
