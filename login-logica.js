@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence, browserSessionPersistence, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence, browserSessionPersistence, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -35,7 +35,7 @@ function mostrarErro(msg) {
     }, 3000);
 }
 
-// --- REATIVANDO A ALMA DO MONSTRINHO (OLHOS) ---
+// OLHOS DO MONSTRO
 document.addEventListener('mousemove', (e) => {
     if (monster && !monster.classList.contains('shame') && !monster.classList.contains('angry')) {
         let x = (e.clientX / window.innerWidth - 0.5) * 15;
@@ -44,7 +44,7 @@ document.addEventListener('mousemove', (e) => {
     }
 });
 
-// ESTA É A PARTE QUE TINHA SUMIDO (A REAÇÃO AO CLIQUE):
+// REAÇÕES AO FOCO
 if (inputEmail && inputPass) {
     inputEmail.addEventListener('focus', () => {
         monster.classList.add('looking');
@@ -59,7 +59,7 @@ if (inputEmail && inputPass) {
     }));
 }
 
-// LOGIN COM PERSISTÊNCIA INTELIGENTE
+// LOGIN
 window.tentarLogar = async (e) => {
     if (e) e.preventDefault();
     const email = inputEmail.value.trim();
@@ -67,19 +67,14 @@ window.tentarLogar = async (e) => {
     if (!email || !pass) return mostrarErro("Vazio? Aí não né, patrão!");
 
     try {
-        // LIMPEZA DE CHOQUE: Desloga antes de definir a nova persistência
         await signOut(auth);
-
         const persistencia = (checkManter && checkManter.checked) 
             ? browserLocalPersistence 
             : browserSessionPersistence;
 
         await setPersistence(auth, persistencia);
         const res = await signInWithEmailAndPassword(auth, email, pass);
-        
-        // Garante que o nome seja salvo no LocalStorage para o Perfil não criar "Visitante"
         localStorage.setItem('dt_user_name', res.user.displayName || "Estudante");
-        
         window.location.replace('index.html');
     } catch (error) {
         console.error(error);
@@ -87,35 +82,17 @@ window.tentarLogar = async (e) => {
     }
 };
 
-window.realizarCadastro = async (e) => {
-    if (e) e.preventDefault();
-    const nomeInput = document.getElementById('user-name');
-    const nome = nomeInput ? nomeInput.value.trim() : "";
+// RECUPERAR SENHA
+window.executarRecuperacao = async () => {
     const email = inputEmail.value.trim();
-    const pass = inputPass.value;
-
-    if (!nome || !email || !pass) return mostrarErro("Preencha tudo!");
+    if (!email) return mostrarErro("Digite o e-mail no campo acima!");
 
     try {
-        const res = await createUserWithEmailAndPassword(auth, email, pass);
-        await updateProfile(res.user, { displayName: nome });
-        
-        // Salva o nome imediatamente
-        localStorage.setItem('dt_user_name', nome);
-
-        await setDoc(doc(db, "notas", email), {
-            nome: nome, 
-            xp: 0, 
-            avatar: "user", 
-            materias: [], // Adicionado para evitar erro de undefined no perfil
-            email: email, 
-            criadoEm: serverTimestamp()
-        });
-
-        window.location.replace('index.html');
+        await sendPasswordResetEmail(auth, email);
+        alert("Sucesso! Link de recuperação enviado para: " + email);
     } catch (error) {
         console.error(error);
-        mostrarErro("Erro ao cadastrar!");
+        mostrarErro("Erro ao enviar e-mail!");
     }
 };
 
