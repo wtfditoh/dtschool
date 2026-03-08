@@ -7,20 +7,20 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="login.css">
     <style>
-        /* Ajuste rápido para o link de esqueci a senha não ficar torto */
+        /* Ajuste para o link de esqueci a senha ficar alinhado à direita */
         .esqueci-box {
             width: 100%;
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 5px;
+            text-align: right;
+            margin-top: -8px;
             margin-bottom: 15px;
-            padding-right: 5px;
+            padding-right: 4px;
         }
         .esqueci-box a {
             font-size: 11px;
             color: var(--primary, #7b2ff7);
             text-decoration: none;
             opacity: 0.7;
+            font-weight: 500;
         }
         .policy-footer {
             margin-top: 25px;
@@ -59,7 +59,7 @@
             <input type="password" id="user-pass" placeholder="Sua senha" class="input-ia">
 
             <div class="esqueci-box">
-                <a href="#" onclick="recuperarSenha(event)">Esqueci minha senha</a>
+                <a href="#" onclick="window.recuperarSenha(event)">Esqueci minha senha</a>
             </div>
 
             <div class="keep-row">
@@ -87,18 +87,15 @@
 
     <script type="module" src="login-logica.js"></script>
     <script>
-        // Inicializa os ícones do Lucide
         lucide.createIcons();
         
-        // Função global para evitar erro de escopo no onclick do HTML
+        // Atalho para a função que está dentro do módulo JS
         window.recuperarSenha = (e) => {
             if(e) e.preventDefault();
-            // A lógica real está no login-logica.js, 
-            // este atalho garante que o clique chegue lá.
             if(typeof window.executarRecuperacao === 'function'){
                 window.executarRecuperacao();
             } else {
-                console.log("Aguardando carregamento da lógica...");
+                alert("Aguarde um momento, o sistema está carregando...");
             }
         };
     </script>
