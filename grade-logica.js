@@ -31,9 +31,10 @@ let diaAtualGrade = 'segunda';
 let gradeHoraria = { domingo: [], segunda: [], terca: [], quarta: [], quinta: [], sexta: [], sabado: [] };
 let indexParaExcluir = null;
 
-const userId = localStorage.getItem('dt_user_email') || localStorage.getItem('dt_user_phone');
+// Identificação do usuário (E-mail, Telefone ou Temporário)
+let userId = localStorage.getItem('dt_user_email') || localStorage.getItem('dt_user_phone');
 
-// --- INTERFACE (MODAIS E AVISOS) ---
+// --- INTERFACE ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
@@ -50,38 +51,37 @@ window.fecharModalExcluir = () => { document.getElementById('modal-confirm-exclu
 
 // --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', async () => {
+    // Carrega do cache local primeiro para ser instantâneo
     const local = localStorage.getItem('hub_brain_grade');
-    if (local) { gradeHoraria = JSON.parse(local); renderizarAulas(); }
-    if (userId) await carregarDadosNuvem();
+    if (local) { 
+        gradeHoraria = JSON.parse(local); 
+        renderizarAulas(); 
+    }
     
+    // Define o dia atual
     const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
     const hoje = dMap[new Date().getDay()];
     selecionarDia(hoje);
 
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.init({ appId: "f73275cd-17ad-4963-a25b-321ce2def2ba" });
-    });
+    // Busca dados atualizados da nuvem
+    if (userId) await carregarDadosNuvem();
     
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- FIREBASE ---
 async function carregarDadosNuvem() {
     try {
         const docSnap = await getDoc(doc(db, "grades_horarias", userId));
         if (docSnap.exists()) { 
             const data = docSnap.data();
-            // Faz o merge com a estrutura inicial para não dar erro se faltar um dia
             gradeHoraria = { ...gradeHoraria, ...data.grade }; 
-            if(data.whatsapp) localStorage.setItem('hub_brain_zap', data.whatsapp);
             localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
+            if(data.whatsapp) localStorage.setItem('hub_brain_zap', data.whatsapp);
             renderizarAulas(); 
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Erro ao carregar:", e); }
 }
 
-// --- LÓGICA DA GRADE ---
 window.selecionarDia = (dia) => {
     diaAtualGrade = dia;
     document.querySelectorAll('.btn-dia').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-dia') === dia));
@@ -95,7 +95,7 @@ window.renderizarAulas = () => {
     aulas.sort((a, b) => a.hora.localeCompare(b.hora));
 
     lista.innerHTML = aulas.length === 0 ? 
-        `<p style="text-align:center;color:#444;margin-top:50px;">Nenhuma aula para ${diaAtualGrade}.</p>` :
+        `<p style="text-align:center;color:#666;margin-top:50px;">Nenhuma aula para ${diaAtualGrade}.</p>` :
         aulas.map((a, i) => `
             <div class="card-aula">
                 <div class="aula-tempo">
@@ -114,25 +114,21 @@ window.renderizarAulas = () => {
     if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
-// --- MODAL DE AULA ---
 window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
     document.getElementById('aula-materia-custom').value = "";
-    
     const zapSalvo = localStorage.getItem('hub_brain_zap');
-    if(zapSalvo) {
-        document.getElementById('aula-zap').value = zapSalvo.replace('55', '');
-    }
+    if(zapSalvo) document.getElementById('aula-zap').value = zapSalvo.replace('55', '');
 
     const selectMat = document.getElementById('aula-materia-select');
-    selectMat.innerHTML = '<option value="">Carregando matérias...</option>';
+    selectMat.innerHTML = '<option value="">Carregando...</option>';
     document.getElementById('modal-aula').style.display = 'flex';
 
     try {
-        const docSnap = await getDoc(doc(db, "notas", userId));
+        const idNotas = userId || zapSalvo || "geral";
+        const docSnap = await getDoc(doc(db, "notas", idNotas));
         let materias = [];
         if (docSnap.exists()) materias = docSnap.data().materias || [];
-        
         selectMat.innerHTML = '<option value="">Selecionar...</option>';
         materias.forEach(m => {
             const nome = m.nome || m;
@@ -140,7 +136,7 @@ window.abrirModalAula = async () => {
             opt.value = nome; opt.textContent = nome;
             selectMat.appendChild(opt);
         });
-    } catch (e) { selectMat.innerHTML = '<option value="">Erro ao carregar</option>'; }
+    } catch (e) { selectMat.innerHTML = '<option value="">Use o campo abaixo</option>'; }
 };
 
 window.salvarAula = async () => {
@@ -152,14 +148,16 @@ window.salvarAula = async () => {
     const zapRaw = document.getElementById('aula-zap').value.trim();
     
     const materiaFinal = matSelect || matCustom;
-    
     if(!materiaFinal || !zapRaw) {
-        window.mostrarAvisoCustom("⚠️ Preencha a matéria e o Zap!");
+        window.mostrarAvisoCustom("⚠️ Preencha Matéria e Zap!");
         return;
     }
 
     let zapFinal = zapRaw.replace(/\D/g, '');
     if(!zapFinal.startsWith('55')) zapFinal = '55' + zapFinal;
+
+    // ID de Segurança: Se não estiver logado, o ID vira o próprio número do Zap
+    const idFinal = userId || zapFinal;
 
     const infoHorario = TABELA_HORARIOS[turno][nAula];
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
@@ -168,43 +166,27 @@ window.salvarAula = async () => {
         ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
     });
 
-    enviarAlertaOneSignal(materiaFinal);
     renderizarAulas();
     fecharModalAula();
     
-    if(userId) {
-        localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-        localStorage.setItem('hub_brain_zap', zapFinal);
-        
-        await setDoc(doc(db, "grades_horarias", userId), { 
+    try {
+        // Salva na Nuvem (Firebase)
+        await setDoc(doc(db, "grades_horarias", idFinal), { 
             grade: gradeHoraria, 
             whatsapp: zapFinal,
             atualizadoEm: Date.now() 
         }, { merge: true });
+
+        // Salva no Navegador (Local)
+        localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
+        localStorage.setItem('hub_brain_zap', zapFinal);
+        
+        window.mostrarAvisoCustom("✅ Sincronizado com Sucesso!");
+    } catch (e) {
+        console.error(e);
+        window.mostrarAvisoCustom("❌ Erro ao salvar na Nuvem!");
     }
-    window.mostrarAvisoCustom("🚀 Aula e Alerta de Zap salvos!");
 };
-
-// --- ONESIGNAL ---
-async function enviarAlertaOneSignal(materia) {
-    const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
-    const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
-
-    try {
-        fetch("https://onesignal.com/api/v1/notifications", {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json", 
-                "Authorization": "Basic " + restKey 
-            },
-            body: JSON.stringify({
-                app_id: appId,
-                contents: { "pt": `Aula de ${materia} salva! 🧠` },
-                included_segments: ["Total Subscriptions"]
-            })
-        });
-    } catch (e) { console.warn("Erro ao enviar sinal."); }
-}
 
 window.abrirConfirmExcluir = (i) => { 
     indexParaExcluir = i; 
@@ -214,12 +196,13 @@ window.abrirConfirmExcluir = (i) => {
 document.getElementById('btn-confirmar-delete').onclick = async () => {
     gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
     renderizarAulas();
-    if(userId) {
+    const zapSalvo = localStorage.getItem('hub_brain_zap');
+    const idFinal = userId || zapSalvo;
+
+    if(idFinal) {
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-        const zap = localStorage.getItem('hub_brain_zap');
-        await setDoc(doc(db, "grades_horarias", userId), { 
-            grade: gradeHoraria,
-            whatsapp: zap 
+        await setDoc(doc(db, "grades_horarias", idFinal), { 
+            grade: gradeHoraria 
         }, { merge: true });
     }
     fecharModalExcluir();
@@ -230,3 +213,4 @@ window.ativarNotificacoesReal = () => {
         OneSignal.Notifications.requestPermission();
     });
 };
+      
