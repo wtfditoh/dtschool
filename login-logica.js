@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence, browserSessionPersistence, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -67,15 +67,22 @@ window.tentarLogar = async (e) => {
     if (!email || !pass) return mostrarErro("Vazio? Aí não né, patrão!");
 
     try {
+        // LIMPEZA DE CHOQUE: Desloga antes de definir a nova persistência
+        await signOut(auth);
+
         const persistencia = (checkManter && checkManter.checked) 
             ? browserLocalPersistence 
             : browserSessionPersistence;
 
         await setPersistence(auth, persistencia);
         const res = await signInWithEmailAndPassword(auth, email, pass);
+        
+        // Garante que o nome seja salvo no LocalStorage para o Perfil não criar "Visitante"
         localStorage.setItem('dt_user_name', res.user.displayName || "Estudante");
+        
         window.location.replace('index.html');
     } catch (error) {
+        console.error(error);
         mostrarErro("E-mail ou senha inválidos!");
     }
 };
@@ -92,14 +99,22 @@ window.realizarCadastro = async (e) => {
     try {
         const res = await createUserWithEmailAndPassword(auth, email, pass);
         await updateProfile(res.user, { displayName: nome });
+        
+        // Salva o nome imediatamente
         localStorage.setItem('dt_user_name', nome);
 
         await setDoc(doc(db, "notas", email), {
-            nome: nome, xp: 0, avatar: "user", email: email, criadoEm: serverTimestamp()
+            nome: nome, 
+            xp: 0, 
+            avatar: "user", 
+            materias: [], // Adicionado para evitar erro de undefined no perfil
+            email: email, 
+            criadoEm: serverTimestamp()
         });
 
         window.location.replace('index.html');
     } catch (error) {
+        console.error(error);
         mostrarErro("Erro ao cadastrar!");
     }
 };
