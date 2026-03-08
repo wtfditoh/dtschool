@@ -23,14 +23,16 @@ const TABELA_HORARIOS = {
     vespertino: [
         { ordem: "1ª Aula", inicio: "13:00" }, { ordem: "2ª Aula", inicio: "13:50" },
         { ordem: "3ª Aula", inicio: "14:40" }, { ordem: "4ª Aula", inicio: "15:50" },
-        { ordem: "5ª Aula", inicio: "16:40" }, { ordem: "6ª Aula", inicio: "17:30" }
+        { ordem: "5ª Aula", inicio: "16:40" }, { ordem: "17:30", inicio: "17:30" }
     ]
 };
 
 let diaAtualGrade = 'segunda';
 let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] };
 let indexParaExcluir = null;
-const userPhone = localStorage.getItem('dt_user_phone');
+
+// Prioriza o Email agora que você mudou o sistema de login
+const userId = localStorage.getItem('dt_user_email') || localStorage.getItem('dt_user_phone');
 
 // --- INTERFACE (MODAIS E AVISOS) ---
 window.mostrarAvisoCustom = (msg) => {
@@ -51,7 +53,7 @@ window.fecharModalExcluir = () => { document.getElementById('modal-confirm-exclu
 document.addEventListener('DOMContentLoaded', async () => {
     const local = localStorage.getItem('hub_brain_grade');
     if (local) { gradeHoraria = JSON.parse(local); renderizarAulas(); }
-    if (userPhone) await carregarDadosNuvem();
+    if (userId) await carregarDadosNuvem();
     
     const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
     const d = dMap[new Date().getDay()];
@@ -68,9 +70,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 // --- FIREBASE ---
 async function carregarDadosNuvem() {
     try {
-        const docSnap = await getDoc(doc(db, "grades_horarias", userPhone));
+        const docSnap = await getDoc(doc(db, "grades_horarias", userId));
         if (docSnap.exists()) { 
-            gradeHoraria = docSnap.data().grade; 
+            const data = docSnap.data();
+            gradeHoraria = data.grade; 
+            if(data.whatsapp) localStorage.setItem('hub_brain_zap', data.whatsapp);
             localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
             renderizarAulas(); 
         }
@@ -113,12 +117,20 @@ window.renderizarAulas = () => {
 // --- MODAL DE AULA ---
 window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
+    document.getElementById('aula-materia-custom').value = "";
+    
+    // Recupera o Zap salvo para não ter que digitar sempre
+    const zapSalvo = localStorage.getItem('hub_brain_zap');
+    if(zapSalvo) {
+        document.getElementById('aula-zap').value = zapSalvo.replace('55', '');
+    }
+
     const selectMat = document.getElementById('aula-materia-select');
     selectMat.innerHTML = '<option value="">Carregando matérias...</option>';
     document.getElementById('modal-aula').style.display = 'flex';
 
     try {
-        const docSnap = await getDoc(doc(db, "notas", userPhone));
+        const docSnap = await getDoc(doc(db, "notas", userId));
         let materias = [];
         if (docSnap.exists()) materias = docSnap.data().materias || [];
         
@@ -138,12 +150,18 @@ window.salvarAula = async () => {
     const matSelect = document.getElementById('aula-materia-select').value;
     const matCustom = document.getElementById('aula-materia-custom').value.trim();
     const prof = document.getElementById('aula-prof').value.trim();
+    const zapRaw = document.getElementById('aula-zap').value.trim();
+    
     const materiaFinal = matSelect || matCustom;
     
-    if(!materiaFinal) {
-        window.mostrarAvisoCustom("⚠️ Preencha a matéria!");
+    if(!materiaFinal || !zapRaw) {
+        window.mostrarAvisoCustom("⚠️ Preencha a matéria e o Zap!");
         return;
     }
+
+    // Limpa o número e garante o 55
+    let zapFinal = zapRaw.replace(/\D/g, '');
+    if(!zapFinal.startsWith('55')) zapFinal = '55' + zapFinal;
 
     const infoHorario = TABELA_HORARIOS[turno][nAula];
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
@@ -152,20 +170,25 @@ window.salvarAula = async () => {
         ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
     });
 
-    // DISPARO DA NOTIFICAÇÃO
     enviarAlertaOneSignal(materiaFinal);
 
     renderizarAulas();
     fecharModalAula();
     
-    if(userPhone) {
+    if(userId) {
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-        await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria, atualizadoEm: Date.now() });
+        localStorage.setItem('hub_brain_zap', zapFinal);
+        
+        await setDoc(doc(db, "grades_horarias", userId), { 
+            grade: gradeHoraria, 
+            whatsapp: zapFinal,
+            atualizadoEm: Date.now() 
+        });
     }
-    window.mostrarAvisoCustom("🚀 Aula e Alerta salvos!");
+    window.mostrarAvisoCustom("🚀 Aula e Alerta de Zap salvos!");
 };
 
-// --- ONESIGNAL (MOTOR CORRIGIDO) ---
+// --- ONESIGNAL ---
 async function enviarAlertaOneSignal(materia) {
     const appId = "f73275cd-17ad-4963-a25b-321ce2def2ba";
     const restKey = "Os_v2_app_64zhltixvvewhis3gioofxxsxjhcx5vbfocu4s4wq2rrsaus7edduivp3y26x4fv2qqoncgssgmitrrakiwiqog2afgj6hsxwugaeay";
@@ -194,9 +217,13 @@ window.abrirConfirmExcluir = (i) => {
 document.getElementById('btn-confirmar-delete').onclick = async () => {
     gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
     renderizarAulas();
-    if(userPhone) {
+    if(userId) {
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-        await setDoc(doc(db, "grades_horarias", userPhone), { grade: gradeHoraria });
+        const zap = localStorage.getItem('hub_brain_zap');
+        await setDoc(doc(db, "grades_horarias", userId), { 
+            grade: gradeHoraria,
+            whatsapp: zap 
+        });
     }
     fecharModalExcluir();
 };
