@@ -28,10 +28,9 @@ const TABELA_HORARIOS = {
 };
 
 let diaAtualGrade = 'segunda';
-let gradeHoraria = { segunda: [], terca: [], quarta: [], quinta: [], sexta: [] };
+let gradeHoraria = { domingo: [], segunda: [], terca: [], quarta: [], quinta: [], sexta: [], sabado: [] };
 let indexParaExcluir = null;
 
-// Prioriza o Email agora que você mudou o sistema de login
 const userId = localStorage.getItem('dt_user_email') || localStorage.getItem('dt_user_phone');
 
 // --- INTERFACE (MODAIS E AVISOS) ---
@@ -56,8 +55,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (userId) await carregarDadosNuvem();
     
     const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
-    const d = dMap[new Date().getDay()];
-    selecionarDia(d === 'domingo' || d === 'sabado' ? 'segunda' : d);
+    const hoje = dMap[new Date().getDay()];
+    selecionarDia(hoje);
 
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
@@ -73,7 +72,8 @@ async function carregarDadosNuvem() {
         const docSnap = await getDoc(doc(db, "grades_horarias", userId));
         if (docSnap.exists()) { 
             const data = docSnap.data();
-            gradeHoraria = data.grade; 
+            // Faz o merge com a estrutura inicial para não dar erro se faltar um dia
+            gradeHoraria = { ...gradeHoraria, ...data.grade }; 
             if(data.whatsapp) localStorage.setItem('hub_brain_zap', data.whatsapp);
             localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
             renderizarAulas(); 
@@ -95,7 +95,7 @@ window.renderizarAulas = () => {
     aulas.sort((a, b) => a.hora.localeCompare(b.hora));
 
     lista.innerHTML = aulas.length === 0 ? 
-        '<p style="text-align:center;color:#444;margin-top:50px;">Nenhuma aula para hoje.</p>' :
+        `<p style="text-align:center;color:#444;margin-top:50px;">Nenhuma aula para ${diaAtualGrade}.</p>` :
         aulas.map((a, i) => `
             <div class="card-aula">
                 <div class="aula-tempo">
@@ -119,7 +119,6 @@ window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
     document.getElementById('aula-materia-custom').value = "";
     
-    // Recupera o Zap salvo para não ter que digitar sempre
     const zapSalvo = localStorage.getItem('hub_brain_zap');
     if(zapSalvo) {
         document.getElementById('aula-zap').value = zapSalvo.replace('55', '');
@@ -159,7 +158,6 @@ window.salvarAula = async () => {
         return;
     }
 
-    // Limpa o número e garante o 55
     let zapFinal = zapRaw.replace(/\D/g, '');
     if(!zapFinal.startsWith('55')) zapFinal = '55' + zapFinal;
 
@@ -171,7 +169,6 @@ window.salvarAula = async () => {
     });
 
     enviarAlertaOneSignal(materiaFinal);
-
     renderizarAulas();
     fecharModalAula();
     
@@ -183,7 +180,7 @@ window.salvarAula = async () => {
             grade: gradeHoraria, 
             whatsapp: zapFinal,
             atualizadoEm: Date.now() 
-        });
+        }, { merge: true });
     }
     window.mostrarAvisoCustom("🚀 Aula e Alerta de Zap salvos!");
 };
@@ -223,7 +220,7 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
         await setDoc(doc(db, "grades_horarias", userId), { 
             grade: gradeHoraria,
             whatsapp: zap 
-        });
+        }, { merge: true });
     }
     fecharModalExcluir();
 };
