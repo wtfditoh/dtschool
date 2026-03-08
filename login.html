@@ -30,9 +30,13 @@
             <input type="email" id="user-email" placeholder="E-mail de estudante" class="input-ia">
             <input type="password" id="user-pass" placeholder="Sua senha" class="input-ia">
 
+            <div style="text-align: right; margin-bottom: 10px;">
+                <a href="#" onclick="recuperarSenha()" style="font-size: 11px; color: var(--primary); text-decoration: none; opacity: 0.8;">Esqueci minha senha</a>
+            </div>
+
             <div class="keep-row">
-                <input type="checkbox" id="keep-logged" checked>
-                <label for="keep-logged">Manter conectado</label>
+                <input type="checkbox" id="manter-conectado" checked>
+                <label for="manter-conectado">Manter conectado</label>
             </div>
 
             <div id="login-status" class="status-msg"></div>
@@ -45,6 +49,10 @@
             <div class="footer-links">
                 <a href="cadastro.html" class="create-acc">Não tem conta? Criar agora</a>
                 <button type="button" onclick="entrarComoVisitante()" class="btn-visitante">Continuar como Visitante</button>
+                
+                <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); pt-10">
+                    <a href="privacidade.html" style="font-size: 10px; color: #888; text-decoration: none; display: block; margin-top: 10px;">Política de Privacidade & Termos</a>
+                </div>
             </div>
         </div>
     </div>
