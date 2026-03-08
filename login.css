@@ -41,3 +41,7 @@ body { background-color: var(--bg); display: flex; justify-content: center; alig
 .create-acc { color: var(--primary-light); font-size: 13px; text-decoration: none; font-weight: bold; }
 .btn-visitante { color: #444; background: none; border: none; font-size: 12px; text-decoration: underline; cursor: pointer; }
 .keep-row { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: #666; margin-bottom: 15px; }
+.footer-links div a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
