@@ -6,6 +6,34 @@
     <title>Hub Brain - Login</title> 
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="login.css">
+    <style>
+        /* Ajuste rápido para o link de esqueci a senha não ficar torto */
+        .esqueci-box {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            padding-right: 5px;
+        }
+        .esqueci-box a {
+            font-size: 11px;
+            color: var(--primary, #7b2ff7);
+            text-decoration: none;
+            opacity: 0.7;
+        }
+        .policy-footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }
+        .policy-footer a {
+            font-size: 10px;
+            color: #666;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
     <div class="wrapper">
@@ -23,15 +51,15 @@
         <div class="login-card">
             <div class="logo-area">
                 <div class="hub-symbol"><i data-lucide="brain-circuit"></i></div>
-                <h2>HUB <span style="color: var(--primary);">BRAIN</span></h2>
+                <h2>HUB <span style="color: var(--primary, #7b2ff7);">BRAIN</span></h2>
                 <p>DOMINE SUA ROTINA</p>
             </div>
 
             <input type="email" id="user-email" placeholder="E-mail de estudante" class="input-ia">
             <input type="password" id="user-pass" placeholder="Sua senha" class="input-ia">
 
-            <div style="text-align: right; margin-bottom: 10px;">
-                <a href="#" onclick="recuperarSenha()" style="font-size: 11px; color: var(--primary); text-decoration: none; opacity: 0.8;">Esqueci minha senha</a>
+            <div class="esqueci-box">
+                <a href="#" onclick="recuperarSenha(event)">Esqueci minha senha</a>
             </div>
 
             <div class="keep-row">
@@ -41,7 +69,7 @@
 
             <div id="login-status" class="status-msg"></div>
 
-            <button onclick="tentarLogar()" class="btn-acessar">
+            <button onclick="tentarLogar(event)" class="btn-acessar">
                 <span>Acessar minha conta</span>
                 <i data-lucide="arrow-right"></i>
             </button>
@@ -50,13 +78,29 @@
                 <a href="cadastro.html" class="create-acc">Não tem conta? Criar agora</a>
                 <button type="button" onclick="entrarComoVisitante()" class="btn-visitante">Continuar como Visitante</button>
                 
-                <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); pt-10">
-                    <a href="privacidade.html" style="font-size: 10px; color: #888; text-decoration: none; display: block; margin-top: 10px;">Política de Privacidade & Termos</a>
+                <div class="policy-footer">
+                    <a href="privacidade.html">Política de Privacidade & Termos de Uso</a>
                 </div>
             </div>
         </div>
     </div>
+
     <script type="module" src="login-logica.js"></script>
-    <script>lucide.createIcons();</script>
+    <script>
+        // Inicializa os ícones do Lucide
+        lucide.createIcons();
+        
+        // Função global para evitar erro de escopo no onclick do HTML
+        window.recuperarSenha = (e) => {
+            if(e) e.preventDefault();
+            // A lógica real está no login-logica.js, 
+            // este atalho garante que o clique chegue lá.
+            if(typeof window.executarRecuperacao === 'function'){
+                window.executarRecuperacao();
+            } else {
+                console.log("Aguardando carregamento da lógica...");
+            }
+        };
+    </script>
 </body>
 </html>
