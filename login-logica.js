@@ -42,7 +42,7 @@ function mostrarErro(msg) {
     }, 3000);
 }
 
-// --- ANIMAÇÃO DO MONSTRINHO (O "ZÓIO" QUE SEGUE) ---
+// --- ANIMAÇÃO DO MONSTRINHO ---
 document.addEventListener('mousemove', (e) => {
     if (monster && !monster.classList.contains('shame') && !monster.classList.contains('angry')) {
         let x = (e.clientX / window.innerWidth - 0.5) * 15;
@@ -65,24 +65,35 @@ if (inputEmail && inputPass) {
     }));
 }
 
-// --- LOGIN ---
-window.tentarLogar = async () => {
+// --- LOGIN CORRIGIDO (SEM REFRESH) ---
+window.tentarLogar = async (e) => {
+    if (e) e.preventDefault(); // PARA O REFRESH DA PÁGINA
+
     const email = inputEmail.value.trim();
     const pass = inputPass.value;
+    
     if (!email || !pass) return mostrarErro("Vazio? Aí não né, patrão!");
 
     try {
         await setPersistence(auth, browserLocalPersistence);
-        await signInWithEmailAndPassword(auth, email, pass);
-        window.location.href = 'index.html';
-    } catch (e) {
-        console.error(e);
-        mostrarErro("Dados inválidos!");
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        
+        // Sincroniza o nome antes de entrar
+        const nomeParaSalvar = userCredential.user.displayName || "Estudante";
+        localStorage.setItem('dt_user_name', nomeParaSalvar);
+
+        console.log("Sucesso! Redirecionando...");
+        window.location.replace('index.html');
+    } catch (error) {
+        console.error("Erro no login:", error.code);
+        mostrarErro("E-mail ou senha inválidos!");
     }
 };
 
-// --- CADASTRO COMPLETO (RANKING + E-MAIL) ---
-window.realizarCadastro = async () => {
+// --- CADASTRO COMPLETO CORRIGIDO ---
+window.realizarCadastro = async (e) => {
+    if (e) e.preventDefault(); // PARA O REFRESH DA PÁGINA
+
     const nomeInput = document.getElementById('user-name');
     const nome = nomeInput ? nomeInput.value.trim() : "";
     const email = inputEmail.value.trim();
@@ -92,44 +103,43 @@ window.realizarCadastro = async () => {
     if (pass.length < 6) return mostrarErro("Senha curta (mín. 6)!");
 
     try {
-        // 1. Criar usuário
         const res = await createUserWithEmailAndPassword(auth, email, pass);
         await updateProfile(res.user, { displayName: nome });
 
-        // 2. Salvar no Firestore (Coleção Notas/Ranking)
+        // Garante que o sistema saiba quem você é antes de criar o doc
+        localStorage.setItem('dt_user_name', nome);
+
         await setDoc(doc(db, "notas", email), {
             nome: nome,
             xp: 0,
+            avatar: "user",
             email: email,
             criadoEm: serverTimestamp()
         });
 
-        // 3. Gerar gatilho de E-mail de Boas-vindas
+        // Gatilho de e-mail
         await setDoc(doc(db, "mail", email), {
             to: email,
             message: {
                 subject: `Bem-vindo ao Hub Brain, ${nome}!`,
-                html: `
-                    <div style="font-family:sans-serif; background:#0a0a0a; color:#fff; padding:30px; border:2px solid #8a2be2; border-radius:15px; text-align:center;">
+                html: `<div style="text-align:center; background:#0a0a0a; color:#fff; padding:20px; border:1px solid #8a2be2;">
                         <h1 style="color:#8a2be2;">HUB BRAIN</h1>
-                        <p>Fala, <b>${nome}</b>! Sua conta de elite foi criada.</p>
-                        <p>Prepare-se para dominar o Ranking!</p>
-                    </div>`
+                        <p>Fala, <b>${nome}</b>! Conta criada com sucesso.</p>
+                       </div>`
             }
         });
 
-        localStorage.setItem('dt_user_name', nome);
-        window.location.href = 'index.html';
+        window.location.replace('index.html');
 
-    } catch (e) {
-        console.error("ERRO NO CADASTRO:", e);
-        if (e.code === 'auth/email-already-in-use') mostrarErro("E-mail já cadastrado!");
-        else mostrarErro("Erro técnico! Ver console.");
+    } catch (error) {
+        console.error("ERRO NO CADASTRO:", error);
+        if (error.code === 'auth/email-already-in-use') mostrarErro("E-mail já cadastrado!");
+        else mostrarErro("Erro ao cadastrar!");
     }
 };
 
 window.entrarComoVisitante = () => {
-    localStorage.clear(); // Isso remove o 'dt_user_phone' antigo que trava tudo
+    localStorage.clear(); 
     localStorage.setItem('dt_user_name', 'Visitante');
-    window.location.href = 'index.html';
+    window.location.replace('index.html');
 };
