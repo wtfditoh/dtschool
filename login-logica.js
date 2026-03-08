@@ -44,7 +44,7 @@ function avisar(msg, tipo = "erro") {
         status.style.opacity = "0";
         if (monster) monster.classList.remove('angry');
         if (card) card.classList.remove('shake-error');
-    }, 2000);
+    }, 1500);
 }
 
 // OLHOS DO MONSTRO
