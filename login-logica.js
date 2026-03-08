@@ -22,7 +22,7 @@ const monster = document.getElementById('monster-ui');
 const inputEmail = document.getElementById('user-email');
 const inputPass = document.getElementById('user-pass');
 const pupils = document.querySelectorAll('.pupil');
-const checkManter = document.getElementById('manter-conectado'); // Certifique-se que o ID no HTML é este
+const checkManter = document.getElementById('manter-conectado');
 
 function mostrarErro(msg) {
     if (status) { status.innerText = "⚠ " + msg; status.style.opacity = "1"; }
@@ -35,7 +35,7 @@ function mostrarErro(msg) {
     }, 3000);
 }
 
-// Animação do monstrinho
+// --- REATIVANDO A ALMA DO MONSTRINHO (OLHOS) ---
 document.addEventListener('mousemove', (e) => {
     if (monster && !monster.classList.contains('shame') && !monster.classList.contains('angry')) {
         let x = (e.clientX / window.innerWidth - 0.5) * 15;
@@ -44,33 +44,38 @@ document.addEventListener('mousemove', (e) => {
     }
 });
 
-// LOGIN COM ESCOLHA DE PERSISTÊNCIA
+// ESTA É A PARTE QUE TINHA SUMIDO (A REAÇÃO AO CLIQUE):
+if (inputEmail && inputPass) {
+    inputEmail.addEventListener('focus', () => {
+        monster.classList.add('looking');
+        monster.classList.remove('shame');
+    });
+    inputPass.addEventListener('focus', () => {
+        monster.classList.add('shame');
+        monster.classList.remove('looking');
+    });
+    [inputEmail, inputPass].forEach(el => el.addEventListener('blur', () => {
+        monster.classList.remove('looking', 'shame');
+    }));
+}
+
+// LOGIN COM PERSISTÊNCIA INTELIGENTE
 window.tentarLogar = async (e) => {
     if (e) e.preventDefault();
-
     const email = inputEmail.value.trim();
     const pass = inputPass.value;
-    
     if (!email || !pass) return mostrarErro("Vazio? Aí não né, patrão!");
 
     try {
-        // LÓGICA DO MANTER CONECTADO:
-        // Se o checkbox estiver marcado, usa Local (permanente). 
-        // Se NÃO estiver, usa Session (apaga ao fechar a aba/navegador).
         const persistencia = (checkManter && checkManter.checked) 
             ? browserLocalPersistence 
             : browserSessionPersistence;
 
         await setPersistence(auth, persistencia);
-        
-        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-        
-        const nomeParaSalvar = userCredential.user.displayName || "Estudante";
-        localStorage.setItem('dt_user_name', nomeParaSalvar);
-
+        const res = await signInWithEmailAndPassword(auth, email, pass);
+        localStorage.setItem('dt_user_name', res.user.displayName || "Estudante");
         window.location.replace('index.html');
     } catch (error) {
-        console.error("Erro no login:", error.code);
         mostrarErro("E-mail ou senha inválidos!");
     }
 };
@@ -82,7 +87,7 @@ window.realizarCadastro = async (e) => {
     const email = inputEmail.value.trim();
     const pass = inputPass.value;
 
-    if (!nome || !email || !pass) return mostrarErro("Preencha tudo pro Ranking!");
+    if (!nome || !email || !pass) return mostrarErro("Preencha tudo!");
 
     try {
         const res = await createUserWithEmailAndPassword(auth, email, pass);
