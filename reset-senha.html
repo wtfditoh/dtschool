@@ -10,29 +10,37 @@
         .status-msg.sucesso { color: #00ff88 !important; }
         .login-card p { color: #666; font-size: 13px; margin-bottom: 20px; }
         
-        /* Ajustes de animação para o monstrinho esticar */
-        .monster-box { 
-            margin-bottom: -15px; 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        } 
+        /* Ajustes básicos do Monstro */
+        .monster-box { margin-bottom: -15px; } 
 
-        /* O EFEITO DE ESTICAR (CURIOSO) */
+        /* --- A MÁGICA DA ANIMAÇÃO DE CURIOSIDADE --- */
         #monster-ui.looking .monster-body {
-            transform: scaleY(1.2) translateY(-8px);
-            filter: brightness(1.2);
+            /* Em vez de scaleY, usamos um PULO ( translateY ) com elástico */
+            animation: curiousJump 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            filter: brightness(1.2); /* Fica um pouco mais "vivo" */
         }
 
         #monster-ui.looking .eyes-container {
-            transform: translateY(-5px) scale(1.05);
+            /* Sobe os olhos JUNTO com o corpo */
+            transform: translateY(-8px) scale(1.1);
+            transition: all 0.4s ease;
+        }
+
+        /* Definição do Pulo Elástico */
+        @keyframes curiousJump {
+            0% { transform: translateY(0) scaleY(1); }
+            30% { transform: translateY(-15px) scaleY(1.1); } /* Pulo mais alto e um pouco esticado */
+            60% { transform: translateY(-10px) scaleY(1); }    /* "Amortece" a queda */
+            100% { transform: translateY(-12px) scaleY(1); }   /* Estabiliza em cima (fofocando) */
         }
 
         /* Efeito quando ele fica bravo (erro) */
         #monster-ui.angry .monster-body {
             background: #ff4444 !important;
-            animation: shake 0.3s infinite;
+            animation: shakeMonster 0.3s infinite;
         }
 
-        @keyframes shake {
+        @keyframes shakeMonster {
             0% { transform: translateX(0); }
             25% { transform: translateX(5px); }
             50% { transform: translateX(-5px); }
@@ -58,7 +66,7 @@
             <div class="logo-area">
                 <div class="hub-symbol"><i data-lucide="shield-check"></i></div>
                 <h2>NOVA <span style="color: var(--primary, #7b2ff7);">SENHA</span></h2>
-                <p>Capriche na segurança!</p>
+                <p>Crie uma senha forte e segura!</p>
             </div>
 
             <input type="password" id="nova-senha" placeholder="Nova senha (mín. 6 dígitos)" class="input-ia">
@@ -98,7 +106,7 @@
 
         // --- ALMA DO MONSTRINHO ---
         
-        // Olhos seguem o mouse
+        // Olhos seguem o mouse (só quando não tá bravo)
         document.addEventListener('mousemove', (e) => {
             if (monster && !monster.classList.contains('angry')) {
                 let x = (e.clientX / window.innerWidth - 0.5) * 15;
@@ -107,23 +115,31 @@
             }
         });
 
-        // Reação ao clicar no campo (Esticar de curiosidade)
+        // Reação ao focar no campo (Pulo Elástico de curiosidade)
         inputSenha.addEventListener('focus', () => {
             monster.classList.add('looking');
+            // Como usamos animação, precisamos garantir que ela rode de novo se focar mais de uma vez
+            monster.querySelector('.monster-body').style.animationName = 'none';
+            setTimeout(() => {
+                monster.querySelector('.monster-body').style.animationName = 'curiousJump';
+            }, 10);
         });
 
+        // Quando sai do campo, ele volta pro lugar
         inputSenha.addEventListener('blur', () => {
             monster.classList.remove('looking');
         });
 
-        // --- LÓGICA DE SALVAR ---
+        // --- LÓGICA DE SALVAR A SENHA ---
 
         window.salvarNovaSenha = async () => {
             const novaSenha = inputSenha.value;
 
+            // Validação simples
             if (novaSenha.length < 6) {
-                status.innerText = "⚠ Muito curta! Mínimo 6.";
+                status.innerText = "⚠ Mínimo 6 caracteres!";
                 status.style.opacity = "1";
+                status.style.color = "#ff4444";
                 card.classList.add('shake-error');
                 monster.classList.add('angry');
                 
@@ -135,17 +151,19 @@
             }
 
             try {
+                // Tenta resetar a senha no Firebase
                 await confirmPasswordReset(auth, oobCode, novaSenha);
-                status.innerText = "✓ Senha atualizada com sucesso!";
+                status.innerText = "✓ Senha atualizada! Redirecionando...";
                 status.classList.add('sucesso');
                 status.style.opacity = "1";
                 
-                // Redireciona após 3 segundos
+                // Redireciona para o login após 3 segundos
                 setTimeout(() => window.location.replace('login.html'), 3000);
             } catch (error) {
                 console.error(error);
-                status.innerText = "⚠ O link expirou. Peça outro e-mail.";
+                status.innerText = "⚠ O link expirou ou é inválido.";
                 status.style.opacity = "1";
+                status.style.color = "#ff4444";
                 monster.classList.add('angry');
             }
         };
