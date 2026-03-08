@@ -45,3 +45,24 @@ body { background-color: var(--bg); display: flex; justify-content: center; alig
     color: var(--primary);
     text-decoration: underline;
 }
+.esqueci-box {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end; /* Alinha à direita com controle */
+    margin-top: -10px;        /* Puxa para perto do input de senha */
+    margin-bottom: 15px;      /* Espaço para o checkbox abaixo */
+    padding-right: 5px;       /* Ajuste fino para não colar na borda */
+}
+
+.esqueci-box a {
+    font-size: 11px;
+    color: var(--primary);
+    text-decoration: none;
+    opacity: 0.7;
+    transition: 0.3s;
+}
+
+.esqueci-box a:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
