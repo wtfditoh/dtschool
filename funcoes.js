@@ -44,7 +44,8 @@ function getID() {
 async function atualizarXPGlobal() {
     const userID = getID();
     const userType = localStorage.getItem('dt_user_type');
-    
+    alert("Enviado para: " + userID + " | XP: " + xpTotal);
+  
     if (userType === 'local' || !userID) return;
 
     let xpTotal = 0;
