@@ -62,7 +62,7 @@ if (inputEmail && inputPass) {
     [inputEmail, inputPass].forEach(el => el.addEventListener('blur', () => monster.classList.remove('looking', 'shame')));
 }
 
-// LOGIN
+// LOGIN - AJUSTADO PARA SALVAR EMAIL E TIPO
 window.tentarLogar = async (e) => {
     if (e) e.preventDefault();
     const email = inputEmail.value.trim();
@@ -73,13 +73,22 @@ window.tentarLogar = async (e) => {
         await signOut(auth);
         const persistencia = (checkManter && checkManter.checked) ? browserLocalPersistence : browserSessionPersistence;
         await setPersistence(auth, persistencia);
+        
         const res = await signInWithEmailAndPassword(auth, email, pass);
+        
+        // --- AJUSTE AQUI: Salvando dados para o funcoes.js ler ---
         localStorage.setItem('dt_user_name', res.user.displayName || "Estudante");
+        localStorage.setItem('dt_user_email', email.toLowerCase());
+        localStorage.setItem('dt_user_type', 'google'); 
+        
         window.location.replace('index.html');
-    } catch (error) { avisar("E-mail ou senha inválidos!"); }
+    } catch (error) { 
+        console.error(error);
+        avisar("E-mail ou senha inválidos!"); 
+    }
 };
 
-// CADASTRO (COM AVISO DE ERRO AGORA)
+// CADASTRO - AJUSTADO PARA SALVAR EMAIL E TIPO
 window.realizarCadastro = async (e) => {
     if (e) e.preventDefault();
     const nomeInput = document.getElementById('user-name');
@@ -94,17 +103,29 @@ window.realizarCadastro = async (e) => {
     try {
         const res = await createUserWithEmailAndPassword(auth, email, pass);
         await updateProfile(res.user, { displayName: nome });
+        
+        // --- AJUSTE AQUI: Salvando dados para o funcoes.js ler ---
         localStorage.setItem('dt_user_name', nome);
-        await setDoc(doc(db, "notas", email), {
-            nome: nome, xp: 0, avatar: "user", materias: [], email: email, criadoEm: serverTimestamp()
+        localStorage.setItem('dt_user_email', email.toLowerCase());
+        localStorage.setItem('dt_user_type', 'google');
+
+        await setDoc(doc(db, "notas", email.toLowerCase()), {
+            nome: nome, 
+            xp: 0, 
+            avatar: "user", 
+            materias: [], 
+            email: email.toLowerCase(), 
+            criadoEm: serverTimestamp()
         });
+        
         window.location.replace('index.html');
     } catch (error) {
+        console.error(error);
         avisar("Erro ao criar conta. E-mail já existe?");
     }
 };
 
-// RECUPERAR SENHA (SEM ALERT FEIO)
+// RECUPERAR SENHA
 window.executarRecuperacao = async () => {
     const email = inputEmail.value.trim();
     if (!email) return avisar("Digite o e-mail primeiro!");
@@ -120,5 +141,6 @@ window.executarRecuperacao = async () => {
 window.entrarComoVisitante = () => {
     localStorage.clear(); 
     localStorage.setItem('dt_user_name', 'Visitante');
+    localStorage.setItem('dt_user_type', 'local'); // Define como local para não tentar subir pro Firebase
     window.location.replace('index.html');
 };
