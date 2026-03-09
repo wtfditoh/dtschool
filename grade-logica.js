@@ -23,7 +23,7 @@ const TABELA_HORARIOS = {
     vespertino: [
         { ordem: "1ª Aula", inicio: "13:00" }, { ordem: "2ª Aula", inicio: "13:50" },
         { ordem: "3ª Aula", inicio: "14:40" }, { ordem: "4ª Aula", inicio: "15:50" },
-        { ordem: "5ª Aula", inicio: "16:40" }, { ordem: "17:30", inicio: "17:30" }
+        { ordem: "5ª Aula", inicio: "16:40" }, { ordem: "6ª Aula", inicio: "17:30" }
     ]
 };
 
@@ -31,8 +31,8 @@ let diaAtualGrade = 'segunda';
 let gradeHoraria = { domingo: [], segunda: [], terca: [], quarta: [], quinta: [], sexta: [], sabado: [] };
 let indexParaExcluir = null;
 
-// Identificação do usuário (E-mail, Telefone ou Temporário)
-let userId = localStorage.getItem('dt_user_email') || localStorage.getItem('dt_user_phone');
+// Identificação do usuário
+let userId = localStorage.getItem('dt_user_email') || localStorage.getItem('dt_user_phone') || "convidado";
 
 // --- INTERFACE ---
 window.mostrarAvisoCustom = (msg) => {
@@ -44,28 +44,22 @@ window.mostrarAvisoCustom = (msg) => {
     }
 };
 
-window.abrirAjudaBateria = () => { document.getElementById('modal-ajuda-bateria').style.display = 'flex'; };
-window.fecharAjudaBateria = () => { document.getElementById('modal-ajuda-bateria').style.display = 'none'; };
 window.fecharModalAula = () => { document.getElementById('modal-aula').style.display = 'none'; };
 window.fecharModalExcluir = () => { document.getElementById('modal-confirm-excluir').style.display = 'none'; };
 
 // --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // Carrega do cache local primeiro para ser instantâneo
     const local = localStorage.getItem('hub_brain_grade');
     if (local) { 
         gradeHoraria = JSON.parse(local); 
         renderizarAulas(); 
     }
     
-    // Define o dia atual
     const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
     const hoje = dMap[new Date().getDay()];
     selecionarDia(hoje);
 
-    // Busca dados atualizados da nuvem
     if (userId) await carregarDadosNuvem();
-    
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
@@ -73,10 +67,8 @@ async function carregarDadosNuvem() {
     try {
         const docSnap = await getDoc(doc(db, "grades_horarias", userId));
         if (docSnap.exists()) { 
-            const data = docSnap.data();
-            gradeHoraria = { ...gradeHoraria, ...data.grade }; 
+            gradeHoraria = docSnap.data().grade; 
             localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-            if(data.whatsapp) localStorage.setItem('hub_brain_zap', data.whatsapp);
             renderizarAulas(); 
         }
     } catch (e) { console.error("Erro ao carregar:", e); }
@@ -114,29 +106,44 @@ window.renderizarAulas = () => {
     if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
+// --- FUNÇÃO RESTAURADA: BUSCA MATÉRIAS DAS NOTAS ---
 window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
     document.getElementById('aula-materia-custom').value = "";
-    const zapSalvo = localStorage.getItem('hub_brain_zap');
-    if(zapSalvo) document.getElementById('aula-zap').value = zapSalvo.replace('55', '');
-
+    
     const selectMat = document.getElementById('aula-materia-select');
-    selectMat.innerHTML = '<option value="">Carregando...</option>';
+    selectMat.innerHTML = '<option value="">Carregando matérias...</option>';
     document.getElementById('modal-aula').style.display = 'flex';
 
     try {
-        const idNotas = userId || zapSalvo || "geral";
-        const docSnap = await getDoc(doc(db, "notas", idNotas));
-        let materias = [];
-        if (docSnap.exists()) materias = docSnap.data().materias || [];
-        selectMat.innerHTML = '<option value="">Selecionar...</option>';
-        materias.forEach(m => {
-            const nome = m.nome || m;
-            const opt = document.createElement('option');
-            opt.value = nome; opt.textContent = nome;
-            selectMat.appendChild(opt);
-        });
-    } catch (e) { selectMat.innerHTML = '<option value="">Use o campo abaixo</option>'; }
+        // Busca o documento na coleção 'notas' que tem o ID do usuário
+        const docSnap = await getDoc(doc(db, "notas", userId));
+        
+        if (docSnap.exists()) {
+            const dados = docSnap.data();
+            // Tenta pegar do campo 'materias' (array) ou do campo 'texto' (string separada por linhas)
+            let listaMaterias = dados.materias || [];
+            
+            // Se as matérias vierem de um campo de texto (aba de notas comum)
+            if (dados.texto && listaMaterias.length === 0) {
+                listaMaterias = dados.texto.split('\n').filter(m => m.trim() !== "");
+            }
+
+            selectMat.innerHTML = '<option value="">Selecionar...</option>';
+            listaMaterias.forEach(m => {
+                const nome = m.nome || m;
+                const opt = document.createElement('option');
+                opt.value = nome; 
+                opt.textContent = nome;
+                selectMat.appendChild(opt);
+            });
+        } else {
+            selectMat.innerHTML = '<option value="">Nenhuma matéria salva</option>';
+        }
+    } catch (e) { 
+        console.error("Erro ao buscar matérias:", e);
+        selectMat.innerHTML = '<option value="">Erro ao carregar</option>'; 
+    }
 };
 
 window.salvarAula = async () => {
@@ -145,46 +152,36 @@ window.salvarAula = async () => {
     const matSelect = document.getElementById('aula-materia-select').value;
     const matCustom = document.getElementById('aula-materia-custom').value.trim();
     const prof = document.getElementById('aula-prof').value.trim();
-    const zapRaw = document.getElementById('aula-zap').value.trim();
     
     const materiaFinal = matSelect || matCustom;
-    if(!materiaFinal || !zapRaw) {
-        window.mostrarAvisoCustom("⚠️ Preencha Matéria e Zap!");
+    if(!materiaFinal) {
+        window.mostrarAvisoCustom("⚠️ Selecione ou digite uma matéria!");
         return;
     }
-
-    let zapFinal = zapRaw.replace(/\D/g, '');
-    if(!zapFinal.startsWith('55')) zapFinal = '55' + zapFinal;
-
-    // ID de Segurança: Se não estiver logado, o ID vira o próprio número do Zap
-    const idFinal = userId || zapFinal;
 
     const infoHorario = TABELA_HORARIOS[turno][nAula];
     if(!gradeHoraria[diaAtualGrade]) gradeHoraria[diaAtualGrade] = [];
     
     gradeHoraria[diaAtualGrade].push({ 
-        ordem: infoHorario.ordem, materia: materiaFinal, hora: infoHorario.inicio, prof: prof 
+        ordem: infoHorario.ordem, 
+        materia: materiaFinal, 
+        hora: infoHorario.inicio, 
+        prof: prof 
     });
 
     renderizarAulas();
     fecharModalAula();
     
     try {
-        // Salva na Nuvem (Firebase)
-        await setDoc(doc(db, "grades_horarias", idFinal), { 
+        await setDoc(doc(db, "grades_horarias", userId), { 
             grade: gradeHoraria, 
-            whatsapp: zapFinal,
             atualizadoEm: Date.now() 
         }, { merge: true });
 
-        // Salva no Navegador (Local)
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-        localStorage.setItem('hub_brain_zap', zapFinal);
-        
-        window.mostrarAvisoCustom("✅ Sincronizado com Sucesso!");
+        window.mostrarAvisoCustom("✅ Aula salva!");
     } catch (e) {
-        console.error(e);
-        window.mostrarAvisoCustom("❌ Erro ao salvar na Nuvem!");
+        window.mostrarAvisoCustom("❌ Erro ao sincronizar!");
     }
 };
 
@@ -196,21 +193,13 @@ window.abrirConfirmExcluir = (i) => {
 document.getElementById('btn-confirmar-delete').onclick = async () => {
     gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
     renderizarAulas();
-    const zapSalvo = localStorage.getItem('hub_brain_zap');
-    const idFinal = userId || zapSalvo;
 
-    if(idFinal) {
+    try {
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-        await setDoc(doc(db, "grades_horarias", idFinal), { 
+        await setDoc(doc(db, "grades_horarias", userId), { 
             grade: gradeHoraria 
         }, { merge: true });
-    }
+    } catch (e) { console.error(e); }
+    
     fecharModalExcluir();
 };
-
-window.ativarNotificacoesReal = () => {
-    OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.Notifications.requestPermission();
-    });
-};
-      
