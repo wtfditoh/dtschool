@@ -14,7 +14,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- IDENTIFICAÇÃO POR EMAIL (PADRÃO ATUAL DO SITE) ---
+// --- IDENTIFICAÇÃO ---
 const userEmail = localStorage.getItem('dt_user_email');
 const userType = localStorage.getItem('dt_user_type');
 
@@ -37,20 +37,20 @@ function calcularXP(nota) {
 }
 
 async function atualizarXPGlobal() {
-    async function atualizarXPGlobal() {
-    const emailAtual = localStorage.getItem('dt_user_email') 
-    // ESTA LINHA VAI TE MOSTRAR O ERRO
-    if(!emailAtual) { alert("ERRO: Seu e-mail não foi encontrado no sistema. Faça Logout e Login de novo!"); return; }
-    
-  const emailAtual = localStorage.getItem('dt_user_email');
+    const emailAtual = localStorage.getItem('dt_user_email');
     const tipoAtual = localStorage.getItem('dt_user_type');
     
-    if (tipoAtual === 'local' || !emailAtual || emailAtual === "null") return;
+    // TESTE DE SEGURANÇA
+    if(!emailAtual || emailAtual === "null") {
+        console.warn("⚠️ Sem e-mail para sincronizar XP.");
+        return;
+    }
+
+    if (tipoAtual === 'local') return;
 
     let xpTotal = 0;
     materias.forEach(m => {
         [m.n1, m.n2, m.n3, m.n4].forEach(nota => {
-            // Garantia de que a nota seja tratada como número antes de calcular
             const n = parseFloat(nota);
             if (!isNaN(n)) {
                 xpTotal += calcularXP(n);
@@ -64,7 +64,7 @@ async function atualizarXPGlobal() {
         const avatarLocal = localStorage.getItem('dt_user_avatar');
 
         const dadosParaAtualizar = { 
-            xp: Number(xpTotal), // Forçado como número para o ranking ler
+            xp: Number(xpTotal),
             materias: materias,
             email: emailAtual,
             nome: nomeLocal || "Estudante",
@@ -73,7 +73,7 @@ async function atualizarXPGlobal() {
         };
 
         await setDoc(userRef, dadosParaAtualizar, { merge: true });
-        console.log(`✅ XP Sincronizado para ${emailAtual}: ${xpTotal}`);
+        console.log(`✅ XP Sincronizado: ${xpTotal}`);
     } catch (e) { 
         console.error("Erro ao sincronizar XP:", e); 
     }
@@ -181,16 +181,10 @@ window.atualizarLista = function() {
 window.salvarNota = async function(id, b, val) {
     const i = materias.findIndex(m => m.id === id);
     if(i !== -1) {
-        // Garantia de que salvamos um valor numérico ou vazio
         const valorTratado = val === "" ? "" : parseFloat(val);
         materias[i]['n'+b] = valorTratado;
-        
         localStorage.setItem('materias', JSON.stringify(materias));
-        
-        // Primeiro atualiza a interface para o usuário ver
         atualizarLista();
-        
-        // Aguarda a sincronização com o Firebase
         await salvarNaNuvem();
     }
 };
@@ -261,7 +255,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
 
     setTimeout(async () => {
         if(typeof html2canvas === 'undefined') {
-            alert("Erro: Carregue o html2canvas no seu index.html");
+            alert("Erro: html2canvas não encontrado.");
             return;
         }
         const canvas = await html2canvas(container, { backgroundColor: null, width: 1080, height: 1920, scale: 1, useCORS: true });
