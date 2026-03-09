@@ -37,11 +37,15 @@ function calcularXP(nota) {
 }
 
 async function atualizarXPGlobal() {
-    // Só sincroniza se houver um e-mail logado e não for modo local
-    if (userType === 'local' || !userEmail) return;
+    // Pegamos o email e o tipo SEMPRE dentro da função para garantir que não estejam vazios
+    const emailAtual = localStorage.getItem('dt_user_email');
+    const tipoAtual = localStorage.getItem('dt_user_type');
+    
+    if (tipoAtual === 'local' || !emailAtual || emailAtual === "null") return;
 
     let xpTotal = 0;
     materias.forEach(m => {
+        // Garantindo que n1, n2, n3, n4 existam no objeto
         [m.n1, m.n2, m.n3, m.n4].forEach(nota => {
             if (nota !== undefined && nota !== null && nota !== "") {
                 xpTotal += calcularXP(nota);
@@ -50,26 +54,27 @@ async function atualizarXPGlobal() {
     });
 
     try {
-        const userRef = doc(db, "notas", userEmail); // Documento agora é o EMAIL
+        const userRef = doc(db, "notas", emailAtual);
         const nomeLocal = localStorage.getItem('dt_user_name');
         const avatarLocal = localStorage.getItem('dt_user_avatar');
 
         const dadosParaAtualizar = { 
-            xp: xpTotal, 
+            xp: Number(xpTotal), // Forçamos ser número
             materias: materias,
-            email: userEmail,
-            atualizadoEm: Date.now()
+            email: emailAtual,
+            ultimaAtualizacao: Date.now()
         };
 
         if (nomeLocal) dadosParaAtualizar.nome = nomeLocal;
         if (avatarLocal) dadosParaAtualizar.avatar = avatarLocal;
 
         await setDoc(userRef, dadosParaAtualizar, { merge: true });
-        console.log(`🏆 XP Sincronizado para ${userEmail}: ${xpTotal}`);
+        console.log(`🏆 XP Enviado: ${xpTotal} para ${emailAtual}`);
     } catch (e) { 
         console.error("Erro ao sincronizar XP:", e); 
     }
 }
+
 
 // ==========================================
 // CARREGAMENTO E SALVAMENTO
