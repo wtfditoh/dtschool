@@ -37,7 +37,7 @@ function calcularXP(nota) {
 }
 
 async function atualizarXPGlobal() {
-    // Pegamos o email e o tipo SEMPRE dentro da função para garantir que não estejam vazios
+    // Pegamos os dados sempre dentro da função para garantir sincronia
     const emailAtual = localStorage.getItem('dt_user_email');
     const tipoAtual = localStorage.getItem('dt_user_type');
     
@@ -45,7 +45,6 @@ async function atualizarXPGlobal() {
 
     let xpTotal = 0;
     materias.forEach(m => {
-        // Garantindo que n1, n2, n3, n4 existam no objeto
         [m.n1, m.n2, m.n3, m.n4].forEach(nota => {
             if (nota !== undefined && nota !== null && nota !== "") {
                 xpTotal += calcularXP(nota);
@@ -55,26 +54,27 @@ async function atualizarXPGlobal() {
 
     try {
         const userRef = doc(db, "notas", emailAtual);
+        
+        // Mantém nome e avatar se já existirem no localStorage
         const nomeLocal = localStorage.getItem('dt_user_name');
         const avatarLocal = localStorage.getItem('dt_user_avatar');
 
         const dadosParaAtualizar = { 
-            xp: Number(xpTotal), // Forçamos ser número
+            xp: Number(xpTotal), // Garantia de que é número para o ranking
             materias: materias,
             email: emailAtual,
-            ultimaAtualizacao: Date.now()
+            atualizadoEm: Date.now()
         };
 
         if (nomeLocal) dadosParaAtualizar.nome = nomeLocal;
         if (avatarLocal) dadosParaAtualizar.avatar = avatarLocal;
 
         await setDoc(userRef, dadosParaAtualizar, { merge: true });
-        console.log(`🏆 XP Enviado: ${xpTotal} para ${emailAtual}`);
+        console.log(`🏆 XP Sincronizado para ${emailAtual}: ${xpTotal}`);
     } catch (e) { 
         console.error("Erro ao sincronizar XP:", e); 
     }
 }
-
 
 // ==========================================
 // CARREGAMENTO E SALVAMENTO
@@ -93,8 +93,9 @@ async function carregarDados() {
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 materias = docSnap.data().materias || [];
+                // Sincroniza o local com a nuvem
+                localStorage.setItem('materias', JSON.stringify(materias));
             } else {
-                // Tenta recuperar do local se a nuvem estiver vazia
                 materias = JSON.parse(localStorage.getItem('materias')) || [];
                 if(materias.length > 0) await salvarNaNuvem();
             }
@@ -119,10 +120,7 @@ window.atualizarLista = function() {
     materias.sort((a, b) => {
         const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
         const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
-        const mediaA = somaA / 4;
-        const mediaB = somaB / 4;
-
-        if (mediaB !== mediaA) return mediaB - mediaA;
+        if (somaB !== somaA) return somaB - somaA;
         return a.id - b.id; 
     });
 
@@ -140,9 +138,7 @@ window.atualizarLista = function() {
                     <i data-lucide="trash-2" style="width:18px;"></i>
                 </button>
             </div>
-            
             <div class="progress-bg"><div class="progress-fill" style="width:${percent}%;"></div></div>
-            
             <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
                 ${[1,2,3,4].map(n => {
                     const val = m['n'+n];
@@ -154,7 +150,6 @@ window.atualizarLista = function() {
                     `;
                 }).join('')}
             </div>
-
             <div class="card-bottom">
                 <span style="font-size:11px; color:#555; font-weight:bold;">MÉDIA: ${media}</span>
                 ${aprovado ? `
@@ -171,8 +166,11 @@ window.atualizarLista = function() {
     
     const total = materias.length;
     const somaMediasGerais = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
-    document.getElementById('media-geral').innerText = total > 0 ? (somaMediasGerais / total).toFixed(1) : "0.0";
-    document.getElementById('aprov-count').innerText = `${materias.filter(m => (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4)) >= 24).length}/${total}`;
+    const mediaElem = document.getElementById('media-geral');
+    const aprovElem = document.getElementById('aprov-count');
+    
+    if(mediaElem) mediaElem.innerText = total > 0 ? (somaMediasGerais / total).toFixed(1) : "0.0";
+    if(aprovElem) aprovElem.innerText = `${materias.filter(m => (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4)) >= 24).length}/${total}`;
     if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
@@ -181,6 +179,7 @@ window.salvarNota = async function(id, b, val) {
     if(i !== -1) {
         materias[i]['n'+b] = val === "" ? "" : parseFloat(val);
         localStorage.setItem('materias', JSON.stringify(materias));
+        // Aguarda salvar na nuvem para garantir sincronia do XP
         await salvarNaNuvem();
         atualizarLista();
     }
@@ -251,6 +250,10 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     if(typeof lucide !== 'undefined') lucide.createIcons({ container: container });
 
     setTimeout(async () => {
+        if(typeof html2canvas === 'undefined') {
+            alert("Erro: html2canvas não carregado.");
+            return;
+        }
         const canvas = await html2canvas(container, { backgroundColor: null, width: 1080, height: 1920, scale: 1, useCORS: true });
         canvas.toBlob(async (blob) => {
             const file = new File([blob], `HubBrain_${nomeMateria}.png`, { type: 'image/png' });
@@ -267,11 +270,13 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
 };
 
 // ==========================================
-// MENU E PWA (MANTIDOS)
+// MENU E NAVEGAÇÃO
 // ==========================================
 window.toggleMenu = function() {
-    document.getElementById('menu-lateral').classList.toggle('open');
-    document.getElementById('overlay').classList.toggle('active');
+    const menu = document.getElementById('menu-lateral');
+    const overlay = document.getElementById('overlay');
+    if(menu) menu.classList.toggle('open');
+    if(overlay) overlay.classList.toggle('active');
 };
 
 window.navegar = function(p) {
@@ -279,30 +284,17 @@ window.navegar = function(p) {
     if(p === 'notas') return;
     if(p === 'ranking') { window.location.href = 'ranking.html'; return; }
     if(p === 'perfil') { window.location.href = 'perfil.html'; return; }
-    if(p === 'grade') { window.location.href = 'grade.html'; return; } // Adicionado link para grade
+    if(p === 'grade') { window.location.href = 'grade.html'; return; }
     
-    document.getElementById('aviso-titulo').innerText = p.charAt(0).toUpperCase() + p.slice(1);
-    document.getElementById('modal-aviso-container').style.display = 'flex';
-    if(typeof lucide !== 'undefined') lucide.createIcons();
-};
-
-window.fecharAviso = function() { document.getElementById('modal-aviso-container').style.display = 'none'; };
-
-let instaladorPWA = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    instaladorPWA = e;
-    if (document.getElementById('pwa-install-container')) document.getElementById('pwa-install-container').style.display = 'block';
-});
-
-window.instalarApp = async function() {
-    if (!instaladorPWA) {
-        alert("No iPhone: Compartilhar > Adicionar à Tela de Início 📲");
-        return;
+    const aviso = document.getElementById('modal-aviso-container');
+    if(aviso) {
+        document.getElementById('aviso-titulo').innerText = p.charAt(0).toUpperCase() + p.slice(1);
+        aviso.style.display = 'flex';
+        if(typeof lucide !== 'undefined') lucide.createIcons();
     }
-    instaladorPWA.prompt();
-    const { outcome } = await instaladorPWA.userChoice;
-    if (outcome === 'accepted') document.getElementById('pwa-install-container').style.display = 'none';
-    instaladorPWA = null;
 };
-              
+
+window.fecharAviso = function() { 
+    const aviso = document.getElementById('modal-aviso-container');
+    if(aviso) aviso.style.display = 'none'; 
+};
