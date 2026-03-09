@@ -36,8 +36,9 @@ function calcularXP(nota) {
 function getID() {
     const email = localStorage.getItem('dt_user_email');
     const phone = localStorage.getItem('dt_user_phone');
-    // Se o email existir e não for a string "null", usa ele. Caso contrário, usa o phone.
-    return (email && email !== "null" && email !== "") ? email : phone;
+    // REMOVIDO "null" em string que causa bug no Firebase
+    const finalID = (email && email !== "null" && email !== "") ? email : phone;
+    return finalID ? finalID.trim() : null;
 }
 
 async function atualizarXPGlobal() {
@@ -56,7 +57,7 @@ async function atualizarXPGlobal() {
     try {
         const userRef = doc(db, "notas", userID);
         const dadosParaAtualizar = { 
-            xp: xpTotal, 
+            xp: Number(xpTotal), // FORÇADO COMO NÚMERO PARA O RANKING LER
             materias: materias,
             nome: localStorage.getItem('dt_user_name') || "Estudante",
             avatar: localStorage.getItem('dt_user_avatar') || "1",
@@ -64,6 +65,7 @@ async function atualizarXPGlobal() {
             ultimaAtualizacao: Date.now()
         };
 
+        // setDoc com merge garante que não apague dados do Perfil
         await setDoc(userRef, dadosParaAtualizar, { merge: true });
         console.log(`🏆 XP Sincronizado para ${userID}: ${xpTotal}`);
     } catch (e) { 
@@ -156,8 +158,12 @@ window.atualizarLista = function() {
     
     const total = materias.length;
     const somaMediasGerais = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
-    document.getElementById('media-geral').innerText = total > 0 ? (somaMediasGerais / total).toFixed(1) : "0.0";
-    document.getElementById('aprov-count').innerText = `${materias.filter(m => (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4)) >= 24).length}/${total}`;
+    const medGeral = document.getElementById('media-geral');
+    const aprovCnt = document.getElementById('aprov-count');
+    
+    if(medGeral) medGeral.innerText = total > 0 ? (somaMediasGerais / total).toFixed(1) : "0.0";
+    if(aprovCnt) aprovCnt.innerText = `${materias.filter(m => (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4)) >= 24).length}/${total}`;
+    
     if(window.lucide) lucide.createIcons();
 };
 
@@ -166,6 +172,7 @@ window.salvarNota = async function(id, b, val) {
     if(i !== -1) {
         materias[i]['n'+b] = val === "" ? "" : parseFloat(val);
         localStorage.setItem('materias', JSON.stringify(materias));
+        // Chama o XP e DEPOIS atualiza a lista para garantir sincronia
         await atualizarXPGlobal();
         atualizarLista();
     }
@@ -235,3 +242,4 @@ window.fecharAviso = function() {
     const aviso = document.getElementById('modal-aviso-container');
     if(aviso) aviso.style.display = 'none'; 
 };
+      
