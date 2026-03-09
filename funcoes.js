@@ -37,7 +37,12 @@ function calcularXP(nota) {
 }
 
 async function atualizarXPGlobal() {
-    const emailAtual = localStorage.getItem('dt_user_email');
+    async function atualizarXPGlobal() {
+    const emailAtual = localStorage.getItem('dt_user_email') 
+    // ESTA LINHA VAI TE MOSTRAR O ERRO
+    if(!emailAtual) { alert("ERRO: Seu e-mail não foi encontrado no sistema. Faça Logout e Login de novo!"); return; }
+    
+  const emailAtual = localStorage.getItem('dt_user_email');
     const tipoAtual = localStorage.getItem('dt_user_type');
     
     if (tipoAtual === 'local' || !emailAtual || emailAtual === "null") return;
