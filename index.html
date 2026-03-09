@@ -2,9 +2,11 @@
 <html lang="pt-br">
 <head>
     <script>
-    // Verificação de segurança: Nome do usuário (Salvo no login)
+    // Agora verificamos o nome, que é o que seu login-logica.js salva
     const usuario = localStorage.getItem('dt_user_name');
+    
     if (!usuario) {
+        // Se não tiver nome nenhum no sistema, manda de volta pro login
         window.location.href = 'login.html';
     }
     </script>
@@ -24,6 +26,7 @@
     <link rel="stylesheet" href="estilo.css?v=12.0">
     
     <style>
+        /* MANTENDO SEUS ESTILOS ORIGINAIS DE ANIMAÇÃO E MODAIS */
         .glass-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
@@ -55,7 +58,7 @@
             background: #8a2be2 !important; width: 38px !important; height: 38px !important; 
             border-radius: 12px !important; font-size: 24px !important; color: white; 
             border: none; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3); cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; 
         }
 
         .input-error { border: 2px solid #ff4444 !important; animation: shake 0.4s; }
@@ -90,7 +93,7 @@
 <body>
 
     <header class="glass-header">
-        <button onclick="toggleMenu()" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;">
+        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;">
             <i data-lucide="menu"></i>
         </button>
         
@@ -126,7 +129,7 @@
             <p style="color: #8a2be2; font-weight: bold; margin: 5px 0 20px 0; font-size: 12px; letter-spacing: 4px; text-transform: uppercase;">Founder & Dev</p>
             <div style="background: rgba(138, 43, 226, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border-left: 4px solid #8a2be2; text-align: left;">
                 <p style="color: #eee; font-size: 13px; font-style: italic; line-height: 1.6; margin: 0;">
-                    "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria."
+                    "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."
                 </p>
             </div>
             <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; color: white; font-size: 15px; margin-bottom: 30px; background: rgba(255,255,255,0.05); padding: 14px; border-radius: 15px; border: 1px solid rgba(138, 43, 226, 0.2);">
@@ -164,24 +167,16 @@
     <script type="module" src="funcoes.js?v=12.0"></script>
     
     <script>
-        // Função de validação que conecta com o módulo funcoes.js
         function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
-            
             if (input.value.trim() === "") {
                 input.classList.add('input-error');
                 aviso.style.display = 'block';
             } else {
-                // Chama a função que foi anexada ao window no funcoes.js
-                if (typeof window.confirmarNovaMateria === 'function') {
-                    window.confirmarNovaMateria(); 
-                } else {
-                    alert("Aguarde o carregamento do sistema...");
-                }
+                confirmarNovaMateria(); 
             }
         }
-
         function limparErroInput() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
@@ -190,25 +185,13 @@
                 aviso.style.display = 'none';
             }
         }
-
-        function abrirSobreDono() { 
-            document.getElementById('modal-dono').style.display = 'flex'; 
-            if(window.lucide) lucide.createIcons(); 
-        }
-
-        function fecharSobreDono() { 
-            document.getElementById('modal-dono').style.display = 'none'; 
-        }
+        function abrirSobreDono() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
+        function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
         
-        // PWA e Icons
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { 
-                navigator.serviceWorker.register('sw.js').catch(err => console.log(err)); 
-            });
+            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log(err)); });
         }
-        document.addEventListener('DOMContentLoaded', () => { 
-            if(window.lucide) lucide.createIcons(); 
-        });
+        document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
     </script>
 </body>
 </html>
