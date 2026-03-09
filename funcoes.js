@@ -37,7 +37,6 @@ function calcularXP(nota) {
 }
 
 async function atualizarXPGlobal() {
-    // Pegamos os dados sempre dentro da função para garantir sincronia
     const emailAtual = localStorage.getItem('dt_user_email');
     const tipoAtual = localStorage.getItem('dt_user_type');
     
@@ -46,31 +45,30 @@ async function atualizarXPGlobal() {
     let xpTotal = 0;
     materias.forEach(m => {
         [m.n1, m.n2, m.n3, m.n4].forEach(nota => {
-            if (nota !== undefined && nota !== null && nota !== "") {
-                xpTotal += calcularXP(nota);
+            // Garantia de que a nota seja tratada como número antes de calcular
+            const n = parseFloat(nota);
+            if (!isNaN(n)) {
+                xpTotal += calcularXP(n);
             }
         });
     });
 
     try {
         const userRef = doc(db, "notas", emailAtual);
-        
-        // Mantém nome e avatar se já existirem no localStorage
         const nomeLocal = localStorage.getItem('dt_user_name');
         const avatarLocal = localStorage.getItem('dt_user_avatar');
 
         const dadosParaAtualizar = { 
-            xp: Number(xpTotal), // Garantia de que é número para o ranking
+            xp: Number(xpTotal), // Forçado como número para o ranking ler
             materias: materias,
             email: emailAtual,
+            nome: nomeLocal || "Estudante",
+            avatar: avatarLocal || "user",
             atualizadoEm: Date.now()
         };
 
-        if (nomeLocal) dadosParaAtualizar.nome = nomeLocal;
-        if (avatarLocal) dadosParaAtualizar.avatar = avatarLocal;
-
         await setDoc(userRef, dadosParaAtualizar, { merge: true });
-        console.log(`🏆 XP Sincronizado para ${emailAtual}: ${xpTotal}`);
+        console.log(`✅ XP Sincronizado para ${emailAtual}: ${xpTotal}`);
     } catch (e) { 
         console.error("Erro ao sincronizar XP:", e); 
     }
@@ -85,15 +83,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function carregarDados() {
-    if (userType === 'local' || !userEmail) {
+    const emailAtual = localStorage.getItem('dt_user_email');
+    if (userType === 'local' || !emailAtual) {
         materias = JSON.parse(localStorage.getItem('materias')) || [];
     } else {
         try {
-            const docRef = doc(db, "notas", userEmail);
+            const docRef = doc(db, "notas", emailAtual);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 materias = docSnap.data().materias || [];
-                // Sincroniza o local com a nuvem
                 localStorage.setItem('materias', JSON.stringify(materias));
             } else {
                 materias = JSON.parse(localStorage.getItem('materias')) || [];
@@ -105,7 +103,8 @@ async function carregarDados() {
 }
 
 async function salvarNaNuvem() {
-    if (userType !== 'local' && userEmail) {
+    const emailAtual = localStorage.getItem('dt_user_email');
+    if (userType !== 'local' && emailAtual) {
         await atualizarXPGlobal();
     }
 }
@@ -177,11 +176,17 @@ window.atualizarLista = function() {
 window.salvarNota = async function(id, b, val) {
     const i = materias.findIndex(m => m.id === id);
     if(i !== -1) {
-        materias[i]['n'+b] = val === "" ? "" : parseFloat(val);
+        // Garantia de que salvamos um valor numérico ou vazio
+        const valorTratado = val === "" ? "" : parseFloat(val);
+        materias[i]['n'+b] = valorTratado;
+        
         localStorage.setItem('materias', JSON.stringify(materias));
-        // Aguarda salvar na nuvem para garantir sincronia do XP
-        await salvarNaNuvem();
+        
+        // Primeiro atualiza a interface para o usuário ver
         atualizarLista();
+        
+        // Aguarda a sincronização com o Firebase
+        await salvarNaNuvem();
     }
 };
 
@@ -251,7 +256,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
 
     setTimeout(async () => {
         if(typeof html2canvas === 'undefined') {
-            alert("Erro: html2canvas não carregado.");
+            alert("Erro: Carregue o html2canvas no seu index.html");
             return;
         }
         const canvas = await html2canvas(container, { backgroundColor: null, width: 1080, height: 1920, scale: 1, useCORS: true });
