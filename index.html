@@ -2,11 +2,8 @@
 <html lang="pt-br">
 <head>
     <script>
-    // Agora verificamos o nome, que é o que seu login-logica.js salva
     const usuario = localStorage.getItem('dt_user_name');
-    
     if (!usuario) {
-        // Se não tiver nome nenhum no sistema, manda de volta pro login
         window.location.href = 'login.html';
     }
     </script>
@@ -26,7 +23,6 @@
     <link rel="stylesheet" href="estilo.css?v=12.0">
     
     <style>
-        /* MANTENDO SEUS ESTILOS ORIGINAIS DE ANIMAÇÃO E MODAIS */
         .glass-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
@@ -68,7 +64,6 @@
             75% { transform: translateX(5px); }
         }
 
-        /* MODAL DITOH PREMIUM */
         .modal-dono-overlay {
             display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
             backdrop-filter: blur(25px) saturate(180%); background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px;
@@ -167,11 +162,15 @@
         function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
-            if (input.value.trim() === "") {
+            if (!input.value || input.value.trim() === "") {
                 input.classList.add('input-error');
                 aviso.style.display = 'block';
             } else {
-                confirmarNovaMateria(); 
+                if(typeof confirmarNovaMateria === 'function') {
+                    confirmarNovaMateria(); 
+                } else {
+                    console.error("Função confirmarNovaMateria não encontrada em funcoes.js");
+                }
             }
         }
         function limparErroInput() {
@@ -189,9 +188,10 @@
             window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log(err)); });
         }
         document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
-    
-        <script src="menu.js"></script>
+    </script>
+
+    <script src="menu.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script type="module" src="funcoes.js?v=100"></script>
+    <script type="module" src="funcoes.js?v=101"></script>
 </body>
 </html>
