@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -13,6 +13,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// --- IDENTIFICAÇÃO POR EMAIL (PADRÃO ATUAL DO SITE) ---
+const userEmail = localStorage.getItem('dt_user_email');
+const userType = localStorage.getItem('dt_user_type');
 
 let materias = [];
 let idParaExcluir = null;
@@ -32,45 +36,38 @@ function calcularXP(nota) {
     return 0;
 }
 
-// FUNÇÃO PARA DEFINIR O ID ATUAL (E-mail tem prioridade total)
-function getID() {
-    const email = localStorage.getItem('dt_user_email');
-    const phone = localStorage.getItem('dt_user_phone');
-    // REMOVIDO "null" em string que causa bug no Firebase
-    const finalID = (email && email !== "null" && email !== "") ? email : phone;
-    return finalID ? finalID.trim() : null;
-}
-
 async function atualizarXPGlobal() {
-    const userID = getID();
-    const userType = localStorage.getItem('dt_user_type');
-    alert("Enviado para: " + userID + " | XP: " + xpTotal);
-  
-    if (userType === 'local' || !userID) return;
+    // Só sincroniza se houver um e-mail logado e não for modo local
+    if (userType === 'local' || !userEmail) return;
 
     let xpTotal = 0;
     materias.forEach(m => {
         [m.n1, m.n2, m.n3, m.n4].forEach(nota => {
-            xpTotal += calcularXP(nota);
+            if (nota !== undefined && nota !== null && nota !== "") {
+                xpTotal += calcularXP(nota);
+            }
         });
     });
 
     try {
-        const userRef = doc(db, "notas", userID);
+        const userRef = doc(db, "notas", userEmail); // Documento agora é o EMAIL
+        const nomeLocal = localStorage.getItem('dt_user_name');
+        const avatarLocal = localStorage.getItem('dt_user_avatar');
+
         const dadosParaAtualizar = { 
-            xp: Number(xpTotal), // FORÇADO COMO NÚMERO PARA O RANKING LER
+            xp: xpTotal, 
             materias: materias,
-            nome: localStorage.getItem('dt_user_name') || "Estudante",
-            avatar: localStorage.getItem('dt_user_avatar') || "1",
-            email: localStorage.getItem('dt_user_email') || "",
-            ultimaAtualizacao: Date.now()
+            email: userEmail,
+            atualizadoEm: Date.now()
         };
 
-        // setDoc com merge garante que não apague dados do Perfil
+        if (nomeLocal) dadosParaAtualizar.nome = nomeLocal;
+        if (avatarLocal) dadosParaAtualizar.avatar = avatarLocal;
+
         await setDoc(userRef, dadosParaAtualizar, { merge: true });
-        console.log(`🏆 XP Sincronizado para ${userID}: ${xpTotal}`);
+        console.log(`🏆 XP Sincronizado para ${userEmail}: ${xpTotal}`);
     } catch (e) { 
-        console.error("Erro ao sincronizar:", e); 
+        console.error("Erro ao sincronizar XP:", e); 
     }
 }
 
@@ -79,29 +76,32 @@ async function atualizarXPGlobal() {
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
     await carregarDados();
-    if(window.lucide) lucide.createIcons();
+    if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
 async function carregarDados() {
-    const userID = getID();
-    const userType = localStorage.getItem('dt_user_type');
-
-    if (userType === 'local' || !userID) {
+    if (userType === 'local' || !userEmail) {
         materias = JSON.parse(localStorage.getItem('materias')) || [];
     } else {
         try {
-            const docRef = doc(db, "notas", userID);
+            const docRef = doc(db, "notas", userEmail);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 materias = docSnap.data().materias || [];
-                localStorage.setItem('materias', JSON.stringify(materias));
             } else {
+                // Tenta recuperar do local se a nuvem estiver vazia
                 materias = JSON.parse(localStorage.getItem('materias')) || [];
-                if(materias.length > 0) await atualizarXPGlobal();
+                if(materias.length > 0) await salvarNaNuvem();
             }
         } catch (e) { console.error("Erro ao carregar:", e); }
     }
     atualizarLista();
+}
+
+async function salvarNaNuvem() {
+    if (userType !== 'local' && userEmail) {
+        await atualizarXPGlobal();
+    }
 }
 
 // ==========================================
@@ -114,7 +114,11 @@ window.atualizarLista = function() {
     materias.sort((a, b) => {
         const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
         const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
-        return somaB !== somaA ? somaB - somaA : a.id - b.id; 
+        const mediaA = somaA / 4;
+        const mediaB = somaB / 4;
+
+        if (mediaB !== mediaA) return mediaB - mediaA;
+        return a.id - b.id; 
     });
 
     lista.innerHTML = materias.map(m => {
@@ -131,7 +135,9 @@ window.atualizarLista = function() {
                     <i data-lucide="trash-2" style="width:18px;"></i>
                 </button>
             </div>
+            
             <div class="progress-bg"><div class="progress-fill" style="width:${percent}%;"></div></div>
+            
             <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
                 ${[1,2,3,4].map(n => {
                     const val = m['n'+n];
@@ -143,6 +149,7 @@ window.atualizarLista = function() {
                     `;
                 }).join('')}
             </div>
+
             <div class="card-bottom">
                 <span style="font-size:11px; color:#555; font-weight:bold;">MÉDIA: ${media}</span>
                 ${aprovado ? `
@@ -159,13 +166,9 @@ window.atualizarLista = function() {
     
     const total = materias.length;
     const somaMediasGerais = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
-    const medGeral = document.getElementById('media-geral');
-    const aprovCnt = document.getElementById('aprov-count');
-    
-    if(medGeral) medGeral.innerText = total > 0 ? (somaMediasGerais / total).toFixed(1) : "0.0";
-    if(aprovCnt) aprovCnt.innerText = `${materias.filter(m => (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4)) >= 24).length}/${total}`;
-    
-    if(window.lucide) lucide.createIcons();
+    document.getElementById('media-geral').innerText = total > 0 ? (somaMediasGerais / total).toFixed(1) : "0.0";
+    document.getElementById('aprov-count').innerText = `${materias.filter(m => (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4)) >= 24).length}/${total}`;
+    if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
 window.salvarNota = async function(id, b, val) {
@@ -173,8 +176,7 @@ window.salvarNota = async function(id, b, val) {
     if(i !== -1) {
         materias[i]['n'+b] = val === "" ? "" : parseFloat(val);
         localStorage.setItem('materias', JSON.stringify(materias));
-        // Chama o XP e DEPOIS atualiza a lista para garantir sincronia
-        await atualizarXPGlobal();
+        await salvarNaNuvem();
         atualizarLista();
     }
 };
@@ -190,7 +192,7 @@ window.confirmarNovaMateria = async function() {
     if(input.value) {
         materias.push({ id: Date.now(), nome: input.value, n1:"", n2:"", n3:"", n4:"" });
         localStorage.setItem('materias', JSON.stringify(materias));
-        await atualizarXPGlobal();
+        await salvarNaNuvem();
         input.value = ''; 
         fecharModal(); 
         atualizarLista();
@@ -200,7 +202,7 @@ window.confirmarNovaMateria = async function() {
 window.abrirModalExcluir = function(id) {
     idParaExcluir = id;
     document.getElementById('modal-excluir-container').style.display = 'flex';
-    if(window.lucide) lucide.createIcons();
+    if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
 window.fecharModalExcluir = function() { 
@@ -210,19 +212,61 @@ window.fecharModalExcluir = function() {
 window.confirmarExclusao = async function() {
     materias = materias.filter(m => m.id !== idParaExcluir);
     localStorage.setItem('materias', JSON.stringify(materias));
-    await atualizarXPGlobal();
+    await salvarNaNuvem();
     atualizarLista();
     fecharModalExcluir();
 };
 
 // ==========================================
-// MENU E NAVEGAÇÃO
+// VITÓRIA E COMPARTILHAMENTO
+// ==========================================
+window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
+    let container = document.getElementById('compartilhamento-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'compartilhamento-container';
+        document.body.appendChild(container);
+    }
+
+    let elogio = mediaReal >= 8.0 ? "Nível Elite" : "Objetivo Concluído";
+    let subtitulo = mediaReal >= 8.0 ? `NOTA EXTRAORDINÁRIA: ${mediaReal}` : `MÉDIA ${mediaReal} SUPERADA`;
+
+    container.innerHTML = `
+        <div class="card-vitoria-story">
+            <div class="vitoria-content">
+                <div class="logo-neon-vitoria"><i data-lucide="brain-circuit" style="width:240px; height:240px; color:#8a2be2;"></i></div>
+                <p class="status-conquista">${elogio}</p>
+                <h1 class="materia-nome-vitoria">${nomeMateria}</h1>
+                <p class="badge-comemorativa">${subtitulo}</p>
+            </div>
+            <div class="vitoria-footer"><p>HUB BRAIN</p><p class="link-app-vitoria">https://hubbrain.netlify.app/</p></div>
+        </div>
+    `;
+
+    if(typeof lucide !== 'undefined') lucide.createIcons({ container: container });
+
+    setTimeout(async () => {
+        const canvas = await html2canvas(container, { backgroundColor: null, width: 1080, height: 1920, scale: 1, useCORS: true });
+        canvas.toBlob(async (blob) => {
+            const file = new File([blob], `HubBrain_${nomeMateria}.png`, { type: 'image/png' });
+            try {
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ title: 'Hub Brain', text: `Passei em ${nomeMateria}! 🚀`, files: [file] });
+                } else {
+                    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `Vitoria_${nomeMateria}.png`; link.click();
+                }
+            } catch (err) { console.log('Cancelado'); }
+            container.innerHTML = '';
+        });
+    }, 400);
+};
+
+// ==========================================
+// MENU E PWA (MANTIDOS)
 // ==========================================
 window.toggleMenu = function() {
-    const menu = document.getElementById('menu-lateral');
-    const overlay = document.getElementById('overlay');
-    if(menu) menu.classList.toggle('open');
-    if(overlay) overlay.classList.toggle('active');
+    document.getElementById('menu-lateral').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('active');
 };
 
 window.navegar = function(p) {
@@ -230,17 +274,30 @@ window.navegar = function(p) {
     if(p === 'notas') return;
     if(p === 'ranking') { window.location.href = 'ranking.html'; return; }
     if(p === 'perfil') { window.location.href = 'perfil.html'; return; }
+    if(p === 'grade') { window.location.href = 'grade.html'; return; } // Adicionado link para grade
     
-    const aviso = document.getElementById('modal-aviso-container');
-    if(aviso) {
-        document.getElementById('aviso-titulo').innerText = p.charAt(0).toUpperCase() + p.slice(1);
-        aviso.style.display = 'flex';
-        if(window.lucide) lucide.createIcons();
-    }
+    document.getElementById('aviso-titulo').innerText = p.charAt(0).toUpperCase() + p.slice(1);
+    document.getElementById('modal-aviso-container').style.display = 'flex';
+    if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
-window.fecharAviso = function() { 
-    const aviso = document.getElementById('modal-aviso-container');
-    if(aviso) aviso.style.display = 'none'; 
+window.fecharAviso = function() { document.getElementById('modal-aviso-container').style.display = 'none'; };
+
+let instaladorPWA = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    instaladorPWA = e;
+    if (document.getElementById('pwa-install-container')) document.getElementById('pwa-install-container').style.display = 'block';
+});
+
+window.instalarApp = async function() {
+    if (!instaladorPWA) {
+        alert("No iPhone: Compartilhar > Adicionar à Tela de Início 📲");
+        return;
+    }
+    instaladorPWA.prompt();
+    const { outcome } = await instaladorPWA.userChoice;
+    if (outcome === 'accepted') document.getElementById('pwa-install-container').style.display = 'none';
+    instaladorPWA = null;
 };
-      
+              
