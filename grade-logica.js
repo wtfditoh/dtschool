@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// --- CONFIGURAÇÃO FIREBASE ---
 const firebaseConfig = {
   apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
   authDomain: "dt-scho0l.firebaseapp.com",
@@ -14,6 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// --- CONSTANTES E ESTADOS ---
 const TABELA_HORARIOS = {
     matutino: [
         { ordem: "1ª Aula", inicio: "07:00" }, { ordem: "2ª Aula", inicio: "07:50" },
@@ -31,10 +33,12 @@ let diaAtualGrade = 'segunda';
 let gradeHoraria = { domingo: [], segunda: [], terca: [], quarta: [], quinta: [], sexta: [], sabado: [] };
 let indexParaExcluir = null;
 
-// Identificação do usuário
-let userId = localStorage.getItem('dt_user_email') || localStorage.getItem('dt_user_phone') || "convidado";
+// ID do Usuário (Prioriza Telefone que é usado no notas.js)
+const userPhone = localStorage.getItem('dt_user_phone');
+const userEmail = localStorage.getItem('dt_user_email');
+const userId = userPhone || userEmail || "convidado";
 
-// --- INTERFACE ---
+// --- INTERFACE (UI) ---
 window.mostrarAvisoCustom = (msg) => {
     const toast = document.getElementById('custom-toast');
     if(toast) {
@@ -46,20 +50,27 @@ window.mostrarAvisoCustom = (msg) => {
 
 window.fecharModalAula = () => { document.getElementById('modal-aula').style.display = 'none'; };
 window.fecharModalExcluir = () => { document.getElementById('modal-confirm-excluir').style.display = 'none'; };
+window.fecharAjudaBateria = () => { document.getElementById('modal-ajuda-bateria').style.display = 'none'; };
 
 // --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log("🧠 Hub Brain: Sistema de Horários Iniciado");
+    
+    // 1. Carrega Cache Local
     const local = localStorage.getItem('hub_brain_grade');
     if (local) { 
         gradeHoraria = JSON.parse(local); 
         renderizarAulas(); 
     }
     
+    // 2. Define o Dia da Semana Automático
     const dMap = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
     const hoje = dMap[new Date().getDay()];
     selecionarDia(hoje);
 
-    if (userId) await carregarDadosNuvem();
+    // 3. Sincroniza com a Nuvem
+    if (userId !== "convidado") await carregarDadosNuvem();
+    
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
@@ -71,18 +82,21 @@ async function carregarDadosNuvem() {
             localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
             renderizarAulas(); 
         }
-    } catch (e) { console.error("Erro ao carregar:", e); }
+    } catch (e) { console.error("Erro ao sincronizar nuvem:", e); }
 }
 
 window.selecionarDia = (dia) => {
     diaAtualGrade = dia;
-    document.querySelectorAll('.btn-dia').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-dia') === dia));
+    document.querySelectorAll('.btn-dia').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-dia') === dia);
+    });
     renderizarAulas();
 };
 
 window.renderizarAulas = () => {
     const lista = document.getElementById('lista-aulas');
     if(!lista) return;
+    
     const aulas = gradeHoraria[diaAtualGrade] || [];
     aulas.sort((a, b) => a.hora.localeCompare(b.hora));
 
@@ -103,10 +117,11 @@ window.renderizarAulas = () => {
                 </button>
             </div>
         `).join('');
+    
     if(typeof lucide !== 'undefined') lucide.createIcons();
 };
 
-// --- FUNÇÃO RESTAURADA: BUSCA MATÉRIAS DAS NOTAS ---
+// --- LOGICA DAS MATÉRIAS (INTEGRAÇÃO COM NOTAS.JS) ---
 window.abrirModalAula = async () => {
     document.getElementById('aula-prof').value = "";
     document.getElementById('aula-materia-custom').value = "";
@@ -116,32 +131,28 @@ window.abrirModalAula = async () => {
     document.getElementById('modal-aula').style.display = 'flex';
 
     try {
-        // Busca o documento na coleção 'notas' que tem o ID do usuário
+        // Busca na coleção 'notas' usando o telefone do usuário
         const docSnap = await getDoc(doc(db, "notas", userId));
         
         if (docSnap.exists()) {
             const dados = docSnap.data();
-            // Tenta pegar do campo 'materias' (array) ou do campo 'texto' (string separada por linhas)
-            let listaMaterias = dados.materias || [];
+            const listaMaterias = dados.materias || []; // Formato do seu notas.js
             
-            // Se as matérias vierem de um campo de texto (aba de notas comum)
-            if (dados.texto && listaMaterias.length === 0) {
-                listaMaterias = dados.texto.split('\n').filter(m => m.trim() !== "");
+            if (listaMaterias.length > 0) {
+                selectMat.innerHTML = '<option value="">Selecionar...</option>';
+                listaMaterias.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.nome; 
+                    opt.textContent = m.nome;
+                    selectMat.appendChild(opt);
+                });
+            } else {
+                selectMat.innerHTML = '<option value="">Nenhuma matéria no Notas</option>';
             }
-
-            selectMat.innerHTML = '<option value="">Selecionar...</option>';
-            listaMaterias.forEach(m => {
-                const nome = m.nome || m;
-                const opt = document.createElement('option');
-                opt.value = nome; 
-                opt.textContent = nome;
-                selectMat.appendChild(opt);
-            });
         } else {
-            selectMat.innerHTML = '<option value="">Nenhuma matéria salva</option>';
+            selectMat.innerHTML = '<option value="">Abra a aba Notas primeiro</option>';
         }
     } catch (e) { 
-        console.error("Erro ao buscar matérias:", e);
         selectMat.innerHTML = '<option value="">Erro ao carregar</option>'; 
     }
 };
@@ -155,7 +166,7 @@ window.salvarAula = async () => {
     
     const materiaFinal = matSelect || matCustom;
     if(!materiaFinal) {
-        window.mostrarAvisoCustom("⚠️ Selecione ou digite uma matéria!");
+        window.mostrarAvisoCustom("⚠️ Escolha ou digite a matéria!");
         return;
     }
 
@@ -173,18 +184,21 @@ window.salvarAula = async () => {
     fecharModalAula();
     
     try {
+        // Salva na Nuvem
         await setDoc(doc(db, "grades_horarias", userId), { 
             grade: gradeHoraria, 
             atualizadoEm: Date.now() 
         }, { merge: true });
 
+        // Salva Local
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-        window.mostrarAvisoCustom("✅ Aula salva!");
+        window.mostrarAvisoCustom("✅ Aula agendada com sucesso!");
     } catch (e) {
-        window.mostrarAvisoCustom("❌ Erro ao sincronizar!");
+        window.mostrarAvisoCustom("❌ Erro ao salvar na nuvem.");
     }
 };
 
+// --- EXCLUSÃO ---
 window.abrirConfirmExcluir = (i) => { 
     indexParaExcluir = i; 
     document.getElementById('modal-confirm-excluir').style.display = 'flex'; 
@@ -193,13 +207,22 @@ window.abrirConfirmExcluir = (i) => {
 document.getElementById('btn-confirmar-delete').onclick = async () => {
     gradeHoraria[diaAtualGrade].splice(indexParaExcluir, 1);
     renderizarAulas();
-
+    
     try {
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-        await setDoc(doc(db, "grades_horarias", userId), { 
-            grade: gradeHoraria 
-        }, { merge: true });
+        await setDoc(doc(db, "grades_horarias", userId), { grade: gradeHoraria }, { merge: true });
+        window.mostrarAvisoCustom("🗑️ Aula removida.");
     } catch (e) { console.error(e); }
     
     fecharModalExcluir();
+};
+
+// --- NOTIFICAÇÕES PUSH ---
+window.ativarNotificacoesReal = () => {
+    if (window.OneSignalDeferred) {
+        OneSignalDeferred.push(function(OneSignal) {
+            OneSignal.Notifications.requestPermission();
+            window.mostrarAvisoCustom("🔔 Ativando notificações...");
+        });
+    }
 };
