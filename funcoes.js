@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -14,22 +14,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ==========================================
-// AJUSTE DE SINCRONIA: PRIORIDADE PARA EMAIL
-// ==========================================
-const userEmail = localStorage.getItem('dt_user_email');
-const userPhone = localStorage.getItem('dt_user_phone');
-const userType = localStorage.getItem('dt_user_type');
-
-// O ID principal no Firebase agora é o Email. Se não houver, usa o Phone.
-const userID = userEmail || userPhone; 
-
 let materias = [];
 let idParaExcluir = null;
 
-// ==========================================
-// MOTOR DE XP - HUB BRAIN
-// ==========================================
+// MOTOR DE XP
 function calcularXP(nota) {
     const n = parseFloat(nota);
     if (isNaN(n) || nota === "" || nota === null) return 0;
@@ -42,68 +30,60 @@ function calcularXP(nota) {
     return 0;
 }
 
+// FUNÇÃO DE SINCRONIA MESTRE
 async function atualizarXPGlobal() {
-    // Se for local ou não tiver identificador, não sincroniza
+    const userEmail = localStorage.getItem('dt_user_email');
+    const userPhone = localStorage.getItem('dt_user_phone');
+    const userType = localStorage.getItem('dt_user_type');
+    const userID = userEmail || userPhone; 
+
     if (userType === 'local' || !userID) return;
 
     let xpTotal = 0;
     materias.forEach(m => {
         [m.n1, m.n2, m.n3, m.n4].forEach(nota => {
-            if (nota !== undefined && nota !== null && nota !== "") {
-                xpTotal += calcularXP(nota);
-            }
+            xpTotal += calcularXP(nota);
         });
     });
 
     try {
-        // Usa o userID (Email) para encontrar o documento correto
         const userRef = doc(db, "notas", userID);
-        const nomeLocal = localStorage.getItem('dt_user_name');
-        const avatarLocal = localStorage.getItem('dt_user_avatar');
-
-        const dadosParaAtualizar = { 
+        
+        const dados = { 
             xp: xpTotal, 
             materias: materias,
-            ultimaAtualizacao: Date.now(),
-            email: userEmail || ""
+            nome: localStorage.getItem('dt_user_name') || "Estudante",
+            avatar: localStorage.getItem('dt_user_avatar') || "1",
+            email: userEmail || "",
+            ultimaAtualizacao: Date.now()
         };
 
-        if (nomeLocal) dadosParaAtualizar.nome = nomeLocal;
-        if (avatarLocal) dadosParaAtualizar.avatar = avatarLocal;
-
-        // setDoc com merge: true garante que o XP atualize sem apagar outros dados
-        await setDoc(userRef, dadosParaAtualizar, { merge: true });
-        console.log(`🏆 XP Sincronizado para ${userID}: ${xpTotal}`);
+        // Usando setDoc puro com merge para forçar a gravação
+        await setDoc(userRef, dados, { merge: true });
+        
+        // Log para debug no mobile (você verá o XP no console se conseguir, ou saberá que passou daqui)
+        console.log("🏆 Sincronizado:", xpTotal);
     } catch (e) { 
-        console.error("Erro ao sincronizar XP:", e); 
+        // Se der erro no celular, esse alert vai te avisar
+        alert("Erro na Sincronia: " + e.message);
     }
 }
 
-// ==========================================
-// CARREGAMENTO E SALVAMENTO
-// ==========================================
-document.addEventListener('DOMContentLoaded', async () => {
-    await carregarDados();
-    lucide.createIcons();
-});
+// ... (Restante das funções: carregarDados, atualizarLista, etc. permanecem as mesmas) ...
+// CERTIFIQUE-SE DE QUE O window.salvarNota ESTEJA ASSIM:
 
-async function carregarDados() {
-    if (userType === 'local' || !userID) {
-        materias = JSON.parse(localStorage.getItem('materias')) || [];
-    } else {
-        try {
-            const docRef = doc(db, "notas", userID);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                materias = docSnap.data().materias || [];
-            } else {
-                materias = JSON.parse(localStorage.getItem('materias')) || [];
-                if(materias.length > 0) await salvarNaNuvem();
-            }
-        } catch (e) { console.error("Erro ao carregar:", e); }
+window.salvarNota = async function(id, b, val) {
+    const i = materias.findIndex(m => m.id === id);
+    if(i !== -1) {
+        materias[i]['n'+b] = val === "" ? "" : parseFloat(val);
+        localStorage.setItem('materias', JSON.stringify(materias));
+        
+        // Chama a sincronia toda vez que muda a nota
+        await atualizarXPGlobal(); 
+        
+        atualizarLista();
     }
-    atualizarLista();
-}
+};
 
 async function salvarNaNuvem() {
     if (userType !== 'local' && userID) {
