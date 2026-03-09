@@ -38,7 +38,7 @@ async function carregarRanking() {
                 lista.push({ 
                     id: doc.id,
                     nome: d.nome, 
-                    xp: number(d.xp) || 0, 
+                    xp: Number(d.xp) || 0, 
                     avatar: d.avatar || "user" 
                 });
             }
