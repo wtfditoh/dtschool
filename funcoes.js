@@ -32,18 +32,19 @@ function calcularXP(nota) {
     return 0;
 }
 
+// FUNÇÃO PARA DEFINIR O ID ATUAL (E-mail tem prioridade total)
+function getID() {
+    const email = localStorage.getItem('dt_user_email');
+    const phone = localStorage.getItem('dt_user_phone');
+    // Se o email existir e não for a string "null", usa ele. Caso contrário, usa o phone.
+    return (email && email !== "null" && email !== "") ? email : phone;
+}
+
 async function atualizarXPGlobal() {
-    const userEmail = localStorage.getItem('dt_user_email');
-    const userPhone = localStorage.getItem('dt_user_phone');
+    const userID = getID();
     const userType = localStorage.getItem('dt_user_type');
     
-    // Identificador único (E-mail é a prioridade)
-    const userID = userEmail || userPhone;
-
-    if (userType === 'local' || !userID) {
-        console.log("Modo local ou sem ID.");
-        return;
-    }
+    if (userType === 'local' || !userID) return;
 
     let xpTotal = 0;
     materias.forEach(m => {
@@ -54,19 +55,15 @@ async function atualizarXPGlobal() {
 
     try {
         const userRef = doc(db, "notas", userID);
-        const nomeLocal = localStorage.getItem('dt_user_name');
-        const avatarLocal = localStorage.getItem('dt_user_avatar');
-
         const dadosParaAtualizar = { 
             xp: xpTotal, 
             materias: materias,
-            nome: nomeLocal || "Estudante",
-            avatar: avatarLocal || "1",
-            email: userEmail || "",
+            nome: localStorage.getItem('dt_user_name') || "Estudante",
+            avatar: localStorage.getItem('dt_user_avatar') || "1",
+            email: localStorage.getItem('dt_user_email') || "",
             ultimaAtualizacao: Date.now()
         };
 
-        // setDoc com merge: true é o método mais seguro para celular
         await setDoc(userRef, dadosParaAtualizar, { merge: true });
         console.log(`🏆 XP Sincronizado para ${userID}: ${xpTotal}`);
     } catch (e) { 
@@ -83,9 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function carregarDados() {
-    const userEmail = localStorage.getItem('dt_user_email');
-    const userPhone = localStorage.getItem('dt_user_phone');
-    const userID = userEmail || userPhone;
+    const userID = getID();
     const userType = localStorage.getItem('dt_user_type');
 
     if (userType === 'local' || !userID) {
@@ -116,8 +111,7 @@ window.atualizarLista = function() {
     materias.sort((a, b) => {
         const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
         const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
-        if (somaB !== somaA) return somaB - somaA;
-        return a.id - b.id; 
+        return somaB !== somaA ? somaB - somaA : a.id - b.id; 
     });
 
     lista.innerHTML = materias.map(m => {
@@ -134,9 +128,7 @@ window.atualizarLista = function() {
                     <i data-lucide="trash-2" style="width:18px;"></i>
                 </button>
             </div>
-            
             <div class="progress-bg"><div class="progress-fill" style="width:${percent}%;"></div></div>
-            
             <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
                 ${[1,2,3,4].map(n => {
                     const val = m['n'+n];
@@ -148,7 +140,6 @@ window.atualizarLista = function() {
                     `;
                 }).join('')}
             </div>
-
             <div class="card-bottom">
                 <span style="font-size:11px; color:#555; font-weight:bold;">MÉDIA: ${media}</span>
                 ${aprovado ? `
@@ -175,8 +166,6 @@ window.salvarNota = async function(id, b, val) {
     if(i !== -1) {
         materias[i]['n'+b] = val === "" ? "" : parseFloat(val);
         localStorage.setItem('materias', JSON.stringify(materias));
-        
-        // GATILHO DE XP
         await atualizarXPGlobal();
         atualizarLista();
     }
