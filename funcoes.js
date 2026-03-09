@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+Import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -13,9 +13,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-// --- IDENTIFICAÇÃO POR EMAIL (PADRÃO ATUAL DO SITE) ---
-const userEmail = localStorage.getItem('dt_user_email');
+const userPhone = localStorage.getItem('dt_user_phone');
 const userType = localStorage.getItem('dt_user_type');
 
 let materias = [];
@@ -37,8 +35,7 @@ function calcularXP(nota) {
 }
 
 async function atualizarXPGlobal() {
-    // Só sincroniza se houver um e-mail logado e não for modo local
-    if (userType === 'local' || !userEmail) return;
+    if (userType === 'local' || !userPhone) return;
 
     let xpTotal = 0;
     materias.forEach(m => {
@@ -50,22 +47,20 @@ async function atualizarXPGlobal() {
     });
 
     try {
-        const userRef = doc(db, "notas", userEmail); // Documento agora é o EMAIL
+        const userRef = doc(db, "notas", userPhone);
         const nomeLocal = localStorage.getItem('dt_user_name');
         const avatarLocal = localStorage.getItem('dt_user_avatar');
 
         const dadosParaAtualizar = { 
             xp: xpTotal, 
-            materias: materias,
-            email: userEmail,
-            atualizadoEm: Date.now()
+            materias: materias 
         };
 
         if (nomeLocal) dadosParaAtualizar.nome = nomeLocal;
         if (avatarLocal) dadosParaAtualizar.avatar = avatarLocal;
 
         await setDoc(userRef, dadosParaAtualizar, { merge: true });
-        console.log(`🏆 XP Sincronizado para ${userEmail}: ${xpTotal}`);
+        console.log(`🏆 XP Sincronizado: ${xpTotal}`);
     } catch (e) { 
         console.error("Erro ao sincronizar XP:", e); 
     }
@@ -76,20 +71,19 @@ async function atualizarXPGlobal() {
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
     await carregarDados();
-    if(typeof lucide !== 'undefined') lucide.createIcons();
+    lucide.createIcons();
 });
 
 async function carregarDados() {
-    if (userType === 'local' || !userEmail) {
+    if (userType === 'local' || !userPhone) {
         materias = JSON.parse(localStorage.getItem('materias')) || [];
     } else {
         try {
-            const docRef = doc(db, "notas", userEmail);
+            const docRef = doc(db, "notas", userPhone);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 materias = docSnap.data().materias || [];
             } else {
-                // Tenta recuperar do local se a nuvem estiver vazia
                 materias = JSON.parse(localStorage.getItem('materias')) || [];
                 if(materias.length > 0) await salvarNaNuvem();
             }
@@ -99,25 +93,30 @@ async function carregarDados() {
 }
 
 async function salvarNaNuvem() {
-    if (userType !== 'local' && userEmail) {
+    if (userType !== 'local' && userPhone) {
         await atualizarXPGlobal();
     }
 }
 
 // ==========================================
-// GESTÃO DA LISTA
+// GESTÃO DA LISTA (ORDEM POR NOTA + CRIAÇÃO)
 // ==========================================
 window.atualizarLista = function() {
     const lista = document.getElementById('lista-materias');
     if(!lista) return;
 
+    // ORDENAÇÃO INTELIGENTE:
     materias.sort((a, b) => {
         const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
         const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
         const mediaA = somaA / 4;
         const mediaB = somaB / 4;
 
-        if (mediaB !== mediaA) return mediaB - mediaA;
+        // 1º Critério: Nota Maior Sobe
+        if (mediaB !== mediaA) {
+            return mediaB - mediaA;
+        }
+        // 2º Critério (Empate): Ordem de Criação (ID antigo em cima)
         return a.id - b.id; 
     });
 
@@ -164,11 +163,12 @@ window.atualizarLista = function() {
         </div>`;
     }).join('');
     
+    // Atualiza contadores do topo
     const total = materias.length;
     const somaMediasGerais = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
     document.getElementById('media-geral').innerText = total > 0 ? (somaMediasGerais / total).toFixed(1) : "0.0";
     document.getElementById('aprov-count').innerText = `${materias.filter(m => (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4)) >= 24).length}/${total}`;
-    if(typeof lucide !== 'undefined') lucide.createIcons();
+    lucide.createIcons();
 };
 
 window.salvarNota = async function(id, b, val) {
@@ -190,6 +190,7 @@ window.fecharModal = function() { document.getElementById('modal-materia').style
 window.confirmarNovaMateria = async function() {
     const input = document.getElementById('nome-materia-input');
     if(input.value) {
+        // IDs baseados em tempo garantem a ordem de criação correta
         materias.push({ id: Date.now(), nome: input.value, n1:"", n2:"", n3:"", n4:"" });
         localStorage.setItem('materias', JSON.stringify(materias));
         await salvarNaNuvem();
@@ -202,7 +203,7 @@ window.confirmarNovaMateria = async function() {
 window.abrirModalExcluir = function(id) {
     idParaExcluir = id;
     document.getElementById('modal-excluir-container').style.display = 'flex';
-    if(typeof lucide !== 'undefined') lucide.createIcons();
+    lucide.createIcons();
 };
 
 window.fecharModalExcluir = function() { 
@@ -243,7 +244,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
         </div>
     `;
 
-    if(typeof lucide !== 'undefined') lucide.createIcons({ container: container });
+    lucide.createIcons({ container: container });
 
     setTimeout(async () => {
         const canvas = await html2canvas(container, { backgroundColor: null, width: 1080, height: 1920, scale: 1, useCORS: true });
@@ -262,7 +263,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
 };
 
 // ==========================================
-// MENU E PWA (MANTIDOS)
+// MENU E PWA
 // ==========================================
 window.toggleMenu = function() {
     document.getElementById('menu-lateral').classList.toggle('open');
@@ -274,11 +275,10 @@ window.navegar = function(p) {
     if(p === 'notas') return;
     if(p === 'ranking') { window.location.href = 'ranking.html'; return; }
     if(p === 'perfil') { window.location.href = 'perfil.html'; return; }
-    if(p === 'grade') { window.location.href = 'grade.html'; return; } // Adicionado link para grade
     
     document.getElementById('aviso-titulo').innerText = p.charAt(0).toUpperCase() + p.slice(1);
     document.getElementById('modal-aviso-container').style.display = 'flex';
-    if(typeof lucide !== 'undefined') lucide.createIcons();
+    lucide.createIcons();
 };
 
 window.fecharAviso = function() { document.getElementById('modal-aviso-container').style.display = 'none'; };
@@ -300,4 +300,3 @@ window.instalarApp = async function() {
     if (outcome === 'accepted') document.getElementById('pwa-install-container').style.display = 'none';
     instaladorPWA = null;
 };
-              
