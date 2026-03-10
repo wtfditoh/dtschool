@@ -1,92 +1,70 @@
-:root {
-    --bg-dark: #000000;
-    --card-bg: #121214;
-    --purple: #8a2be2;
-    --text-dim: #888;
-}
-
 body {
-    background-color: var(--bg-dark);
+    background-color: #000;
     color: white;
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
-    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Glass Header */
 .glass-header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 20px; height: 70px; position: sticky; top: 0;
-    backdrop-filter: blur(10px); background: rgba(0,0,0,0.7);
-    border-bottom: 1px solid rgba(255,255,255,0.05); z-index: 100;
+    backdrop-filter: blur(15px); background: rgba(0,0,0,0.8);
+    border-bottom: 1px solid rgba(255,255,255,0.05); z-index: 1000;
 }
 
-.logo-text { font-weight: 900; letter-spacing: 1px; }
-.purple { color: var(--purple); }
+.home-container { padding: 20px; max-width: 500px; margin: 0 auto; }
 
-/* Welcome Section */
-.home-container { padding: 20px; }
-.welcome-section { margin: 20px 0; }
-.day-phrase { color: var(--text-dim); font-size: 14px; }
-.welcome-section h1 { font-size: 28px; margin: 5px 0; font-weight: 800; }
-
-/* Grid de Apps */
 .app-grid {
     display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 20px 10px; margin: 30px 0;
+    gap: 25px 10px; margin: 30px 0;
 }
 
 .app-item {
     display: flex; flex-direction: column; align-items: center;
-    gap: 8px; cursor: pointer; transition: 0.2s;
+    gap: 8px; cursor: pointer; transition: transform 0.1s;
 }
+
 .app-item:active { transform: scale(0.9); }
 
 .app-icon {
-    width: 65px; height: 65px; border-radius: 20px; /* Estilo iOS */
+    width: 65px; height: 65px; border-radius: 20px;
     display: flex; align-items: center; justify-content: center;
-    background: #1a1a1c; border: 1px solid rgba(255,255,255,0.05);
+    background: #16161a; border: 1px solid rgba(255,255,255,0.05);
 }
 
-.app-item span { font-size: 11px; font-weight: 600; color: #ccc; }
+.app-item span { font-size: 11px; font-weight: 500; color: #bbb; text-align: center; }
 
-/* Cores dos Ícones */
-.purple { color: #8a2be2; background: rgba(138,43,226,0.1) !important; }
+/* Cores Estilo iOS/Neon */
+.purple { color: #8a2be2; background: rgba(138,43,226,0.1) !important; border-color: rgba(138,43,226,0.2) !important; }
 .blue { color: #007aff; background: rgba(0,122,255,0.1) !important; }
 .red { color: #ff3b30; background: rgba(255,59,48,0.1) !important; }
 .orange { color: #ff9500; background: rgba(255,149,0,0.1) !important; }
 .green { color: #34c759; background: rgba(52,199,89,0.1) !important; }
 .gold { color: #ffcc00; background: rgba(255,204,0,0.1) !important; }
 
-/* Mural Card */
 .mural-card {
-    background: linear-gradient(90deg, #1a1a1c, #121214);
-    border-radius: 20px; padding: 18px; display: flex;
-    justify-content: space-between; align-items: center;
-    border: 1px solid rgba(138,43,226,0.2); margin-bottom: 40px;
+    background: #121214; border-radius: 20px; padding: 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid rgba(138,43,226,0.1); margin: 30px 0;
 }
-.mural-content { display: flex; align-items: center; gap: 15px; }
-.mural-icon { color: var(--purple); }
-.mural-text strong { display: block; font-size: 14px; }
-.mural-text span { font-size: 12px; color: var(--text-dim); }
 
-/* Resumo de Hoje */
 .summary-section {
-    background: #0a0a0b; border-radius: 30px 30px 0 0;
-    margin: 0 -20px; padding: 25px 20px; min-height: 200px;
+    background: #09090b; border-radius: 30px 30px 0 0;
+    margin: 40px -20px 0 -20px; padding: 30px 20px 100px 20px;
 }
-.summary-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
-.summary-card { background: #1a1a1c; padding: 15px; border-radius: 18px; }
-.status-row { display: flex; align-items: center; gap: 12px; }
-.pulse-circle {
-    width: 10px; height: 10px; background: var(--purple);
-    border-radius: 50%; box-shadow: 0 0 10px var(--purple);
-}
-.xp-tag { background: rgba(138,43,226,0.2); color: var(--purple); padding: 5px 10px; border-radius: 10px; font-size: 10px; font-weight: bold; }
 
-/* Modais */
-.modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-    z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+.summary-card { background: #16161a; padding: 18px; border-radius: 20px; border: 1px solid #222; }
+
+.pulse-circle {
+    width: 10px; height: 10px; background: #8a2be2; border-radius: 50%;
+    box-shadow: 0 0 10px #8a2be2; animation: pulse 2s infinite;
 }
-.modal-card { background: #1a1a1c; padding: 25px; border-radius: 20px; width: 100%; text-align: center; }
+
+@keyframes pulse {
+    0% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 0.5; transform: scale(1); }
+}
+
+.xp-tag { background: rgba(138,43,226,0.2); color: #8a2be2; padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; }
