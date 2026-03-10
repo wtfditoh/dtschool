@@ -15,32 +15,27 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// FUNÇÃO PARA CARREGAR DADOS NA TELA
-function preencherTela(nome, xp, materiasCount) {
-    document.getElementById('user-display-name').innerText = nome || "Estudante";
-    document.getElementById('user-xp').innerText = (xp || 0) + " XP";
-    document.getElementById('user-mats').innerText = materiasCount || 0;
-}
-
-// LOGICA DE VERIFICAÇÃO DE USUÁRIO
 const tipoUsuario = localStorage.getItem('dt_user_type');
 
-if (tipoUsuario === 'local') {
-    // SE FOR VISITANTE: Pega tudo do localStorage
-    const nomeLocal = localStorage.getItem('dt_user_name') || "Visitante";
-    const notasLocais = JSON.parse(localStorage.getItem('materias_local') || "[]");
-    
-    // Calcula XP local (soma de todas as notas se você quiser, ou deixa 0)
-    preencherTela(nomeLocal, "---", notasLocais.length);
+function atualizarUI(nome, xp, materias) {
+    document.getElementById('user-display-name').innerText = nome;
+    document.getElementById('user-xp').innerText = xp;
+    document.getElementById('user-mats').innerText = materias;
+    if(window.lucide) lucide.createIcons();
+}
 
+// LOGICA VISITANTE VS LOGADO
+if (tipoUsuario === 'local') {
+    const nome = localStorage.getItem('dt_user_name') || "Visitante";
+    const materias = JSON.parse(localStorage.getItem('materias_local') || "[]");
+    atualizarUI(nome, "---", materias.length);
 } else {
-    // SE FOR GOOGLE/FIREBASE: Escuta o banco de dados
     onAuthStateChanged(auth, (user) => {
         if (user) {
             onSnapshot(doc(db, "notas", user.email.toLowerCase()), (docSnap) => {
                 if (docSnap.exists()) {
-                    const dados = docSnap.data();
-                    preencherTela(dados.nome, dados.xp, dados.materias?.length);
+                    const d = docSnap.data();
+                    atualizarUI(d.nome, d.xp || 0, d.materias?.length || 0);
                 }
             });
         } else {
@@ -49,20 +44,20 @@ if (tipoUsuario === 'local') {
     });
 }
 
-// BOTÃO DE SAIR (Limpa tudo e volta pro login)
-document.getElementById('logout-btn').onclick = async () => {
+// ACOES DOS BOTOES
+const logoutAcao = async () => {
     if (tipoUsuario !== 'local') await signOut(auth);
     localStorage.clear();
     window.location.replace('login.html');
 };
 
-// LOGICA DO MURAL (OPCIONAL)
-document.getElementById('btn-mural').onclick = () => {
-    // Se for visitante, você pode avisar que o mural é só para alunos reais
-    if (tipoUsuario === 'local') {
-        alert("O Mural de Avisos está disponível apenas para alunos registados.");
-    } else {
-        // Aqui você abriria o modal do mural
-        document.getElementById('modal-mural').style.display = 'flex';
-    }
-};
+document.getElementById('logout-link').onclick = logoutAcao;
+
+document.getElementById('btn-mural-main').onclick = () => alert("Mural em breve!");
+document.getElementById('btn-mural-side').onclick = () => alert("Mural em breve!");
+
+// INICIALIZAR MENU LATERAL (Aproveitando seu menu.js)
+const btnMenu = document.getElementById('open-menu');
+if (btnMenu && window.toggleMenu) {
+    btnMenu.onclick = window.toggleMenu;
+}
