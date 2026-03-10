@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Brain - Início</title>
+    <link rel="stylesheet" href="style.css"> <link rel="stylesheet" href="home.css">  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <div class="home-container">
+        <header class="home-header">
+            <div class="user-info">
+                <span class="greeting">FALA,</span>
+                <h1 id="user-display-name">ALUNO...</h1>
+            </div>
+            <button class="btn-logout" id="logout-btn"><i data-lucide="log-out"></i></button>
+        </header>
+
+        <div class="status-card">
+            <div class="stat-item">
+                <label>MEU XP</label>
+                <span id="user-xp">0</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <label>MATÉRIAS</label>
+                <span id="user-mats">0</span>
+            </div>
+        </div>
+
+        <nav class="home-menu">
+            <button class="menu-item main" onclick="window.location.href='notas.html'">
+                <div class="icon-box"><i data-lucide="graduation-cap"></i></div>
+                <div class="text-box">
+                    <strong>Minhas Notas</strong>
+                    <span>Gerenciar matérias e XP</span>
+                </div>
+                <i data-lucide="chevron-right"></i>
+            </button>
+
+            <button class="menu-item" onclick="abrirMural()">
+                <div class="icon-box"><i data-lucide="megaphone"></i></div>
+                <div class="text-box">
+                    <strong>Mural de Avisos</strong>
+                    <span>Comunicados da escola</span>
+                </div>
+            </button>
+        </nav>
+
+        <p class="quote">"O sucesso é a soma de pequenos esforços."</p>
+    </div>
+
+    <script type="module" src="home-logica.js"></script>
+</body>
+</html>
