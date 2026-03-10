@@ -74,21 +74,18 @@ async function carregarDados() {
     const emailAtual = localStorage.getItem('dt_user_email');
     const userType = localStorage.getItem('dt_user_type');
 
-    // Sempre tenta carregar do LocalStorage primeiro para resposta instantânea
     const localSaves = localStorage.getItem('materias');
     if (localSaves) {
         materias = JSON.parse(localSaves);
         window.atualizarLista();
     }
 
-    // Se for usuário nuvem, busca o backup mais recente do Firebase
     if (userType !== 'local' && emailAtual && emailAtual !== "null") {
         try {
             const docRef = doc(db, "notas", emailAtual);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 const dadosNuvem = docSnap.data().materias || [];
-                // Sincroniza apenas se houver algo na nuvem
                 if (dadosNuvem.length > 0) {
                    materias = dadosNuvem;
                    localStorage.setItem('materias', JSON.stringify(materias));
@@ -114,7 +111,6 @@ window.atualizarLista = function() {
     const lista = document.getElementById('lista-materias');
     if(!lista) return;
 
-    // Ordenação: Notas Maiores primeiro
     materias.sort((a, b) => {
         const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
         const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
@@ -165,7 +161,6 @@ window.atualizarLista = function() {
         </div>`;
     }).join('');
     
-    // Atualiza cabeçalho de estatísticas
     const total = materias.length;
     const somaMediasGerais = materias.reduce((acc, m) => acc + ( (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0) )/4, 0);
     const mediaElem = document.getElementById('media-geral');
@@ -191,7 +186,8 @@ window.salvarNota = async function(id, b, val) {
 // MODAIS E MATÉRIAS
 // ==========================================
 
-export async function confirmarNovaMateria() {
+// EXPORTAÇÃO GLOBAL MANUAL (VITAL PARA O INDEX LER)
+window.confirmarNovaMateria = async function() {
     const input = document.getElementById('nome-materia-input');
     if(input && input.value.trim() !== "") {
         const nova = { 
@@ -202,21 +198,13 @@ export async function confirmarNovaMateria() {
         
         materias.push(nova);
         localStorage.setItem('materias', JSON.stringify(materias));
-        
-        // Atualiza a lista visualmente ANTES de enviar para nuvem (mais rápido)
         window.atualizarLista();
         
-        // Limpa e fecha
         input.value = ''; 
         if(window.fecharModal) window.fecharModal(); 
-        
-        // Envia para o Firebase em segundo plano
         await salvarNaNuvem();
     }
-}
-
-// Exporta para o escopo global
-window.confirmarNovaMateria = confirmarNovaMateria;
+};
 
 window.abrirModal = function() { 
     document.getElementById('modal-materia').style.display = 'flex'; 
