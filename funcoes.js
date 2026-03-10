@@ -15,9 +15,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // --- IDENTIFICAÇÃO ---
-const userEmail = localStorage.getItem('dt_user_email');
-const userType = localStorage.getItem('dt_user_type');
-
 let materias = [];
 let idParaExcluir = null;
 
@@ -27,7 +24,7 @@ let idParaExcluir = null;
 function calcularXP(nota) {
     const n = parseFloat(nota);
     if (isNaN(n) || nota === "" || nota === null) return 0;
-    if (n === 10) return 100;
+    if (n >= 10) return 100;
     if (n >= 8.0) return 50;
     if (n >= 6.0) return 20;
     if (n >= 4.0) return -20;
@@ -40,8 +37,7 @@ async function atualizarXPGlobal() {
     const emailAtual = localStorage.getItem('dt_user_email');
     const tipoAtual = localStorage.getItem('dt_user_type');
     
-    if(!emailAtual || emailAtual === "null") return;
-    if (tipoAtual === 'local') return;
+    if(!emailAtual || emailAtual === "null" || tipoAtual === 'local') return;
 
     let xpTotal = 0;
     materias.forEach(m => {
@@ -76,26 +72,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function carregarDados() {
     const emailAtual = localStorage.getItem('dt_user_email');
-    if (userType === 'local' || !emailAtual) {
-        materias = JSON.parse(localStorage.getItem('materias')) || [];
-    } else {
+    const userType = localStorage.getItem('dt_user_type');
+
+    // Sempre tenta carregar do LocalStorage primeiro para resposta instantânea
+    const localSaves = localStorage.getItem('materias');
+    if (localSaves) {
+        materias = JSON.parse(localSaves);
+        window.atualizarLista();
+    }
+
+    // Se for usuário nuvem, busca o backup mais recente do Firebase
+    if (userType !== 'local' && emailAtual && emailAtual !== "null") {
         try {
             const docRef = doc(db, "notas", emailAtual);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                materias = docSnap.data().materias || [];
-                localStorage.setItem('materias', JSON.stringify(materias));
-            } else {
-                materias = JSON.parse(localStorage.getItem('materias')) || [];
+                const dadosNuvem = docSnap.data().materias || [];
+                // Sincroniza apenas se houver algo na nuvem
+                if (dadosNuvem.length > 0) {
+                   materias = dadosNuvem;
+                   localStorage.setItem('materias', JSON.stringify(materias));
+                   window.atualizarLista();
+                }
             }
-        } catch (e) { console.error("Erro ao carregar:", e); }
+        } catch (e) { console.error("Erro ao carregar nuvem:", e); }
     }
-    window.atualizarLista();
 }
 
 async function salvarNaNuvem() {
     const emailAtual = localStorage.getItem('dt_user_email');
-    if (userType !== 'local' && emailAtual) {
+    const userType = localStorage.getItem('dt_user_type');
+    if (userType !== 'local' && emailAtual && emailAtual !== "null") {
         await atualizarXPGlobal();
     }
 }
@@ -107,11 +114,17 @@ window.atualizarLista = function() {
     const lista = document.getElementById('lista-materias');
     if(!lista) return;
 
+    // Ordenação: Notas Maiores primeiro
     materias.sort((a, b) => {
         const somaA = (Number(a.n1)||0) + (Number(a.n2)||0) + (Number(a.n3)||0) + (Number(a.n4)||0);
         const somaB = (Number(b.n1)||0) + (Number(b.n2)||0) + (Number(b.n3)||0) + (Number(b.n4)||0);
-        return somaB - somaA || a.id - b.id;
+        return somaB - somaA || b.id - a.id;
     });
+
+    if (materias.length === 0) {
+        lista.innerHTML = `<div style="text-align:center; color:#555; padding:40px; font-weight:bold;">Nenhuma matéria criada. Clique no + para começar!</div>`;
+        return;
+    }
 
     lista.innerHTML = materias.map(m => {
         const soma = (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0);
@@ -122,42 +135,45 @@ window.atualizarLista = function() {
         return `
         <div class="materia-card">
             <div class="card-top">
-                <h3 style="font-size:17px; font-weight:800;">${m.nome}</h3>
-                <button onclick="window.abrirModalExcluir(${m.id})" style="background:none; border:none; color:#ff4444; opacity:0.5; padding:5px;">
+                <h3 style="font-size:17px; font-weight:800; color:white;">${m.nome}</h3>
+                <button onclick="window.abrirModalExcluir(${m.id})" style="background:none; border:none; color:#ff4444; opacity:0.6; cursor:pointer; padding:5px;">
                     <i data-lucide="trash-2" style="width:18px;"></i>
                 </button>
             </div>
-            <div class="progress-bg"><div class="progress-fill" style="width:${percent}%;"></div></div>
+            <div class="progress-bg" style="height:6px; background:rgba(255,255,255,0.05); border-radius:10px; margin:12px 0; overflow:hidden;">
+                <div class="progress-fill" style="width:${percent}%; height:100%; background:#8a2be2; box-shadow: 0 0 10px #8a2be2; transition: width 0.5s ease;"></div>
+            </div>
             <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
                 ${[1,2,3,4].map(n => {
-                    const val = m['n'+n];
+                    const val = m['n'+n] === undefined ? "" : m['n'+n];
                     return `<input type="number" step="0.1" value="${val}" placeholder="${n}º"
-                        style="width:100%; background:rgba(0,0,0,0.3); border:1px solid #222; color:white; padding:10px; border-radius:10px; text-align:center; font-size:13px; font-weight:bold;"
+                        style="width:100%; background:rgba(0,0,0,0.5); border:1px solid rgba(138,43,226,0.2); color:white; padding:12px 5px; border-radius:12px; text-align:center; font-size:14px; font-weight:bold; outline:none;"
                         onchange="window.salvarNota(${m.id}, ${n}, this.value)">`;
                 }).join('')}
             </div>
-            <div class="card-bottom">
-                <span style="font-size:11px; color:#555; font-weight:bold;">MÉDIA: ${media}</span>
+            <div class="card-bottom" style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:12px; color:#888; font-weight:bold;">TOTAL: ${soma.toFixed(1)}</span>
                 ${aprovado ? `
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <span class="aprovado-badge">APROVADO</span>
-                        <button onclick="window.gerarCardVitoria('${m.nome}', '${media}')" style="background:none; border:none; color:#8a2be2; cursor:pointer; padding:5px; display:flex;">
-                            <i data-lucide="share-2" style="width:16px;"></i>
+                        <span class="aprovado-badge" style="background:rgba(0,255,127,0.1); color:#00ff7f; padding:4px 10px; border-radius:8px; font-size:10px; font-weight:900;">APROVADO</span>
+                        <button onclick="window.gerarCardVitoria('${m.nome}', '${media}')" style="background:none; border:none; color:#8a2be2; cursor:pointer; display:flex; padding:5px;">
+                            <i data-lucide="share-2" style="width:18px;"></i>
                         </button>
                     </div>
-                ` : `<span class="falta-badge">FALTAM ${(24-soma).toFixed(1)}</span>`}
+                ` : `<span class="falta-badge" style="color:#ffcc00; font-size:10px; font-weight:900;">FALTAM ${(24-soma).toFixed(1)}</span>`}
             </div>
         </div>`;
     }).join('');
     
-    // Atualiza cabeçalho
+    // Atualiza cabeçalho de estatísticas
     const total = materias.length;
-    const somaMediasGerais = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
+    const somaMediasGerais = materias.reduce((acc, m) => acc + ( (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0) )/4, 0);
     const mediaElem = document.getElementById('media-geral');
     const aprovElem = document.getElementById('aprov-count');
     
     if(mediaElem) mediaElem.innerText = total > 0 ? (somaMediasGerais / total).toFixed(1) : "0.0";
-    if(aprovElem) aprovElem.innerText = `${materias.filter(m => (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4)) >= 24).length}/${total}`;
+    if(aprovElem) aprovElem.innerText = `${materias.filter(m => ((Number(m.n1)||0)+(Number(m.n2)||0)+(Number(m.n3)||0)+(Number(m.n4)||0)) >= 24).length}/${total}`;
+    
     if(window.lucide) lucide.createIcons();
 };
 
@@ -175,28 +191,42 @@ window.salvarNota = async function(id, b, val) {
 // MODAIS E MATÉRIAS
 // ==========================================
 
-// ESTA É A FUNÇÃO QUE VOCÊ CLICA NO BOTÃO CRIAR
 export async function confirmarNovaMateria() {
     const input = document.getElementById('nome-materia-input');
-    if(input && input.value) {
-        materias.push({ id: Date.now(), nome: input.value, n1:"", n2:"", n3:"", n4:"" });
+    if(input && input.value.trim() !== "") {
+        const nova = { 
+            id: Date.now(), 
+            nome: input.value.trim(), 
+            n1:"", n2:"", n3:"", n4:"" 
+        };
+        
+        materias.push(nova);
         localStorage.setItem('materias', JSON.stringify(materias));
-        await salvarNaNuvem();
+        
+        // Atualiza a lista visualmente ANTES de enviar para nuvem (mais rápido)
+        window.atualizarLista();
+        
+        // Limpa e fecha
         input.value = ''; 
         if(window.fecharModal) window.fecharModal(); 
-        window.atualizarLista();
+        
+        // Envia para o Firebase em segundo plano
+        await salvarNaNuvem();
     }
 }
-// Torna global para o index.html ler
+
+// Exporta para o escopo global
 window.confirmarNovaMateria = confirmarNovaMateria;
 
-window.abrirModal = function() { document.getElementById('modal-materia').style.display = 'flex'; };
+window.abrirModal = function() { 
+    document.getElementById('modal-materia').style.display = 'flex'; 
+    document.getElementById('nome-materia-input').focus();
+};
 window.fecharModal = function() { document.getElementById('modal-materia').style.display = 'none'; };
 
 window.abrirModalExcluir = function(id) {
     idParaExcluir = id;
     document.getElementById('modal-excluir-container').style.display = 'flex';
-    if(window.lucide) lucide.createIcons();
 };
 
 window.fecharModalExcluir = function() { 
@@ -206,9 +236,9 @@ window.fecharModalExcluir = function() {
 window.confirmarExclusao = async function() {
     materias = materias.filter(m => m.id !== idParaExcluir);
     localStorage.setItem('materias', JSON.stringify(materias));
-    await salvarNaNuvem();
     window.atualizarLista();
     window.fecharModalExcluir();
+    await salvarNaNuvem();
 };
 
 // ==========================================
@@ -237,7 +267,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     if(window.lucide) lucide.createIcons({ container: container });
 
     setTimeout(async () => {
-        const canvas = await html2canvas(container, { backgroundColor: null, width: 1080, height: 1920, scale: 1, useCORS: true });
+        const canvas = await html2canvas(container, { backgroundColor: '#0d0d0d', width: 1080, height: 1920, scale: 1, useCORS: true });
         canvas.toBlob(async (blob) => {
             const file = new File([blob], `HubBrain_${nomeMateria}.png`, { type: 'image/png' });
             try {
@@ -251,4 +281,3 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
         });
     }, 400);
 };
-      
