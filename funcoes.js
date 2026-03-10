@@ -178,7 +178,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], `Vitoria_${nomeMateria}.png`, { type: 'image/png' });
                 if (navigator.share) {
-                    await navigator.share({ title: 'Hub Brain', text: `Menos uma! Passei em ${nomeMateria}. 🚀\n\nOrganize suas notas também no Hub Brain:\nhttps://hubbrain.netlify.app/`,
+                    await navigator.share({ title: 'Hub Brain', text: `Menos uma! Passei em ${nomeMateria}. 🚀\n\nOrganize suas notas também no Hub Brain:\nhttps://hubbrain.netlify.app/`
                                            , files: [file] });
                 } else {
                     const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `Vitoria_${nomeMateria}.png`; link.click();
