@@ -19,32 +19,25 @@ if ((localStorage.getItem('dt_user_email') || "").toLowerCase() !== emailMestre)
     window.location.replace('index.html');
 }
 
-// MONITOR EM TEMPO REAL
-function carregarPainelLive() {
+// SNAPSHOT EM TEMPO REAL (DATABASE + LOGS)
+function iniciarMonitoramento() {
     const q = query(collection(db, "notas"), orderBy("xp", "desc"));
     
     onSnapshot(q, (snapshot) => {
         const logsContainer = document.getElementById('logs-container');
         const listaUsuarios = document.getElementById('lista-usuarios-admin');
         
-        let logsHTML = "";
         let usuariosHTML = "";
-        let totalXP = 0;
-        let totalMats = 0;
-        let count = 0;
+        let logsHTML = "";
+        let totalXP = 0, totalMats = 0, count = 0;
 
-        // Pegar as atividades mais recentes para os logs (baseado em quem atualizou por último)
-        const atividades = [...snapshot.docs].sort((a,b) => (b.data().atualizadoEm || 0) - (a.data().atualizadoEm || 0));
+        // Ordenar para Logs (por atualização recente)
+        const sortedDocs = [...snapshot.docs].sort((a,b) => (b.data().atualizadoEm || 0) - (a.data().atualizadoEm || 0));
 
-        atividades.slice(0, 10).forEach(doc => {
-            const u = doc.data();
+        sortedDocs.slice(0, 12).forEach(d => {
+            const u = d.data();
             const hora = u.atualizadoEm ? new Date(u.atualizadoEm).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '--:--';
-            logsHTML += `
-                <div class="log-item">
-                    <span class="log-time">${hora}</span>
-                    <span class="log-text"><strong>${u.nome}</strong> sincronizou dados.</span>
-                </div>
-            `;
+            logsHTML += `<div class="log-entry"><span class="t-purp">${hora}</span> <span><b>${u.nome}</b> sincronizou dados</span></div>`;
         });
 
         snapshot.forEach((userDoc) => {
@@ -54,23 +47,23 @@ function carregarPainelLive() {
             totalMats += (u.materias ? u.materias.length : 0);
 
             usuariosHTML += `
-                <div class="user-admin-item">
-                    <div class="user-info">
-                        <strong>${u.nome} <span class="tag-mats">${u.materias?.length || 0} mats</span></strong>
-                        <span>${u.email}</span>
-                        <span class="xp-badge">${u.xp || 0} XP</span>
+                <div class="user-row">
+                    <div class="u-meta">
+                        <span class="u-name">${u.nome} <i class="m-badge">${u.materias?.length || 0} mats</i></span>
+                        <span class="u-email">${u.email}</span>
+                        <div class="u-xp-box">${u.xp || 0} XP</div>
                     </div>
-                    <div class="user-actions">
-                        <button onclick="verMateriasUser('${userDoc.id}')"><i data-lucide="book-open"></i></button>
+                    <div class="u-actions">
+                        <button onclick="verMateriasUser('${userDoc.id}')"><i data-lucide="layers"></i></button>
                         <button onclick="editarXP('${userDoc.id}', ${u.xp || 0})"><i data-lucide="zap"></i></button>
-                        <button onclick="banirUsuario('${userDoc.id}')" class="btn-del"><i data-lucide="trash-2"></i></button>
+                        <button onclick="banirUsuario('${userDoc.id}')" class="btn-danger-tool"><i data-lucide="trash-2"></i></button>
                     </div>
-                </div>
-            `;
+                </div>`;
         });
 
-        logsContainer.innerHTML = logsHTML || "Nenhuma atividade.";
-        listaUsuarios.innerHTML = usuariosHTML;
+        listaUsuarios.innerHTML = usuariosHTML || "<p class='empty'>Nenhum aluno encontrado.</p>";
+        logsContainer.innerHTML = logsHTML || "<p class='empty'>Aguardando atividades...</p>";
+        
         document.getElementById('total-users').innerText = count;
         document.getElementById('avg-xp').innerText = count > 0 ? Math.floor(totalXP / count) : 0;
         document.getElementById('total-materias').innerText = totalMats;
@@ -79,33 +72,24 @@ function carregarPainelLive() {
     });
 }
 
-// AÇÕES GLOBAIS
+// AÇÕES DO MASTER
 window.verMateriasUser = async (id) => {
     const snap = await getDocs(collection(db, "notas"));
     const u = snap.docs.find(d => d.id === id)?.data();
-    if(u && u.materias) {
-        const lista = u.materias.map(m => `• ${m.nome}`).join('<br>');
-        abrirModalAdmin(`DISCIPLINAS DE ${u.nome.toUpperCase()}`, lista || "Vazio", "", () => {}, false);
-    }
+    const lista = u?.materias?.map(m => `• ${m.nome}`).join('<br>') || "Nenhuma matéria.";
+    abrirModalAdmin(`DADOS: ${u.nome}`, lista, "", () => {}, false);
 };
 
 window.editarXP = (id, xp) => {
-    abrirModalAdmin("EDITAR XP", "Digite o novo valor:", xp, async (val) => {
-        await updateDoc(doc(db, "notas", id), { xp: Number(val), atualizadoEm: Date.now() });
+    abrirModalAdmin("AJUSTAR XP", "Defina o novo valor de XP:", xp, async (val) => {
+        if(val) await updateDoc(doc(db, "notas", id), { xp: Number(val), atualizadoEm: Date.now() });
     }, true);
 };
 
 window.banirUsuario = (id) => {
-    abrirModalAdmin("BANIR", `Excluir permanentemente ${id}?`, "", async () => {
+    abrirModalAdmin("EXPULSAR", `Deseja apagar os dados de ${id}?`, "", async () => {
         await deleteDoc(doc(db, "notas", id));
     }, false);
-};
-
-window.toggleManutencao = async () => {
-    abrirModalAdmin("SISTEMA", "Digite OFF para bloquear ou ON para liberar:", "", async (val) => {
-        const bloqueado = val.toUpperCase() === 'OFF';
-        await setDoc(doc(db, "config", "status_sistema"), { emManutencao: bloqueado });
-    }, true);
 };
 
 window.postarAviso = async () => {
@@ -113,24 +97,31 @@ window.postarAviso = async () => {
     if(!t.value) return;
     await setDoc(doc(db, "config", "aviso_global"), { mensagem: t.value, ativo: true });
     t.value = "";
-    abrirModalAdmin("SUCESSO", "Mural atualizado!", "", () => {}, false);
+    abrirModalAdmin("SUCESSO", "Aviso enviado para todos!", "", () => {}, false);
 };
 
 window.removerAviso = async () => {
     await setDoc(doc(db, "config", "aviso_global"), { ativo: false });
 };
 
-// MODAL ENGINE
+window.toggleManutencao = () => {
+    abrirModalAdmin("CORE", "Digite 'LOCK' para bloquear o app ou 'OPEN' para liberar:", "", async (val) => {
+        const isLock = val.toUpperCase() === 'LOCK';
+        await setDoc(doc(db, "config", "status_sistema"), { emManutencao: isLock });
+    }, true);
+};
+
+// MODAL CONTROLLER
 window.abrirModalAdmin = (titulo, desc, placeholder = "", callback, comInput = false) => {
-    const modal = document.getElementById('modal-admin');
+    const m = document.getElementById('modal-admin');
     const input = document.getElementById('modal-input');
     document.getElementById('modal-title').innerText = titulo;
     document.getElementById('modal-desc').innerHTML = desc;
     input.style.display = comInput ? 'block' : 'none';
     input.value = placeholder;
-    modal.style.display = 'flex';
+    m.style.display = 'flex';
     document.getElementById('modal-confirm-btn').onclick = () => { callback(input.value); fecharModalAdmin(); };
 };
 window.fecharModalAdmin = () => document.getElementById('modal-admin').style.display = 'none';
 
-document.addEventListener('DOMContentLoaded', carregarPainelLive);
+document.addEventListener('DOMContentLoaded', iniciarMonitoramento);
