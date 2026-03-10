@@ -2,38 +2,70 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Controle - Hub Brain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Master Panel - Hub Brain</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="admin.css"> </head>
+    <link rel="stylesheet" href="admin.css">
+</head>
 <body>
-    <header>
-        <h1>CONTROL <span class="purple">PANEL</span></h1>
-        <button onclick="window.location.href='index.html'">Sair</button>
+
+    <header class="admin-header">
+        <div class="header-left">
+            <i data-lucide="shield-check" class="purple-glow"></i>
+            <h1>MASTER <span class="purple">CONTROL</span></h1>
+        </div>
+        <button onclick="window.location.href='index.html'" class="btn-exit">VOLTAR AO HUB</button>
     </header>
 
-    <div class="admin-container">
+    <main class="admin-grid">
         <section class="admin-card">
-            <h3><i data-lucide="users"></i> Usuários Ativos</h3>
+            <div class="card-header">
+                <i data-lucide="users"></i>
+                <h3>USUÁRIOS DA BASE</h3>
+            </div>
             <div id="lista-usuarios-admin" class="admin-list">
-                <p>Carregando base de dados...</p>
+                <div class="loading-spinner">Sincronizando banco de dados...</div>
             </div>
         </section>
 
-        <section class="admin-card">
-            <h3><i data-lucide="megaphone"></i> Aviso Global</h3>
-            <textarea id="aviso-texto" placeholder="Digite o aviso para todos os alunos..."></textarea>
-            <button onclick="postarAviso()" class="btn-primary">Enviar para Todos</button>
-        </section>
+        <div class="admin-column">
+            <section class="admin-card">
+                <div class="card-header">
+                    <i data-lucide="megaphone"></i>
+                    <h3>MURAL DE AVISOS</h3>
+                </div>
+                <div class="card-body">
+                    <textarea id="aviso-texto" placeholder="O que você quer anunciar para todos os alunos hoje?"></textarea>
+                    <div class="btn-group-column">
+                        <button onclick="postarAviso()" class="btn-primary">
+                            <i data-lucide="send"></i> POSTAR AGORA
+                        </button>
+                        <button onclick="removerAviso()" class="btn-secondary">
+                            <i data-lucide="bell-off"></i> REMOVER AVISO ATUAL
+                        </button>
+                    </div>
+                </div>
+            </section>
 
-        <section class="admin-card">
-            <h3><i data-lucide="shield-alert"></i> Sistema</h3>
-            <div class="btn-group">
-                <button onclick="toggleManutencao()" class="btn-danger">Modo Manutenção</button>
-                <button onclick="limparXPBugado()" class="btn-secondary">Limpar XP Duplicado</button>
-            </div>
-        </section>
-    </div>
+            <section class="admin-card">
+                <div class="card-header">
+                    <i data-lucide="cpu"></i>
+                    <h3>SISTEMA CORE</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">Controle as engrenagens do servidor e manutenção.</p>
+                    <div class="btn-group-grid">
+                        <button onclick="toggleManutencao()" class="btn-danger">
+                            <i data-lucide="power"></i> MANUTENÇÃO
+                        </button>
+                        <button onclick="limparXPBugado()" class="btn-clean">
+                            <i data-lucide="sparkles"></i> LIMPAR DUPLICATAS
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
 
     <script type="module" src="admin-logica.js"></script>
 </body>
