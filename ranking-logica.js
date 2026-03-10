@@ -15,7 +15,6 @@ const db = getFirestore(app);
 
 // IDENTIFICADOR MESTRE
 const userEmail = localStorage.getItem('dt_user_email');
-// IMPORTANTE: Garantir que o ID seja comparado em letras minúsculas para evitar erro de duplicata
 const meuID = (userEmail && userEmail !== "null") ? userEmail.toLowerCase() : null;
 
 function getPatente(xp) {
@@ -29,14 +28,14 @@ function getPatente(xp) {
 async function carregarRanking() {
     try {
         const querySnapshot = await getDocs(collection(db, "notas"));
-        let lista = [];
+        let listaRaw = [];
         
         querySnapshot.forEach(doc => {
             const d = doc.data();
-            // Filtro rigoroso: só entra se tiver nome e se o e-mail for válido
+            // Só entra se tiver nome e um e-mail para servir de ID único
             if (d.nome && d.email) {
-                lista.push({ 
-                    id: d.email.toLowerCase(), // Usamos o e-mail do campo do banco como ID principal
+                listaRaw.push({ 
+                    id: d.email.toLowerCase(),
                     nome: d.nome, 
                     xp: Number(d.xp) || 0, 
                     avatar: d.avatar || "user" 
@@ -44,16 +43,17 @@ async function carregarRanking() {
             }
         });
 
-        // Agrupar duplicatas por e-mail (caso existam) pegando o maior XP
-        const listaUnica = Object.values(lista.reduce((acc, curr) => {
+        // REMOVE DUPLICADOS: Se o mesmo e-mail aparecer 2x, pega o que tem mais XP
+        const listaUnica = Object.values(listaRaw.reduce((acc, curr) => {
             if (!acc[curr.id] || curr.xp > acc[curr.id].xp) {
                 acc[curr.id] = curr;
             }
             return acc;
         }, {}));
 
-        // Ordenação: Maior XP primeiro
+        // ORDENAÇÃO: Do maior XP para o menor
         listaUnica.sort((a, b) => b.xp - a.xp);
+        
         renderizar(listaUnica);
     } catch (e) { 
         console.error("Erro ao carregar ranking:", e); 
@@ -61,7 +61,7 @@ async function carregarRanking() {
 }
 
 function renderizar(lista) {
-    // 1. Renderiza o Top 3 no Pódio
+    // 1. RENDERIZA O TOP 3 (PÓDIO)
     for(let i=0; i<3; i++) {
         const u = lista[i];
         const nomeElem = document.getElementById(`p${i+1}-name`);
@@ -69,28 +69,26 @@ function renderizar(lista) {
         const frame = document.getElementById(`avatar-p${i+1}`);
 
         if(u && nomeElem && scoreElem && frame) {
-            // Pega apenas o primeiro nome para não quebrar o layout do pódio
+            // Nome curto para não quebrar o pódio
             nomeElem.innerText = u.nome.split(' ')[0];
             
-            // CORREÇÃO DO "XP XP": Injeta apenas o número. 
-            // Se o seu HTML já tiver "XP" escrito do lado do ID, mude para: scoreElem.innerText = u.xp;
-            // Se o seu HTML for apenas um campo vazio, use a linha abaixo:
-            scoreElem.innerText = `${u.xp} XP`;
+            // RESOLVE O "XP XP": Injeta APENAS o número, pois o HTML já tem o texto "XP"
+            scoreElem.innerText = u.xp;
             
             const iconName = isNaN(u.avatar) ? u.avatar : "user";
             
             if (i === 0) { // Primeiro Lugar
                 frame.innerHTML = `
-                    <i data-lucide="crown" class="crown-icon" style="color:#ffd700; position:absolute; top:-20px; transform:rotate(-15deg);"></i>
+                    <i data-lucide="crown" class="crown-icon" style="color:#ffd700; position:absolute; top:-15px; transform:rotate(-10deg); z-index:10;"></i>
                     <i data-lucide="${iconName}" style="width:50px; height:50px; color:#ffd700;"></i>
                 `;
-            } else { // Segundo e Terceiro
+            } else { // 2º e 3º Lugares
                 frame.innerHTML = `<i data-lucide="${iconName}" style="width:35px; height:35px; color:#fff;"></i>`;
             }
         }
     }
 
-    // 2. Renderiza o resto da lista (do 4º lugar em diante)
+    // 2. RENDERIZA O RESTO DA LISTA (4º EM DIANTE)
     const container = document.getElementById('lista-ranking');
     if (!container) return;
 
@@ -103,13 +101,14 @@ function renderizar(lista) {
             <span class="rank-pos" style="${isMe ? 'color:#8a2be2;' : ''}">${i + 4}º</span>
             <div class="rank-info">
                 <span class="rank-name" style="${isMe ? 'font-weight:bold;' : ''}">
-                    ${u.nome} ${isMe ? '<span class="voce-tag" style="font-size:9px; background:#8a2be2; color:white; padding:2px 6px; border-radius:10px; margin-left:5px;">VOCÊ</span>' : ''}
+                    ${u.nome} 
+                    ${isMe ? '<span style="font-size:9px; background:#8a2be2; color:white; padding:2px 6px; border-radius:10px; margin-left:5px; font-weight:800;">VOCÊ</span>' : ''}
                 </span>
                 <span class="rank-patente">${getPatente(u.xp)} • ${u.xp} XP</span>
             </div>
             <i data-lucide="${iconName}" style="width:18px; height:18px; color:${isMe ? '#8a2be2' : '#555'}; opacity:0.8;"></i>
         </div>
-    `}).join('') || '<p style="text-align:center; padding:20px; color:#555;">Nenhum competidor ainda.</p>';
+    `}).join('') || '<p style="text-align:center; padding:20px; color:#555;">Nenhum competidor encontrado.</p>';
     
     if(window.lucide) lucide.createIcons();
 }
