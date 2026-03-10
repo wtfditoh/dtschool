@@ -214,7 +214,6 @@
     </script>
     
     <script>
-        // AS FUNÇÕES QUE VOCÊ TINHA E FUNCIONAVAM
         function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
@@ -226,8 +225,14 @@
                 if(typeof window.confirmarNovaMateria === 'function') {
                     window.confirmarNovaMateria(); 
                 } else {
-                    // Se o arquivo ainda não carregou, ele avisa
-                    alert("O sistema ainda está carregando a base de dados, tente novamente em 2 segundos.");
+                    // Se o arquivo ainda não carregou, ele aguarda meio segundo e tenta de novo sozinho
+                    setTimeout(() => {
+                        if(typeof window.confirmarNovaMateria === 'function') {
+                            window.confirmarNovaMateria();
+                        } else {
+                            alert("Sincronizando banco de dados... Tente criar novamente em instantes.");
+                        }
+                    }, 500);
                 }
             }
         }
@@ -252,6 +257,6 @@
 
     <script src="menu.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script type="module" src="funcoes.js?v=105"></script>
+    <script type="module" src="funcoes.js?v=110"></script>
 </body>
 </html>
