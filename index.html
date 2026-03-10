@@ -178,7 +178,7 @@
             <p id="aviso-vazio" style="display:none; color:#ff4444; font-size:12px; font-weight:bold; margin-bottom:15px;">⚠️ Digite o nome da matéria!</p>
             <div class="area-botoes-modal" style="display: flex; gap: 10px;">
                 <button onclick="fecharModal()" class="btn-modal-voltar" style="flex: 1; padding: 15px; border-radius: 12px; background: #222; color: white; border: none; font-weight: bold;">Sair</button>
-                <button id="btn-criar-materia" onclick="validarEEnviarMateria()" class="btn-modal-acao" style="flex: 1; padding: 15px; border-radius: 12px; background: #8a2be2; color: white; border: none; font-weight: bold;">Criar</button>
+                <button onclick="validarEEnviarMateria()" class="btn-modal-acao" style="flex: 1; padding: 15px; border-radius: 12px; background: #8a2be2; color: white; border: none; font-weight: bold;">Criar</button>
             </div>
         </div>
     </div>
@@ -232,17 +232,19 @@
     </script>
 
     <script>
-        // FUNÇÕES DE INTERFACE GLOBAIS
-        window.abrirModal = function() { document.getElementById('modal-materia').style.display = 'flex'; };
-        window.fecharModal = function() { document.getElementById('modal-materia').style.display = 'none'; };
-        window.abrirSobreDono = function() { 
-            document.getElementById('modal-dono').style.display = 'flex'; 
-            if(window.lucide) lucide.createIcons(); 
-        };
-        window.fecharSobreDono = function() { document.getElementById('modal-dono').style.display = 'none'; };
-        window.fecharModalExcluir = function() { document.getElementById('modal-excluir-container').style.display = 'none'; };
+        // FUNÇÕES GLOBAIS DE INTERFACE
+        function abrirModal() { document.getElementById('modal-materia').style.display = 'flex'; }
+        function fecharModal() { document.getElementById('modal-materia').style.display = 'none'; }
+        function abrirSobreDono() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
+        function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
+        function fecharModalExcluir() { document.getElementById('modal-excluir-container').style.display = 'none'; }
+        function limparErroInput() {
+            const input = document.getElementById('nome-materia-input');
+            input.classList.remove('input-error');
+            document.getElementById('aviso-vazio').style.display = 'none';
+        }
 
-        // O AJUSTE PARA O BOTÃO CRIAR FUNCIONAR DE VEZ
+        // SOLUÇÃO FINAL PARA O BOTÃO CRIAR (BYPASS DIRETO)
         function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
@@ -253,23 +255,23 @@
                 return;
             }
 
-            // Chama a função que você tem no funcoes.js
+            // MÁGICA: Em vez de esperar, nós "forçamos" o clique na função do window que o funcoes.js criou
+            // Se ela não existir por atraso de carregamento, nós executamos a lógica aqui mesmo!
             if (window.confirmarNovaMateria) {
                 window.confirmarNovaMateria();
             } else {
-                // Tenta importar se ainda não estiver global
-                import('./funcoes.js').then(m => {
-                    if(m.confirmarNovaMateria) m.confirmarNovaMateria();
+                // FALLBACK DE EMERGÊNCIA: Lógica idêntica ao funcoes.js para nunca falhar
+                let materiasLocais = JSON.parse(localStorage.getItem('materias')) || [];
+                materiasLocais.push({
+                    id: Date.now(),
+                    nome: input.value,
+                    n1: "", n2: "", n3: "", n4: ""
                 });
-            }
-        }
-
-        function limparErroInput() {
-            const input = document.getElementById('nome-materia-input');
-            const aviso = document.getElementById('aviso-vazio');
-            if (input.value.trim() !== "") {
-                input.classList.remove('input-error');
-                aviso.style.display = 'none';
+                localStorage.setItem('materias', JSON.stringify(materiasLocais));
+                input.value = '';
+                fecharModal();
+                if (window.atualizarLista) window.atualizarLista();
+                // O funcoes.js depois vai sincronizar com a nuvem quando terminar de carregar
             }
         }
 
@@ -278,6 +280,6 @@
 
     <script src="menu.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script type="module" src="funcoes.js?v=500"></script>
+    <script type="module" src="funcoes.js?v=600"></script>
 </body>
 </html>
