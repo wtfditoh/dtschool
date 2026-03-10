@@ -6,7 +6,7 @@ const criarMenuGlobal = () => {
                 <span class="menu-title">HUB <span class="purple">BRAIN</span></span>
                 <button id="close-menu"><i data-lucide="x"></i></button>
             </div>
-            <nav class="menu-links">
+            <nav class="menu-links" id="nav-links-container">
                 <a href="perfil.html" id="link-perfil"><i data-lucide="user"></i> Perfil</a>
                 <a href="index.html" id="link-index"><i data-lucide="layout-dashboard"></i> Notas</a>
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
@@ -15,7 +15,7 @@ const criarMenuGlobal = () => {
                     <span>Modo Foco <small class="xp-badge">+XP</small></span></a>
                 <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
                 <a href="ranking.html" id="link-ranking"><i data-lucide="trophy"></i> Ranking</a>
-            </nav>
+                </nav>
             <div class="menu-footer">
                 <button id="install-app-btn" class="btn-install-menu" style="display: none;">
                     <i data-lucide="download-cloud"></i> Baixar App
@@ -37,6 +37,21 @@ const criarMenuGlobal = () => {
     const btnClose = document.getElementById('close-menu');
     const btnLogout = document.getElementById('btn-logout-sidebar');
     const btnInstall = document.getElementById('install-app-btn');
+    const navLinks = document.getElementById('nav-links-container');
+
+    // --- LOGICA DE ADMIN (ACESSO EXCLUSIVO) ---
+    const emailMestre = "ditoh2008@gmail.com";
+    const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
+
+    if (emailLogado === emailMestre && navLinks) {
+        const adminLink = document.createElement('a');
+        adminLink.href = "admin.html";
+        adminLink.id = "link-admin";
+        adminLink.style.color = "#a052ff"; // Roxo diferente para destacar
+        adminLink.style.borderLeft = "4px solid #a052ff";
+        adminLink.innerHTML = `<i data-lucide="shield-check"></i> Painel do Mestre`;
+        navLinks.appendChild(adminLink);
+    }
 
     const abrirMenu = () => { sideMenu.classList.add('open'); menuOverlay.classList.add('active'); };
     const fecharMenu = () => { sideMenu.classList.remove('open'); menuOverlay.classList.remove('active'); };
@@ -57,7 +72,7 @@ const criarMenuGlobal = () => {
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        if (btnInstall) btnInstall.style.display = 'flex'; // Só mostra se puder instalar
+        if (btnInstall) btnInstall.style.display = 'flex'; 
     });
 
     if (btnInstall) {
@@ -73,7 +88,7 @@ const criarMenuGlobal = () => {
 
     // Marcar link ativo
     const path = window.location.pathname;
-    const paginas = ['index', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco'];
+    const paginas = ['index', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco', 'admin'];
     paginas.forEach(pg => {
         if (path.includes(pg)) {
             const link = document.getElementById(`link-${pg}`);
