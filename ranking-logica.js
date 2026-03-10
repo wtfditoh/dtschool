@@ -13,10 +13,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// IDENTIFICADOR MESTRE (Prioriza Email para evitar o erro de dois nomes)
+// IDENTIFICADOR MESTRE
 const userEmail = localStorage.getItem('dt_user_email');
-const userPhone = localStorage.getItem('dt_user_phone');
-const meuID = (userEmail && userEmail !== "null") ? userEmail : userPhone;
+// IMPORTANTE: Garantir que o ID seja comparado em letras minúsculas para evitar erro de duplicata
+const meuID = (userEmail && userEmail !== "null") ? userEmail.toLowerCase() : null;
 
 function getPatente(xp) {
     if (xp >= 8000) return "Lenda do Hub 🏆";
@@ -33,10 +33,10 @@ async function carregarRanking() {
         
         querySnapshot.forEach(doc => {
             const d = doc.data();
-            // Só adiciona se tiver nome e XP (evita documentos vazios)
-            if (d.nome) {
+            // Filtro rigoroso: só entra se tiver nome e se o e-mail for válido
+            if (d.nome && d.email) {
                 lista.push({ 
-                    id: doc.id,
+                    id: d.email.toLowerCase(), // Usamos o e-mail do campo do banco como ID principal
                     nome: d.nome, 
                     xp: Number(d.xp) || 0, 
                     avatar: d.avatar || "user" 
@@ -44,9 +44,17 @@ async function carregarRanking() {
             }
         });
 
+        // Agrupar duplicatas por e-mail (caso existam) pegando o maior XP
+        const listaUnica = Object.values(lista.reduce((acc, curr) => {
+            if (!acc[curr.id] || curr.xp > acc[curr.id].xp) {
+                acc[curr.id] = curr;
+            }
+            return acc;
+        }, {}));
+
         // Ordenação: Maior XP primeiro
-        lista.sort((a, b) => b.xp - a.xp);
-        renderizar(lista);
+        listaUnica.sort((a, b) => b.xp - a.xp);
+        renderizar(listaUnica);
     } catch (e) { 
         console.error("Erro ao carregar ranking:", e); 
     }
@@ -61,15 +69,22 @@ function renderizar(lista) {
         const frame = document.getElementById(`avatar-p${i+1}`);
 
         if(u && nomeElem && scoreElem && frame) {
-            nomeElem.innerText = u.nome;
+            // Pega apenas o primeiro nome para não quebrar o layout do pódio
+            nomeElem.innerText = u.nome.split(' ')[0];
+            
+            // CORREÇÃO DO "XP XP": Injeta apenas o número. 
+            // Se o seu HTML já tiver "XP" escrito do lado do ID, mude para: scoreElem.innerText = u.xp;
+            // Se o seu HTML for apenas um campo vazio, use a linha abaixo:
             scoreElem.innerText = `${u.xp} XP`;
             
-            // Se o avatar for número (1, 2, 3), usa ícone 'user'. Se for nome de ícone, usa ele.
             const iconName = isNaN(u.avatar) ? u.avatar : "user";
             
-            if (i === 0) {
-                frame.innerHTML = `<i data-lucide="crown" class="crown-icon" style="color:#ffd700;"></i><i data-lucide="${iconName}" style="width:55px; height:55px; color:#ffd700;"></i>`;
-            } else {
+            if (i === 0) { // Primeiro Lugar
+                frame.innerHTML = `
+                    <i data-lucide="crown" class="crown-icon" style="color:#ffd700; position:absolute; top:-20px; transform:rotate(-15deg);"></i>
+                    <i data-lucide="${iconName}" style="width:50px; height:50px; color:#ffd700;"></i>
+                `;
+            } else { // Segundo e Terceiro
                 frame.innerHTML = `<i data-lucide="${iconName}" style="width:35px; height:35px; color:#fff;"></i>`;
             }
         }
@@ -88,13 +103,13 @@ function renderizar(lista) {
             <span class="rank-pos" style="${isMe ? 'color:#8a2be2;' : ''}">${i + 4}º</span>
             <div class="rank-info">
                 <span class="rank-name" style="${isMe ? 'font-weight:bold;' : ''}">
-                    ${u.nome} ${isMe ? '<span style="font-size:10px; color:#8a2be2; margin-left:5px;">(VOCÊ)</span>' : ''}
+                    ${u.nome} ${isMe ? '<span class="voce-tag" style="font-size:9px; background:#8a2be2; color:white; padding:2px 6px; border-radius:10px; margin-left:5px;">VOCÊ</span>' : ''}
                 </span>
                 <span class="rank-patente">${getPatente(u.xp)} • ${u.xp} XP</span>
             </div>
-            <i data-lucide="${iconName}" style="width:20px; height:20px; color:${isMe ? '#8a2be2' : '#555'}; opacity:0.8;"></i>
+            <i data-lucide="${iconName}" style="width:18px; height:18px; color:${isMe ? '#8a2be2' : '#555'}; opacity:0.8;"></i>
         </div>
-    `}).join('') || '<p style="text-align:center; padding:20px; color:#555;">Buscando competidores...</p>';
+    `}).join('') || '<p style="text-align:center; padding:20px; color:#555;">Nenhum competidor ainda.</p>';
     
     if(window.lucide) lucide.createIcons();
 }
