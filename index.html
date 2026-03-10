@@ -113,8 +113,8 @@
     </div>
 
     <header class="glass-header">
-        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;" onclick="if(window.toggleMenu) window.toggleMenu()">
-            <i data-lucide="menu"></i>
+        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;" onclick="window.location.href='home.html'">
+            <i data-lucide="arrow-left"></i>
         </button>
         
         <div class="hub-logo-container" onclick="abrirSobreDono()">
@@ -223,7 +223,6 @@
                 return;
             }
 
-            // Tenta chamar a função global injetada pelo funcoes.js
             if (window.confirmarNovaMateria) {
                 window.confirmarNovaMateria();
             } else {
