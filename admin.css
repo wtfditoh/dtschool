@@ -1,0 +1,198 @@
+/* --- CONFIGURAÇÕES GERAIS --- */
+:root {
+    --bg-color: #0d0d0d;
+    --card-bg: #1a1a1a;
+    --purple: #8a2be2;
+    --purple-light: #a052ff;
+    --text-main: #ffffff;
+    --text-dim: #a0a0a0;
+    --danger: #ff4444;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- HEADER DO PAINEL --- */
+header {
+    background: var(--card-bg);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--purple);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+}
+
+.purple {
+    color: var(--purple);
+}
+
+header button {
+    background: transparent;
+    border: 1px solid var(--purple);
+    color: var(--purple);
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+header button:hover {
+    background: var(--purple);
+    color: white;
+}
+
+/* --- CONTAINER PRINCIPAL --- */
+.admin-container {
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    gap: 20px;
+}
+
+.admin-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.admin-card h3 {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--purple-light);
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+}
+
+/* --- LISTA DE USUÁRIOS --- */
+.admin-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 15px;
+}
+
+.user-admin-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #2a2a2a;
+    transition: background 0.2s;
+}
+
+.user-admin-item:hover {
+    background: rgba(138, 43, 226, 0.05);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.user-info strong {
+    font-size: 1rem;
+}
+
+.user-info span {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+}
+
+.xp-badge {
+    background: var(--purple);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.75rem !important;
+    width: fit-content;
+}
+
+/* --- BOTÕES DE AÇÃO --- */
+.user-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.user-actions button {
+    background: #333;
+    border: none;
+    color: white;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.user-actions .btn-del:hover {
+    background: var(--danger);
+}
+
+/* --- ÁREA DE AVISO --- */
+textarea {
+    width: 100%;
+    height: 100px;
+    background: #0d0d0d;
+    border: 1px solid #333;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    resize: none;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+.btn-primary {
+    background: var(--purple);
+    border: none;
+    color: white;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* --- MANUTENÇÃO --- */
+.btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn-danger {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-secondary {
+    background: #333;
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
