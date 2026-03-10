@@ -7,81 +7,65 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="admin.css">
 </head>
-<body class="dark-mode">
+<body class="master-dark">
 
     <header class="admin-header">
         <div class="header-left">
-            <div class="logo-box">
-                <i data-lucide="shield-check"></i>
-            </div>
+            <div class="logo-box"><i data-lucide="shield-check"></i></div>
             <h1>MASTER <span class="purple">CONTROL</span></h1>
         </div>
-        <button onclick="window.location.href='index.html'" class="btn-exit">VOLTAR AO HUB</button>
+        <button onclick="window.location.href='index.html'" class="btn-exit">SAIR DO MODO DEUS</button>
     </header>
 
     <main class="admin-grid">
         <div class="admin-column-main">
             <div class="stats-grid">
-                <div class="stat-card">
-                    <span id="total-users">0</span>
-                    <label>ALUNOS</label>
-                </div>
-                <div class="stat-card">
-                    <span id="avg-xp">0</span>
-                    <label>MÉDIA XP</label>
-                </div>
-                <div class="stat-card">
-                    <span id="total-materias">0</span>
-                    <label>MATÉRIAS</label>
-                </div>
+                <div class="stat-card"><span id="total-users">0</span><label>ALUNOS</label></div>
+                <div class="stat-card"><span id="avg-xp">0</span><label>MÉDIA XP</label></div>
+                <div class="stat-card"><span id="total-materias">0</span><label>MATÉRIAS</label></div>
             </div>
 
             <section class="admin-card">
                 <div class="card-header">
                     <i data-lucide="users"></i>
-                    <h3>BASE DE DADOS - RANKING XP</h3>
+                    <h3>GERENCIAMENTO DE ALUNOS</h3>
                 </div>
                 <div id="lista-usuarios-admin" class="admin-list">
-                    <div class="loading-state">
-                        <div class="pulse-loader"></div>
-                        <p>Sincronizando banco de dados...</p>
-                    </div>
+                    <div class="loading-state"><div class="pulse-loader"></div></div>
                 </div>
             </section>
         </div>
 
         <div class="admin-column-side">
-            <section class="admin-card log-card">
-                <div class="card-header">
-                    <i data-lucide="activity"></i>
-                    <h3>LIVE ACTIVITY</h3>
-                </div>
-                <div id="logs-container" class="logs-stream">
-                    </div>
+            <section class="admin-card">
+                <div class="card-header"><i data-lucide="activity"></i><h3>LIVE ACTIVITY</h3></div>
+                <div id="logs-container" class="logs-stream"></div>
             </section>
 
             <section class="admin-card">
-                <div class="card-header">
-                    <i data-lucide="megaphone"></i>
-                    <h3>COMUNICAÇÃO GLOBAL</h3>
-                </div>
+                <div class="card-header"><i data-lucide="megaphone"></i><h3>MURAL GLOBAL</h3></div>
                 <div class="card-body">
-                    <textarea id="aviso-texto" placeholder="O que deseja anunciar hoje?"></textarea>
+                    <textarea id="aviso-texto" placeholder="O que deseja anunciar?"></textarea>
+                    
+                    <div class="color-picker">
+                        <span>COR DO ALERTA:</span>
+                        <div class="color-options">
+                            <input type="radio" name="cor-aviso" value="purple" checked id="c1"> <label for="c1" class="lab-c purp"></label>
+                            <input type="radio" name="cor-aviso" value="danger" id="c2"> <label for="c2" class="lab-c red"></label>
+                            <input type="radio" name="cor-aviso" value="gold" id="c3"> <label for="c3" class="lab-c gold"></label>
+                        </div>
+                    </div>
+
                     <button onclick="postarAviso()" class="btn-primary">POSTAR AVISO</button>
-                    <button onclick="removerAviso()" class="btn-secondary">LIMPAR MURAL</button>
+                    <button onclick="removerAviso()" class="btn-secondary">REMOVER MURAL</button>
                 </div>
             </section>
 
             <section class="admin-card">
-                <div class="card-header">
-                    <i data-lucide="terminal"></i>
-                    <h3>SISTEMA CORE</h3>
-                </div>
+                <div class="card-header"><i data-lucide="terminal"></i><h3>SISTEMA CORE</h3></div>
                 <div class="card-body">
-                    <div class="btn-stack">
-                        <button onclick="toggleManutencao()" class="btn-danger">MODO MANUTENÇÃO</button>
-                        <button onclick="limparXPBugado()" class="btn-outline">LIMPAR DUPLICATAS</button>
-                    </div>
+                    <button onclick="forçarUpdateGeral()" class="btn-clean">FORCE UPDATE GERAL</button>
+                    <button onclick="toggleManutencao()" class="btn-danger" style="margin-top:10px;">MODO MANUTENÇÃO</button>
                 </div>
             </section>
         </div>
@@ -89,7 +73,6 @@
 
     <div id="modal-admin" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-icon-box"><i data-lucide="alert-circle"></i></div>
             <h3 id="modal-title">Título</h3>
             <div id="modal-desc" class="modal-text">Descrição</div>
             <input type="text" id="modal-input" class="modal-input">
