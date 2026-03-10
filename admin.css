@@ -70,3 +70,67 @@ textarea { width: 100%; height: 80px; background: #000; border: 1px solid #333; 
 .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 9999; }
 .modal-box { background: #1a1a1c; padding: 30px; border-radius: 25px; width: 90%; max-width: 320px; text-align: center; }
 .modal-field { width: 100%; padding: 10px; margin-top: 15px; background: #000; border: 1px solid #333; color: white; border-radius: 10px; text-align: center; }
+
+/* ==========================================
+   CORREÇÃO DE FUNDO BRANCO E ALINHAMENTO (LINDÃO)
+   ========================================== */
+
+/* Garante que o container de usuários possa centralizar o conteúdo */
+.admin-list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 1. Estilização do Spinner de Carregamento (O que estava "fora do lugar") */
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* Ocupa todo o espaço do card */
+    width: 100%;
+    color: var(--purple); /* Roxo Cyberpunk */
+    font-weight: bold;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    
+    /* Centralização forçada se a .admin-list estiver vazia */
+    position: absolute;
+    inset: 0;
+    
+    /* Efeito de piscar (Glow) */
+    animation: glow-pulse 2s infinite ease-in-out;
+    background: var(--bg); /* Garante fundo preto */
+}
+
+/* 2. Estilização do Texto de Ranking Vazio (Quando carregar e não tiver ninguém) */
+.admin-list:empty::before,
+.empty-ranking {
+    content: "⚠️ NENHUM ALUNO REGISTRADO AINDA."; /* Mensagem personalizada via CSS se preferir */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    color: var(--text-dim); /* Cinza claro */
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: center;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+/* Animação Cyberpunk para o carregamento */
+@keyframes glow-pulse {
+    0% { opacity: 0.5; text-shadow: 0 0 5px var(--purple); }
+    50% { opacity: 1; text-shadow: 0 0 15px var(--purple); }
+    100% { opacity: 0.5; text-shadow: 0 0 5px var(--purple); }
+}
+
+/* Correção de qualquer input ou textarea que possa ter ficado com fundo branco */
+input:-webkit-autofill,
+textarea:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px #000 inset !important;
+    -webkit-text-fill-color: white !important;
+}
