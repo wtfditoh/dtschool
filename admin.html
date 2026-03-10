@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle - Hub Brain</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="admin.css"> </head>
+<body>
+    <header>
+        <h1>CONTROL <span class="purple">PANEL</span></h1>
+        <button onclick="window.location.href='index.html'">Sair</button>
+    </header>
+
+    <div class="admin-container">
+        <section class="admin-card">
+            <h3><i data-lucide="users"></i> Usuários Ativos</h3>
+            <div id="lista-usuarios-admin" class="admin-list">
+                <p>Carregando base de dados...</p>
+            </div>
+        </section>
+
+        <section class="admin-card">
+            <h3><i data-lucide="megaphone"></i> Aviso Global</h3>
+            <textarea id="aviso-texto" placeholder="Digite o aviso para todos os alunos..."></textarea>
+            <button onclick="postarAviso()" class="btn-primary">Enviar para Todos</button>
+        </section>
+
+        <section class="admin-card">
+            <h3><i data-lucide="shield-alert"></i> Sistema</h3>
+            <div class="btn-group">
+                <button onclick="toggleManutencao()" class="btn-danger">Modo Manutenção</button>
+                <button onclick="limparXPBugado()" class="btn-secondary">Limpar XP Duplicado</button>
+            </div>
+        </section>
+    </div>
+
+    <script type="module" src="admin-logica.js"></script>
+</body>
+</html>
