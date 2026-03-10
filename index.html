@@ -113,7 +113,7 @@
     </div>
 
     <header class="glass-header">
-        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;" onclick="window.location.href='home.html'">
+        <button id="btn-back-home" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;" onclick="window.location.href='home.html'">
             <i data-lucide="arrow-left"></i>
         </button>
         
@@ -246,7 +246,18 @@
         function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
         function fecharModalExcluir() { document.getElementById('modal-excluir-container').style.display = 'none'; }
         
-        document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
+        document.addEventListener('DOMContentLoaded', () => { 
+            if(window.lucide) lucide.createIcons(); 
+            
+            // GARANTIA: Força o botão de voltar a ignorar o menu lateral
+            const btnHome = document.getElementById('btn-back-home');
+            if (btnHome) {
+                btnHome.onclick = (e) => {
+                    e.stopImmediatePropagation();
+                    window.location.href = 'home.html';
+                };
+            }
+        });
     </script>
 
     <script src="menu.js"></script>
