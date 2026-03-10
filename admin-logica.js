@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// CONFIGURAÇÃO FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
   authDomain: "dt-scho0l.firebaseapp.com",
@@ -14,20 +13,39 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- 1. TRAVA DE SEGURANÇA ---
+// --- SISTEMA DE MODAL (MODO DEUS) ---
+window.abrirModalAdmin = (titulo, desc, placeholder = "", callback, comInput = false) => {
+    const modal = document.getElementById('modal-admin');
+    const input = document.getElementById('modal-input');
+    document.getElementById('modal-title').innerText = titulo;
+    document.getElementById('modal-desc').innerText = desc;
+    
+    input.style.display = comInput ? 'block' : 'none';
+    input.value = placeholder;
+
+    modal.style.display = 'flex';
+    document.getElementById('modal-confirm-btn').onclick = () => {
+        callback(input.value);
+        fecharModalAdmin();
+    };
+};
+
+window.fecharModalAdmin = () => {
+    document.getElementById('modal-admin').style.display = 'none';
+};
+
+// --- SEGURANÇA ---
 const emailMestre = "ditoh2008@gmail.com";
 const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
 
 if (emailLogado !== emailMestre.toLowerCase()) {
-    document.body.innerHTML = "<h1 style='color:white; text-align:center; margin-top:50px;'>Acesso Negado</h1>";
     window.location.replace('index.html');
 }
 
-// --- 2. CARREGAR USUÁRIOS ---
+// --- LOGICA CORE ---
 async function carregarUsuarios() {
-    const querySnapshot = await getDocs(collection(db, "notas"));
     const container = document.getElementById('lista-usuarios-admin');
-    if (!container) return;
+    const querySnapshot = await getDocs(collection(db, "notas"));
     container.innerHTML = "";
 
     querySnapshot.forEach((userDoc) => {
@@ -36,7 +54,7 @@ async function carregarUsuarios() {
         card.className = 'user-admin-item';
         card.innerHTML = `
             <div class="user-info">
-                <strong>${u.nome || 'Sem Nome'}</strong>
+                <strong>${u.nome || 'Usuário'}</strong>
                 <span>${u.email}</span>
                 <span class="xp-badge">${u.xp || 0} XP</span>
             </div>
@@ -50,97 +68,57 @@ async function carregarUsuarios() {
     if (window.lucide) lucide.createIcons();
 }
 
-// --- 3. MODO MANUTENÇÃO (TRAVA GLOBAL) ---
-window.toggleManutencao = async () => {
-    const confirmacao = confirm("Deseja ALTERAR o status do sistema? (Alunos serão bloqueados/liberados)");
-    if (!confirmacao) return;
-
-    const acao = prompt("Digite 'ON' para ligar o sistema ou 'OFF' para entrar em MANUTENÇÃO:").toUpperCase();
-    
-    let status = false;
-    if (acao === 'OFF') status = true; // Em manutenção = true
-    else if (acao === 'ON') status = false; // Em manutenção = false
-    else return alert("Comando inválido. Use ON ou OFF.");
-
-    try {
-        await setDoc(doc(db, "config", "status_sistema"), {
-            emManutencao: status,
-            updatedAt: Date.now()
-        });
-        alert(status ? "SISTEMA EM MANUTENÇÃO! (Bloqueado para alunos)" : "SISTEMA ONLINE! (Liberado)");
-    } catch (e) {
-        alert("Erro ao mudar status: " + e.message);
-    }
+window.editarXP = (id, xpAtual) => {
+    abrirModalAdmin("EDITAR XP", `Qual o novo XP para este aluno?`, xpAtual, async (novo) => {
+        if(novo !== "") {
+            await updateDoc(doc(db, "notas", id), { xp: Number(novo) });
+            carregarUsuarios();
+        }
+    }, true);
 };
 
-// --- 4. AVISO GLOBAL ---
-window.postarAviso = async () => {
-    const texto = document.getElementById('aviso-texto').value;
-    if (!texto) return alert("Digite um aviso!");
+window.banirUsuario = (id) => {
+    abrirModalAdmin("BANIR USUÁRIO", `Deseja apagar os dados de ${id} para sempre?`, "", async () => {
+        await deleteDoc(doc(db, "notas", id));
+        carregarUsuarios();
+    }, false);
+};
 
-    try {
-        await setDoc(doc(db, "config", "aviso_global"), {
-            mensagem: texto,
-            ativo: true,
-            data: Date.now()
-        });
-        alert("📢 Aviso enviado!");
-        document.getElementById('aviso-texto').value = "";
-    } catch (e) {
-        alert("Erro ao postar aviso.");
-    }
+window.toggleManutencao = () => {
+    abrirModalAdmin("MANUTENÇÃO", "Digite ON para Liberar ou OFF para Bloquear:", "", async (acao) => {
+        const status = acao.toUpperCase() === 'OFF';
+        await setDoc(doc(db, "config", "status_sistema"), { emManutencao: status, updatedAt: Date.now() });
+        abrirModalAdmin("SUCESSO", status ? "Site bloqueado!" : "Site liberado!", "", () => {}, false);
+    }, true);
+};
+
+window.postarAviso = async () => {
+    const txt = document.getElementById('aviso-texto').value;
+    if(!txt) return;
+    await setDoc(doc(db, "config", "aviso_global"), { mensagem: txt, ativo: true, data: Date.now() });
+    document.getElementById('aviso-texto').value = "";
+    abrirModalAdmin("AVISO", "Mural atualizado para todos!", "", () => {}, false);
 };
 
 window.removerAviso = async () => {
-    if(!confirm("Deseja remover o aviso de todas as telas?")) return;
     await setDoc(doc(db, "config", "aviso_global"), { ativo: false });
-    alert("Aviso removido.");
+    abrirModalAdmin("AVISO", "Mural limpo.", "", () => {}, false);
 };
 
-// --- 5. LIMPAR XP DUPLICADO ---
-window.limparXPBugado = async () => {
-    if(!confirm("Isso vai escanear o banco e apagar e-mails repetidos, mantendo o maior XP. Continuar?")) return;
-    
-    const querySnapshot = await getDocs(collection(db, "notas"));
-    const historico = {};
-    let removidos = 0;
-
-    querySnapshot.forEach(userDoc => {
-        const d = userDoc.data();
-        const email = d.email.toLowerCase();
-
-        if (historico[email]) {
-            // Se já vimos esse e-mail, apaga o menor
-            const anterior = historico[email];
-            if (d.xp > anterior.xp) {
-                deleteDoc(doc(db, "notas", anterior.id));
-                historico[email] = { id: userDoc.id, xp: d.xp };
-            } else {
-                deleteDoc(doc(db, "notas", userDoc.id));
-            }
-            removidos++;
-        } else {
-            historico[email] = { id: userDoc.id, xp: d.xp };
-        }
-    });
-    alert(`Limpeza feita! ${removidos} duplicatas apagadas.`);
-    carregarUsuarios();
-};
-
-// --- FUNÇÕES DE EDIÇÃO ---
-window.editarXP = async (id, xpAtual) => {
-    const novoXP = prompt(`Novo XP para ${id}:`, xpAtual);
-    if (novoXP !== null) {
-        await updateDoc(doc(db, "notas", id), { xp: Number(novoXP) });
-        carregarUsuarios();
-    }
-};
-
-window.banirUsuario = async (id) => {
-    if (confirm(`Deletar ${id} para sempre?`)) {
-        await deleteDoc(doc(db, "notas", id));
-        carregarUsuarios();
-    }
+window.limparXPBugado = () => {
+    abrirModalAdmin("LIMPEZA", "Deseja remover e-mails duplicados agora?", "", async () => {
+        const snap = await getDocs(collection(db, "notas"));
+        const vistos = {};
+        let r = 0;
+        snap.forEach(d => {
+            const email = d.data().email.toLowerCase();
+            if(vistos[email]) {
+                deleteDoc(doc(db, "notas", d.id));
+                r++;
+            } else vistos[email] = true;
+        });
+        abrirModalAdmin("SUCESSO", `${r} duplicatas removidas.`, "", () => { carregarUsuarios(); }, false);
+    }, false);
 };
 
 document.addEventListener('DOMContentLoaded', carregarUsuarios);
