@@ -242,18 +242,26 @@
 
     <script>
         /* FUNÇÕES DE MATÉRIA */
-        function validarEEnviarMateria() {
+        async function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
+            
             if (!input.value || input.value.trim() === "") {
                 input.classList.add('input-error');
                 aviso.style.display = 'block';
+                return;
+            }
+
+            if (typeof window.confirmarNovaMateria === 'function') {
+                window.confirmarNovaMateria();
             } else {
-                if(typeof confirmarNovaMateria === 'function') {
-                    confirmarNovaMateria(); 
-                }
+                try {
+                    const modulo = await import('./funcoes.js?v=101');
+                    modulo.confirmarNovaMateria();
+                } catch (e) { console.error(e); }
             }
         }
+
         function limparErroInput() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
@@ -264,10 +272,11 @@
         }
         
         /* FUNÇÕES DE MODAL */
-        function abrirModal() { document.getElementById('modal-materia').style.display = 'flex'; }
-        function fecharModal() { document.getElementById('modal-materia').style.display = 'none'; }
-        function abrirSobreDono() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
-        function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
+        window.abrirModal = function() { document.getElementById('modal-materia').style.display = 'flex'; }
+        window.fecharModal = function() { document.getElementById('modal-materia').style.display = 'none'; }
+        window.abrirSobreDono = function() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
+        window.fecharSobreDono = function() { document.getElementById('modal-dono').style.display = 'none'; }
+        window.fecharModalExcluir = function() { document.getElementById('modal-excluir-container').style.display = 'none'; }
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log(err)); });
