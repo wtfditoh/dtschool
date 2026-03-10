@@ -7,6 +7,8 @@ const criarMenuGlobal = () => {
                 <button id="close-menu"><i data-lucide="x"></i></button>
             </div>
             <nav class="menu-links" id="nav-links-container">
+                <a href="home.html" id="link-home"><i data-lucide="home"></i> Início</a>
+                
                 <a href="perfil.html" id="link-perfil"><i data-lucide="user"></i> Perfil</a>
                 <a href="index.html" id="link-index"><i data-lucide="layout-dashboard"></i> Notas</a>
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
@@ -15,7 +17,7 @@ const criarMenuGlobal = () => {
                     <span>Modo Foco <small class="xp-badge">+XP</small></span></a>
                 <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
                 <a href="ranking.html" id="link-ranking"><i data-lucide="trophy"></i> Ranking</a>
-                </nav>
+            </nav>
             <div class="menu-footer">
                 <button id="install-app-btn" class="btn-install-menu" style="display: none;">
                     <i data-lucide="download-cloud"></i> Baixar App
@@ -86,9 +88,9 @@ const criarMenuGlobal = () => {
         };
     }
 
-    // Marcar link ativo
+    // Marcar link ativo (ADICIONADO 'home' na lista)
     const path = window.location.pathname;
-    const paginas = ['index', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco', 'admin'];
+    const paginas = ['home', 'index', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco', 'admin'];
     paginas.forEach(pg => {
         if (path.includes(pg)) {
             const link = document.getElementById(`link-${pg}`);
