@@ -21,119 +21,140 @@ if ((localStorage.getItem('dt_user_email') || "").toLowerCase() !== emailMestre)
     window.location.replace('index.html');
 }
 
-// --- FUNÇÕES DE PODER (PENDURADAS NO WINDOW PARA FUNCIONAR NO ONCLICK) ---
+// ==========================================
+// FUNÇÕES DE PODER (WINDOW. PARA O ONCLICK FUNCIONAR)
+// ==========================================
 
-window.enviarResetSenha = async (email) => {
-    if (confirm(`Enviar e-mail de recuperação para ${email}?`)) {
+// 1. RESET DE SENHA (PELO MODAL)
+window.enviarResetSenha = (email) => {
+    window.abrirModalAdmin("RECUPERAR CONTA", `Enviar e-mail de redefinição de senha para:<br><b style="color:var(--purple)">${email}</b>?`, "", async () => {
         try {
             await sendPasswordResetEmail(auth, email);
-            alert("✅ E-mail de redefinição enviado!");
-        } catch (error) {
-            console.error(error);
-            alert("❌ Erro ao enviar: " + error.message);
+            alert("✅ Link enviado com sucesso!");
+        } catch (e) { alert("❌ Erro: " + e.message); }
+    }, false);
+};
+
+// 2. MODO MANUTENÇÃO (AGORA VAI ABRIR O MODAL)
+window.toggleManutencao = () => {
+    window.abrirModalAdmin("MANUTENÇÃO", "Digite <b>LOCK</b> para travar o app ou <b>OPEN</b> para liberar:", "", async (val) => {
+        if (val === 'LOCK' || val === 'OPEN') {
+            const status = (val === 'LOCK');
+            await setDoc(doc(db, "config", "status_sistema"), { emManutencao: status });
+            alert(status ? "App Travado! 🔒" : "App Liberado! ✅");
+        } else {
+            alert("Comando inválido. Use LOCK ou OPEN.");
         }
-    }
+    }, true);
 };
 
+// 3. FORCE UPDATE (LIMPAR CACHE DOS ALUNOS)
+window.forçarUpdateGeral = () => {
+    window.abrirModalAdmin("FORCE UPDATE", "Digite <b>SIM</b> para forçar todos os alunos a recarregarem o app:", "", async (val) => {
+        if (val === 'SIM') {
+            await setDoc(doc(db, "config", "versao_sistema"), { v: Date.now() });
+            alert("Comando de atualização enviado!");
+        }
+    }, true);
+};
+
+// 4. EDITAR NOME DO ALUNO
 window.editarNome = (id, nomeAtual) => {
-    window.abrirModalAdmin("EDITAR NOME", "Novo nome para o aluno:", nomeAtual, async (novoNome) => {
-        if(novoNome) await updateDoc(doc(db, "notas", id), { nome: novoNome });
+    window.abrirModalAdmin("EDITAR NOME", "Digite o novo nome do aluno:", nomeAtual, async (novo) => {
+        if (novo) await updateDoc(doc(db, "notas", id), { nome: novo });
     }, true);
 };
 
-window.editarEmailBanco = (id, emailAtual) => {
-    window.abrirModalAdmin("EDITAR E-MAIL", "Muda apenas o registro visual. Novo e-mail:", emailAtual, async (novoEmail) => {
-        if(novoEmail) await updateDoc(doc(db, "notas", id), { email: novoEmail });
+// 5. EDITAR XP
+window.editarXP = (id, xpAtual) => {
+    window.abrirModalAdmin("AJUSTAR XP", "Defina o novo valor de XP:", xpAtual, async (novoXP) => {
+        await updateDoc(doc(db, "notas", id), { xp: Number(novoXP) });
     }, true);
 };
 
+// 6. GERENCIAR MATÉRIAS (RESETAR)
 window.gerenciarMateriasUser = (id) => {
-    window.abrirModalAdmin("RESETAR DADOS", "Digite 'RESETAR' para limpar matérias e XP:", "", async (val) => {
-        if(val === 'RESETAR') await updateDoc(doc(db, "notas", id), { materias: [], xp: 0 });
+    window.abrirModalAdmin("LIMPAR DADOS", "Digite <b>RESETAR</b> para apagar todas as matérias deste aluno:", "", async (val) => {
+        if (val === 'RESETAR') await updateDoc(doc(db, "notas", id), { materias: [], xp: 0 });
     }, true);
 };
 
-window.editarXP = (id, xp) => {
-    window.abrirModalAdmin("AJUSTAR XP", "Novo valor de XP:", xp, async (v) => {
-        await updateDoc(doc(db, "notas", id), { xp: Number(v), atualizadoEm: Date.now() });
-    }, true);
-};
-
+// 7. BANIR / APAGAR
 window.banirUsuario = (id) => {
-    window.abrirModalAdmin("BANIR", `Apagar permanentemente o ID: ${id}?`, "", async () => {
+    window.abrirModalAdmin("BANIR USUÁRIO", `Deseja apagar permanentemente o registro de <b>${id}</b>?`, "", async () => {
         await deleteDoc(doc(db, "notas", id));
     }, false);
 };
 
+// 8. POSTAR AVISO NO MURAL
 window.postarAviso = async () => {
     const t = document.getElementById('aviso-texto');
-    const cor = document.querySelector('input[name="cor-aviso"]:checked').value;
-    if(!t.value) return;
-    await setDoc(doc(db, "config", "aviso_global"), { mensagem: t.value, ativo: true, tipo: cor, data: Date.now() });
+    const radio = document.querySelector('input[name="cor-aviso"]:checked');
+    if (!t || !t.value) return;
+    await setDoc(doc(db, "config", "aviso_global"), { 
+        mensagem: t.value, 
+        ativo: true, 
+        tipo: radio ? radio.value : 'purp', 
+        data: Date.now() 
+    });
     t.value = "";
-    alert("Mural Atualizado!");
+    alert("Aviso publicado!");
 };
 
-window.forçarUpdateGeral = () => {
-    window.abrirModalAdmin("FORCE UPDATE", "Limpar cache de todos? Digite 'SIM':", "", async (v) => {
-        if(v === 'SIM') await setDoc(doc(db, "config", "versao_sistema"), { v: Date.now() });
-    }, true);
-};
+window.removerAviso = async () => { await setDoc(doc(db, "config", "aviso_global"), { ativo: false }); };
 
-// --- MODAL CONTROLLER ---
+// ==========================================
+// CONTROLE DO MODAL
+// ==========================================
 window.abrirModalAdmin = (titulo, desc, placeholder = "", callback, comInput = false) => {
     const m = document.getElementById('modal-admin');
-    const input = document.getElementById('modal-input');
     document.getElementById('modal-title').innerHTML = titulo;
     document.getElementById('modal-desc').innerHTML = desc;
+    const input = document.getElementById('modal-input');
+    
     input.style.display = comInput ? 'block' : 'none';
     input.value = placeholder;
     m.style.display = 'flex';
-    document.getElementById('modal-confirm-btn').onclick = () => { callback(input.value); window.fecharModalAdmin(); };
+
+    document.getElementById('modal-confirm-btn').onclick = () => {
+        callback(input.value);
+        window.fecharModalAdmin();
+    };
 };
 
 window.fecharModalAdmin = () => { document.getElementById('modal-admin').style.display = 'none'; };
 
-// --- MONITORAMENTO EM TEMPO REAL ---
-function iniciarPainelMaster() {
+// ==========================================
+// LISTA EM TEMPO REAL
+// ==========================================
+function iniciarPainel() {
     const q = query(collection(db, "notas"), orderBy("xp", "desc"));
-    
-    onSnapshot(q, (snapshot) => {
-        const listaUsuarios = document.getElementById('lista-usuarios-admin');
-        const logsContainer = document.getElementById('logs-container');
-        let usuariosHTML = "";
-        let logsHTML = "";
-        
-        snapshot.forEach((userDoc) => {
-            const u = userDoc.data();
-            const hora = u.atualizadoEm ? new Date(u.atualizadoEm).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '--:--';
-            
-            logsHTML += `<div class="log-entry"><span class="t-purp">[${hora}]</span> <b>${u.nome}</b></div>`;
-
-            usuariosHTML += `
-                <div class="user-row">
-                    <div class="u-meta">
-                        <span class="u-name" onclick="window.editarNome('${userDoc.id}', '${u.nome}')" style="cursor:pointer; color:var(--purple)">
-                            ${u.nome} <i data-lucide="edit-3" style="width:10px"></i>
-                        </span>
-                        <span class="u-email" onclick="window.editarEmailBanco('${userDoc.id}', '${u.email}')" style="cursor:pointer">
-                            ${u.email}
-                        </span>
-                        <div class="u-xp-box">${u.xp || 0} XP</div>
-                    </div>
-                    <div class="u-actions">
-                        <button onclick="window.enviarResetSenha('${u.email}')" style="color:#ffcc00"><i data-lucide="key"></i></button>
-                        <button onclick="window.gerenciarMateriasUser('${userDoc.id}')"><i data-lucide="layers"></i></button>
-                        <button onclick="window.editarXP('${userDoc.id}', ${u.xp || 0})"><i data-lucide="zap"></i></button>
-                        <button onclick="window.banirUsuario('${userDoc.id}')" class="btn-danger-tool"><i data-lucide="trash-2"></i></button>
-                    </div>
-                </div>`;
+    onSnapshot(q, (snap) => {
+        const lista = document.getElementById('lista-usuarios-admin');
+        let html = "";
+        snap.forEach(d => {
+            const u = d.data();
+            html += `
+            <div class="user-row">
+                <div class="u-meta">
+                    <span class="u-name" onclick="window.editarNome('${d.id}', '${u.nome}')">${u.nome} <i data-lucide="edit-3" style="width:10px"></i></span>
+                    <span class="u-email">${u.email}</span>
+                    <div class="u-xp-box">${u.xp || 0} XP</div>
+                </div>
+                <div class="u-actions">
+                    <button onclick="window.enviarResetSenha('${u.email}')" style="color:#ffcc00"><i data-lucide="key"></i></button>
+                    <button onclick="window.gerenciarMateriasUser('${d.id}')"><i data-lucide="layers"></i></button>
+                    <button onclick="window.editarXP('${d.id}', ${u.xp || 0})"><i data-lucide="zap"></i></button>
+                    <button onclick="window.banirUsuario('${d.id}')" style="color:#ff4444"><i data-lucide="trash-2"></i></button>
+                </div>
+            </div>`;
         });
-
-        listaUsuarios.innerHTML = usuariosHTML;
-        logsContainer.innerHTML = logsHTML;
+        lista.innerHTML = html;
         if (window.lucide) lucide.createIcons();
+        
+        // Stats rápidos
+        document.getElementById('total-users').innerText = snap.size;
     });
 }
 
-document.addEventListener('DOMContentLoaded', iniciarPainelMaster);
+document.addEventListener('DOMContentLoaded', iniciarPainel);
