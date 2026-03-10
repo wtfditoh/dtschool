@@ -26,7 +26,6 @@
     <link rel="stylesheet" href="estilo.css?v=12.0">
     
     <style>
-        /* MANTENDO SEUS ESTILOS ORIGINAIS */
         #global-alert {
             background: linear-gradient(90deg, #8a2be2, #4b0082);
             color: white; padding: 12px; text-align: center; font-size: 13px;
@@ -217,23 +216,26 @@
         function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
+            
             if (!input.value || input.value.trim() === "") {
                 input.classList.add('input-error');
                 aviso.style.display = 'block';
+                return;
+            }
+
+            // PONTE DE CONEXÃO COM O FUNCOES.JS
+            if (typeof window.confirmarNovaMateria === 'function') {
+                window.confirmarNovaMateria();
             } else {
-                // Tenta chamar a função do funcoes.js
-                if(typeof window.confirmarNovaMateria === 'function') {
-                    window.confirmarNovaMateria(); 
-                } else {
-                    // Se o arquivo ainda não carregou, ele aguarda meio segundo e tenta de novo sozinho
-                    setTimeout(() => {
-                        if(typeof window.confirmarNovaMateria === 'function') {
-                            window.confirmarNovaMateria();
-                        } else {
-                            alert("Sincronizando banco de dados... Tente criar novamente em instantes.");
-                        }
-                    }, 500);
-                }
+                // Se o arquivo ainda estiver carregando, tenta forçar uma vez após meio segundo
+                console.log("Aguardando script de funções...");
+                setTimeout(() => {
+                    if (typeof window.confirmarNovaMateria === 'function') {
+                        window.confirmarNovaMateria();
+                    } else {
+                        alert("O sistema está sincronizando. Tente clicar novamente em 1 segundo.");
+                    }
+                }, 500);
             }
         }
 
@@ -257,6 +259,6 @@
 
     <script src="menu.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script type="module" src="funcoes.js?v=110"></script>
+    <script type="module" src="funcoes.js?v=200"></script>
 </body>
 </html>
