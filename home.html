@@ -3,69 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain - Início</title>
-    <link rel="stylesheet" href="style.css"> 
-    <link rel="stylesheet" href="home.css">  
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Hub Brain - Central</title>
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="menu.css"> <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <i data-lucide="brain-circuit" class="purple"></i>
+            <span>Hub Brain</span>
+        </div>
+        <div class="sidebar-links">
+            <a href="home.html" class="active"><i data-lucide="home"></i> Início</a>
+            <a href="index.html"><i data-lucide="graduation-cap"></i> Notas</a>
+            <a href="#" id="btn-mural-side"><i data-lucide="megaphone"></i> Mural</a>
+            <hr>
+            <a href="#" id="logout-link" style="color: #ff4444;"><i data-lucide="log-out"></i> Sair</a>
+        </div>
+    </nav>
+
     <div class="home-container">
         <header class="home-header">
+            <button id="open-menu" class="btn-menu-icon">
+                <i data-lucide="menu"></i>
+            </button>
             <div class="user-info">
-                <span class="greeting">FALA,</span>
-                <h1 id="user-display-name">ALUNO...</h1>
+                <span class="greeting">SISTEMA ATIVO</span>
+                <h1 id="user-display-name">CARREGANDO...</h1>
             </div>
-            <button class="btn-logout" id="logout-btn"><i data-lucide="log-out"></i></button>
+            <div class="hub-icon-top">
+                <i data-lucide="zap" class="glow-icon"></i>
+            </div>
         </header>
 
-        <div class="status-card">
-            <div class="stat-item">
-                <label>MEU XP</label>
+        <div class="status-grid">
+            <div class="status-card main-xp">
+                <label>MEU XP TOTAL</label>
                 <span id="user-xp">0</span>
+                <div class="xp-bar"><div class="xp-progress" id="xp-progress"></div></div>
             </div>
-            <div class="stat-divider"></div>
-            <div class="stat-item">
-                <label>MATÉRIAS</label>
+            <div class="status-card">
+                <label>DISCIPLINAS</label>
                 <span id="user-mats">0</span>
             </div>
         </div>
 
+        <h2 class="section-title">Acesso Rápido</h2>
+
         <nav class="home-menu">
-            <button class="menu-item main" onclick="window.location.href='notas.html'">
+            <button class="menu-item purple-border" onclick="window.location.href='index.html'">
                 <div class="icon-box"><i data-lucide="graduation-cap"></i></div>
                 <div class="text-box">
                     <strong>Minhas Notas</strong>
-                    <span>Gerenciar matérias e XP</span>
+                    <span>Gerenciar matérias e evolução</span>
                 </div>
                 <i data-lucide="chevron-right"></i>
             </button>
 
-            <button class="menu-item" id="btn-mural">
+            <button class="menu-item" id="btn-mural-main">
                 <div class="icon-box"><i data-lucide="megaphone"></i></div>
                 <div class="text-box">
                     <strong>Mural de Avisos</strong>
-                    <span>Comunicados da escola</span>
+                    <span>Comunicados e alertas</span>
                 </div>
+                <i data-lucide="chevron-right"></i>
             </button>
         </nav>
 
-        <p class="quote">"O sucesso é a soma de pequenos esforços."</p>
+        <p class="version">HUB BRAIN v12.0 • BY DITOH</p>
     </div>
 
-    <div id="modal-mural" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; align-items:center; justify-content:center;">
-        <div class="modal-content" style="background:var(--card); padding:30px; border-radius:24px; border:1px solid #222; max-width:90%; text-align:center;">
-            <div id="mural-icon" style="margin-bottom:15px;"></div>
-            <h2 id="mural-titulo" style="font-size:18px; color:var(--purple); margin-bottom:10px;">AVISO</h2>
-            <p id="mural-msg" style="color:#888; line-height:1.5; margin-bottom:20px;"></p>
-            <button onclick="document.getElementById('modal-mural').style.display='none'" class="btn-primary">ENTENDIDO</button>
-        </div>
-    </div>
-
+    <script src="menu.js"></script>
     <script type="module" src="home-logica.js"></script>
-
-    <script>
-        setTimeout(() => { if(window.lucide) lucide.createIcons(); }, 500);
-    </script>
 </body>
 </html>
