@@ -1,0 +1,31 @@
+.home-container { padding: 25px; max-width: 500px; margin: 0 auto; }
+
+.home-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.greeting { font-size: 10px; color: var(--purple); font-weight: 900; letter-spacing: 2px; }
+#user-display-name { font-size: 24px; margin: 0; text-transform: uppercase; }
+
+.status-card { 
+    background: var(--card); border-radius: 28px; padding: 25px; 
+    display: flex; justify-content: space-around; border: 1px solid #1a1a1c;
+    margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.stat-item { text-align: center; }
+.stat-item label { font-size: 9px; color: var(--text-dim); display: block; margin-bottom: 5px; }
+.stat-item span { font-size: 20px; font-weight: 900; color: #fff; }
+.stat-divider { width: 1px; background: #1a1a1c; }
+
+.home-menu { display: flex; flex-direction: column; gap: 15px; }
+.menu-item {
+    background: var(--card); border: 1px solid #1a1a1c; padding: 20px;
+    border-radius: 24px; display: flex; align-items: center; gap: 15px;
+    cursor: pointer; transition: 0.3s; color: white; text-align: left;
+}
+.menu-item.main { border-color: var(--purple); background: rgba(138,43,226,0.05); }
+.menu-item:active { transform: scale(0.97); }
+
+.icon-box { background: #000; padding: 12px; border-radius: 15px; color: var(--purple); }
+.text-box { flex: 1; }
+.text-box strong { display: block; font-size: 16px; }
+.text-box span { font-size: 11px; color: var(--text-dim); }
+
+.quote { text-align: center; color: #444; font-size: 11px; margin-top: 40px; font-style: italic; }
