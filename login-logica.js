@@ -76,12 +76,12 @@ window.tentarLogar = async (e) => {
         
         const res = await signInWithEmailAndPassword(auth, email, pass);
         
-        // --- AJUSTE AQUI: Salvando dados para o funcoes.js ler ---
         localStorage.setItem('dt_user_name', res.user.displayName || "Estudante");
         localStorage.setItem('dt_user_email', email.toLowerCase());
         localStorage.setItem('dt_user_type', 'google'); 
         
-        window.location.replace('index.html');
+        // --- CIRURGIA: Redirecionando para a Home ---
+        window.location.replace('home.html');
     } catch (error) { 
         console.error(error);
         avisar("E-mail ou senha inválidos!"); 
@@ -104,7 +104,6 @@ window.realizarCadastro = async (e) => {
         const res = await createUserWithEmailAndPassword(auth, email, pass);
         await updateProfile(res.user, { displayName: nome });
         
-        // --- AJUSTE AQUI: Salvando dados para o funcoes.js ler ---
         localStorage.setItem('dt_user_name', nome);
         localStorage.setItem('dt_user_email', email.toLowerCase());
         localStorage.setItem('dt_user_type', 'google');
@@ -118,7 +117,8 @@ window.realizarCadastro = async (e) => {
             criadoEm: serverTimestamp()
         });
         
-        window.location.replace('index.html');
+        // --- CIRURGIA: Redirecionando para a Home ---
+        window.location.replace('home.html');
     } catch (error) {
         console.error(error);
         avisar("Erro ao criar conta. E-mail já existe?");
@@ -141,6 +141,7 @@ window.executarRecuperacao = async () => {
 window.entrarComoVisitante = () => {
     localStorage.clear(); 
     localStorage.setItem('dt_user_name', 'Visitante');
-    localStorage.setItem('dt_user_type', 'local'); // Define como local para não tentar subir pro Firebase
-    window.location.replace('index.html');
+    localStorage.setItem('dt_user_type', 'local');
+    // --- CIRURGIA: Redirecionando para a Home ---
+    window.location.replace('home.html');
 };
