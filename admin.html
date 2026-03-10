@@ -3,103 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Master Control - Hub Brain</title>
+    <title>Master Control | Hub Brain</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="admin.css">
 </head>
-<body>
+<body class="dark-mode">
 
     <header class="admin-header">
         <div class="header-left">
-            <div class="header-icon-box">
+            <div class="logo-box">
                 <i data-lucide="shield-check"></i>
             </div>
             <h1>MASTER <span class="purple">CONTROL</span></h1>
         </div>
-        <button onclick="window.location.href='index.html'" class="btn-exit">SAIR DO MODO DEUS</button>
+        <button onclick="window.location.href='index.html'" class="btn-exit">VOLTAR AO HUB</button>
     </header>
 
     <main class="admin-grid">
         <div class="admin-column-main">
-            <div class="stats-row-admin">
-                <div class="mini-stats-card">
+            <div class="stats-grid">
+                <div class="stat-card">
                     <span id="total-users">0</span>
-                    <label>ALUNOS ATIVOS</label>
+                    <label>ALUNOS</label>
                 </div>
-                <div class="mini-stats-card">
+                <div class="stat-card">
                     <span id="avg-xp">0</span>
                     <label>MÉDIA XP</label>
                 </div>
-                <div class="mini-stats-card">
+                <div class="stat-card">
                     <span id="total-materias">0</span>
-                    <label>MATÉRIAS TOTAL</label>
+                    <label>MATÉRIAS</label>
                 </div>
             </div>
 
             <section class="admin-card">
                 <div class="card-header">
                     <i data-lucide="users"></i>
-                    <h3>GERENCIAMENTO DE ALUNOS (RANKING XP)</h3>
+                    <h3>BASE DE DADOS - RANKING XP</h3>
                 </div>
                 <div id="lista-usuarios-admin" class="admin-list">
-                    <div class="loading-spinner">Sincronizando com o satélite...</div>
+                    <div class="loading-state">
+                        <div class="pulse-loader"></div>
+                        <p>Sincronizando banco de dados...</p>
+                    </div>
                 </div>
             </section>
         </div>
 
         <div class="admin-column-side">
-            <section class="admin-card logs-section">
+            <section class="admin-card log-card">
                 <div class="card-header">
                     <i data-lucide="activity"></i>
-                    <h3>LOGS DE ATIVIDADE (LIVE)</h3>
+                    <h3>LIVE ACTIVITY</h3>
                 </div>
-                <div id="logs-container" class="logs-list">
-                    <div class="log-item">Aguardando sinais...</div>
-                </div>
+                <div id="logs-container" class="logs-stream">
+                    </div>
             </section>
 
             <section class="admin-card">
                 <div class="card-header">
                     <i data-lucide="megaphone"></i>
-                    <h3>MURAL DE AVISOS</h3>
+                    <h3>COMUNICAÇÃO GLOBAL</h3>
                 </div>
                 <div class="card-body">
-                    <textarea id="aviso-texto" placeholder="O que você quer anunciar para todos os alunos?"></textarea>
-                    <button onclick="postarAviso()" class="btn-primary">
-                        <i data-lucide="send"></i> POSTAR AGORA
-                    </button>
-                    <button onclick="removerAviso()" class="btn-secondary">REMOVER ATIVO</button>
+                    <textarea id="aviso-texto" placeholder="O que deseja anunciar hoje?"></textarea>
+                    <button onclick="postarAviso()" class="btn-primary">POSTAR AVISO</button>
+                    <button onclick="removerAviso()" class="btn-secondary">LIMPAR MURAL</button>
                 </div>
             </section>
 
             <section class="admin-card">
                 <div class="card-header">
-                    <i data-lucide="cpu"></i>
-                    <h3>CORE ENGINE</h3>
+                    <i data-lucide="terminal"></i>
+                    <h3>SISTEMA CORE</h3>
                 </div>
                 <div class="card-body">
-                    <div class="btn-group-grid">
-                        <button onclick="toggleManutencao()" class="btn-danger">
-                            <i data-lucide="power"></i> MANUTENÇÃO
-                        </button>
-                        <button onclick="limparXPBugado()" class="btn-clean">
-                            <i data-lucide="sparkles"></i> LIMPAR DB
-                        </button>
+                    <div class="btn-stack">
+                        <button onclick="toggleManutencao()" class="btn-danger">MODO MANUTENÇÃO</button>
+                        <button onclick="limparXPBugado()" class="btn-outline">LIMPAR DUPLICATAS</button>
                     </div>
                 </div>
             </section>
         </div>
     </main>
 
-    <div id="modal-admin" class="custom-modal">
-        <div class="modal-box">
-            <div id="modal-icon-area" class="modal-icon"><i data-lucide="alert-circle"></i></div>
-            <h3 id="modal-title">Confirmar</h3>
-            <p id="modal-desc"></p>
-            <input type="text" id="modal-input" class="modal-field" style="display:none;">
-            <div class="modal-footer">
-                <button onclick="fecharModalAdmin()" class="btn-secondary-modal">Cancelar</button>
-                <button id="modal-confirm-btn" class="btn-primary-modal">Confirmar</button>
+    <div id="modal-admin" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-icon-box"><i data-lucide="alert-circle"></i></div>
+            <h3 id="modal-title">Título</h3>
+            <div id="modal-desc" class="modal-text">Descrição</div>
+            <input type="text" id="modal-input" class="modal-input">
+            <div class="modal-actions">
+                <button onclick="fecharModalAdmin()" class="btn-cancel">CANCELAR</button>
+                <button id="modal-confirm-btn" class="btn-confirm">CONFIRMAR</button>
             </div>
         </div>
     </div>
