@@ -108,16 +108,15 @@
     <div id="manutencao-screen">
         <i data-lucide="wrench" style="width: 60px; height: 60px; color: #8a2be2; margin-bottom: 20px;"></i>
         <h2 style="color: white; font-weight: 900;">HUB EM <span class="purple" style="color:#8a2be2">OBRAS</span></h2>
-        <p style="color: #aaa; margin: 15px 0 30px 0;">Estamos ajustando as engrenagens para deixar o Hub Brain ainda mais rápido. Voltamos em alguns minutos!</p>
-        <div style="font-size: 10px; color: #555; letter-spacing: 2px;">FOUNDER & DEV: DITOH</div>
+        <p style="color: #aaa; margin: 15px 0 30px 0;">Estamos ajustando as engrenagens para deixar o Hub Brain ainda mais rápido.</p>
     </div>
 
     <header class="glass-header">
-        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;" onclick="if(window.toggleMenu) window.toggleMenu()">
+        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;">
             <i data-lucide="menu"></i>
         </button>
         
-        <div class="hub-logo-container" onclick="window.abrirSobreDono()">
+        <div class="hub-logo-container" onclick="abrirSobreDono()">
             <span class="hub-logo-text">Hub</span>
             <div class="hub-symbol">
                 <i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px; height: 22px;"></i>
@@ -125,7 +124,7 @@
             <span class="hub-logo-text purple">Brain</span>
         </div>
 
-        <button onclick="window.abrirModal()" class="btn-add-main">+</button>
+        <button onclick="abrirModal()" class="btn-add-main">+</button>
     </header>
 
     <main class="container">
@@ -147,107 +146,54 @@
             </div>
             <h3 style="color: white; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 2px;">DITOH</h3>
             <p style="color: #8a2be2; font-weight: bold; margin: 5px 0 20px 0; font-size: 12px; letter-spacing: 4px; text-transform: uppercase;">Founder & Dev</p>
-            <div style="background: rgba(138, 43, 226, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border-left: 4px solid #8a2be2; text-align: left;">
-                <p style="color: #eee; font-size: 13px; font-style: italic; line-height: 1.6; margin: 0;">
-                    "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria."
-                </p>
-            </div>
-            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; color: white; font-size: 15px; margin-bottom: 30px; background: rgba(255,255,255,0.05); padding: 14px; border-radius: 15px; border: 1px solid rgba(138, 43, 226, 0.2);">
-                <i data-lucide="instagram" style="width: 18px; color: #8a2be2;"></i>
-                <span style="font-weight: 600;">@wtfditoh</span>
-            </a>
-            <button onclick="window.fecharSobreDono()" style="width: 100%; background: #8a2be2; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase;">Voltar</button>
+            <button onclick="fecharSobreDono()" style="width: 100%; background: #8a2be2; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer;">Voltar</button>
         </div>
     </div>
 
     <div id="modal-materia" class="modal">
         <div class="modal-content">
             <h3>Nova Disciplina</h3>
-            <input type="text" id="nome-materia-input" oninput="limparErroInput()" placeholder="Ex: Matemática" style="width:100%; padding:10px; margin:10px 0; border-radius:10px; background:#222; border:1px solid #444; color:white; box-sizing: border-box; outline: none;">
-            <p id="aviso-vazio" style="display:none; color:#ff4444; font-size:12px; font-weight:bold; margin-bottom:10px;">⚠️ Digite o nome da matéria!</p>
+            <input type="text" id="nome-materia-input" oninput="limparErroInput()" placeholder="Ex: Matemática" style="width:100%; padding:10px; margin:10px 0; border-radius:10px; background:#222; border:1px solid #444; color:white;">
+            <p id="aviso-vazio" style="display:none; color:#ff4444; font-size:12px; font-weight:bold;">⚠️ Digite o nome!</p>
             <div class="area-botoes-modal">
-                <button onclick="window.fecharModal()" class="btn-modal-voltar">Sair</button>
+                <button onclick="fecharModal()" class="btn-modal-voltar">Sair</button>
                 <button onclick="validarEEnviarMateria()" class="btn-modal-acao">Criar</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-excluir-container" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
-        <div class="modal-content" style="background:#111; padding:30px; border-radius:20px; border:1px solid rgba(255,68,68,0.3); text-align:center; max-width:300px;">
-            <div id="aviso-icon" style="margin-bottom:15px;"><i data-lucide="trash-2" style="width:45px; height:45px; color:#ff4444;"></i></div>
-            <h3 style="color:white; margin-bottom:10px;">Excluir Disciplina?</h3>
-            <div style="display:flex; gap:10px;">
-                <button onclick="window.fecharModalExcluir()" style="flex:1; background:#222; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Cancelar</button>
-                <button onclick="if(window.confirmarExclusao) window.confirmarExclusao()" style="flex:1; background:#ff4444; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Excluir</button>
-            </div>
+    <div id="modal-excluir-container" class="modal" style="display:none;">
         </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
-            authDomain: "dt-scho0l.firebaseapp.com",
-            projectId: "dt-scho0l",
-            storageBucket: "dt-scho0l.firebasestorage.app",
-            messagingSenderId: "78578509391",
-            appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        onSnapshot(doc(db, "config", "aviso_global"), (snapshot) => {
-            const data = snapshot.data();
-            const banner = document.getElementById('global-alert');
-            if (data && data.ativo && data.mensagem) {
-                banner.style.display = 'flex';
-                banner.innerHTML = `<i data-lucide="megaphone" style="width:16px;"></i> <span>${data.mensagem}</span>`;
-                if(window.lucide) lucide.createIcons();
-            } else { banner.style.display = 'none'; }
-        });
-    </script>
 
     <script>
+        // FUNÇÕES GLOBAIS (Ponte para o funcoes.js)
+        window.abrirModal = () => document.getElementById('modal-materia').style.display = 'flex';
+        window.fecharModal = () => document.getElementById('modal-materia').style.display = 'none';
+        window.abrirSobreDono = () => { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); };
+        window.fecharSobreDono = () => document.getElementById('modal-dono').style.display = 'none';
+        
+        window.limparErroInput = () => {
+            const input = document.getElementById('nome-materia-input');
+            input.classList.remove('input-error');
+            document.getElementById('aviso-vazio').style.display = 'none';
+        };
+
         async function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
-            const aviso = document.getElementById('aviso-vazio');
-            
-            if (!input.value || input.value.trim() === "") {
+            if (!input.value.trim()) {
                 input.classList.add('input-error');
-                aviso.style.display = 'block';
+                document.getElementById('aviso-vazio').style.display = 'block';
                 return;
             }
-
+            // Chama a função que você exportou no funcoes.js
             if (window.confirmarNovaMateria) {
                 window.confirmarNovaMateria();
-            } else {
-                console.error("Função não carregada ainda.");
-                // Tenta carregar na marra
-                const mod = await import('./funcoes.js?v=102');
-                mod.confirmarNovaMateria();
             }
         }
-
-        function limparErroInput() {
-            const input = document.getElementById('nome-materia-input');
-            const aviso = document.getElementById('aviso-vazio');
-            if (input.value.trim() !== "") {
-                input.classList.remove('input-error');
-                aviso.style.display = 'none';
-            }
-        }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(e => console.log(e)); });
-        }
-        document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
     </script>
 
+    <script type="module" src="funcoes.js?v=105"></script>
     <script src="menu.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script type="module" src="funcoes.js?v=102"></script>
 </body>
 </html>
