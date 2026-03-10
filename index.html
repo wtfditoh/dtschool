@@ -34,7 +34,7 @@
             text-align: center;
             font-size: 13px;
             font-weight: 600;
-            display: none; /* Inicia oculto, JS mostra se houver aviso */
+            display: none;
             align-items: center;
             justify-content: center;
             gap: 10px;
@@ -90,6 +90,14 @@
             display: flex; align-items: center; justify-content: center; 
         }
 
+        .input-error { border: 2px solid #ff4444 !important; animation: shake 0.4s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* --- ESTILOS DO MODAL DONO --- */
         .modal-dono-overlay {
             display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
             backdrop-filter: blur(25px) saturate(180%); background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px;
@@ -100,6 +108,15 @@
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.2);
             animation: brotarCard 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
+        @keyframes brotarCard { from { opacity: 0; transform: scale(0.8) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+        .ditoh-core-orbital { width: 100px; height: 100px; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .orbital-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; border-top-color: #8a2be2; border-bottom-color: #8a2be2; }
+        .ring-1 { width: 100%; height: 100%; animation: spin 2s linear infinite; opacity: 0.6; }
+        .ring-2 { width: 80%; height: 80%; animation: spin-reverse 1.5s linear infinite; opacity: 0.8; border-left-color: #8a2be2; border-right-color: #8a2be2; border-top-color: transparent; border-bottom-color: transparent; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin-reverse { to { transform: rotate(-360deg); } }
+        .core-glow { width: 50px; height: 50px; background: rgba(138, 43, 226, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(138, 43, 226, 0.6); }
     </style>
 </head>
 <body>
@@ -137,6 +154,53 @@
         <div id="lista-materias"></div>
     </main>
 
+    <div id="modal-dono" class="modal-dono-overlay">
+        <div class="modal-dono-card">
+            <div class="ditoh-core-orbital">
+                <div class="orbital-ring ring-1"></div>
+                <div class="orbital-ring ring-2"></div>
+                <div class="core-glow">
+                    <i data-lucide="zap" style="color: white; width: 28px; height: 28px; filter: drop-shadow(0 0 8px #8a2be2);"></i>
+                </div>
+            </div>
+            <h3 style="color: white; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 2px;">DITOH</h3>
+            <p style="color: #8a2be2; font-weight: bold; margin: 5px 0 20px 0; font-size: 12px; letter-spacing: 4px; text-transform: uppercase;">Founder & Dev</p>
+            <div style="background: rgba(138, 43, 226, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border-left: 4px solid #8a2be2; text-align: left;">
+                <p style="color: #eee; font-size: 13px; font-style: italic; line-height: 1.6; margin: 0;">
+                    "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."
+                </p>
+            </div>
+            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; color: white; font-size: 15px; margin-bottom: 30px; background: rgba(255,255,255,0.05); padding: 14px; border-radius: 15px; border: 1px solid rgba(138, 43, 226, 0.2);">
+                <i data-lucide="instagram" style="width: 18px; color: #8a2be2;"></i>
+                <span style="font-weight: 600;">@wtfditoh</span>
+            </a>
+            <button onclick="fecharSobreDono()" style="width: 100%; background: #8a2be2; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase;">Voltar</button>
+        </div>
+    </div>
+
+    <div id="modal-materia" class="modal">
+        <div class="modal-content">
+            <h3>Nova Disciplina</h3>
+            <input type="text" id="nome-materia-input" oninput="limparErroInput()" placeholder="Ex: Matemática" style="width:100%; padding:10px; margin:10px 0; border-radius:10px; background:#222; border:1px solid #444; color:white; box-sizing: border-box; outline: none;">
+            <p id="aviso-vazio" style="display:none; color:#ff4444; font-size:12px; font-weight:bold; margin-bottom:10px;">⚠️ Digite o nome da matéria!</p>
+            <div class="area-botoes-modal">
+                <button onclick="fecharModal()" class="btn-modal-voltar">Sair</button>
+                <button onclick="validarEEnviarMateria()" class="btn-modal-acao">Criar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-excluir-container" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+        <div class="modal-content" style="background:#111; padding:30px; border-radius:20px; border:1px solid rgba(255,68,68,0.3); text-align:center; max-width:300px;">
+            <div id="aviso-icon" style="margin-bottom:15px;"><i data-lucide="trash-2" style="width:45px; height:45px; color:#ff4444;"></i></div>
+            <h3 style="color:white; margin-bottom:10px;">Excluir Disciplina?</h3>
+            <div style="display:flex; gap:10px;">
+                <button onclick="fecharModalExcluir()" style="flex:1; background:#222; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Cancelar</button>
+                <button onclick="confirmarExclusao()" style="flex:1; background:#ff4444; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Excluir</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -153,10 +217,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const emailMestre = "ditoh2008@gmail.com";
-        const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
-
-        // 1. ESCUTAR AVISO GLOBAL
         onSnapshot(doc(db, "config", "aviso_global"), (snapshot) => {
             const data = snapshot.data();
             const banner = document.getElementById('global-alert');
@@ -164,20 +224,15 @@
                 banner.style.display = 'flex';
                 banner.innerHTML = `<i data-lucide="megaphone" style="width:16px;"></i> <span>${data.mensagem}</span>`;
                 if(window.lucide) lucide.createIcons();
-            } else {
-                banner.style.display = 'none';
-            }
+            } else { banner.style.display = 'none'; }
         });
 
-        // 2. ESCUTAR MODO MANUTENÇÃO
         onSnapshot(doc(db, "config", "status_sistema"), (snapshot) => {
             const data = snapshot.data();
             const telaManutencao = document.getElementById('manutencao-screen');
-            
-            // Se estiver em manutenção E o usuário NÃO for o mestre, bloqueia!
             if (data && data.emManutencao && emailLogado !== emailMestre) {
                 telaManutencao.style.display = 'flex';
-                document.body.style.overflow = 'hidden'; // Trava o scroll
+                document.body.style.overflow = 'hidden';
             } else {
                 telaManutencao.style.display = 'none';
                 document.body.style.overflow = 'auto';
@@ -186,9 +241,34 @@
     </script>
 
     <script>
+        /* FUNÇÕES DE MATÉRIA */
+        function validarEEnviarMateria() {
+            const input = document.getElementById('nome-materia-input');
+            const aviso = document.getElementById('aviso-vazio');
+            if (!input.value || input.value.trim() === "") {
+                input.classList.add('input-error');
+                aviso.style.display = 'block';
+            } else {
+                if(typeof confirmarNovaMateria === 'function') {
+                    confirmarNovaMateria(); 
+                }
+            }
+        }
+        function limparErroInput() {
+            const input = document.getElementById('nome-materia-input');
+            const aviso = document.getElementById('aviso-vazio');
+            if (input.value.trim() !== "") {
+                input.classList.remove('input-error');
+                aviso.style.display = 'none';
+            }
+        }
+        
+        /* FUNÇÕES DE MODAL */
+        function abrirModal() { document.getElementById('modal-materia').style.display = 'flex'; }
+        function fecharModal() { document.getElementById('modal-materia').style.display = 'none'; }
         function abrirSobreDono() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
         function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
-        
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log(err)); });
         }
