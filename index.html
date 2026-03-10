@@ -223,19 +223,12 @@
                 return;
             }
 
-            // PONTE DE CONEXÃO COM O FUNCOES.JS
-            if (typeof window.confirmarNovaMateria === 'function') {
+            // Tenta chamar a função global injetada pelo funcoes.js
+            if (window.confirmarNovaMateria) {
                 window.confirmarNovaMateria();
             } else {
-                // Se o arquivo ainda estiver carregando, tenta forçar uma vez após meio segundo
-                console.log("Aguardando script de funções...");
-                setTimeout(() => {
-                    if (typeof window.confirmarNovaMateria === 'function') {
-                        window.confirmarNovaMateria();
-                    } else {
-                        alert("O sistema está sincronizando. Tente clicar novamente em 1 segundo.");
-                    }
-                }, 500);
+                console.warn("Script ainda carregando...");
+                setTimeout(() => { if(window.confirmarNovaMateria) window.confirmarNovaMateria(); }, 500);
             }
         }
 
@@ -248,7 +241,7 @@
             }
         }
 
-        function abrirModal() { document.getElementById('modal-materia').style.display = 'flex'; }
+        function abrirModal() { document.getElementById('modal-materia').style.display = 'flex'; document.getElementById('nome-materia-input').focus(); }
         function fecharModal() { document.getElementById('modal-materia').style.display = 'none'; }
         function abrirSobreDono() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
         function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
@@ -259,6 +252,6 @@
 
     <script src="menu.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script type="module" src="funcoes.js?v=200"></script>
+    <script type="module" src="funcoes.js?v=500"></script>
 </body>
 </html>
