@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -15,6 +15,25 @@ const db = getFirestore(app);
 
 let materias = JSON.parse(localStorage.getItem('materias')) || [];
 let idParaExcluir = null;
+let versaoLocal = null; // Controle de Versão
+
+// ==========================================
+// MONITOR DE ATUALIZAÇÃO REMOTA (FORCE UPDATE)
+// ==========================================
+function monitorarVersaoSistema() {
+    const docRef = doc(db, "config", "versao_sistema");
+    onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const novaVersao = docSnap.data().v;
+            if (versaoLocal === null) {
+                versaoLocal = novaVersao;
+            } else if (novaVersao !== versaoLocal) {
+                console.log("🚀 Nova atualização do sistema detectada!");
+                setTimeout(() => { window.location.reload(true); }, 1000);
+            }
+        }
+    });
+}
 
 // ==========================================
 // MOTOR DE XP E SINCRONIZAÇÃO FIREBASE
@@ -202,6 +221,7 @@ window.confirmarExclusao = async function() {
 
 // Carregamento Inicial
 document.addEventListener('DOMContentLoaded', async () => {
+    monitorarVersaoSistema(); // Ativa a escuta do Force Update
     window.atualizarLista();
     const email = localStorage.getItem('dt_user_email');
     if (email) {
