@@ -3,6 +3,9 @@
 <head>
     <script>
     const usuario = localStorage.getItem('dt_user_name');
+    const emailMestre = "ditoh2008@gmail.com";
+    const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
+
     if (!usuario) {
         window.location.href = 'login.html';
     }
@@ -23,6 +26,20 @@
     <link rel="stylesheet" href="estilo.css?v=12.0">
     
     <style>
+        /* MANTENDO SEUS ESTILOS ORIGINAIS */
+        #global-alert {
+            background: linear-gradient(90deg, #8a2be2, #4b0082);
+            color: white; padding: 12px; text-align: center; font-size: 13px;
+            font-weight: 600; display: none; align-items: center; justify-content: center;
+            gap: 10px; z-index: 2000; position: relative;
+        }
+
+        #manutencao-screen {
+            display: none; position: fixed; inset: 0; background: #0d0d0d;
+            z-index: 10000; flex-direction: column; align-items: center;
+            justify-content: center; text-align: center; padding: 30px;
+        }
+
         .glass-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
@@ -87,8 +104,17 @@
 </head>
 <body>
 
+    <div id="global-alert"></div>
+
+    <div id="manutencao-screen">
+        <i data-lucide="wrench" style="width: 60px; height: 60px; color: #8a2be2; margin-bottom: 20px;"></i>
+        <h2 style="color: white; font-weight: 900;">HUB EM <span class="purple" style="color:#8a2be2">OBRAS</span></h2>
+        <p style="color: #aaa; margin: 15px 0 30px 0;">Estamos ajustando as engrenagens para deixar o Hub Brain ainda mais rápido. Voltamos em alguns minutos!</p>
+        <div style="font-size: 10px; color: #555; letter-spacing: 2px;">FOUNDER & DEV: DITOH</div>
+    </div>
+
     <header class="glass-header">
-        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;">
+        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;" onclick="if(window.toggleMenu) window.toggleMenu()">
             <i data-lucide="menu"></i>
         </button>
         
@@ -140,9 +166,9 @@
             <h3>Nova Disciplina</h3>
             <input type="text" id="nome-materia-input" oninput="limparErroInput()" placeholder="Ex: Matemática" style="width:100%; padding:10px; margin:10px 0; border-radius:10px; background:#222; border:1px solid #444; color:white; box-sizing: border-box; outline: none;">
             <p id="aviso-vazio" style="display:none; color:#ff4444; font-size:12px; font-weight:bold; margin-bottom:10px;">⚠️ Digite o nome da matéria!</p>
-            <div class="area-botoes-modal">
-                <button onclick="fecharModal()" class="btn-modal-voltar">Sair</button>
-                <button onclick="validarEEnviarMateria()" class="btn-modal-acao">Criar</button>
+            <div class="area-botoes-modal" style="display: flex; gap: 10px;">
+                <button onclick="fecharModal()" class="btn-modal-voltar" style="flex:1; padding:12px; border-radius:10px; background:#222; border:none; color:white;">Sair</button>
+                <button onclick="validarEEnviarMateria()" class="btn-modal-acao" style="flex:1; padding:12px; border-radius:10px; background:#8a2be2; border:none; color:white; font-weight:bold;">Criar</button>
             </div>
         </div>
     </div>
@@ -153,12 +179,42 @@
             <h3 style="color:white; margin-bottom:10px;">Excluir Disciplina?</h3>
             <div style="display:flex; gap:10px;">
                 <button onclick="fecharModalExcluir()" style="flex:1; background:#222; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Cancelar</button>
-                <button onclick="confirmarExclusao()" style="flex:1; background:#ff4444; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Excluir</button>
+                <button onclick="if(window.confirmarExclusao) window.confirmarExclusao()" style="flex:1; background:#ff4444; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Excluir</button>
             </div>
         </div>
     </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+            authDomain: "dt-scho0l.firebaseapp.com",
+            projectId: "dt-scho0l",
+            storageBucket: "dt-scho0l.firebasestorage.app",
+            messagingSenderId: "78578509391",
+            appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        onSnapshot(doc(db, "config", "aviso_global"), (s) => {
+            const d = s.data(); const b = document.getElementById('global-alert');
+            if (d?.ativo) { b.style.display = 'flex'; b.innerHTML = `<i data-lucide="megaphone" style="width:16px;"></i> <span>${d.mensagem}</span>`; if(window.lucide) lucide.createIcons(); } 
+            else b.style.display = 'none';
+        });
+
+        onSnapshot(doc(db, "config", "status_sistema"), (s) => {
+            const d = s.data(); const t = document.getElementById('manutencao-screen');
+            if (d?.emManutencao && emailLogado !== emailMestre) t.style.display = 'flex';
+            else t.style.display = 'none';
+        });
+    </script>
     
     <script>
+        // AS FUNÇÕES QUE VOCÊ TINHA E FUNCIONAVAM
         function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
@@ -166,13 +222,16 @@
                 input.classList.add('input-error');
                 aviso.style.display = 'block';
             } else {
-                if(typeof confirmarNovaMateria === 'function') {
-                    confirmarNovaMateria(); 
+                // Tenta chamar a função do funcoes.js
+                if(typeof window.confirmarNovaMateria === 'function') {
+                    window.confirmarNovaMateria(); 
                 } else {
-                    console.error("Função confirmarNovaMateria não encontrada em funcoes.js");
+                    // Se o arquivo ainda não carregou, ele avisa
+                    alert("O sistema ainda está carregando a base de dados, tente novamente em 2 segundos.");
                 }
             }
         }
+
         function limparErroInput() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
@@ -181,17 +240,18 @@
                 aviso.style.display = 'none';
             }
         }
+
+        function abrirModal() { document.getElementById('modal-materia').style.display = 'flex'; }
+        function fecharModal() { document.getElementById('modal-materia').style.display = 'none'; }
         function abrirSobreDono() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
         function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
+        function fecharModalExcluir() { document.getElementById('modal-excluir-container').style.display = 'none'; }
         
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log(err)); });
-        }
         document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
     </script>
 
     <script src="menu.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script type="module" src="funcoes.js?v=101"></script>
+    <script type="module" src="funcoes.js?v=105"></script>
 </body>
 </html>
