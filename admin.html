@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Master Panel - Hub Brain</title>
+    <title>Master Control - Hub Brain</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="admin.css">
 </head>
@@ -16,43 +16,66 @@
             </div>
             <h1>MASTER <span class="purple">CONTROL</span></h1>
         </div>
-        <button onclick="window.location.href='index.html'" class="btn-exit">VOLTAR AO HUB</button>
+        <button onclick="window.location.href='index.html'" class="btn-exit">SAIR DO MODO DEUS</button>
     </header>
 
     <main class="admin-grid">
-        <section class="admin-card">
-            <div class="card-header">
-                <i data-lucide="users"></i>
-                <h3>USUÁRIOS DA BASE</h3>
+        <div class="admin-column-main">
+            <div class="stats-row-admin">
+                <div class="mini-stats-card">
+                    <span id="total-users">0</span>
+                    <label>ALUNOS ATIVOS</label>
+                </div>
+                <div class="mini-stats-card">
+                    <span id="avg-xp">0</span>
+                    <label>MÉDIA XP</label>
+                </div>
+                <div class="mini-stats-card">
+                    <span id="total-materias">0</span>
+                    <label>MATÉRIAS TOTAL</label>
+                </div>
             </div>
-            <div id="lista-usuarios-admin" class="admin-list">
-                <div class="loading-spinner">Sincronizando banco de dados...</div>
-            </div>
-        </section>
 
-        <div class="admin-column">
+            <section class="admin-card">
+                <div class="card-header">
+                    <i data-lucide="users"></i>
+                    <h3>GERENCIAMENTO DE ALUNOS (RANKING XP)</h3>
+                </div>
+                <div id="lista-usuarios-admin" class="admin-list">
+                    <div class="loading-spinner">Sincronizando com o satélite...</div>
+                </div>
+            </section>
+        </div>
+
+        <div class="admin-column-side">
+            <section class="admin-card logs-section">
+                <div class="card-header">
+                    <i data-lucide="activity"></i>
+                    <h3>LOGS DE ATIVIDADE (LIVE)</h3>
+                </div>
+                <div id="logs-container" class="logs-list">
+                    <div class="log-item">Aguardando sinais...</div>
+                </div>
+            </section>
+
             <section class="admin-card">
                 <div class="card-header">
                     <i data-lucide="megaphone"></i>
                     <h3>MURAL DE AVISOS</h3>
                 </div>
                 <div class="card-body">
-                    <textarea id="aviso-texto" placeholder="O que você quer anunciar para todos os alunos hoje?"></textarea>
-                    <div class="btn-group-column">
-                        <button onclick="postarAviso()" class="btn-primary">
-                            <i data-lucide="send"></i> POSTAR AGORA
-                        </button>
-                        <button onclick="removerAviso()" class="btn-secondary">
-                            <i data-lucide="bell-off"></i> REMOVER AVISO
-                        </button>
-                    </div>
+                    <textarea id="aviso-texto" placeholder="O que você quer anunciar para todos os alunos?"></textarea>
+                    <button onclick="postarAviso()" class="btn-primary">
+                        <i data-lucide="send"></i> POSTAR AGORA
+                    </button>
+                    <button onclick="removerAviso()" class="btn-secondary">REMOVER ATIVO</button>
                 </div>
             </section>
 
             <section class="admin-card">
                 <div class="card-header">
                     <i data-lucide="cpu"></i>
-                    <h3>SISTEMA CORE</h3>
+                    <h3>CORE ENGINE</h3>
                 </div>
                 <div class="card-body">
                     <div class="btn-group-grid">
@@ -60,7 +83,7 @@
                             <i data-lucide="power"></i> MANUTENÇÃO
                         </button>
                         <button onclick="limparXPBugado()" class="btn-clean">
-                            <i data-lucide="sparkles"></i> LIMPAR XP
+                            <i data-lucide="sparkles"></i> LIMPAR DB
                         </button>
                     </div>
                 </div>
@@ -70,12 +93,10 @@
 
     <div id="modal-admin" class="custom-modal">
         <div class="modal-box">
-            <div id="modal-icon-area" class="modal-icon">
-                <i data-lucide="alert-circle"></i>
-            </div>
-            <h3 id="modal-title">Confirmar Ação</h3>
+            <div id="modal-icon-area" class="modal-icon"><i data-lucide="alert-circle"></i></div>
+            <h3 id="modal-title">Confirmar</h3>
             <p id="modal-desc"></p>
-            <input type="text" id="modal-input" class="modal-field" placeholder="Digite aqui...">
+            <input type="text" id="modal-input" class="modal-field" style="display:none;">
             <div class="modal-footer">
                 <button onclick="fecharModalAdmin()" class="btn-secondary-modal">Cancelar</button>
                 <button id="modal-confirm-btn" class="btn-primary-modal">Confirmar</button>
