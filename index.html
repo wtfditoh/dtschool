@@ -3,9 +3,6 @@
 <head>
     <script>
     const usuario = localStorage.getItem('dt_user_name');
-    const emailMestre = "ditoh2008@gmail.com";
-    const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
-
     if (!usuario) {
         window.location.href = 'login.html';
     }
@@ -26,36 +23,6 @@
     <link rel="stylesheet" href="estilo.css?v=12.0">
     
     <style>
-        /* --- ESTILO DO AVISO GLOBAL --- */
-        #global-alert {
-            background: linear-gradient(90deg, #8a2be2, #4b0082);
-            color: white;
-            padding: 12px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 600;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            z-index: 2000;
-            position: relative;
-        }
-
-        /* --- TELA DE MANUTENÇÃO --- */
-        #manutencao-screen {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: #0d0d0d;
-            z-index: 10000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 30px;
-        }
-
         .glass-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
@@ -97,7 +64,6 @@
             75% { transform: translateX(5px); }
         }
 
-        /* --- ESTILOS DO MODAL DONO --- */
         .modal-dono-overlay {
             display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
             backdrop-filter: blur(25px) saturate(180%); background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px;
@@ -120,15 +86,6 @@
     </style>
 </head>
 <body>
-
-    <div id="global-alert"></div>
-
-    <div id="manutencao-screen">
-        <i data-lucide="wrench" style="width: 60px; height: 60px; color: #8a2be2; margin-bottom: 20px;"></i>
-        <h2 style="color: white; font-weight: 900;">HUB EM <span class="purple" style="color:#8a2be2">OBRAS</span></h2>
-        <p style="color: #aaa; margin: 15px 0 30px 0;">Estamos ajustando as engrenagens para deixar o Hub Brain ainda mais rápido. Voltamos em alguns minutos!</p>
-        <div style="font-size: 10px; color: #555; letter-spacing: 2px;">FOUNDER & DEV: DITOH</div>
-    </div>
 
     <header class="glass-header">
         <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;">
@@ -200,48 +157,8 @@
             </div>
         </div>
     </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
-            authDomain: "dt-scho0l.firebaseapp.com",
-            projectId: "dt-scho0l",
-            storageBucket: "dt-scho0l.firebasestorage.app",
-            messagingSenderId: "78578509391",
-            appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        onSnapshot(doc(db, "config", "aviso_global"), (snapshot) => {
-            const data = snapshot.data();
-            const banner = document.getElementById('global-alert');
-            if (data && data.ativo && data.mensagem) {
-                banner.style.display = 'flex';
-                banner.innerHTML = `<i data-lucide="megaphone" style="width:16px;"></i> <span>${data.mensagem}</span>`;
-                if(window.lucide) lucide.createIcons();
-            } else { banner.style.display = 'none'; }
-        });
-
-        onSnapshot(doc(db, "config", "status_sistema"), (snapshot) => {
-            const data = snapshot.data();
-            const telaManutencao = document.getElementById('manutencao-screen');
-            if (data && data.emManutencao && emailLogado !== emailMestre) {
-                telaManutencao.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            } else {
-                telaManutencao.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }
-        });
-    </script>
-
+    
     <script>
-        /* FUNÇÕES DE MATÉRIA */
         function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
@@ -251,6 +168,8 @@
             } else {
                 if(typeof confirmarNovaMateria === 'function') {
                     confirmarNovaMateria(); 
+                } else {
+                    console.error("Função confirmarNovaMateria não encontrada em funcoes.js");
                 }
             }
         }
@@ -262,13 +181,9 @@
                 aviso.style.display = 'none';
             }
         }
-        
-        /* FUNÇÕES DE MODAL */
-        function abrirModal() { document.getElementById('modal-materia').style.display = 'flex'; }
-        function fecharModal() { document.getElementById('modal-materia').style.display = 'none'; }
         function abrirSobreDono() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
         function fecharSobreDono() { document.getElementById('modal-dono').style.display = 'none'; }
-
+        
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log(err)); });
         }
