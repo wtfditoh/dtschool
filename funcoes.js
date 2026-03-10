@@ -13,12 +13,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Variáveis de Controle
 let materias = JSON.parse(localStorage.getItem('materias')) || [];
 let idParaExcluir = null;
 
 // ==========================================
-// FUNÇÃO DE SALVAMENTO NO FIREBASE
+// MOTOR DE XP E SINCRONIZAÇÃO FIREBASE
 // ==========================================
 async function salvarNaNuvem() {
     const emailAtual = localStorage.getItem('dt_user_email');
@@ -28,7 +27,6 @@ async function salvarNaNuvem() {
         try {
             const userRef = doc(db, "notas", emailAtual);
             
-            // Calcula XP rápido para salvar junto
             let xpTotal = 0;
             materias.forEach(m => {
                 [m.n1, m.n2, m.n3, m.n4].forEach(nota => {
@@ -52,12 +50,13 @@ async function salvarNaNuvem() {
                 avatar: localStorage.getItem('dt_user_avatar') || "user",
                 atualizadoEm: Date.now()
             }, { merge: true });
-        } catch (e) { console.error("Erro Nuvem:", e); }
+            console.log("☁️ Sincronizado com Firebase");
+        } catch (e) { console.error("Erro Firebase:", e); }
     }
 }
 
 // ==========================================
-// FUNÇÕES GLOBAIS (CONECTADAS AO HTML)
+// FUNÇÕES DE INTERAÇÃO (WINDOW)
 // ==========================================
 
 window.confirmarNovaMateria = async function() {
@@ -68,15 +67,11 @@ window.confirmarNovaMateria = async function() {
             nome: input.value.trim(), 
             n1:"", n2:"", n3:"", n4:"" 
         };
-        
         materias.push(nova);
         localStorage.setItem('materias', JSON.stringify(materias));
-        
         window.atualizarLista();
-        
-        input.value = ''; 
         if(window.fecharModal) window.fecharModal(); 
-        
+        input.value = ''; 
         await salvarNaNuvem();
     }
 };
@@ -94,6 +89,7 @@ window.atualizarLista = function() {
 
     lista.innerHTML = materias.map(m => {
         const soma = (Number(m.n1)||0) + (Number(m.n2)||0) + (Number(m.n3)||0) + (Number(m.n4)||0);
+        const media = (soma / 4).toFixed(1);
         const percent = Math.min((soma / 24) * 100, 100);
         const aprovado = soma >= 24;
 
@@ -119,13 +115,18 @@ window.atualizarLista = function() {
             <div class="card-bottom" style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:12px; color:#888; font-weight:bold;">TOTAL: ${soma.toFixed(1)}</span>
                 ${aprovado ? `
-                    <span style="background:rgba(0,255,127,0.1); color:#00ff7f; padding:4px 10px; border-radius:8px; font-size:10px; font-weight:900;">APROVADO</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="background:rgba(0,255,127,0.1); color:#00ff7f; padding:4px 10px; border-radius:8px; font-size:10px; font-weight:900;">APROVADO</span>
+                        <button onclick="window.gerarCardVitoria('${m.nome}', '${media}')" style="background:none; border:none; color:#8a2be2; cursor:pointer; display:flex; padding:5px;">
+                            <i data-lucide="share-2" style="width:18px;"></i>
+                        </button>
+                    </div>
                 ` : `<span style="color:#ffcc00; font-size:10px; font-weight:900;">FALTAM ${(24-soma).toFixed(1)}</span>`}
             </div>
         </div>`;
     }).join('');
     
-    // Stats de cabeçalho
+    // Atualiza Stats
     const total = materias.length;
     const mediaGeral = total > 0 ? (materias.reduce((acc, m) => acc + ((Number(m.n1)||0)+(Number(m.n2)||0)+(Number(m.n3)||0)+(Number(m.n4)||0))/4, 0) / total).toFixed(1) : "0.0";
     const aprovadosCount = materias.filter(m => ((Number(m.n1)||0)+(Number(m.n2)||0)+(Number(m.n3)||0)+(Number(m.n4)||0)) >= 24).length;
@@ -146,15 +147,50 @@ window.salvarNota = async function(id, bimestre, valor) {
     }
 };
 
-window.abrirModalExcluir = function(id) {
-    idParaExcluir = id;
-    document.getElementById('modal-excluir-container').style.display = 'flex';
+// ==========================================
+// SISTEMA DE COMPARTILHAMENTO (VOLTOU!)
+// ==========================================
+window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
+    let container = document.getElementById('compartilhamento-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'compartilhamento-container';
+        document.body.appendChild(container);
+    }
+
+    container.innerHTML = `
+        <div class="card-vitoria-story">
+            <div class="vitoria-content">
+                <div class="logo-neon-vitoria"><i data-lucide="brain-circuit" style="width:240px; height:240px; color:#8a2be2;"></i></div>
+                <p class="status-conquista">${mediaReal >= 8.0 ? "Nível Elite" : "Objetivo Concluído"}</p>
+                <h1 class="materia-nome-vitoria">${nomeMateria}</h1>
+                <p class="badge-comemorativa">${mediaReal >= 8.0 ? `NOTA EXTRAORDINÁRIA: ${mediaReal}` : `MÉDIA ${mediaReal} SUPERADA`}</p>
+            </div>
+            <div class="vitoria-footer"><p>HUB BRAIN</p><p class="link-app-vitoria">https://hubbrain.netlify.app/</p></div>
+        </div>
+    `;
+
+    if(window.lucide) lucide.createIcons({ container: container });
+
+    setTimeout(async () => {
+        try {
+            const canvas = await html2canvas(container, { backgroundColor: '#0d0d0d', width: 1080, height: 1920, scale: 1, useCORS: true });
+            canvas.toBlob(async (blob) => {
+                const file = new File([blob], `Vitoria_${nomeMateria}.png`, { type: 'image/png' });
+                if (navigator.share) {
+                    await navigator.share({ title: 'Hub Brain', text: `Passei em ${nomeMateria}! 🚀`, files: [file] });
+                } else {
+                    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `Vitoria_${nomeMateria}.png`; link.click();
+                }
+                container.innerHTML = '';
+            });
+        } catch (err) { console.error('Erro ao compartilhar', err); }
+    }, 400);
 };
 
-window.fecharModalExcluir = function() { 
-    document.getElementById('modal-excluir-container').style.display = 'none'; 
-};
-
+// Modais Excluir
+window.abrirModalExcluir = function(id) { idParaExcluir = id; document.getElementById('modal-excluir-container').style.display = 'flex'; };
+window.fecharModalExcluir = function() { document.getElementById('modal-excluir-container').style.display = 'none'; };
 window.confirmarExclusao = async function() {
     materias = materias.filter(m => m.id !== idParaExcluir);
     localStorage.setItem('materias', JSON.stringify(materias));
@@ -163,7 +199,7 @@ window.confirmarExclusao = async function() {
     await salvarNaNuvem();
 };
 
-// Carregamento inicial
+// Carregamento Inicial
 document.addEventListener('DOMContentLoaded', async () => {
     window.atualizarLista();
     const email = localStorage.getItem('dt_user_email');
