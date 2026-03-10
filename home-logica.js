@@ -45,19 +45,21 @@ if (tipoUsuario === 'local') {
 }
 
 // ACOES DOS BOTOES
+
+// Função de Sair Limpa
 const logoutAcao = async () => {
     if (tipoUsuario !== 'local') await signOut(auth);
     localStorage.clear();
     window.location.replace('login.html');
 };
+document.getElementById('logout-btn').onclick = logoutAcao;
 
-document.getElementById('logout-link').onclick = logoutAcao;
-
-document.getElementById('btn-mural-main').onclick = () => alert("Mural em breve!");
-document.getElementById('btn-mural-side').onclick = () => alert("Mural em breve!");
-
-// INICIALIZAR MENU LATERAL (Aproveitando seu menu.js)
-const btnMenu = document.getElementById('open-menu');
-if (btnMenu && window.toggleMenu) {
-    btnMenu.onclick = window.toggleMenu;
+// FUNÇÃO PARA ABRIR MODAL MURAL (Sem o fundo do Chrome)
+function abrirMuralModal() {
+    document.getElementById('modal-mural').style.display = 'flex';
+    if(window.lucide) lucide.createIcons();
 }
+
+// ACOES DO MURAL
+document.getElementById('nav-mural').onclick = abrirMuralModal;
+document.getElementById('btn-mural-main').onclick = abrirMuralModal;
