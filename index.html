@@ -5,7 +5,10 @@
     const usuario = localStorage.getItem('dt_user_name');
     const emailMestre = "ditoh2008@gmail.com";
     const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
-    if (!usuario) window.location.href = 'login.html';
+
+    if (!usuario) {
+        window.location.href = 'login.html';
+    }
     </script>
     
     <meta charset="UTF-8">
@@ -18,25 +21,79 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="estilo.css?v=12.0">
     
     <style>
-        #global-alert { background: linear-gradient(90deg, #8a2be2, #4b0082); color: white; padding: 12px; text-align: center; font-size: 13px; font-weight: 600; display: none; align-items: center; justify-content: center; gap: 10px; z-index: 2000; position: relative; }
-        #manutencao-screen { display: none; position: fixed; inset: 0; background: #0d0d0d; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
-        .glass-header { display: flex; align-items: center; justify-content: space-between; padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important; backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2); position: sticky; top: 0; z-index: 1000; }
-        .hub-logo-container { display: flex; align-items: center; gap: 10px; cursor: pointer; transition: transform 0.1s; -webkit-tap-highlight-color: transparent; }
+        /* --- ESTILO DO AVISO GLOBAL --- */
+        #global-alert {
+            background: linear-gradient(90deg, #8a2be2, #4b0082);
+            color: white; padding: 12px; text-align: center; font-size: 13px;
+            font-weight: 600; display: none; align-items: center; justify-content: center;
+            gap: 10px; z-index: 2000; position: relative;
+        }
+
+        /* --- TELA DE MANUTENÇÃO --- */
+        #manutencao-screen {
+            display: none; position: fixed; inset: 0; background: #0d0d0d;
+            z-index: 10000; flex-direction: column; align-items: center;
+            justify-content: center; text-align: center; padding: 30px;
+        }
+
+        .glass-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
+            backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        
+        .hub-logo-container { 
+            display: flex; align-items: center; gap: 10px; cursor: pointer; 
+            transition: transform 0.1s; -webkit-tap-highlight-color: transparent;
+        }
         .hub-logo-container:active { transform: scale(0.92); }
         .hub-logo-text { font-weight: 900; font-size: 19px; letter-spacing: 1px; color: white; text-transform: uppercase; }
         .hub-logo-text.purple { color: #8a2be2; text-shadow: 0 0 10px rgba(138,43,226,0.3); }
-        .hub-symbol { background: rgba(138, 43, 226, 0.1); padding: 6px; border-radius: 10px; border: 1px solid rgba(138, 43, 226, 0.3); display: flex; align-items: center; justify-content: center; animation: pulse-glow 3s infinite ease-in-out; }
-        @keyframes pulse-glow { 0% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); } 50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.4); transform: scale(1.05); } 100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); } }
-        .btn-add-main { background: #8a2be2 !important; width: 38px; height: 38px; border-radius: 12px; font-size: 24px; color: white; border: none; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .hub-symbol { 
+            background: rgba(138, 43, 226, 0.1); padding: 6px; border-radius: 10px; 
+            border: 1px solid rgba(138, 43, 226, 0.3); display: flex; align-items: center; 
+            justify-content: center; animation: pulse-glow 3s infinite ease-in-out; 
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
+            50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.4); transform: scale(1.05); }
+            100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); transform: scale(1); }
+        }
+
+        .btn-add-main { 
+            background: #8a2be2 !important; width: 38px !important; height: 38px !important; 
+            border-radius: 12px !important; font-size: 24px !important; color: white; 
+            border: none; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3); cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; 
+        }
+
         .input-error { border: 2px solid #ff4444 !important; animation: shake 0.4s; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        .modal-dono-overlay { display: none; position: fixed; inset: 0; align-items: center; justify-content: center; backdrop-filter: blur(25px) saturate(180%); background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px; }
-        .modal-dono-card { border: 1px solid rgba(138, 43, 226, 0.3); background: rgba(15, 15, 15, 0.8); border-radius: 30px; width: 100%; max-width: 320px; padding: 40px 25px; text-align: center; box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.2); animation: brotarCard 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .modal-dono-overlay {
+            display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
+            backdrop-filter: blur(25px) saturate(180%); background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px;
+        }
+        .modal-dono-card {
+            border: 1px solid rgba(138, 43, 226, 0.3); background: rgba(15, 15, 15, 0.8); 
+            border-radius: 30px; width: 100%; max-width: 320px; padding: 40px 25px; text-align: center; 
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.2);
+            animation: brotarCard 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
         @keyframes brotarCard { from { opacity: 0; transform: scale(0.8) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
         .ditoh-core-orbital { width: 100px; height: 100px; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; position: relative; }
         .orbital-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; border-top-color: #8a2be2; border-bottom-color: #8a2be2; }
         .ring-1 { width: 100%; height: 100%; animation: spin 2s linear infinite; opacity: 0.6; }
@@ -53,23 +110,36 @@
     <div id="manutencao-screen">
         <i data-lucide="wrench" style="width: 60px; height: 60px; color: #8a2be2; margin-bottom: 20px;"></i>
         <h2 style="color: white; font-weight: 900;">HUB EM <span class="purple" style="color:#8a2be2">OBRAS</span></h2>
-        <p style="color: #aaa; margin: 15px 0 30px 0;">Estamos ajustando as engrenagens...</p>
+        <p style="color: #aaa; margin: 15px 0 30px 0;">Estamos ajustando as engrenagens para deixar o Hub Brain ainda mais rápido. Voltamos em alguns minutos!</p>
+        <div style="font-size: 10px; color: #555; letter-spacing: 2px;">FOUNDER & DEV: DITOH</div>
     </div>
 
     <header class="glass-header">
-        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;"><i data-lucide="menu"></i></button>
+        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;" onclick="if(window.toggleMenu) window.toggleMenu()">
+            <i data-lucide="menu"></i>
+        </button>
+        
         <div class="hub-logo-container" onclick="abrirSobreDono()">
             <span class="hub-logo-text">Hub</span>
-            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i></div>
+            <div class="hub-symbol">
+                <i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px; height: 22px;"></i>
+            </div>
             <span class="hub-logo-text purple">Brain</span>
         </div>
+
         <button onclick="abrirModal()" class="btn-add-main">+</button>
     </header>
 
     <main class="container">
         <div class="stats-row">
-            <div class="stat-card"><span id="media-geral">0.0</span><label>Média Geral</label></div>
-            <div class="stat-card"><span id="aprov-count">0/0</span><label>Aprovadas</label></div>
+            <div class="stat-card">
+                <span id="media-geral">0.0</span>
+                <label>Média Geral</label>
+            </div>
+            <div class="stat-card">
+                <span id="aprov-count">0/0</span>
+                <label>Aprovadas</label>
+            </div>
         </div>
         <div id="lista-materias"></div>
     </main>
@@ -79,41 +149,47 @@
             <div class="ditoh-core-orbital">
                 <div class="orbital-ring ring-1"></div>
                 <div class="orbital-ring ring-2"></div>
-                <div class="core-glow"><i data-lucide="zap" style="color: white; width: 28px;"></i></div>
+                <div class="core-glow">
+                    <i data-lucide="zap" style="color: white; width: 28px; height: 28px; filter: drop-shadow(0 0 8px #8a2be2);"></i>
+                </div>
             </div>
-            <h3 style="color: white; margin: 0; font-size: 26px; font-weight: 900;">DITOH</h3>
+            <h3 style="color: white; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 2px;">DITOH</h3>
             <p style="color: #8a2be2; font-weight: bold; margin: 5px 0 20px 0; font-size: 12px; letter-spacing: 4px; text-transform: uppercase;">Founder & Dev</p>
+            
             <div style="background: rgba(138, 43, 226, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border-left: 4px solid #8a2be2; text-align: left;">
                 <p style="color: #eee; font-size: 13px; font-style: italic; line-height: 1.6; margin: 0;">
                     "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."
                 </p>
             </div>
-            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; color: white; background: rgba(255,255,255,0.05); padding: 14px; border-radius: 15px; border: 1px solid rgba(138, 43, 226, 0.2); margin-bottom: 20px;">
-                <i data-lucide="instagram" style="width: 18px; color: #8a2be2;"></i><span>@wtfditoh</span>
+
+            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; color: white; font-size: 15px; margin-bottom: 30px; background: rgba(255,255,255,0.05); padding: 14px; border-radius: 15px; border: 1px solid rgba(138, 43, 226, 0.2);">
+                <i data-lucide="instagram" style="width: 18px; color: #8a2be2;"></i>
+                <span style="font-weight: 600;">@wtfditoh</span>
             </a>
-            <button onclick="fecharSobreDono()" style="width: 100%; background: #8a2be2; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer;">Voltar</button>
+
+            <button onclick="fecharSobreDono()" style="width: 100%; background: #8a2be2; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">Voltar</button>
         </div>
     </div>
 
     <div id="modal-materia" class="modal">
         <div class="modal-content">
             <h3>Nova Disciplina</h3>
-            <input type="text" id="nome-materia-input" oninput="limparErroInput()" placeholder="Ex: Matemática" style="width:100%; padding:14px; margin:15px 0; border-radius:12px; background:#1a1a1a; border:1px solid #333; color:white; font-size: 16px;">
+            <input type="text" id="nome-materia-input" oninput="limparErroInput()" placeholder="Ex: Matemática" style="width:100%; padding:14px; margin:15px 0; border-radius:12px; background:#1a1a1a; border:1px solid #333; color:white; box-sizing: border-box; outline: none; font-size: 16px;">
             <p id="aviso-vazio" style="display:none; color:#ff4444; font-size:12px; font-weight:bold; margin-bottom:15px;">⚠️ Digite o nome da matéria!</p>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="fecharModal()" style="flex: 1; padding: 15px; border-radius: 12px; background: #222; color: white; border: none; font-weight: bold;">Sair</button>
-                <button onclick="validarEEnviarMateria()" style="flex: 1; padding: 15px; border-radius: 12px; background: #8a2be2; color: white; border: none; font-weight: bold;">Criar</button>
+            <div class="area-botoes-modal" style="display: flex; gap: 10px;">
+                <button onclick="fecharModal()" class="btn-modal-voltar" style="flex: 1; padding: 15px; border-radius: 12px; background: #222; color: white; border: none; font-weight: bold;">Sair</button>
+                <button id="btn-criar-materia" onclick="validarEEnviarMateria()" class="btn-modal-acao" style="flex: 1; padding: 15px; border-radius: 12px; background: #8a2be2; color: white; border: none; font-weight: bold;">Criar</button>
             </div>
         </div>
     </div>
 
     <div id="modal-excluir-container" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center;">
         <div class="modal-content" style="background:#111; padding:30px; border-radius:25px; border:1px solid rgba(255,68,68,0.3); text-align:center; max-width:300px; width: 90%;">
-            <i data-lucide="trash-2" style="width:45px; height:45px; color:#ff4444; margin-bottom: 15px;"></i>
-            <h3 style="color:white; margin-bottom:10px;">Excluir Disciplina?</h3>
+            <div id="aviso-icon" style="margin-bottom:15px;"><i data-lucide="trash-2" style="width:45px; height:45px; color:#ff4444;"></i></div>
+            <h3 style="color:white; margin-bottom:10px; font-weight: 800;">Excluir Disciplina?</h3>
             <div style="display:flex; gap:10px;">
-                <button onclick="fecharModalExcluir()" style="flex:1; background:#222; color:white; border:none; padding:15px; border-radius:12px;">Não</button>
-                <button onclick="if(window.confirmarExclusao) window.confirmarExclusao()" style="flex:1; background:#ff4444; color:white; border:none; padding:15px; border-radius:12px;">Sim</button>
+                <button onclick="fecharModalExcluir()" style="flex:1; background:#222; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;">Não</button>
+                <button onclick="if(window.confirmarExclusao) window.confirmarExclusao()" style="flex:1; background:#ff4444; color:white; border:none; padding:15px; border-radius:12px; font-weight:bold;">Sim, Excluir</button>
             </div>
         </div>
     </div>
@@ -121,43 +197,87 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        const firebaseConfig = { apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc", authDomain: "dt-scho0l.firebaseapp.com", projectId: "dt-scho0l", storageBucket: "dt-scho0l.firebasestorage.app", messagingSenderId: "78578509391", appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a" };
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+            authDomain: "dt-scho0l.firebaseapp.com",
+            projectId: "dt-scho0l",
+            storageBucket: "dt-scho0l.firebasestorage.app",
+            messagingSenderId: "78578509391",
+            appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        onSnapshot(doc(db, "config", "aviso_global"), (s) => {
-            const d = s.data(); const b = document.getElementById('global-alert');
-            if (d?.ativo) { b.style.display = 'flex'; b.innerText = d.mensagem; } else b.style.display = 'none';
+
+        onSnapshot(doc(db, "config", "aviso_global"), (snapshot) => {
+            const data = snapshot.data();
+            const banner = document.getElementById('global-alert');
+            if (data && data.ativo && data.mensagem) {
+                banner.style.display = 'flex';
+                banner.innerHTML = `<i data-lucide="megaphone" style="width:16px;"></i> <span>${data.mensagem}</span>`;
+                if(window.lucide) lucide.createIcons();
+            } else { banner.style.display = 'none'; }
+        });
+
+        onSnapshot(doc(db, "config", "status_sistema"), (snapshot) => {
+            const data = snapshot.data();
+            const telaManutencao = document.getElementById('manutencao-screen');
+            if (data && data.emManutencao && emailLogado !== emailMestre) {
+                telaManutencao.style.display = 'flex';
+            } else {
+                telaManutencao.style.display = 'none';
+            }
         });
     </script>
 
     <script>
-        // FUNÇÕES GLOBAIS DE INTERFACE
-        window.abrirModal = () => document.getElementById('modal-materia').style.display = 'flex';
-        window.fecharModal = () => document.getElementById('modal-materia').style.display = 'none';
-        window.abrirSobreDono = () => { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); };
-        window.fecharSobreDono = () => document.getElementById('modal-dono').style.display = 'none';
-        window.fecharModalExcluir = () => document.getElementById('modal-excluir-container').style.display = 'none';
-        window.limparErroInput = () => { document.getElementById('nome-materia-input').classList.remove('input-error'); document.getElementById('aviso-vazio').style.display = 'none'; };
+        // FUNÇÕES DE INTERFACE GLOBAIS
+        window.abrirModal = function() { document.getElementById('modal-materia').style.display = 'flex'; };
+        window.fecharModal = function() { document.getElementById('modal-materia').style.display = 'none'; };
+        window.abrirSobreDono = function() { 
+            document.getElementById('modal-dono').style.display = 'flex'; 
+            if(window.lucide) lucide.createIcons(); 
+        };
+        window.fecharSobreDono = function() { document.getElementById('modal-dono').style.display = 'none'; };
+        window.fecharModalExcluir = function() { document.getElementById('modal-excluir-container').style.display = 'none'; };
 
-        // O BOTÃO CRIAR AGORA TENTA ACESSAR O WINDOW.CONFIRMARNOVAMATERIA
+        // O AJUSTE PARA O BOTÃO CRIAR FUNCIONAR DE VEZ
         function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
+            const aviso = document.getElementById('aviso-vazio');
+            
             if (!input.value || input.value.trim() === "") {
                 input.classList.add('input-error');
-                document.getElementById('aviso-vazio').style.display = 'block';
+                aviso.style.display = 'block';
                 return;
             }
+
+            // Chama a função que você tem no funcoes.js
             if (window.confirmarNovaMateria) {
                 window.confirmarNovaMateria();
             } else {
-                alert("O sistema ainda está carregando, tente novamente em 1 segundo.");
+                // Tenta importar se ainda não estiver global
+                import('./funcoes.js').then(m => {
+                    if(m.confirmarNovaMateria) m.confirmarNovaMateria();
+                });
             }
         }
+
+        function limparErroInput() {
+            const input = document.getElementById('nome-materia-input');
+            const aviso = document.getElementById('aviso-vazio');
+            if (input.value.trim() !== "") {
+                input.classList.remove('input-error');
+                aviso.style.display = 'none';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
     </script>
 
     <script src="menu.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script type="module" src="funcoes.js?v=400"></script>
+    <script type="module" src="funcoes.js?v=500"></script>
 </body>
 </html>
