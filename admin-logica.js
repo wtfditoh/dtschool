@@ -13,14 +13,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// SEGURANÇA
 const emailMestre = "ditoh2008@gmail.com";
 if ((localStorage.getItem('dt_user_email') || "").toLowerCase() !== emailMestre) {
     window.location.replace('index.html');
 }
 
-// SNAPSHOT EM TEMPO REAL (DATABASE + LOGS)
-function iniciarMonitoramento() {
+// MONITORAMENTO LIVE
+function iniciarPainelMaster() {
     const q = query(collection(db, "notas"), orderBy("xp", "desc"));
     
     onSnapshot(q, (snapshot) => {
@@ -29,22 +28,19 @@ function iniciarMonitoramento() {
         
         let usuariosHTML = "";
         let logsHTML = "";
-        let totalXP = 0, totalMats = 0, count = 0;
+        let tXP = 0, tMats = 0, count = 0;
 
-        // Ordenar para Logs (por atualização recente)
-        const sortedDocs = [...snapshot.docs].sort((a,b) => (b.data().atualizadoEm || 0) - (a.data().atualizadoEm || 0));
+        const sortedByTime = [...snapshot.docs].sort((a,b) => (b.data().atualizadoEm || 0) - (a.data().atualizadoEm || 0));
 
-        sortedDocs.slice(0, 12).forEach(d => {
+        sortedByTime.slice(0, 15).forEach(d => {
             const u = d.data();
             const hora = u.atualizadoEm ? new Date(u.atualizadoEm).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '--:--';
-            logsHTML += `<div class="log-entry"><span class="t-purp">${hora}</span> <span><b>${u.nome}</b> sincronizou dados</span></div>`;
+            logsHTML += `<div class="log-entry"><span class="t-purp">[${hora}]</span> <b>${u.nome}</b> sincronizou.</div>`;
         });
 
         snapshot.forEach((userDoc) => {
             const u = userDoc.data();
-            count++;
-            totalXP += (u.xp || 0);
-            totalMats += (u.materias ? u.materias.length : 0);
+            count++; tXP += (u.xp || 0); tMats += (u.materias?.length || 0);
 
             usuariosHTML += `
                 <div class="user-row">
@@ -61,57 +57,55 @@ function iniciarMonitoramento() {
                 </div>`;
         });
 
-        listaUsuarios.innerHTML = usuariosHTML || "<p class='empty'>Nenhum aluno encontrado.</p>";
-        logsContainer.innerHTML = logsHTML || "<p class='empty'>Aguardando atividades...</p>";
-        
+        listaUsuarios.innerHTML = usuariosHTML;
+        logsContainer.innerHTML = logsHTML;
         document.getElementById('total-users').innerText = count;
-        document.getElementById('avg-xp').innerText = count > 0 ? Math.floor(totalXP / count) : 0;
-        document.getElementById('total-materias').innerText = totalMats;
-
+        document.getElementById('avg-xp').innerText = count > 0 ? Math.floor(tXP / count) : 0;
+        document.getElementById('total-materias').innerText = tMats;
         if (window.lucide) lucide.createIcons();
     });
 }
 
-// AÇÕES DO MASTER
+// FUNÇÕES DE COMANDO
+window.postarAviso = async () => {
+    const t = document.getElementById('aviso-texto');
+    const cor = document.querySelector('input[name="cor-aviso"]:checked').value;
+    if(!t.value) return;
+    await setDoc(doc(db, "config", "aviso_global"), { mensagem: t.value, ativo: true, tipo: cor, data: Date.now() });
+    t.value = "";
+    abrirModalAdmin("SUCESSO", "Mural atualizado com a cor selecionada!", "", () => {}, false);
+};
+
+window.removerAviso = async () => { await setDoc(doc(db, "config", "aviso_global"), { ativo: false }); };
+
+window.forçarUpdateGeral = () => {
+    abrirModalAdmin("FORCE UPDATE", "Limpar cache de todos os alunos? Digite 'SIM':", "", async (v) => {
+        if(v === 'SIM') await setDoc(doc(db, "config", "versao_sistema"), { v: Date.now() });
+    }, true);
+};
+
+window.toggleManutencao = () => {
+    abrirModalAdmin("CORE", "Digite 'LOCK' para fechar ou 'OPEN' para abrir:", "", async (v) => {
+        await setDoc(doc(db, "config", "status_sistema"), { emManutencao: v === 'LOCK' });
+    }, true);
+};
+
 window.verMateriasUser = async (id) => {
     const snap = await getDocs(collection(db, "notas"));
     const u = snap.docs.find(d => d.id === id)?.data();
-    const lista = u?.materias?.map(m => `• ${m.nome}`).join('<br>') || "Nenhuma matéria.";
-    abrirModalAdmin(`DADOS: ${u.nome}`, lista, "", () => {}, false);
+    abrirModalAdmin(`MATÉRIAS: ${u.nome}`, u.materias?.map(m => `• ${m.nome}`).join('<br>') || "Vazio", "", () => {}, false);
 };
 
 window.editarXP = (id, xp) => {
-    abrirModalAdmin("AJUSTAR XP", "Defina o novo valor de XP:", xp, async (val) => {
-        if(val) await updateDoc(doc(db, "notas", id), { xp: Number(val), atualizadoEm: Date.now() });
+    abrirModalAdmin("EDITAR XP", "Novo valor:", xp, async (v) => {
+        await updateDoc(doc(db, "notas", id), { xp: Number(v), atualizadoEm: Date.now() });
     }, true);
 };
 
 window.banirUsuario = (id) => {
-    abrirModalAdmin("EXPULSAR", `Deseja apagar os dados de ${id}?`, "", async () => {
-        await deleteDoc(doc(db, "notas", id));
-    }, false);
+    abrirModalAdmin("BANIR", "Apagar permanentemente?", "", async () => { await deleteDoc(doc(db, "notas", id)); }, false);
 };
 
-window.postarAviso = async () => {
-    const t = document.getElementById('aviso-texto');
-    if(!t.value) return;
-    await setDoc(doc(db, "config", "aviso_global"), { mensagem: t.value, ativo: true });
-    t.value = "";
-    abrirModalAdmin("SUCESSO", "Aviso enviado para todos!", "", () => {}, false);
-};
-
-window.removerAviso = async () => {
-    await setDoc(doc(db, "config", "aviso_global"), { ativo: false });
-};
-
-window.toggleManutencao = () => {
-    abrirModalAdmin("CORE", "Digite 'LOCK' para bloquear o app ou 'OPEN' para liberar:", "", async (val) => {
-        const isLock = val.toUpperCase() === 'LOCK';
-        await setDoc(doc(db, "config", "status_sistema"), { emManutencao: isLock });
-    }, true);
-};
-
-// MODAL CONTROLLER
 window.abrirModalAdmin = (titulo, desc, placeholder = "", callback, comInput = false) => {
     const m = document.getElementById('modal-admin');
     const input = document.getElementById('modal-input');
@@ -124,4 +118,4 @@ window.abrirModalAdmin = (titulo, desc, placeholder = "", callback, comInput = f
 };
 window.fecharModalAdmin = () => document.getElementById('modal-admin').style.display = 'none';
 
-document.addEventListener('DOMContentLoaded', iniciarMonitoramento);
+document.addEventListener('DOMContentLoaded', iniciarPainelMaster);
