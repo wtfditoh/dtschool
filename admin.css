@@ -38,12 +38,29 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 .card-header h3 { font-size: 10px; color: var(--text-dim); margin: 0; letter-spacing: 1px; }
 .card-body { padding: 20px; }
 
-/* LISTA */
+/* LISTA CORRIGIDA (SEM BUG DE ESPREMER) */
 .admin-list { height: 60vh; overflow-y: auto; padding: 15px; background: #08080a; position: relative; }
-.user-row { background: #0f0f12; border-radius: 16px; padding: 15px; display: flex; justify-content: space-between; margin-bottom: 10px; border: 1px solid #1a1a1c; }
-.u-meta { display: flex; flex-direction: column; gap: 4px; }
-.u-name { font-weight: 800; font-size: 14px; }
-.m-badge { background: rgba(138,43,226,0.2); color: var(--purple); font-size: 9px; padding: 2px 6px; border-radius: 5px; font-style: normal; }
+.user-row { 
+    background: #0f0f12; 
+    border-radius: 16px; 
+    padding: 15px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 10px; 
+    border: 1px solid #1a1a1c;
+    gap: 10px;
+}
+.u-meta { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 4px; 
+    flex: 1; 
+    min-width: 0; 
+}
+.u-name { font-weight: 800; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.u-email { font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-badge { background: rgba(138,43,226,0.2); color: var(--purple); font-size: 9px; padding: 2px 6px; border-radius: 5px; font-style: normal; margin-left: 5px; }
 .u-xp-box { background: var(--purple); font-size: 9px; padding: 2px 8px; border-radius: 5px; width: fit-content; font-weight: 900; }
 
 /* LOGS */
@@ -60,13 +77,26 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 .color-options input:checked + .lab-c { border-color: white; transform: scale(1.1); }
 .purp { background: var(--purple); } .red { background: var(--danger); } .gold { background: #ffd700; }
 
-/* BOTÕES */
+/* BOTÕES E AÇÕES */
 textarea { width: 100%; height: 80px; background: #000; border: 1px solid #222; color: white; border-radius: 12px; padding: 10px; box-sizing: border-box; resize: none; }
 .btn-primary { width: 100%; padding: 12px; background: var(--purple); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-top: 10px; }
 .btn-secondary { width: 100%; background: none; border: none; color: #444; font-size: 9px; cursor: pointer; margin-top: 5px; }
 .btn-clean { width: 100%; padding: 12px; background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid #00ff88; border-radius: 12px; font-weight: 800; cursor: pointer; }
 .btn-danger { width: 100%; padding: 12px; background: rgba(255,0,0,0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 12px; font-weight: 800; cursor: pointer; }
-.u-actions button { background: #1a1a1c; border: none; color: white; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; margin-left: 5px; }
+
+.u-actions { display: flex; gap: 5px; flex-shrink: 0; }
+.u-actions button { 
+    background: #1a1a1c; 
+    border: none; 
+    color: white; 
+    width: 36px; 
+    height: 36px; 
+    border-radius: 10px; 
+    cursor: pointer; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 .u-actions button:hover { background: var(--purple); }
 
 /* MODAL SEM BRANCO */
