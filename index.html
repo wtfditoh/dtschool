@@ -97,7 +97,6 @@
             75% { transform: translateX(5px); }
         }
 
-        /* --- ESTILOS DO MODAL DONO --- */
         .modal-dono-overlay {
             display: none; position: fixed; inset: 0; align-items: center; justify-content: center; 
             backdrop-filter: blur(25px) saturate(180%); background: rgba(10, 10, 10, 0.75); z-index: 9999; padding: 20px;
@@ -131,7 +130,7 @@
     </div>
 
     <header class="glass-header">
-        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;">
+        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;" onclick="if(window.toggleMenu) window.toggleMenu()">
             <i data-lucide="menu"></i>
         </button>
         
@@ -196,7 +195,7 @@
             <h3 style="color:white; margin-bottom:10px;">Excluir Disciplina?</h3>
             <div style="display:flex; gap:10px;">
                 <button onclick="fecharModalExcluir()" style="flex:1; background:#222; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Cancelar</button>
-                <button onclick="confirmarExclusao()" style="flex:1; background:#ff4444; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Excluir</button>
+                <button onclick="if(window.confirmarExclusao) window.confirmarExclusao()" style="flex:1; background:#ff4444; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold;">Excluir</button>
             </div>
         </div>
     </div>
@@ -241,7 +240,17 @@
     </script>
 
     <script>
-        /* FUNÇÕES DE MATÉRIA */
+        /* FUNÇÕES DE INTERFACE GLOBAL */
+        window.abrirModal = function() { document.getElementById('modal-materia').style.display = 'flex'; }
+        window.fecharModal = function() { document.getElementById('modal-materia').style.display = 'none'; }
+        window.abrirSobreDono = function() { 
+            document.getElementById('modal-dono').style.display = 'flex'; 
+            if(window.lucide) lucide.createIcons(); 
+        }
+        window.fecharSobreDono = function() { document.getElementById('modal-dono').style.display = 'none'; }
+        window.fecharModalExcluir = function() { document.getElementById('modal-excluir-container').style.display = 'none'; }
+
+        /* VALIDAÇÃO E ENVIO */
         async function validarEEnviarMateria() {
             const input = document.getElementById('nome-materia-input');
             const aviso = document.getElementById('aviso-vazio');
@@ -252,13 +261,15 @@
                 return;
             }
 
-            if (typeof window.confirmarNovaMateria === 'function') {
+            // Chama a função que está exposta no window pelo funcoes.js
+            if (window.confirmarNovaMateria) {
                 window.confirmarNovaMateria();
             } else {
+                // Fallback de segurança caso o módulo demore
                 try {
-                    const modulo = await import('./funcoes.js?v=101');
-                    modulo.confirmarNovaMateria();
-                } catch (e) { console.error(e); }
+                    const mod = await import('./funcoes.js?v=101');
+                    if(mod.confirmarNovaMateria) mod.confirmarNovaMateria();
+                } catch(e) { console.error("Erro ao carregar módulo:", e); }
             }
         }
 
@@ -270,13 +281,6 @@
                 aviso.style.display = 'none';
             }
         }
-        
-        /* FUNÇÕES DE MODAL */
-        window.abrirModal = function() { document.getElementById('modal-materia').style.display = 'flex'; }
-        window.fecharModal = function() { document.getElementById('modal-materia').style.display = 'none'; }
-        window.abrirSobreDono = function() { document.getElementById('modal-dono').style.display = 'flex'; if(window.lucide) lucide.createIcons(); }
-        window.fecharSobreDono = function() { document.getElementById('modal-dono').style.display = 'none'; }
-        window.fecharModalExcluir = function() { document.getElementById('modal-excluir-container').style.display = 'none'; }
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log(err)); });
