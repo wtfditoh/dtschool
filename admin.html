@@ -6,30 +6,6 @@
     <title>Master Control | Hub Brain</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="admin.css">
-    <style>
-        /* Ajuste para o botão de remover não ficar com fundo branco */
-        .btn-remove-mural {
-            margin-top: 10px;
-            width: 100%;
-            padding: 12px;
-            background: rgba(255, 59, 48, 0.05);
-            border: 1px solid rgba(255, 59, 48, 0.2);
-            color: #ff3b30;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn-remove-mural:hover { background: rgba(255, 59, 48, 0.1); }
-        
-        /* Estilo para os Logs */
-        .log-entry {
-            padding: 8px;
-            border-bottom: 1px solid #222;
-            font-size: 12px;
-            color: #ccc;
-        }
-    </style>
 </head>
 <body class="master-dark">
 
@@ -55,47 +31,54 @@
                     <h3>GERENCIAMENTO DE ALUNOS</h3>
                 </div>
                 <div id="lista-usuarios-admin" class="admin-list">
-                    </div>
+                    <div class="loading-state"><div class="pulse-loader"></div></div>
+                </div>
             </section>
         </div>
 
         <div class="admin-column-side">
-            
             <section class="admin-card">
                 <div class="card-header"><i data-lucide="activity"></i><h3>LIVE ACTIVITY</h3></div>
-                <div id="logs-container" class="logs-stream" style="max-height: 200px; overflow-y: auto;">
-                    </div>
+                <div id="logs-container" class="logs-stream"></div>
             </section>
 
             <section class="admin-card">
-                <div class="card-header"><i data-lucide="megaphone"></i><h3>MURAL DA HOME</h3></div>
+                <div class="card-header"><i data-lucide="megaphone"></i><h3>MURAL GLOBAL</h3></div>
                 <div class="card-body">
-                    <textarea id="aviso-texto" placeholder="O que deseja anunciar no mural?" style="width:100%; height:100px; background:#16161a; border:1px solid #333; color:white; border-radius:12px; padding:10px; font-family:sans-serif;"></textarea>
+                    <textarea id="aviso-texto" placeholder="O que deseja anunciar?"></textarea>
                     
-                    <button onclick="postarAviso()" class="btn-primary" style="width:100%; margin-top:15px; padding:14px; background:#8a2be2; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer;">POSTAR NO MURAL</button>
-                    <button onclick="removerAviso()" class="btn-remove-mural">APAGAR MURAL</button>
+                    <div class="color-picker">
+                        <span>COR DO ALERTA:</span>
+                        <div class="color-options">
+                            <input type="radio" name="cor-aviso" value="purple" checked id="c1"> <label for="c1" class="lab-c purp"></label>
+                            <input type="radio" name="cor-aviso" value="danger" id="c2"> <label for="c2" class="lab-c red"></label>
+                            <input type="radio" name="cor-aviso" value="gold" id="c3"> <label for="c3" class="lab-c gold"></label>
+                        </div>
+                    </div>
+
+                    <button onclick="postarAviso()" class="btn-primary">POSTAR AVISO</button>
+                    <button onclick="removerAviso()" class="btn-secondary" style="margin-top:8px; border-color: rgba(255,68,68,0.3); color:#ff4444;">REMOVER MURAL</button>
                 </div>
             </section>
 
             <section class="admin-card">
                 <div class="card-header"><i data-lucide="terminal"></i><h3>SISTEMA CORE</h3></div>
                 <div class="card-body">
-                    <button onclick="forçarUpdateGeral()" class="btn-clean" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid #333; color:white; border-radius:12px; cursor:pointer;">FORCE UPDATE GERAL</button>
-                    <button onclick="toggleManutencao()" class="btn-danger" style="width:100%; margin-top:10px; padding:12px; background:#ff3b30; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer;">MODO MANUTENÇÃO</button>
+                    <button onclick="forçarUpdateGeral()" class="btn-clean">FORCE UPDATE GERAL</button>
+                    <button onclick="toggleManutencao()" class="btn-danger" style="margin-top:10px;">MODO MANUTENÇÃO</button>
                 </div>
             </section>
-
         </div>
     </main>
 
-    <div id="modal-admin" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:30000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px);">
-        <div class="modal-content" style="background:#1c1c1e; padding:25px; border-radius:24px; width:100%; max-width:400px; border:1px solid #333; text-align:center;">
-            <h3 id="modal-title" style="color:white; margin-bottom:10px; font-size:20px;"></h3>
-            <div id="modal-desc" style="color:#888; margin-bottom:20px; font-size:14px;"></div>
-            <input type="text" id="modal-input" style="width:100%; padding:14px; background:#000; border:1px solid #444; color:white; border-radius:12px; margin-bottom:20px; outline:none;">
-            <div class="modal-actions" style="display:flex; gap:10px;">
-                <button onclick="fecharModalAdmin()" style="flex:1; padding:12px; background:#333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">CANCELAR</button>
-                <button id="modal-confirm-btn" style="flex:1; padding:12px; background:#8a2be2; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">CONFIRMAR</button>
+    <div id="modal-admin" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title">Título</h3>
+            <div id="modal-desc" class="modal-text">Descrição</div>
+            <input type="text" id="modal-input" class="modal-input">
+            <div class="modal-actions">
+                <button onclick="fecharModalAdmin()" class="btn-cancel">CANCELAR</button>
+                <button id="modal-confirm-btn" class="btn-confirm">CONFIRMAR</button>
             </div>
         </div>
     </div>
