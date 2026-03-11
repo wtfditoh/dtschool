@@ -55,8 +55,14 @@
         }
 
         .modal-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            z-index: 11000; align-items: center; justify-content: center; padding: 20px;
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.85);
+            z-index: 30000; /* Aumentado para garantir prioridade */
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px;
             backdrop-filter: blur(5px);
         }
 
@@ -140,7 +146,7 @@
             </div>
         </div>
 
-        <div class="mural-card" id="btn-mural-main" style="cursor:pointer; </div>
+        <div class="mural-card" id="btn-mural-main" style="cursor:pointer; position:relative; z-index:10;">
             <div class="mural-content" style="display:flex; align-items:center; gap:12px;">
                 <i data-lucide="megaphone" style="color:#8a2be2"></i>
                 <div class="mural-text">
