@@ -150,3 +150,28 @@ textarea:focus { border-color: var(--purple); }
 /* SPINNER */
 .pulse-loader { width: 22px; height: 22px; border: 3px solid rgba(138,43,226,0.1); border-top-color: var(--purple); border-radius: 50%; animation: s 0.8s infinite linear; }
 @keyframes s { to { transform: rotate(360deg); } }
+
+/* Seletores de Cores no Admin */
+.color-picker { margin: 15px 0; display: flex; align-items: center; gap: 15px; }
+.color-picker span { font-size: 11px; font-weight: 800; color: #555; }
+.color-options { display: flex; gap: 12px; }
+
+/* Esconde o rádio padrão */
+.color-options input { display: none; }
+
+/* Cria a bolinha customizada */
+.lab-c { 
+    width: 24px; height: 24px; border-radius: 50%; 
+    cursor: pointer; border: 3px solid transparent; 
+    transition: 0.3s; display: block;
+}
+
+.purp { background: #8a2be2; box-shadow: 0 0 10px rgba(138,43,226,0.4); }
+.red { background: #ff3b30; box-shadow: 0 0 10px rgba(255,59,48,0.4); }
+.gold { background: #ffcc00; box-shadow: 0 0 10px rgba(255,204,0,0.4); }
+
+/* Quando selecionado, cria uma borda branca em volta */
+.color-options input:checked + .lab-c { 
+    border-color: #fff; 
+    transform: scale(1.2); 
+}
