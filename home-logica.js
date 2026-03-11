@@ -24,31 +24,25 @@ function gerarFraseIA() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Frase IA e Usuário
-    document.getElementById('frase-ia').innerText = gerarFraseIA();
+    // 1. Frase IA e Nome
+    const fraseEl = document.getElementById('frase-ia');
+    if(fraseEl) fraseEl.innerText = gerarFraseIA();
+    
     const nome = localStorage.getItem('dt_user_name') || "ESTUDANTE";
-    document.getElementById('user-display-name').innerText = nome.split(' ')[0].toUpperCase();
-    document.getElementById('current-date').innerText = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
+    const nomeDisplay = document.getElementById('user-display-name');
+    if(nomeDisplay) nomeDisplay.innerText = nome.split(' ')[0].toUpperCase();
+    
+    const dataEl = document.getElementById('current-date');
+    if(dataEl) dataEl.innerText = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
 
-    // 2. Verificação de Manutenção e Aviso Global
+    // 2. Verificação de Manutenção
     onSnapshot(doc(db, "config", "status_sistema"), (s) => {
-        const d = s.data();
-        if (d?.emManutencao && emailLogado !== emailMestre) {
-            document.getElementById('manutencao-screen').style.display = 'flex';
-        } else {
-            document.getElementById('manutencao-screen').style.display = 'none';
-        }
-    });
-
-    onSnapshot(doc(db, "config", "aviso_global"), (s) => {
-        const d = s.data();
-        const alertBox = document.getElementById('global-alert');
-        if (d?.ativo) {
-            alertBox.style.display = 'flex';
-            alertBox.innerHTML = `<i data-lucide="megaphone" style="width:14px"></i> <span>${d.mensagem}</span>`;
-            if(window.lucide) lucide.createIcons();
-        } else {
-            alertBox.style.display = 'none';
+        if (s.exists()) {
+            const d = s.data();
+            const telaM = document.getElementById('manutencao-screen');
+            if (telaM) {
+                telaM.style.display = (d.emManutencao && emailLogado !== emailMestre) ? 'flex' : 'none';
+            }
         }
     });
 
@@ -56,19 +50,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (emailLogado) {
         const userSnap = await getDoc(doc(db, "notas", emailLogado));
         if (userSnap.exists()) {
-            document.getElementById('xp-display').innerText = `+${userSnap.data().xp || 0} XP`;
+            const xpDisplay = document.getElementById('xp-display');
+            if(xpDisplay) xpDisplay.innerText = `+${userSnap.data().xp || 0} XP`;
         }
     }
 
-    // 4. Mural Firebase
+    // 4. LÓGICA DO MURAL (Onde estava o erro)
+    const btnMural = document.getElementById('btn-mural-main');
+    const modalMural = document.getElementById('modal-mural');
+    const muralMsg = document.getElementById('mural-msg');
+    const muralPreview = document.getElementById('mural-preview');
+
     onSnapshot(doc(db, "config", "mural"), (snap) => {
         if (snap.exists()) {
             const d = snap.data();
-            document.getElementById('mural-preview').innerText = d.texto.substring(0, 30) + "...";
-            document.getElementById('btn-mural-main').onclick = () => {
-                document.getElementById('mural-msg').innerText = d.texto;
-                document.getElementById('modal-mural').style.display = 'flex';
-            };
+            
+            // Atualiza o textinho que fica aparecendo no card
+            if(muralPreview) muralPreview.innerText = d.texto.substring(0, 30) + "...";
+
+            // Quando clicar no card do mural...
+            if (btnMural) {
+                btnMural.onclick = () => {
+                    console.log("Abrindo mural..."); // Debug no console
+                    if (modalMural && muralMsg) {
+                        muralMsg.innerHTML = `
+                            <p style="white-space: pre-wrap;">${d.texto}</p>
+                            <br>
+                            <div style="border-top: 1px solid rgba(138,43,226,0.2); padding-top: 10px; text-align: right;">
+                                <small style="color:#8a2be2; font-weight:bold;">Autor: ${d.autor || 'Sistema'}</small>
+                            </div>
+                        `;
+                        modalMural.style.display = 'flex'; // Abre o modal
+                    }
+                };
+            }
         }
     });
 
