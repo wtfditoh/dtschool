@@ -14,30 +14,52 @@
             font-weight: 600; display: none; align-items: center; justify-content: center;
             gap: 10px; z-index: 2000; position: relative;
         }
+
+        /* TELA DE MANUTENÇÃO REFORMULADA */
         #manutencao-screen {
-            display: none; position: fixed; inset: 0; background: #0d0d0d;
-            z-index: 10000; flex-direction: column; align-items: center;
-            justify-content: center; text-align: center; padding: 30px;
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: #080808; 
+            z-index: 20000; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            text-align: center; 
+            padding: 40px;
         }
+
         .logo-pulse {
             display: inline-flex; align-items: center; gap: 8px;
             font-weight: 900; font-size: 20px; letter-spacing: 1px; color: white;
         }
+        
         .brain-icon-pulse { color: #8a2be2; animation: logo-glow 2s infinite ease-in-out; }
+        
         @keyframes logo-glow {
             0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px #8a2be2); }
             50% { transform: scale(1.2); filter: drop-shadow(0 0 8px #8a2be2); }
         }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        @keyframes progress-run { 
+            0% { transform: translateX(-100%); } 
+            100% { transform: translateX(250%); } 
+        }
+
         .user-avatar {
             width: 42px; height: 42px; border-radius: 50%;
             background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.3);
             display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
+
         .modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             z-index: 11000; align-items: center; justify-content: center; padding: 20px;
             backdrop-filter: blur(5px);
         }
+
         .modal-card { 
             background: #16161a; padding: 25px; border-radius: 25px; 
             width: 100%; max-width: 400px; text-align: center;
@@ -50,13 +72,32 @@
     <div id="global-alert"></div>
 
     <div id="manutencao-screen">
-        <i data-lucide="wrench" style="width: 60px; height: 60px; color: #8a2be2; margin-bottom: 20px;"></i>
-        <h2 style="color: white; font-weight: 900;">HUB EM <span style="color:#8a2be2">OBRAS</span></h2>
-        <p style="color: #aaa; margin: 15px 0 30px 0;">Ajustando as engrenagens. Voltamos logo!</p>
+        <div style="position: relative; margin-bottom: 30px;">
+            <i data-lucide="cog" style="width: 50px; height: 50px; color: #8a2be2; animation: spin 4s linear infinite;"></i>
+            <div style="position: absolute; inset: 0; background: #8a2be2; filter: blur(35px); opacity: 0.3;"></div>
+        </div>
+
+        <h2 style="color: white; font-weight: 900; font-size: 24px; letter-spacing: -0.5px; margin-bottom: 10px;">
+            ESTAMOS <span style="color:#8a2be2">EVOLUINDO</span>
+        </h2>
+        <p style="color: #666; font-size: 14px; max-width: 250px; line-height: 1.6; font-weight: 500;">
+            O Hub Brain está passando por ajustes técnicos para melhorar sua experiência.
+        </p>
+
+        <div style="width: 120px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-top: 30px; overflow: hidden;">
+            <div style="width: 40%; height: 100%; background: #8a2be2; border-radius: 10px; animation: progress-run 2s infinite ease-in-out;"></div>
+        </div>
+
+        <div style="position: absolute; bottom: 40px; text-align: center; opacity: 0.5;">
+            <p style="font-size: 10px; letter-spacing: 2px; color: #eee; font-weight: 300;">
+                FOUND & DEV <span style="font-weight: 800; color: #8a2be2;">DITOH</span>
+            </p>
+        </div>
     </div>
 
     <header class="glass-header">
-        <div style="width: 40px;"></div> <div class="logo-pulse">
+        <div style="width: 40px;"></div> 
+        <div class="logo-pulse">
             <span>HUB</span>
             <i data-lucide="brain-circuit" class="brain-icon-pulse"></i>
             <span>BRAIN</span>
