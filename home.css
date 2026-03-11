@@ -53,3 +53,30 @@ body { background: #000; color: #fff; font-family: sans-serif; margin: 0; }
     animation: pulse-mural 2s infinite ease-in-out;
     border: 1px solid #8a2be2 !important;
 }
+/* Fix para o card não vazar da tela */
+#btn-mural-main {
+    max-width: 100%;
+    width: auto;
+    box-sizing: border-box; /* Garante que padding não aumente o tamanho final */
+    overflow: hidden; /* Corta qualquer coisa que tente sair */
+    display: flex;
+    flex-direction: column;
+}
+
+#mural-preview {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Coloca os "..." automaticamente se o texto for grande */
+    display: block;
+    max-width: 100%;
+}
+
+/* Animação Glow que combinamos */
+@keyframes pulse-mural {
+    0% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); }
+    50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.4); }
+    100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); }
+}
+.mural-animado {
+    animation: pulse-mural 2s infinite ease-in-out;
+}
