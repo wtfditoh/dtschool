@@ -7,10 +7,10 @@ const criarMenuGlobal = () => {
                 <button id="close-menu"><i data-lucide="x"></i></button>
             </div>
             <nav class="menu-links" id="nav-links-container">
-                <a href="home.html" id="link-home"><i data-lucide="home"></i> Início</a>
+                <a href="index.html" id="link-home"><i data-lucide="home"></i> Início</a>
                 
                 <a href="perfil.html" id="link-perfil"><i data-lucide="user"></i> Perfil</a>
-                <a href="index.html" id="link-index"><i data-lucide="layout-dashboard"></i> Notas</a>
+                <a href="notas.html" id="link-index"><i data-lucide="layout-dashboard"></i> Notas</a>
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
                 <a href="estudos.html" id="link-estudos"><i data-lucide="brain-circuit"></i> Estudos & IA</a>
                 <a href="foco.html" id="link-foco" class="foco-highlight"><i data-lucide="timer"></i> 
