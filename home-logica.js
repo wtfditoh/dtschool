@@ -35,58 +35,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dataEl = document.getElementById('current-date');
     if(dataEl) dataEl.innerText = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
 
-    // 2. Sistema de Manutenção
+    // 2. Manutenção
     onSnapshot(doc(db, "config", "status_sistema"), (s) => {
         if (s.exists()) {
             const d = s.data();
             const telaM = document.getElementById('manutencao-screen');
-            if (telaM) {
-                telaM.style.display = (d.emManutencao && emailLogado !== emailMestre) ? 'flex' : 'none';
-            }
-            const statusDesc = document.getElementById('status-desc');
-            if(statusDesc) statusDesc.innerText = d.emManutencao ? "Em Manutenção" : "Sistema Online";
+            if (telaM) telaM.style.display = (d.emManutencao && emailLogado !== emailMestre) ? 'flex' : 'none';
         }
     });
 
-    // 3. XP Real do Aluno
+    // 3. XP Real
     if (emailLogado) {
-        try {
-            const userSnap = await getDoc(doc(db, "notas", emailLogado));
-            if (userSnap.exists()) {
-                const xpDisplay = document.getElementById('xp-display');
-                if(xpDisplay) xpDisplay.innerText = `+${userSnap.data().xp || 0} XP`;
-            }
-        } catch (err) { console.error("Erro XP:", err); }
+        const userSnap = await getDoc(doc(db, "notas", emailLogado));
+        if (userSnap.exists()) {
+            const xpDisplay = document.getElementById('xp-display');
+            if(xpDisplay) xpDisplay.innerText = `+${userSnap.data().xp || 0} XP`;
+        }
     }
 
-    // 4. Lógica do Mural com Efeito Glow
+    // 4. LÓGICA DO MURAL (Com trava de estouro de tela)
     onSnapshot(doc(db, "config", "mural"), (snap) => {
         if (snap.exists()) {
             const d = snap.data();
             const preview = document.getElementById('mural-preview');
             const cardMural = document.getElementById('btn-mural-main');
-            
-            if(preview) preview.innerText = d.texto.substring(0, 32) + "...";
 
-            // ATIVA O GLOW se houver um aviso real
+            // Limita o preview para não empurrar o card para fora
+            if(preview) {
+                preview.innerText = d.texto.length > 25 ? d.texto.substring(0, 25) + "..." : d.texto;
+            }
+
+            // Ativa o Glow se houver aviso novo
             if(cardMural) {
                 if(d.texto !== "Nenhum aviso no momento.") {
                     cardMural.classList.add('mural-animado');
                 } else {
                     cardMural.classList.remove('mural-animado');
                 }
-            }
 
-            const btn = document.getElementById('btn-mural-main');
-            if(btn) {
-                btn.onclick = () => {
+                // Clique para abrir o modal
+                cardMural.onclick = () => {
                     const modal = document.getElementById('modal-mural');
                     const msg = document.getElementById('mural-msg');
-                    if(modal && msg) {
+                    if (modal && msg) {
                         msg.innerHTML = `
-                            <p style="white-space: pre-wrap; font-size: 15px; color: #ccc; line-height: 1.6;">${d.texto}</p>
-                            <div style="margin-top: 20px; border-top: 1px solid rgba(138,43,226,0.2); padding-top: 10px; text-align: right;">
-                                <small style="color:#8a2be2; font-weight:bold;">BY: ${d.autor}</small>
+                            <p style="white-space: pre-wrap; word-break: break-word;">${d.texto}</p>
+                            <br>
+                            <div style="border-top: 1px solid rgba(138,43,226,0.2); padding-top: 10px; text-align: right;">
+                                <small style="color:#8a2be2; font-weight:bold;">Autor: ${d.autor || 'Sistema'}</small>
                             </div>
                         `;
                         modal.style.display = 'flex';
