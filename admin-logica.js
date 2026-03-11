@@ -31,6 +31,7 @@ window.abrirModalAdmin = (titulo, desc, placeholder = "", callback, comInput = f
     const descEl = document.getElementById('modal-desc');
     const confirmBtn = document.getElementById('modal-confirm-btn');
 
+    if(!m) return;
     titleEl.innerHTML = titulo;
     descEl.innerHTML = desc;
     
@@ -45,7 +46,8 @@ window.abrirModalAdmin = (titulo, desc, placeholder = "", callback, comInput = f
 };
 
 window.fecharModalAdmin = () => { 
-    document.getElementById('modal-admin').style.display = 'none'; 
+    const m = document.getElementById('modal-admin');
+    if(m) m.style.display = 'none'; 
 };
 
 // ==========================================
@@ -53,7 +55,7 @@ window.fecharModalAdmin = () => {
 // ==========================================
 
 window.enviarResetSenha = (email) => {
-    window.abrirModalAdmin("RECUPERAR CONTA", `Enviar link de senha para:<br><b style="color:var(--purple)">${email}</b>?`, "", async () => {
+    window.abrirModalAdmin("RECUPERAR CONTA", `Enviar link de senha para:<br><b style="color:#8a2be2">${email}</b>?`, "", async () => {
         try {
             await sendPasswordResetEmail(auth, email);
             setTimeout(() => window.abrirModalAdmin("SUCESSO", "E-mail enviado!", "", () => {}, false), 400);
@@ -102,47 +104,62 @@ window.banirUsuario = (id) => {
     });
 };
 
-// MURAL (Sincronizado com a Home - AJUSTADO COM CORES)
+// ==========================================
+// LÓGICA DO MURAL (CORRIGIDA)
+// ==========================================
 window.postarAviso = async () => {
     const t = document.getElementById('aviso-texto');
     
-    // Captura a cor selecionada nos inputs radio (purple, danger ou gold)
-    const radioColor = document.querySelector('input[name="cor-aviso"]:checked');
-    const corFinal = radioColor ? radioColor.value : "purple";
+    // Captura exata do rádio selecionado
+    const radios = document.getElementsByName('cor-aviso');
+    let corSelecionada = "purple"; // Fallback
+    
+    for (const r of radios) {
+        if (r.checked) {
+            corSelecionada = r.value;
+            break;
+        }
+    }
 
-    if (!t || !t.value) {
-        window.abrirModalAdmin("AVISO", "Escreva uma mensagem antes de postar.", "", () => {}, false);
+    if (!t || !t.value.trim()) {
+        window.abrirModalAdmin("AVISO", "Escreva uma mensagem para o mural.", "", () => {}, false);
         return;
     }
 
     try {
+        // setDoc com todos os campos garante que a cor apareça no Firebase
         await setDoc(doc(db, "config", "mural"), { 
-            texto: t.value, 
+            texto: t.value.trim(), 
             autor: "Ditoh", 
-            cor: corFinal, // Envia a cor para a home-logica.js reconhecer
+            cor: corSelecionada, 
             data: new Date().toLocaleDateString('pt-BR'),
             ativo: true
         });
+        
         t.value = "";
-        window.abrirModalAdmin("AVISO", "Mural atualizado com sucesso!", "", () => {}, false);
+        window.abrirModalAdmin("SUCESSO", `Mural atualizado! Cor aplicada: <b>${corSelecionada.toUpperCase()}</b>`, "", () => {}, false);
     } catch (e) {
-        console.error(e);
-        window.abrirModalAdmin("ERRO", "Falha ao salvar aviso.", "", () => {}, false);
+        console.error("Erro ao salvar mural:", e);
+        window.abrirModalAdmin("ERRO", "Falha ao atualizar o banco de dados.", "", () => {}, false);
     }
 };
 
 window.removerAviso = async () => { 
-    await setDoc(doc(db, "config", "mural"), { 
-        texto: "Nenhum aviso no momento.", 
-        autor: "Sistema", 
-        cor: "purple",
-        ativo: false 
-    }); 
-    window.abrirModalAdmin("SISTEMA", "Mural limpo!", "", () => {}, false);
+    try {
+        await setDoc(doc(db, "config", "mural"), { 
+            texto: "Nenhum aviso no momento.", 
+            autor: "Sistema", 
+            cor: "purple", 
+            ativo: false 
+        }); 
+        window.abrirModalAdmin("SISTEMA", "Mural limpo com sucesso!", "", () => {}, false);
+    } catch (e) {
+        console.error(e);
+    }
 };
 
 // ==========================================
-// MONITORAMENTO DA LISTA (VISUAL ORIGINAL)
+// MONITORAMENTO DA LISTA
 // ==========================================
 function iniciarPainel() {
     const q = query(collection(db, "notas"), orderBy("xp", "desc"));
@@ -156,9 +173,9 @@ function iniciarPainel() {
         const docs = [];
         snap.forEach(d => {
             const u = d.data();
+            u.id = d.id;
             docs.push(u);
             
-            // HTML DA LINHA (Recuperando suas classes CSS originais)
             html += `
             <div class="user-row">
                 <div class="u-meta">
