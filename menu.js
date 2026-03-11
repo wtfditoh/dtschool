@@ -10,7 +10,7 @@ const criarMenuGlobal = () => {
                 <a href="index.html" id="link-home"><i data-lucide="home"></i> Início</a>
                 
                 <a href="perfil.html" id="link-perfil"><i data-lucide="user"></i> Perfil</a>
-                <a href="notas.html" id="link-index"><i data-lucide="layout-dashboard"></i> Notas</a>
+                <a href="notas.html" id="link-notas"><i data-lucide="layout-dashboard"></i> Notas</a>
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
                 <a href="estudos.html" id="link-estudos"><i data-lucide="brain-circuit"></i> Estudos & IA</a>
                 <a href="foco.html" id="link-foco" class="foco-highlight"><i data-lucide="timer"></i> 
@@ -49,7 +49,7 @@ const criarMenuGlobal = () => {
         const adminLink = document.createElement('a');
         adminLink.href = "admin.html";
         adminLink.id = "link-admin";
-        adminLink.style.color = "#a052ff"; // Roxo diferente para destacar
+        adminLink.style.color = "#a052ff";
         adminLink.style.borderLeft = "4px solid #a052ff";
         adminLink.innerHTML = `<i data-lucide="shield-check"></i> Painel do Mestre`;
         navLinks.appendChild(adminLink);
@@ -88,9 +88,17 @@ const criarMenuGlobal = () => {
         };
     }
 
-    // Marcar link ativo (ADICIONADO 'home' na lista)
+    // --- MARCAR LINK ATIVO ---
     const path = window.location.pathname;
-    const paginas = ['home', 'index', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco', 'admin'];
+    
+    // Se estiver na raiz "/" ou no "index.html", ativa o botão HOME
+    if (path === "/" || path.endsWith("index.html")) {
+        const linkHome = document.getElementById('link-home');
+        if (linkHome) linkHome.classList.add('active');
+    }
+
+    // Outras páginas
+    const paginas = ['notas', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco', 'admin'];
     paginas.forEach(pg => {
         if (path.includes(pg)) {
             const link = document.getElementById(`link-${pg}`);
