@@ -58,8 +58,26 @@ body {
     display: flex; justify-content: space-between; align-items: center; 
     border: 1px solid #1a1a1c; width: 100% !important; margin-bottom: 30px;
 }
-.mural-text strong { font-size: 13px; color: #eee; }
-#mural-preview { font-size: 11px; color: #555; margin-top: 2px; }
+/* Nova configuração da caixa de texto */
+.mural-text {
+    display: flex;
+    flex-direction: column; /* Isso joga o texto pra baixo */
+    flex: 1;
+    min-width: 0;
+}
+
+.mural-text strong { 
+    font-size: 13px; 
+    color: #eee; 
+    display: block; 
+}
+
+#mural-preview { 
+    font-size: 11px; 
+    color: #555; 
+    margin-top: 2px; 
+    display: block; 
+}
 
 /* --- RESUMO DE HOJE (A VOLTA DO DESIGN) --- */
 .summary-section { 
