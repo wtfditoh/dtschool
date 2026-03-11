@@ -61,8 +61,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const d = snap.data();
             const preview = document.getElementById('mural-preview');
             const cardMural = document.getElementById('btn-mural-main');
-            const bolinha = cardMural?.querySelector('.pulse-circle');
-            const labelAviso = cardMural?.querySelector('span[style*="letter-spacing"]');
+            const iconMural = cardMural?.querySelector('i[data-lucide="megaphone"]');
+            const strongMural = cardMural?.querySelector('strong');
 
             // Mapeamento de cores baseado no Admin
             const cores = {
@@ -73,9 +73,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const corAtual = cores[d.cor] || cores.purple;
 
-            // 1. Limita o texto para não estourar a largura do card
+            // 1. Limita o preview para não estourar a largura do card
             if(preview) {
-                preview.innerText = d.texto.length > 28 ? d.texto.substring(0, 28) + "..." : d.texto;
+                preview.innerText = d.texto; 
+                // A largura agora é controlada pelo CSS que te mandei (ellipsis)
             }
 
             // 2. Aplica as cores dinâmicas no card
@@ -84,18 +85,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 cardMural.style.setProperty('--glow-color', corAtual.shadow);
                 cardMural.style.setProperty('--border-color', corAtual.hex);
                 
-                if(bolinha) {
-                    bolinha.style.background = corAtual.hex;
-                    bolinha.style.boxShadow = `0 0 10px ${corAtual.hex}`;
-                }
-                if(labelAviso) labelAviso.style.color = corAtual.hex;
-
-                cardMural.classList.add('mural-animado');
+                if(iconMural) iconMural.style.color = corAtual.hex;
+                if(strongMural) strongMural.style.color = corAtual.hex;
             } else if (cardMural) {
                 cardMural.classList.remove('mural-animado');
                 cardMural.style.borderColor = "#1a1a1a";
-                if(bolinha) { bolinha.style.background = "#333"; bolinha.style.boxShadow = "none"; }
-                if(labelAviso) labelAviso.style.color = "#666";
+                if(iconMural) iconMural.style.color = "#8a2be2";
+                if(strongMural) strongMural.style.color = "white";
             }
 
             // 3. Clique para abrir o modal
@@ -105,9 +101,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const msg = document.getElementById('mural-msg');
                     if (modal && msg) {
                         msg.innerHTML = `
-                            <p style="white-space: pre-wrap; word-break: break-word; color: #eee; line-height: 1.6;">${d.texto}</p>
+                            <p style="white-space: pre-wrap; word-break: break-word; color: #eee; line-height: 1.6; text-align: left;">${d.texto}</p>
                             <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; text-align: right;">
-                                <small style="color:${corAtual.hex}; font-weight:bold; text-transform: uppercase;">Enviado por: ${d.autor}</small>
+                                <small style="color:${corAtual.hex}; font-weight:bold; text-transform: uppercase;">BY: ${d.autor}</small>
                             </div>
                         `;
                         modal.style.display = 'flex';
