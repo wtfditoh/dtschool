@@ -102,22 +102,42 @@ window.banirUsuario = (id) => {
     });
 };
 
-// MURAL (Sincronizado com a Home)
+// MURAL (Sincronizado com a Home - AJUSTADO COM CORES)
 window.postarAviso = async () => {
     const t = document.getElementById('aviso-texto');
-    if (!t || !t.value) return;
-    await setDoc(doc(db, "config", "mural"), { 
-        texto: t.value, 
-        autor: "Ditoh", 
-        data: new Date().toLocaleDateString('pt-BR'),
-        ativo: true
-    });
-    t.value = "";
-    window.abrirModalAdmin("AVISO", "Mural atualizado!", "", () => {}, false);
+    
+    // Captura a cor selecionada nos inputs radio (purple, danger ou gold)
+    const radioColor = document.querySelector('input[name="cor-aviso"]:checked');
+    const corFinal = radioColor ? radioColor.value : "purple";
+
+    if (!t || !t.value) {
+        window.abrirModalAdmin("AVISO", "Escreva uma mensagem antes de postar.", "", () => {}, false);
+        return;
+    }
+
+    try {
+        await setDoc(doc(db, "config", "mural"), { 
+            texto: t.value, 
+            autor: "Ditoh", 
+            cor: corFinal, // Envia a cor para a home-logica.js reconhecer
+            data: new Date().toLocaleDateString('pt-BR'),
+            ativo: true
+        });
+        t.value = "";
+        window.abrirModalAdmin("AVISO", "Mural atualizado com sucesso!", "", () => {}, false);
+    } catch (e) {
+        console.error(e);
+        window.abrirModalAdmin("ERRO", "Falha ao salvar aviso.", "", () => {}, false);
+    }
 };
 
 window.removerAviso = async () => { 
-    await setDoc(doc(db, "config", "mural"), { texto: "Nenhum aviso no momento.", autor: "Sistema", ativo: false }); 
+    await setDoc(doc(db, "config", "mural"), { 
+        texto: "Nenhum aviso no momento.", 
+        autor: "Sistema", 
+        cor: "purple",
+        ativo: false 
+    }); 
     window.abrirModalAdmin("SISTEMA", "Mural limpo!", "", () => {}, false);
 };
 
