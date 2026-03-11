@@ -81,7 +81,7 @@ window.tentarLogar = async (e) => {
         localStorage.setItem('dt_user_type', 'google'); 
         
         // --- CIRURGIA: Redirecionando para a Home ---
-        window.location.replace('home.html');
+        window.location.replace('index.html');
     } catch (error) { 
         console.error(error);
         avisar("E-mail ou senha inválidos!"); 
