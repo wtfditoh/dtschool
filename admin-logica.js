@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, doc, updateDoc, setDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, doc, updateDoc, setDoc, deleteDoc, onSnapshot, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -49,12 +49,12 @@ window.fecharModalAdmin = () => {
 };
 
 // ==========================================
-// FUNÇÕES DE PODER (SEM ALERTAS DO CHROME)
+// FUNÇÕES DE PODER
 // ==========================================
 
 // 1. RESET DE SENHA
 window.enviarResetSenha = (email) => {
-    window.abrirModalAdmin("RECUPERAR CONTA", `Enviar link de nova senha para:<br><b style="color:var(--purple)">${email}</b>?`, "", async () => {
+    window.abrirModalAdmin("RECUPERAR CONTA", `Enviar link de nova senha para:<br><b style="color:#8a2be2">${email}</b>?`, "", async () => {
         try {
             await sendPasswordResetEmail(auth, email);
             setTimeout(() => {
@@ -68,7 +68,7 @@ window.enviarResetSenha = (email) => {
     }, false);
 };
 
-// 2. MODO MANUTENÇÃO
+// 2. MODO MANUTENÇÃO (CORRIGIDO)
 window.toggleManutencao = () => {
     window.abrirModalAdmin("MANUTENÇÃO", "Digite <b>LOCK</b> para travar ou <b>OPEN</b> para liberar:", "", async (val) => {
         const cmd = val.toUpperCase();
@@ -122,29 +122,33 @@ window.banirUsuario = (id) => {
     }, false);
 };
 
-// 8. MURAL DE AVISOS
+// 8. MURAL DE AVISOS (INTEGRADO E CORRIGIDO)
 window.postarAviso = async () => {
     const t = document.getElementById('aviso-texto');
-    const radio = document.querySelector('input[name="cor-aviso"]:checked');
     if (!t || !t.value) return;
     
-    await setDoc(doc(db, "config", "aviso_global"), { 
-        mensagem: t.value, 
-        ativo: true, 
-        tipo: radio ? radio.value : 'purp', 
-        data: Date.now() 
+    await setDoc(doc(db, "config", "mural"), { 
+        texto: t.value, 
+        autor: "Ditoh", 
+        data: new Date().toLocaleDateString('pt-BR'),
+        ativo: true
     });
+    
     t.value = "";
-    window.abrirModalAdmin("AVISO", "Mural atualizado com sucesso!", "", () => {}, false);
+    window.abrirModalAdmin("AVISO", "Mural da Home atualizado!", "", () => {}, false);
 };
 
 window.removerAviso = async () => { 
-    await setDoc(doc(db, "config", "aviso_global"), { ativo: false }); 
-    window.abrirModalAdmin("SISTEMA", "Aviso removido!", "", () => {}, false);
+    await setDoc(doc(db, "config", "mural"), { 
+        texto: "Nenhum aviso no momento.", 
+        autor: "Sistema",
+        ativo: false 
+    }); 
+    window.abrirModalAdmin("SISTEMA", "Mural limpo com sucesso!", "", () => {}, false);
 };
 
 // ==========================================
-// MONITORAMENTO DA LISTA
+// MONITORAMENTO DA LISTA (LIVE ACTIVITY)
 // ==========================================
 function iniciarPainel() {
     const q = query(collection(db, "notas"), orderBy("xp", "desc"));
@@ -155,37 +159,49 @@ function iniciarPainel() {
         let html = "";
         let logsHTML = "";
         
-        const sortedLogs = [...snap.docs].sort((a,b) => (b.data().atualizadoEm || 0) - (a.data().atualizadoEm || 0));
+        // Lógica de Logs (Live Activity)
+        const docs = [];
+        snap.forEach(d => docs.push({id: d.id, ...d.data()}));
         
-        sortedLogs.slice(0, 10).forEach(d => {
-            const u = d.data();
+        const sortedLogs = [...docs].sort((a,b) => (b.atualizadoEm || 0) - (a.atualizadoEm || 0));
+        
+        sortedLogs.slice(0, 10).forEach(u => {
             const hora = u.atualizadoEm ? new Date(u.atualizadoEm).toLocaleTimeString('pt-BR') : '--:--';
-            logsHTML += `<div class="log-entry"><span class="t-purp">[${hora}]</span> <b>${u.nome}</b></div>`;
+            logsHTML += `<div class="log-entry"><span style="color:#8a2be2">[${hora}]</span> <b>${u.nome}</b></div>`;
         });
 
+        // Tabela de Usuários
         snap.forEach(d => {
             const u = d.data();
             html += `
-            <div class="user-row">
+            <div class="user-row" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #222;">
                 <div class="u-meta">
-                    <span class="u-name" onclick="window.editarNome('${d.id}', '${u.nome}')">${u.nome} <i data-lucide="edit-3" style="width:10px"></i></span>
-                    <span class="u-email" style="font-size:10px; color:#666">${u.email}</span>
-                    <div class="u-xp-box">${u.xp || 0} XP</div>
+                    <span class="u-name" style="cursor:pointer; font-weight:bold;" onclick="window.editarNome('${d.id}', '${u.nome}')">${u.nome}</span><br>
+                    <span class="u-email" style="font-size:11px; color:#666">${u.email}</span>
                 </div>
-                <div class="u-actions">
-                    <button onclick="window.enviarResetSenha('${u.email}')" style="color:#ffcc00"><i data-lucide="key"></i></button>
-                    <button onclick="window.gerenciarMateriasUser('${d.id}')"><i data-lucide="layers"></i></button>
-                    <button onclick="window.editarXP('${d.id}', ${u.xp || 0})"><i data-lucide="zap"></i></button>
-                    <button onclick="window.banirUsuario('${d.id}')" style="color:#ff4444"><i data-lucide="trash-2"></i></button>
+                <div class="u-actions" style="display:flex; gap:10px;">
+                    <button onclick="window.editarXP('${d.id}', ${u.xp || 0})" style="background:none; border:1px solid #333; color:white; padding:5px 10px; border-radius:8px;">${u.xp || 0} XP</button>
+                    <button onclick="window.enviarResetSenha('${u.email}')" style="color:#ffcc00; background:none; border:none; cursor:pointer;">CHAVE</button>
+                    <button onclick="window.banirUsuario('${d.id}')" style="color:#ff4444; background:none; border:none; cursor:pointer;">BAN</button>
                 </div>
             </div>`;
         });
         
-        lista.innerHTML = html;
-        logsContainer.innerHTML = logsHTML;
-        document.getElementById('total-users').innerText = snap.size;
+        if(lista) lista.innerHTML = html;
+        if(logsContainer) logsContainer.innerHTML = logsHTML;
+        
+        const totalUsersEl = document.getElementById('total-users');
+        if(totalUsersEl) totalUsersEl.innerText = snap.size;
+
+        // Média XP
+        const totalXP = docs.reduce((acc, curr) => acc + (curr.xp || 0), 0);
+        const mediaXP = docs.length > 0 ? Math.round(totalXP / docs.length) : 0;
+        const avgXpEl = document.getElementById('avg-xp');
+        if(avgXpEl) avgXpEl.innerText = mediaXP;
+
         if (window.lucide) lucide.createIcons();
     });
 }
 
 document.addEventListener('DOMContentLoaded', iniciarPainel);
+    
