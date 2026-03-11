@@ -4,16 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Home</title>
-    
-    <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="home.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    
     <style>
-        /* Estilo rápido para o modal do mural não bugar */
+        /* Estilos de Manutenção e Avisos */
+        #global-alert {
+            background: linear-gradient(90deg, #8a2be2, #4b0082);
+            color: white; padding: 12px; text-align: center; font-size: 13px;
+            font-weight: 600; display: none; align-items: center; justify-content: center;
+            gap: 10px; z-index: 2000; position: relative;
+        }
+        #manutencao-screen {
+            display: none; position: fixed; inset: 0; background: #0d0d0d;
+            z-index: 10000; flex-direction: column; align-items: center;
+            justify-content: center; text-align: center; padding: 30px;
+        }
+        .logo-pulse {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-weight: 900; font-size: 20px; letter-spacing: 1px; color: white;
+        }
+        .brain-icon-pulse { color: #8a2be2; animation: logo-glow 2s infinite ease-in-out; }
+        @keyframes logo-glow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px #8a2be2); }
+            50% { transform: scale(1.2); filter: drop-shadow(0 0 8px #8a2be2); }
+        }
+        .user-avatar {
+            width: 42px; height: 42px; border-radius: 50%;
+            background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.3);
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
         .modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            z-index: 10000; align-items: center; justify-content: center; padding: 20px;
+            z-index: 11000; align-items: center; justify-content: center; padding: 20px;
             backdrop-filter: blur(5px);
         }
         .modal-card { 
@@ -21,31 +43,33 @@
             width: 100%; max-width: 400px; text-align: center;
             border: 1px solid rgba(138,43,226,0.3);
         }
-        #mural-msg { margin: 20px 0; color: #ccc; line-height: 1.6; }
-        .btn-fechar-mural {
-            width: 100%; background: #8a2be2; color: white; border: none;
-            padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;
-        }
     </style>
 </head>
 <body>
 
+    <div id="global-alert"></div>
+
+    <div id="manutencao-screen">
+        <i data-lucide="wrench" style="width: 60px; height: 60px; color: #8a2be2; margin-bottom: 20px;"></i>
+        <h2 style="color: white; font-weight: 900;">HUB EM <span style="color:#8a2be2">OBRAS</span></h2>
+        <p style="color: #aaa; margin: 15px 0 30px 0;">Ajustando as engrenagens. Voltamos logo!</p>
+    </div>
+
     <header class="glass-header">
-        <button id="open-menu" class="btn-icon" style="background:none; border:none; color:white; cursor:pointer;">
-            <i data-lucide="menu"></i>
-        </button>
-        <div class="logo-central">
-            <span class="logo-text" style="font-weight:900; letter-spacing:1px;">HUB <span style="color:#8a2be2">BRAIN</span></span>
+        <div style="width: 40px;"></div> <div class="logo-pulse">
+            <span>HUB</span>
+            <i data-lucide="brain-circuit" class="brain-icon-pulse"></i>
+            <span>BRAIN</span>
         </div>
-        <div class="user-avatar" onclick="window.location.href='perfil.html'" style="cursor:pointer; background:rgba(138,43,226,0.2); padding:8px; border-radius:50%;">
-            <i data-lucide="user" style="color:#8a2be2; width:20px;"></i>
+        <div class="user-avatar" onclick="window.location.href='perfil.html'" style="cursor:pointer;">
+            <i data-lucide="user" style="color:#8a2be2; width:22px;"></i>
         </div>
     </header>
 
     <main class="home-container">
         <section class="welcome-section">
-            <span class="day-phrase" style="color:#666; font-size:14px;">Bora evoluir hoje?</span>
-            <h1 id="user-display-name" style="margin:5px 0; font-size:28px; font-weight:800; text-transform:uppercase;">...</h1>
+            <span id="frase-ia" class="day-phrase" style="color:#8a2be2; font-weight:700;">...</span>
+            <h1 id="user-display-name">ESTUDANTE</h1>
         </section>
 
         <div class="app-grid">
@@ -76,29 +100,29 @@
         </div>
 
         <div class="mural-card" id="btn-mural-main" style="cursor:pointer;">
-            <div class="mural-content" style="display:flex; align-items:center; gap:15px;">
-                <i data-lucide="megaphone" style="color:#8a2be2;"></i>
+            <div class="mural-content" style="display:flex; align-items:center; gap:12px;">
+                <i data-lucide="megaphone" style="color:#8a2be2"></i>
                 <div class="mural-text">
-                    <strong style="display:block; font-size:14px;">Mural de Avisos</strong>
-                    <span id="mural-preview" style="font-size:12px; color:#666;">Toque para ver comunicados</span>
+                    <strong>Mural de Avisos</strong>
+                    <span id="mural-preview">Toque para ler</span>
                 </div>
             </div>
-            <i data-lucide="chevron-right" style="color:#333;"></i>
+            <i data-lucide="chevron-right"></i>
         </div>
 
         <section class="summary-section">
-            <div class="summary-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="margin:0; font-size:18px;">Resumo de hoje</h3>
-                <span id="current-date" style="font-size:12px; color:#555;">--/--</span>
+            <div class="summary-header">
+                <h3>Resumo de hoje</h3>
+                <span id="current-date">--/--</span>
             </div>
             <div class="summary-card">
                 <div class="status-row" style="display:flex; align-items:center; gap:15px;">
                     <div class="pulse-circle"></div>
-                    <div class="status-info" style="flex:1;">
-                        <strong style="display:block; font-size:14px;">Status do Sistema</strong>
-                        <span style="font-size:11px; color:#555;">Tudo operando normalmente</span>
+                    <div class="status-info" style="flex:1">
+                        <strong>Status do Sistema</strong>
+                        <span id="status-desc" style="font-size:11px; color:#666;">Online</span>
                     </div>
-                    <span class="xp-tag">+50 XP</span>
+                    <span class="xp-tag" id="xp-display">+0 XP</span>
                 </div>
             </div>
         </section>
@@ -106,13 +130,12 @@
 
     <div id="modal-mural" class="modal-overlay">
         <div class="modal-card">
-            <h3 style="margin:0; color:white;">Avisos do Hub</h3>
-            <div id="mural-msg">Carregando mensagens...</div>
-            <button class="btn-fechar-mural" onclick="document.getElementById('modal-mural').style.display='none'">FECHAR</button>
+            <h3 style="color:white">Aviso Importante</h3>
+            <div id="mural-msg" style="margin:20px 0; color:#bbb; font-size:14px; line-height:1.5;"></div>
+            <button onclick="document.getElementById('modal-mural').style.display='none'" style="width:100%; padding:12px; background:#8a2be2; border:none; border-radius:12px; color:white; font-weight:bold;">FECHAR</button>
         </div>
     </div>
 
-    <script src="menu.js"></script>
     <script type="module" src="home-logica.js"></script>
 </body>
 </html>
