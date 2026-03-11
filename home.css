@@ -119,3 +119,20 @@ body {
 
 /* Modal */
 .modal-card { background: #0f0f12; border: 1px solid #1a1a1c; border-radius: 28px; }
+.home-footer {
+    width: 100%;
+    padding: 40px 0 20px 0; /* Dá um espaço em cima e embaixo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0.4; /* Deixa ele meio transparente, estilo dev */
+}
+
+.home-footer span {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #fff;
+    text-transform: uppercase;
+    font-family: sans-serif;
+}
