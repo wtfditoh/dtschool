@@ -1,3 +1,4 @@
+/* home-logica.js */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -24,7 +25,7 @@ function gerarFraseIA() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Interface (Nome, Frase e Data)
+    // 1. Interface Básica
     const fraseEl = document.getElementById('frase-ia');
     if(fraseEl) fraseEl.innerText = gerarFraseIA();
     
@@ -35,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dataEl = document.getElementById('current-date');
     if(dataEl) dataEl.innerText = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
 
-    // 2. Manutenção
+    // 2. Status de Manutenção
     onSnapshot(doc(db, "config", "status_sistema"), (s) => {
         if (s.exists()) {
             const d = s.data();
@@ -44,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 3. XP Real
+    // 3. Busca de XP
     if (emailLogado) {
         try {
             const userSnap = await getDoc(doc(db, "notas", emailLogado));
@@ -55,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (e) { console.error(e); }
     }
 
-    // 4. LÓGICA DO MURAL (Cores Dinâmicas e Fix de Tela)
+    // 4. LÓGICA DO MURAL DINÂMICO
     onSnapshot(doc(db, "config", "mural"), (snap) => {
         if (snap.exists()) {
             const d = snap.data();
@@ -64,7 +65,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const iconMural = cardMural?.querySelector('i[data-lucide="megaphone"]');
             const strongMural = cardMural?.querySelector('strong');
 
-            // Mapeamento de cores baseado no Admin
             const cores = {
                 purple: { hex: "#8a2be2", shadow: "rgba(138,43,226,0.5)" },
                 danger: { hex: "#ff3b30", shadow: "rgba(255,59,48,0.5)" },
@@ -73,13 +73,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const corAtual = cores[d.cor] || cores.purple;
 
-            // 1. Limita o preview para não estourar a largura do card
-            if(preview) {
-                preview.innerText = d.texto; 
-                // A largura agora é controlada pelo CSS que te mandei (ellipsis)
-            }
+            if(preview) preview.innerText = d.texto;
 
-            // 2. Aplica as cores dinâmicas no card
             if(cardMural && d.texto !== "Nenhum aviso no momento.") {
                 cardMural.classList.add('mural-animado');
                 cardMural.style.setProperty('--glow-color', corAtual.shadow);
@@ -94,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if(strongMural) strongMural.style.color = "white";
             }
 
-            // 3. Clique para abrir o modal
+            // Clique do Mural
             if(cardMural) {
                 cardMural.onclick = () => {
                     const modal = document.getElementById('modal-mural');
