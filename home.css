@@ -101,4 +101,3 @@ body {
     100% { border-color: #1a1a1a; box-shadow: 0 0 0px transparent; }
 }
 .mural-animado { animation: pulse-mural 2s infinite ease-in-out; }
-* { outline: 1px solid red !important; }
