@@ -118,7 +118,7 @@ window.realizarCadastro = async (e) => {
         });
         
         // --- CIRURGIA: Redirecionando para a Home ---
-        window.location.replace('home.html');
+        window.location.replace('index.html');
     } catch (error) {
         console.error(error);
         avisar("Erro ao criar conta. E-mail já existe?");
@@ -143,5 +143,5 @@ window.entrarComoVisitante = () => {
     localStorage.setItem('dt_user_name', 'Visitante');
     localStorage.setItem('dt_user_type', 'local');
     // --- CIRURGIA: Redirecionando para a Home ---
-    window.location.replace('home.html');
+    window.location.replace('index.html');
 };
