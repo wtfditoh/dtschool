@@ -42,3 +42,14 @@ body { background: #000; color: #fff; font-family: sans-serif; margin: 0; }
     padding: 20px;
     backdrop-filter: blur(10px);
 }
+/* Animação de Brilho para Aviso Novo */
+@keyframes pulse-mural {
+    0% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); border-color: rgba(138, 43, 226, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(138, 43, 226, 0.5); border-color: rgba(138, 43, 226, 0.8); }
+    100% { box-shadow: 0 0 0px rgba(138, 43, 226, 0); border-color: rgba(138, 43, 226, 0.3); }
+}
+
+.mural-animado {
+    animation: pulse-mural 2s infinite ease-in-out;
+    border: 1px solid #8a2be2 !important;
+}
