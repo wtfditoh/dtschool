@@ -57,7 +57,7 @@ async function salvarPlayerIdNoFirebase() {
     try {
         if (!window.OneSignalDeferred) return;
         OneSignalDeferred.push(async function(OneSignal) {
-            const playerId = await OneSignal.User.PushSubscription.id;
+            const playerId = await OneSignal.User.onesignalId;
             if (!playerId) return;
             await setDoc(doc(db, "grades_horarias", userId), {
                 onesignal_player_id: playerId
