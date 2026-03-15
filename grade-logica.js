@@ -24,8 +24,8 @@ const TABELA_HORARIOS = {
     ],
     vespertino: [
         { ordem: "1ª Aula", inicio: "13:00" }, { ordem: "2ª Aula", inicio: "13:50" },
-        { ordem: "3ª Aula", inicio: "14:40" }, { ordem: "4ª Aula", inicio: "15:50" },
-        { ordem: "5ª Aula", inicio: "16:40" }, { ordem: "6ª Aula", inicio: "17:30" }
+        { ordem: "3ª Aula", inicio: "14:40" }, { ordem: "4ª Aula", inicio: "15:40" },
+        { ordem: "5ª Aula", inicio: "16:20" }, { ordem: "6ª Aula", inicio: "17:00" }
     ]
 };
 
