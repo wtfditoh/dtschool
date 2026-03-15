@@ -14,7 +14,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- AJUSTE AQUI: AGORA PEGAMOS O EMAIL ---
 const userEmail = localStorage.getItem('dt_user_email'); 
 const userType = localStorage.getItem('dt_user_type');
 
@@ -24,7 +23,7 @@ let imagemBase64 = "";
 let agendaGlobal = [];
 
 // ==========================================
-// MOTOR DE XP DA AGENDA (LEITURA INTELIGENTE)
+// MOTOR DE XP
 // ==========================================
 function identificarXPTarefa(nome) {
     const n = nome.toLowerCase().trim();
@@ -34,24 +33,45 @@ function identificarXPTarefa(nome) {
 }
 
 async function atualizarXPRanking(valorXP) {
-    const emailAtual = localStorage.getItem('dt_user_email'); // Garante o email atualizado
+    const emailAtual = localStorage.getItem('dt_user_email');
     if (userType === 'local' || !emailAtual) return;
-
     try {
-        // O documento no ranking agora é identificado pelo E-mail
         const userRef = doc(db, "notas", emailAtual);
-        await setDoc(userRef, { 
-            xp: increment(valorXP) 
-        }, { merge: true });
-        
-        console.log(`⭐ XP atualizado para ${emailAtual}: ${valorXP > 0 ? '+' : ''}${valorXP}`);
+        await setDoc(userRef, { xp: increment(valorXP) }, { merge: true });
+        console.log(`XP atualizado: ${valorXP > 0 ? '+' : ''}${valorXP}`);
     } catch (e) {
         console.error("Erro ao atualizar XP:", e);
     }
 }
 
 // ==========================================
-// LÓGICA DE CARREGAMENTO E EXIBIÇÃO
+// SALVAR PLAYER ID DO ONESIGNAL NO FIREBASE
+// ==========================================
+async function salvarPlayerIdNasAgendas() {
+    const emailAtual = localStorage.getItem('dt_user_email');
+    if (!emailAtual || userType === 'local') return;
+    try {
+        if (!window.OneSignalDeferred) return;
+        OneSignalDeferred.push(async function(OneSignal) {
+            const playerId = await OneSignal.User.PushSubscription.id;
+            if (!playerId) return;
+
+            // Busca todas as tarefas do usuário e atualiza o player ID
+            const q = query(collection(db, "agenda"), where("usuario", "==", emailAtual));
+            const snap = await getDocs(q);
+            const atualizacoes = snap.docs.map(d => 
+                updateDoc(doc(db, "agenda", d.id), { onesignal_player_id: playerId })
+            );
+            await Promise.all(atualizacoes);
+            console.log("Player ID salvo nas tarefas:", playerId);
+        });
+    } catch (e) {
+        console.error("Erro ao salvar Player ID nas agendas:", e);
+    }
+}
+
+// ==========================================
+// HELPERS
 // ==========================================
 const getHojeLocal = () => {
     const d = new Date();
@@ -61,6 +81,8 @@ const getHojeLocal = () => {
 document.addEventListener('DOMContentLoaded', () => {
     window.carregarMateriasNoSelect();
     window.buscarDadosNuvem();
+    // Salva Player ID ao carregar a página
+    salvarPlayerIdNasAgendas();
 });
 
 window.buscarDadosNuvem = async function() {
@@ -69,7 +91,6 @@ window.buscarDadosNuvem = async function() {
         agendaGlobal = JSON.parse(localStorage.getItem('dt_agenda') || '[]');
     } else {
         try {
-            // BUSCA FILTRADA POR EMAIL
             const q = query(collection(db, "agenda"), where("usuario", "==", emailBusca));
             const snap = await getDocs(q);
             agendaGlobal = [];
@@ -203,14 +224,26 @@ window.adicionarTarefa = async function() {
     const dataInicio = document.getElementById('tarefa-data-inicio').value;
     const dataFim = document.getElementById('tarefa-data-fim').value;
     const materia = document.getElementById('tarefa-materia').value;
-    const emailDono = localStorage.getItem('dt_user_email'); // USA O EMAIL AQUI
+    const emailDono = localStorage.getItem('dt_user_email');
 
     if (!nome || !dataInicio || !dataFim || !emailDono) return;
+
+    // Pega o Player ID do OneSignal pra salvar junto com a tarefa
+    let playerId = null;
+    if (window.OneSignalDeferred) {
+        await new Promise(resolve => {
+            OneSignalDeferred.push(async function(OneSignal) {
+                playerId = await OneSignal.User.PushSubscription.id;
+                resolve();
+            });
+        });
+    }
 
     const nova = { 
         nome, descricao: desc, dataInicio, dataFim, materia, 
         imagem: imagemBase64, concluida: false,
-        usuario: emailDono, // AGORA O DONO É O EMAIL
+        usuario: emailDono,
+        onesignal_player_id: playerId || null,
         criadoEm: Date.now()
     };
 
@@ -254,7 +287,6 @@ window.alternarConcluida = async function(idFirebase, idLocal) {
         await updateDoc(doc(db, "agenda", idFirebase), { concluida: novoStatus });
         tarefa.concluida = novoStatus; 
     }
-
     if (tarefa) {
         const baseXP = identificarXPTarefa(tarefa.nome);
         const xpFinal = tarefa.concluida ? baseXP : (baseXP * -1);
