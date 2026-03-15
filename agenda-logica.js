@@ -53,10 +53,9 @@ async function salvarPlayerIdNasAgendas() {
     try {
         if (!window.OneSignalDeferred) return;
         OneSignalDeferred.push(async function(OneSignal) {
-            const playerId = await OneSignal.User.PushSubscription.id;
+            const playerId = OneSignal.User.PushSubscription.token;
             if (!playerId) return;
 
-            // Busca todas as tarefas do usuário e atualiza o player ID
             const q = query(collection(db, "agenda"), where("usuario", "==", emailAtual));
             const snap = await getDocs(q);
             const atualizacoes = snap.docs.map(d => 
@@ -81,7 +80,6 @@ const getHojeLocal = () => {
 document.addEventListener('DOMContentLoaded', () => {
     window.carregarMateriasNoSelect();
     window.buscarDadosNuvem();
-    // Salva Player ID ao carregar a página
     salvarPlayerIdNasAgendas();
 });
 
@@ -233,7 +231,7 @@ window.adicionarTarefa = async function() {
     if (window.OneSignalDeferred) {
         await new Promise(resolve => {
             OneSignalDeferred.push(async function(OneSignal) {
-                playerId = await OneSignal.User.PushSubscription.id;
+                playerId = OneSignal.User.PushSubscription.token;
                 resolve();
             });
         });
