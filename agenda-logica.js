@@ -13,7 +13,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const userPhone = localStorage.getItem('dt_user_phone');
+
+// --- AJUSTE AQUI: AGORA PEGAMOS O EMAIL ---
+const userEmail = localStorage.getItem('dt_user_email'); 
 const userType = localStorage.getItem('dt_user_type');
 
 let mesExibido = new Date();
@@ -26,26 +28,23 @@ let agendaGlobal = [];
 // ==========================================
 function identificarXPTarefa(nome) {
     const n = nome.toLowerCase().trim();
-    
-    // Agora ele verifica se a palavra existe em QUALQUER lugar do título
-    if (n.includes('prova') || n.includes('exame') || n.includes('(p)') || n.includes('(e)')) {
-        return 30; // Prova/Exame: +30 XP
-    }
-    if (n.includes('trabalho') || n.includes('teste') || n.includes('(t)')) {
-        return 20; // Trabalho/Teste: +20 XP
-    }
-    
-    return 10; // Atividade/Estudo comum: +10 XP
+    if (n.includes('prova') || n.includes('exame') || n.includes('(p)') || n.includes('(e)')) return 30;
+    if (n.includes('trabalho') || n.includes('teste') || n.includes('(t)')) return 20;
+    return 10;
 }
 
 async function atualizarXPRanking(valorXP) {
-    if (userType === 'local' || !userPhone) return;
+    const emailAtual = localStorage.getItem('dt_user_email'); // Garante o email atualizado
+    if (userType === 'local' || !emailAtual) return;
+
     try {
-        const userRef = doc(db, "notas", userPhone);
-        await updateDoc(userRef, { 
+        // O documento no ranking agora é identificado pelo E-mail
+        const userRef = doc(db, "notas", emailAtual);
+        await setDoc(userRef, { 
             xp: increment(valorXP) 
-        });
-        console.log(`⭐ Ranking atualizado: ${valorXP > 0 ? '+' : ''}${valorXP} XP`);
+        }, { merge: true });
+        
+        console.log(`⭐ XP atualizado para ${emailAtual}: ${valorXP > 0 ? '+' : ''}${valorXP}`);
     } catch (e) {
         console.error("Erro ao atualizar XP:", e);
     }
@@ -65,11 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.buscarDadosNuvem = async function() {
+    const emailBusca = localStorage.getItem('dt_user_email');
     if (userType === 'local') {
         agendaGlobal = JSON.parse(localStorage.getItem('dt_agenda') || '[]');
     } else {
         try {
-            const q = query(collection(db, "agenda"), where("usuario", "==", userPhone));
+            // BUSCA FILTRADA POR EMAIL
+            const q = query(collection(db, "agenda"), where("usuario", "==", emailBusca));
             const snap = await getDocs(q);
             agendaGlobal = [];
             snap.forEach(d => agendaGlobal.push({ id_firebase: d.id, ...d.data() }));
@@ -202,13 +203,15 @@ window.adicionarTarefa = async function() {
     const dataInicio = document.getElementById('tarefa-data-inicio').value;
     const dataFim = document.getElementById('tarefa-data-fim').value;
     const materia = document.getElementById('tarefa-materia').value;
+    const emailDono = localStorage.getItem('dt_user_email'); // USA O EMAIL AQUI
 
-    if (!nome || !dataInicio || !dataFim) return;
+    if (!nome || !dataInicio || !dataFim || !emailDono) return;
 
     const nova = { 
         nome, descricao: desc, dataInicio, dataFim, materia, 
         imagem: imagemBase64, concluida: false,
-        usuario: userPhone, criadoEm: Date.now()
+        usuario: emailDono, // AGORA O DONO É O EMAIL
+        criadoEm: Date.now()
     };
 
     if (userType === 'local') {
@@ -223,13 +226,10 @@ window.adicionarTarefa = async function() {
 
 window.removerTarefa = async function(idFirebase, idLocal) {
     const tarefa = agendaGlobal.find(t => userType === 'local' ? t.criadoEm === idLocal : t.id_firebase === idFirebase);
-    
-    // Estorno de XP se deletar algo já concluído
     if (tarefa && tarefa.concluida) {
         const xpEstorno = identificarXPTarefa(tarefa.nome) * -1;
         await atualizarXPRanking(xpEstorno);
     }
-
     if (userType === 'local') {
         agendaGlobal = agendaGlobal.filter(t => t.criadoEm !== idLocal);
         localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
@@ -260,7 +260,6 @@ window.alternarConcluida = async function(idFirebase, idLocal) {
         const xpFinal = tarefa.concluida ? baseXP : (baseXP * -1);
         await atualizarXPRanking(xpFinal);
     }
-
     window.buscarDadosNuvem();
 };
 
@@ -306,4 +305,3 @@ window.fecharModalAgenda = () => {
     document.getElementById('preview-container').innerHTML = "";
     imagemBase64 = ""; 
 };
-  
