@@ -57,12 +57,22 @@ async function salvarPlayerIdNoFirebase() {
     try {
         if (!window.OneSignalDeferred) return;
         OneSignalDeferred.push(async function(OneSignal) {
-            const playerId = OneSignal.User.PushSubscription.token;
+            // Aguarda o OneSignal inicializar completamente
+            await new Promise(r => setTimeout(r, 2000));
+            
+            // Tenta todas as formas possíveis de pegar o ID
+            let playerId = null;
+            try { playerId = OneSignal.User.PushSubscription.id; } catch(e) {}
+            if (!playerId) try { playerId = OneSignal.User.PushSubscription.token; } catch(e) {}
+            if (!playerId) try { playerId = await OneSignal.User.getOnesignalId(); } catch(e) {}
+
+            console.log("Player ID encontrado:", playerId);
             if (!playerId) return;
+
             await setDoc(doc(db, "grades_horarias", userId), {
                 onesignal_player_id: playerId
             }, { merge: true });
-            console.log("Player ID salvo:", playerId);
+            console.log("Player ID salvo no Firebase:", playerId);
         });
     } catch (e) {
         console.error("Erro ao salvar Player ID:", e);
@@ -71,7 +81,7 @@ async function salvarPlayerIdNoFirebase() {
 
 // --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("🧠 Hub Brain: Sistema de Horários Iniciado");
+    console.log("Hub Brain: Sistema de Horarios Iniciado");
     
     const local = localStorage.getItem('hub_brain_grade');
     if (local) { 
@@ -85,7 +95,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (userId !== "convidado") await carregarDadosNuvem();
     
-    // Salva o Player ID assim que a página carrega
     salvarPlayerIdNoFirebase();
 
     if(typeof lucide !== 'undefined') lucide.createIcons();
@@ -143,7 +152,7 @@ window.abrirModalAula = async () => {
     document.getElementById('aula-materia-custom').value = "";
     
     const selectMat = document.getElementById('aula-materia-select');
-    selectMat.innerHTML = '<option value="">Carregando matérias...</option>';
+    selectMat.innerHTML = '<option value="">Carregando materias...</option>';
     document.getElementById('modal-aula').style.display = 'flex';
 
     try {
@@ -160,7 +169,7 @@ window.abrirModalAula = async () => {
                     selectMat.appendChild(opt);
                 });
             } else {
-                selectMat.innerHTML = '<option value="">Nenhuma matéria no Notas</option>';
+                selectMat.innerHTML = '<option value="">Nenhuma materia no Notas</option>';
             }
         } else {
             selectMat.innerHTML = '<option value="">Abra a aba Notas primeiro</option>';
@@ -179,7 +188,7 @@ window.salvarAula = async () => {
     
     const materiaFinal = matSelect || matCustom;
     if(!materiaFinal) {
-        window.mostrarAvisoCustom("⚠️ Escolha ou digite a matéria!");
+        window.mostrarAvisoCustom("Escolha ou digite a materia!");
         return;
     }
 
@@ -202,9 +211,9 @@ window.salvarAula = async () => {
             atualizadoEm: Date.now() 
         }, { merge: true });
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
-        window.mostrarAvisoCustom("✅ Aula agendada com sucesso!");
+        window.mostrarAvisoCustom("Aula agendada com sucesso!");
     } catch (e) {
-        window.mostrarAvisoCustom("❌ Erro ao salvar na nuvem.");
+        window.mostrarAvisoCustom("Erro ao salvar na nuvem.");
     }
 };
 
@@ -219,18 +228,17 @@ document.getElementById('btn-confirmar-delete').onclick = async () => {
     try {
         localStorage.setItem('hub_brain_grade', JSON.stringify(gradeHoraria));
         await setDoc(doc(db, "grades_horarias", userId), { grade: gradeHoraria }, { merge: true });
-        window.mostrarAvisoCustom("🗑️ Aula removida.");
+        window.mostrarAvisoCustom("Aula removida.");
     } catch (e) { console.error(e); }
     fecharModalExcluir();
 };
 
-// --- NOTIFICAÇÕES PUSH ---
+// --- NOTIFICACOES PUSH ---
 window.ativarNotificacoesReal = () => {
     if (window.OneSignalDeferred) {
         OneSignalDeferred.push(async function(OneSignal) {
             await OneSignal.Notifications.requestPermission();
-            window.mostrarAvisoCustom("🔔 Notificações ativadas!");
-            // Salva o Player ID após aceitar
+            window.mostrarAvisoCustom("Notificacoes ativadas!");
             salvarPlayerIdNoFirebase();
         });
     }
