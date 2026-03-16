@@ -1,45 +1,259 @@
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800;900&display=swap');
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-body { background: #000; color: white; font-family: 'Inter', sans-serif; height: 100svh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
+:root {
+    --roxo: #8a2be2;
+    --roxo-glow: rgba(138,43,226,0.4);
+    --bg: #070709;
+    --card: #0e0e12;
+    --borda: rgba(138,43,226,0.15);
+}
 
-/* --- HEADER --- */
-.header-minimal { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-.btn-icon-top { background: none; border: none; color: #1a1a1a; cursor: pointer; }
-.label-header { font-weight: 900; font-size: 9px; letter-spacing: 3px; color: #1a1a1a; text-transform: uppercase; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-/* --- TIMER VIEWPORT --- */
-.timer-viewport { flex: 1; display: flex; align-items: center; justify-content: center; padding-bottom: 40px; }
-.canvas-timer { position: relative; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; }
+body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; min-height: 100svh; display: flex; flex-direction: column; overflow-x: hidden; }
 
-.progress-ring { position: absolute; transform: rotate(-90deg); width: 100%; height: 100%; }
-.progress-ring__circle { stroke: #8a2be2; stroke-width: 6; fill: transparent; stroke-dasharray: 816.8; stroke-dashoffset: 816.8; stroke-linecap: round; transition: 1s linear; }
-.progress-bg { stroke: #0a0a0a; stroke-width: 6; fill: transparent; }
+/* HEADER */
+.header-foco { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; }
+.btn-icon { background: none; border: none; color: #333; cursor: pointer; padding: 8px; }
+.btn-icon.active { color: var(--roxo); }
+.header-tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.04); border-radius: 12px; padding: 4px; }
+.tab-btn { background: none; border: none; color: #444; font-size: 11px; font-weight: 800; letter-spacing: 1px; padding: 7px 16px; border-radius: 9px; cursor: pointer; transition: 0.2s; }
+.tab-btn.active { background: var(--roxo); color: white; }
 
-/* --- RELÓGIO (MAIS COMPACTO) --- */
-.timer-content { position: absolute; width: 100%; z-index: 10; text-align: center; }
-.digital-clock { font-family: 'Share Tech Mono', monospace; display: flex; align-items: center; justify-content: center; }
-.unit-adjust { display: flex; flex-direction: column; align-items: center; width: 75px; }
-.unit-adjust span { font-size: 60px; line-height: 0.9; margin: 2px 0; color: #fff; }
-.clock-separator { font-size: 40px; opacity: 0.1; margin: 0 2px; padding-bottom: 10px; }
+/* VIEWS */
+.view { display: none; flex: 1; flex-direction: column; }
+.view.active { display: flex; }
 
-.btn-arrow { background: none; border: none; color: #111; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; }
-.btn-arrow:active { color: #8a2be2; }
+/* TIMER VIEW */
+.timer-view { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 20px 24px 50px; }
 
-/* --- ESTIMATIVA XP (APROXIMADA) --- */
-.xp-preview-box { margin-top: 5px; text-align: center; }
-.xp-preview-label { font-size: 8px; font-weight: 900; color: #333; letter-spacing: 2px; }
-.xp-preview-value { font-family: 'Share Tech Mono', monospace; font-size: 19px; color: #ffd700; margin-top: 2px; }
+/* Chips matéria */
+.materia-selector { width: 100%; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.materia-selector::-webkit-scrollbar { display: none; }
+.chip-materia { flex-shrink: 0; background: var(--card); border: 1px solid var(--borda); color: #555; font-size: 11px; font-weight: 700; padding: 8px 14px; border-radius: 20px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+.chip-materia.selected { background: rgba(138,43,226,0.15); border-color: var(--roxo); color: #c084fc; }
 
-/* --- FOOTER E BOTÕES --- */
-.footer-area { padding: 20px 25px 60px; display: flex; flex-direction: column; gap: 12px; }
-.btn-main { width: 100%; padding: 18px; border-radius: 100px; border: none; font-weight: 900; font-size: 14px; background: #8a2be2; color: white; cursor: pointer; }
-.btn-pause { background: #000; border: 1px solid #1a1a1a; }
-.btn-quit-label { background: none; border: none; color: #222; font-weight: 800; font-size: 10px; letter-spacing: 1px; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
+/* ======================== */
+/* FLIP CLOCK ESTILO PLACAR */
+/* ======================== */
+.flip-clock-wrap { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+.flip-unit { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.flip-label { font-size: 9px; font-weight: 800; letter-spacing: 3px; color: #222; text-transform: uppercase; }
+.flip-sep { font-family: 'Bebas Neue', sans-serif; font-size: clamp(50px, 14vw, 80px); color: #1a1a1a; line-height: 1; margin-bottom: 20px; animation: blink 1s step-end infinite; }
 
-/* --- MODAL --- */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.modal-card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 40px 25px; border-radius: 35px; text-align: center; width: 100%; max-width: 300px; }
-.modal-card h2 { font-size: 18px; font-weight: 900; margin-bottom: 12px; color: white; }
-.modal-card p { font-size: 12px; color: #444; margin-bottom: 30px; line-height: 1.5; }
-.btn-danger-text { background: none; border: none; color: #ff4444; margin-top: 20px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.08; } }
+
+.flip-card {
+    position: relative;
+    width: clamp(70px, 18vw, 100px);
+    height: clamp(85px, 22vw, 120px);
+    perspective: 400px;
+}
+
+.flip-top, .flip-bottom {
+    position: absolute;
+    width: 100%;
+    height: 50%;
+    overflow: hidden;
+    background: #111114;
+    left: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.flip-top {
+    top: 0;
+    border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid #000;
+    align-items: flex-end;
+}
+
+.flip-bottom {
+    bottom: 0;
+    border-radius: 0 0 10px 10px;
+    border-top: 1px solid #000;
+    align-items: flex-start;
+}
+
+.flip-top span, .flip-bottom span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(70px, 19vw, 105px);
+    color: white;
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(138,43,226,0.4);
+    display: block;
+}
+
+.flip-top span { transform: translateY(50%); }
+.flip-bottom span { transform: translateY(-50%); }
+
+.flip-card-flap {
+    position: absolute;
+    width: 100%;
+    height: 50%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    background: #111114;
+    border-radius: 10px 10px 0 0;
+    transform-origin: bottom center;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.flip-card-flap span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(70px, 19vw, 105px);
+    color: white;
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(138,43,226,0.4);
+    display: block;
+    transform: translateY(50%);
+}
+
+.flip-card-flap.flipping {
+    animation: flipDown 0.4s ease-in forwards;
+}
+
+@keyframes flipDown {
+    0%   { transform: rotateX(0deg); }
+    100% { transform: rotateX(-180deg); }
+}
+
+.flip-card::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 2px;
+    background: #000;
+    z-index: 10;
+}
+
+/* Ajuste de tempo */
+.time-adjust { display: flex; align-items: center; gap: 20px; }
+.adjust-group { display: flex; align-items: center; gap: 12px; }
+.btn-adjust { background: var(--card); border: 1px solid var(--borda); color: #444; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s; font-size: 18px; font-weight: 800; }
+.btn-adjust:active { background: rgba(138,43,226,0.15); color: var(--roxo); }
+.adjust-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #444; min-width: 40px; text-align: center; }
+.adjust-sep { color: #1a1a1a; font-size: 24px; font-weight: 800; }
+
+/* XP tag */
+.xp-tag { background: rgba(255,215,0,0.07); border: 1px solid rgba(255,215,0,0.15); color: #ffd700; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 20px; letter-spacing: 1px; }
+
+/* Barra progresso */
+.progress-bar-wrap { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.progress-track { width: 100%; height: 3px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--roxo); border-radius: 10px; box-shadow: 0 0 10px var(--roxo); transition: width 1s linear; width: 0%; }
+.progress-info { display: flex; justify-content: space-between; font-size: 10px; color: #333; font-weight: 700; letter-spacing: 1px; }
+
+/* Botões */
+.action-area { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.btn-primary { width: 100%; padding: 18px; background: var(--roxo); border: none; border-radius: 18px; color: white; font-size: 13px; font-weight: 900; letter-spacing: 2px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 30px rgba(138,43,226,0.3); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-secondary { width: 100%; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; color: #333; font-size: 13px; font-weight: 900; letter-spacing: 2px; cursor: pointer; transition: 0.2s; }
+.btn-danger-text { background: none; border: none; color: #ff4444; font-size: 10px; font-weight: 800; letter-spacing: 2px; cursor: pointer; padding: 8px; text-transform: uppercase; opacity: 0.6; }
+
+/* HISTÓRICO VIEW */
+.historico-view { padding: 0 20px 40px; overflow-y: auto; gap: 20px; }
+.stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stat-card { background: var(--card); border: 1px solid var(--borda); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 6px; }
+.stat-label { font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #333; text-transform: uppercase; }
+.stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: white; line-height: 1; }
+.stat-sub { font-size: 10px; color: #444; font-weight: 600; }
+.section-title { font-size: 10px; font-weight: 800; letter-spacing: 3px; color: #333; text-transform: uppercase; margin-top: 4px; }
+
+/* Barras matéria */
+.materia-bar-item { display: flex; flex-direction: column; gap: 6px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.materia-bar-header { display: flex; justify-content: space-between; align-items: center; }
+.materia-bar-nome { font-size: 13px; font-weight: 700; color: white; }
+.materia-bar-tempo { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: var(--roxo); }
+.materia-bar-track { width: 100%; height: 4px; background: rgba(255,255,255,0.04); border-radius: 10px; overflow: hidden; }
+.materia-bar-fill { height: 100%; border-radius: 10px; background: var(--roxo); box-shadow: 0 0 8px var(--roxo-glow); }
+
+/* Sessões */
+.sessao-item { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.sessao-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--roxo); flex-shrink: 0; box-shadow: 0 0 8px var(--roxo); }
+.sessao-info { flex: 1; }
+.sessao-materia { font-size: 13px; font-weight: 700; color: white; }
+.sessao-data { font-size: 10px; color: #333; font-weight: 600; margin-top: 2px; }
+.sessao-duracao { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: #555; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 30px; }
+.modal-card { background: var(--card); border: 1px solid var(--borda); border-radius: 28px; padding: 40px 28px; text-align: center; width: 100%; max-width: 320px; }
+.modal-card h2 { font-size: 20px; font-weight: 900; margin-bottom: 10px; }
+.modal-card p { font-size: 13px; color: #444; line-height: 1.6; margin-bottom: 30px; }
+
+/* Empty state */
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; gap: 12px; color: #222; text-align: center; }
+.empty-state p { font-size: 13px; font-weight: 700; letter-spacing: 1px; }
+
+/* ======================== */
+/* MODO PAISAGEM (DEITADO)  */
+/* ======================== */
+@media (orientation: landscape) {
+
+    /* Esconde tudo exceto o essencial */
+    .header-foco { display: none; }
+    .materia-selector { display: none; }
+    #setup-controls { display: none !important; }
+    .xp-tag { display: none !important; }
+    .action-area { display: none !important; }
+
+    /* Layout centralizado */
+    .timer-view {
+        justify-content: center;
+        gap: 20px;
+        padding: 16px 40px;
+    }
+
+    /* Flip clock menor pra caber na horizontal */
+    .flip-card {
+        width: clamp(55px, 12vw, 90px);
+        height: clamp(65px, 14vw, 105px);
+    }
+
+    .flip-top span,
+    .flip-bottom span,
+    .flip-card-flap span {
+        font-size: clamp(55px, 12vw, 90px);
+    }
+
+    .flip-sep {
+        font-size: clamp(40px, 10vw, 70px);
+    }
+
+    /* Barra de progresso mais fina e visível */
+    .progress-bar-wrap {
+        display: flex !important;
+        width: 80%;
+        max-width: 500px;
+    }
+
+    .progress-track {
+        height: 2px;
+    }
+
+    /* Botões de controle aparecem em linha horizontal */
+    .action-area {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center;
+        gap: 12px;
+        width: auto;
+    }
+
+    .btn-primary, .btn-secondary {
+        width: auto;
+        padding: 12px 28px;
+        font-size: 11px;
+    }
+
+    .btn-danger-text {
+        padding: 12px;
+    }
+}
