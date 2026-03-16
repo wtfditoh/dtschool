@@ -3,78 +3,604 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain | Deep Focus</title>
-    
+    <title>Hub Brain | Modo Foco</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="menu.css">
-    <link rel="stylesheet" href="foco.css">
-    
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --roxo: #8a2be2;
+            --roxo-glow: rgba(138,43,226,0.4);
+            --bg: #070709;
+            --card: #0e0e12;
+            --borda: rgba(138,43,226,0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background: var(--bg);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            min-height: 100svh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .header-foco {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px;
+        }
+
+        .btn-icon { background: none; border: none; color: #333; cursor: pointer; padding: 8px; }
+        .btn-icon.active { color: var(--roxo); }
+
+        .header-tabs {
+            display: flex;
+            gap: 4px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #444;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 7px 16px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--roxo);
+            color: white;
+        }
+
+        /* VIEWS */
+        .view { display: none; flex: 1; flex-direction: column; }
+        .view.active { display: flex; }
+
+        /* ===================== */
+        /* VIEW: TIMER           */
+        /* ===================== */
+        .timer-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px 50px;
+        }
+
+        /* Seletor de matéria */
+        .materia-selector {
+            width: 100%;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        .materia-selector::-webkit-scrollbar { display: none; }
+
+        .chip-materia {
+            flex-shrink: 0;
+            background: var(--card);
+            border: 1px solid var(--borda);
+            color: #555;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .chip-materia.selected {
+            background: rgba(138,43,226,0.15);
+            border-color: var(--roxo);
+            color: #c084fc;
+        }
+
+        /* FLIP CLOCK */
+        .flip-clock-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .flip-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .flip-digits {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(80px, 22vw, 110px);
+            color: white;
+            line-height: 1;
+            letter-spacing: -2px;
+            text-shadow: 0 0 40px rgba(138,43,226,0.3);
+            transition: all 0.1s;
+        }
+
+        .flip-digits.tick {
+            transform: scaleY(0.95);
+            color: #c084fc;
+        }
+
+        .flip-label {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #222;
+            text-transform: uppercase;
+        }
+
+        .flip-sep {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(60px, 18vw, 90px);
+            color: #1a1a1a;
+            line-height: 1;
+            margin-bottom: 20px;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.1; }
+        }
+
+        /* Ajuste de tempo */
+        .time-adjust {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .adjust-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-adjust {
+            background: var(--card);
+            border: 1px solid var(--borda);
+            color: #444;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.15s;
+            font-size: 18px;
+            font-weight: 800;
+        }
+        .btn-adjust:active { background: rgba(138,43,226,0.15); color: var(--roxo); }
+
+        .adjust-val {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            color: #444;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .adjust-sep { color: #1a1a1a; font-size: 24px; font-weight: 800; }
+
+        /* XP preview */
+        .xp-tag {
+            background: rgba(255,215,0,0.07);
+            border: 1px solid rgba(255,215,0,0.15);
+            color: #ffd700;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+
+        /* Barra de progresso */
+        .progress-bar-wrap {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--roxo);
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--roxo);
+            transition: width 1s linear;
+            width: 0%;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #333;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* Botões de ação */
+        .action-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 18px;
+            background: var(--roxo);
+            border: none;
+            border-radius: 18px;
+            color: white;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 30px rgba(138,43,226,0.3);
+        }
+        .btn-primary:active { transform: scale(0.98); }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 18px;
+            color: #333;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-danger-text {
+            background: none;
+            border: none;
+            color: #ff4444;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            cursor: pointer;
+            padding: 8px;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        /* ===================== */
+        /* VIEW: HISTÓRICO       */
+        /* ===================== */
+        .historico-view {
+            padding: 0 20px 40px;
+            overflow-y: auto;
+            gap: 20px;
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--borda);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .stat-label {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 36px;
+            color: white;
+            line-height: 1;
+        }
+
+        .stat-sub {
+            font-size: 10px;
+            color: #444;
+            font-weight: 600;
+        }
+
+        .section-title {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #333;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* Gráfico de barras por matéria */
+        .materia-bar-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .materia-bar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .materia-bar-nome {
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .materia-bar-tempo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 16px;
+            color: var(--roxo);
+        }
+
+        .materia-bar-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .materia-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: var(--roxo);
+            box-shadow: 0 0 8px var(--roxo-glow);
+        }
+
+        /* Histórico de sessões */
+        .sessao-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .sessao-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--roxo);
+            flex-shrink: 0;
+            box-shadow: 0 0 8px var(--roxo);
+        }
+
+        .sessao-info { flex: 1; }
+        .sessao-materia { font-size: 13px; font-weight: 700; color: white; }
+        .sessao-data { font-size: 10px; color: #333; font-weight: 600; margin-top: 2px; }
+
+        .sessao-duracao {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            color: #555;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .modal-card {
+            background: var(--card);
+            border: 1px solid var(--borda);
+            border-radius: 28px;
+            padding: 40px 28px;
+            text-align: center;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .modal-card h2 { font-size: 20px; font-weight: 900; margin-bottom: 10px; }
+        .modal-card p { font-size: 13px; color: #444; line-height: 1.6; margin-bottom: 30px; }
+
+        /* EMPTY STATE */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            gap: 12px;
+            color: #222;
+            text-align: center;
+        }
+
+        .empty-state p { font-size: 13px; font-weight: 700; letter-spacing: 1px; }
+    </style>
 </head>
 <body>
 
-    <header class="header-minimal">
-        <button id="open-menu" class="btn-icon-top">
-            <i data-lucide="menu" size="22"></i>
+    <header class="header-foco">
+        <button id="open-menu" class="btn-icon">
+            <i data-lucide="menu" style="width:22px;"></i>
         </button>
-        <span class="label-header">MODO FOCO</span>
-        <div style="width: 40px;"></div>
+
+        <div class="header-tabs">
+            <button class="tab-btn active" onclick="trocarView('timer')">FOCO</button>
+            <button class="tab-btn" onclick="trocarView('historico')">HISTÓRICO</button>
+        </div>
+
+        <div style="width:38px;"></div>
     </header>
 
-    <main class="timer-viewport">
-        <div class="canvas-timer">
-            <svg class="progress-ring" viewBox="0 0 300 300">
-                <circle class="progress-bg" cx="150" cy="150" r="130"></circle>
-                <circle id="circle-bar" class="progress-ring__circle" cx="150" cy="150" r="130"></circle>
-            </svg>
+    <!-- VIEW: TIMER -->
+    <div class="view active" id="view-timer">
+        <div class="timer-view">
 
-            <div class="timer-content">
-                <div id="setup-view">
-                    <div class="digital-clock">
-                        <div class="unit-adjust">
-                            <button class="btn-arrow" id="h-up"><i data-lucide="chevron-up"></i></button>
-                            <span id="h-val">00</span>
-                            <button class="btn-arrow" id="h-down"><i data-lucide="chevron-down"></i></button>
-                        </div>
-                        <div class="clock-separator">:</div>
-                        <div class="unit-adjust">
-                            <button class="btn-arrow" id="m-up"><i data-lucide="chevron-up"></i></button>
-                            <span id="m-val">25</span>
-                            <button class="btn-arrow" id="m-down"><i data-lucide="chevron-down"></i></button>
-                        </div>
-                    </div>
-                    
-                    <div class="xp-preview-box">
-                        <span class="xp-preview-label">ESTIMATIVA</span>
-                        <div class="xp-preview-value"><span id="xp-num">10</span> XP</div>
-                    </div>
-                </div>
+            <!-- Chips de matéria -->
+            <div class="materia-selector" id="chips-materias">
+                <div class="chip-materia selected" data-materia="Geral">Geral</div>
+            </div>
 
-                <div id="active-clock" style="display: none;">
-                    <div class="digital-clock" id="main-time" style="font-size: 60px;">00:25</div>
-                    <div class="xp-preview-box">
-                        <span class="xp-preview-label" style="color: #8a2be2">SESSÃO ATIVA</span>
+            <!-- Flip Clock -->
+            <div>
+                <div class="flip-clock-wrap">
+                    <div class="flip-unit">
+                        <div class="flip-digits" id="flip-h">00</div>
+                        <div class="flip-label">horas</div>
+                    </div>
+                    <div class="flip-sep">:</div>
+                    <div class="flip-unit">
+                        <div class="flip-digits" id="flip-m">25</div>
+                        <div class="flip-label">min</div>
+                    </div>
+                    <div class="flip-sep">:</div>
+                    <div class="flip-unit">
+                        <div class="flip-digits" id="flip-s">00</div>
+                        <div class="flip-label">seg</div>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
 
-    <footer class="footer-area">
-        <button id="btn-start" class="btn-main">INICIAR SESSÃO</button>
-        <button id="btn-pause" class="btn-main btn-pause" style="display:none">PAUSAR</button>
-        <button id="btn-quit" class="btn-quit-label" style="display:none">DESISTIR</button>
-    </footer>
+            <!-- Ajuste de tempo (só no setup) -->
+            <div id="setup-controls">
+                <div class="time-adjust">
+                    <div class="adjust-group">
+                        <button class="btn-adjust" id="h-down">−</button>
+                        <span class="adjust-val" id="h-val">0</span>
+                        <button class="btn-adjust" id="h-up">+</button>
+                    </div>
+                    <span class="adjust-sep">:</span>
+                    <div class="adjust-group">
+                        <button class="btn-adjust" id="m-down">−</button>
+                        <span class="adjust-val" id="m-val">25</span>
+                        <button class="btn-adjust" id="m-up">+</button>
+                    </div>
+                </div>
+            </div>
 
-    <div id="modal-confirm" class="modal-overlay" style="display:none;">
-        <div class="modal-card">
-            <h2>PARAR AGORA?</h2>
-            <p>Se você desistir, metade dos pontos de XP acumulados nesta sessão serão perdidos.</p>
-            <button id="btn-keep-going" class="btn-main">CONTINUAR</button>
-            <button id="btn-really-quit" class="btn-danger-text">SIM, DESISTIR</button>
+            <!-- Barra de progresso (só ativa) -->
+            <div class="progress-bar-wrap" id="progress-wrap" style="display:none;">
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="materia-ativa-label">GERAL</span>
+                    <span id="progresso-pct">0%</span>
+                </div>
+            </div>
+
+            <!-- XP preview -->
+            <div class="xp-tag" id="xp-tag">+<span id="xp-num">10</span> XP estimado</div>
+
+            <!-- Botões -->
+            <div class="action-area">
+                <button class="btn-primary" id="btn-start">INICIAR SESSÃO</button>
+                <button class="btn-secondary" id="btn-pause" style="display:none">PAUSAR</button>
+                <button class="btn-danger-text" id="btn-quit" style="display:none">DESISTIR</button>
+            </div>
+
         </div>
     </div>
 
-    <script src="menu.js"></script> 
+    <!-- VIEW: HISTÓRICO -->
+    <div class="view" id="view-historico">
+        <div class="historico-view" style="display:flex; flex-direction:column;">
+
+            <div class="stat-row">
+                <div class="stat-card">
+                    <span class="stat-label">Total hoje</span>
+                    <span class="stat-value" id="stat-hoje">0h</span>
+                    <span class="stat-sub" id="stat-hoje-min"></span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Total geral</span>
+                    <span class="stat-value" id="stat-total">0h</span>
+                    <span class="stat-sub" id="stat-total-min"></span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Sessões</span>
+                    <span class="stat-value" id="stat-sessoes">0</span>
+                    <span class="stat-sub">sessões completas</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Sequência</span>
+                    <span class="stat-value" id="stat-streak">0</span>
+                    <span class="stat-sub">dias seguidos 🔥</span>
+                </div>
+            </div>
+
+            <span class="section-title">Por matéria</span>
+            <div id="lista-por-materia">
+                <div class="empty-state"><p>Nenhuma sessão ainda</p></div>
+            </div>
+
+            <span class="section-title">Sessões recentes</span>
+            <div id="lista-sessoes">
+                <div class="empty-state"><p>Complete sua primeira sessão!</p></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal desistir -->
+    <div class="modal-overlay" id="modal-confirm">
+        <div class="modal-card">
+            <h2>PARAR AGORA?</h2>
+            <p>Se desistir, metade do XP acumulado nesta sessão será perdido.</p>
+            <button class="btn-primary" id="btn-keep-going">CONTINUAR</button>
+            <button class="btn-danger-text" id="btn-really-quit">SIM, DESISTIR</button>
+        </div>
+    </div>
+
+    <script src="menu.js"></script>
     <script type="module" src="foco-logica.js"></script>
 </body>
 </html>
