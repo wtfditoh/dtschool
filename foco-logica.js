@@ -12,11 +12,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-// Usa email (corrigido)
 const userEmail = localStorage.getItem('dt_user_email');
 
-// --- ESTADO ---
 let timer = null;
 let segsRestantes = 0;
 let totalSegs = 0;
@@ -40,17 +37,58 @@ const playTick = () => {
     osc.stop(audioCtx.currentTime + 0.08);
 };
 
-// --- HELPERS ---
 const pad = n => String(n).padStart(2, '0');
+const formatarTempo = (min) => {
+    if (min < 60) return min + 'm';
+    const h = Math.floor(min / 60), m = min % 60;
+    return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
+};
+const getHojeStr = () => new Date().toISOString().split('T')[0];
 
-const formatarTempo = (minutos) => {
-    if (minutos < 60) return `${minutos}m`;
-    const h = Math.floor(minutos / 60);
-    const m = minutos % 60;
-    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+// --- FLIP CLOCK ---
+let prevH = '00', prevM = '25', prevS = '00';
+
+const flipCard = (unit, newVal) => {
+    const flap = document.getElementById('flap-' + unit);
+    const flapTxt = document.getElementById('flap-' + unit + '-txt');
+    const topCur = document.getElementById('top-' + unit + '-cur');
+    const botCur = document.getElementById('bot-' + unit + '-cur');
+
+    // Mostra o valor antigo no flap e inicia animação
+    flapTxt.innerText = topCur.innerText;
+    flap.classList.remove('flipping');
+    void flap.offsetWidth; // force reflow
+    flap.classList.add('flipping');
+
+    // Atualiza os valores depois de meio flip
+    setTimeout(() => {
+        topCur.innerText = newVal;
+        botCur.innerText = newVal;
+        flapTxt.innerText = newVal;
+    }, 200);
+
+    setTimeout(() => {
+        flap.classList.remove('flipping');
+    }, 400);
 };
 
-const getHojeStr = () => new Date().toISOString().split('T')[0];
+const atualizarFlip = (h, m, s) => {
+    const hStr = pad(h), mStr = pad(m), sStr = pad(s);
+    if (hStr !== prevH) { flipCard('h', hStr); prevH = hStr; }
+    if (mStr !== prevM) { flipCard('m', mStr); prevM = mStr; }
+    if (sStr !== prevS) { flipCard('s', sStr); prevS = sStr; }
+};
+
+const setFlipStatic = (h, m, s) => {
+    const hStr = pad(h), mStr = pad(m), sStr = pad(s);
+    ['h','m','s'].forEach((u, i) => {
+        const val = [hStr, mStr, sStr][i];
+        document.getElementById('top-' + u + '-cur').innerText = val;
+        document.getElementById('bot-' + u + '-cur').innerText = val;
+        document.getElementById('flap-' + u + '-txt').innerText = val;
+    });
+    prevH = hStr; prevM = mStr; prevS = sStr;
+};
 
 // --- TROCA DE VIEW ---
 window.trocarView = (view) => {
@@ -61,21 +99,17 @@ window.trocarView = (view) => {
     if (view === 'historico') carregarHistorico();
 };
 
-// --- CARREGAR MATÉRIAS ---
+// --- MATÉRIAS ---
 async function carregarMaterias() {
     const chips = document.getElementById('chips-materias');
     let materias = ['Geral'];
-
     try {
-        // Tenta pegar do Firebase
         if (userEmail) {
             const snap = await getDoc(doc(db, "notas", userEmail));
             if (snap.exists() && snap.data().materias) {
-                const lista = snap.data().materias.map(m => m.nome);
-                materias = ['Geral', ...lista];
+                materias = ['Geral', ...snap.data().materias.map(m => m.nome)];
             }
         }
-        // Fallback pro localStorage
         const local = JSON.parse(localStorage.getItem('materias') || '[]');
         if (local.length > 0 && materias.length === 1) {
             materias = ['Geral', ...local.map(m => m.nome)];
@@ -95,31 +129,19 @@ window.selecionarMateria = (nome) => {
     });
 };
 
-// --- CONTROLES DE TEMPO ---
+// --- CONTROLES ---
 const getH = () => parseInt(document.getElementById('h-val').innerText);
 const getM = () => parseInt(document.getElementById('m-val').innerText);
 
-const atualizarXPPreview = () => {
-    const totalMin = getH() * 60 + getM();
-    document.getElementById('xp-num').innerText = Math.max(5, Math.floor(totalMin / 25 * 10));
-    // Atualiza o flip clock no setup
-    document.getElementById('flip-h').innerText = pad(getH());
-    document.getElementById('flip-m').innerText = pad(getM());
-    document.getElementById('flip-s').innerText = '00';
+const atualizarSetup = () => {
+    document.getElementById('xp-num').innerText = Math.max(5, Math.floor((getH() * 60 + getM()) / 25 * 10));
+    setFlipStatic(getH(), getM(), 0);
 };
 
-document.getElementById('h-up').onclick = () => {
-    const v = getH(); if (v < 12) document.getElementById('h-val').innerText = v + 1; atualizarXPPreview();
-};
-document.getElementById('h-down').onclick = () => {
-    const v = getH(); if (v > 0) document.getElementById('h-val').innerText = v - 1; atualizarXPPreview();
-};
-document.getElementById('m-up').onclick = () => {
-    const v = getM(); if (v < 55) document.getElementById('m-val').innerText = v + 5; else document.getElementById('m-val').innerText = 0; atualizarXPPreview();
-};
-document.getElementById('m-down').onclick = () => {
-    const v = getM(); if (v >= 5) document.getElementById('m-val').innerText = v - 5; atualizarXPPreview();
-};
+document.getElementById('h-up').onclick   = () => { const v = getH(); if(v < 12) document.getElementById('h-val').innerText = v + 1; atualizarSetup(); };
+document.getElementById('h-down').onclick  = () => { const v = getH(); if(v > 0)  document.getElementById('h-val').innerText = v - 1; atualizarSetup(); };
+document.getElementById('m-up').onclick   = () => { const v = getM(); document.getElementById('m-val').innerText = v < 55 ? v + 5 : 0; atualizarSetup(); };
+document.getElementById('m-down').onclick  = () => { const v = getM(); if(v >= 5) document.getElementById('m-val').innerText = v - 5; atualizarSetup(); };
 
 // --- INICIAR ---
 document.getElementById('btn-start').onclick = () => {
@@ -131,7 +153,6 @@ document.getElementById('btn-start').onclick = () => {
     totalSegs = segsRestantes;
     sessionActive = true;
 
-    // UI
     document.getElementById('setup-controls').style.display = 'none';
     document.getElementById('progress-wrap').style.display = 'flex';
     document.getElementById('btn-start').style.display = 'none';
@@ -139,8 +160,6 @@ document.getElementById('btn-start').onclick = () => {
     document.getElementById('btn-quit').style.display = 'block';
     document.getElementById('xp-tag').style.display = 'none';
     document.getElementById('materia-ativa-label').innerText = materiaSelecionada.toUpperCase();
-
-    // Desabilita chips
     document.querySelectorAll('.chip-materia').forEach(c => c.style.opacity = '0.3');
 
     timer = setInterval(tick, 1000);
@@ -155,22 +174,8 @@ const tick = () => {
     const m = Math.floor((segsRestantes % 3600) / 60);
     const s = segsRestantes % 60;
 
-    // Flip clock com animação
-    const flipH = document.getElementById('flip-h');
-    const flipM = document.getElementById('flip-m');
-    const flipS = document.getElementById('flip-s');
+    atualizarFlip(h, m, s);
 
-    flipS.classList.add('tick');
-    setTimeout(() => flipS.classList.remove('tick'), 100);
-
-    if (s === 59) { flipM.classList.add('tick'); setTimeout(() => flipM.classList.remove('tick'), 100); }
-    if (m === 59 && s === 59) { flipH.classList.add('tick'); setTimeout(() => flipH.classList.remove('tick'), 100); }
-
-    flipH.innerText = pad(h);
-    flipM.innerText = pad(m);
-    flipS.innerText = pad(s);
-
-    // Barra de progresso
     const pct = Math.round(((totalSegs - segsRestantes) / totalSegs) * 100);
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progresso-pct').innerText = pct + '%';
@@ -195,9 +200,7 @@ document.getElementById('btn-keep-going').onclick = () => {
 };
 document.getElementById('btn-really-quit').onclick = async () => {
     clearInterval(timer);
-    // XP pela metade se desistir
-    const segsFeitos = totalSegs - segsRestantes;
-    const xp = Math.floor((segsFeitos / 60 / 25) * 10 / 2);
+    const xp = Math.floor(((totalSegs - segsRestantes) / 60 / 25) * 10 / 2);
     if (xp > 0 && userEmail) {
         try { await updateDoc(doc(db, "notas", userEmail), { xp: increment(xp) }); } catch(e) {}
     }
@@ -207,117 +210,85 @@ document.getElementById('btn-really-quit').onclick = async () => {
 // --- FINALIZAR ---
 const finalizarSessao = async (completa) => {
     clearInterval(timer);
-
     const minutos = Math.floor(totalSegs / 60);
     const xp = Math.floor(minutos / 25 * 10);
 
     if (userEmail && completa) {
         try {
-            const hoje = getHojeStr();
-            const sessao = {
-                materia: materiaSelecionada,
-                minutos: minutos,
-                data: hoje,
-                timestamp: Date.now()
-            };
-
-            // Atualiza XP e histórico no Firebase
             await setDoc(doc(db, "notas", userEmail), {
                 xp: increment(xp),
-                historico_foco: arrayUnion(sessao)
+                historico_foco: arrayUnion({
+                    materia: materiaSelecionada,
+                    minutos: minutos,
+                    data: getHojeStr(),
+                    timestamp: Date.now()
+                })
             }, { merge: true });
-
         } catch(e) { console.error(e); }
     }
-
     location.reload();
 };
 
-// --- CARREGAR HISTÓRICO ---
+// --- HISTÓRICO ---
 async function carregarHistorico() {
     if (!userEmail) return;
-
     try {
         const snap = await getDoc(doc(db, "notas", userEmail));
         if (!snap.exists()) return;
-
         const historico = snap.data().historico_foco || [];
         const hoje = getHojeStr();
 
-        // Stats gerais
-        const totalMin = historico.reduce((a, s) => a + s.minutos, 0);
-        const hojeMin = historico.filter(s => s.data === hoje).reduce((a, s) => a + s.minutos, 0);
-        const sessoesCompletas = historico.length;
+        const totalMin  = historico.reduce((a, s) => a + s.minutos, 0);
+        const hojeMin   = historico.filter(s => s.data === hoje).reduce((a, s) => a + s.minutos, 0);
 
-        // Streak
         let streak = 0;
-        const diasUnicos = [...new Set(historico.map(s => s.data))].sort().reverse();
-        let diaCheck = new Date(hoje);
-        for (const dia of diasUnicos) {
-            const diaStr = diaCheck.toISOString().split('T')[0];
-            if (dia === diaStr) { streak++; diaCheck.setDate(diaCheck.getDate() - 1); }
+        const dias = [...new Set(historico.map(s => s.data))].sort().reverse();
+        let dCheck = new Date(hoje);
+        for (const d of dias) {
+            if (d === dCheck.toISOString().split('T')[0]) { streak++; dCheck.setDate(dCheck.getDate() - 1); }
             else break;
         }
 
-        // Atualiza stats
-        document.getElementById('stat-hoje').innerText = Math.floor(hojeMin / 60) + 'h';
-        document.getElementById('stat-hoje-min').innerText = hojeMin % 60 > 0 ? `${hojeMin % 60}min a mais` : 'hoje';
-        document.getElementById('stat-total').innerText = Math.floor(totalMin / 60) + 'h';
-        document.getElementById('stat-total-min').innerText = `${totalMin % 60}min no total`;
-        document.getElementById('stat-sessoes').innerText = sessoesCompletas;
-        document.getElementById('stat-streak').innerText = streak;
+        document.getElementById('stat-hoje').innerText    = Math.floor(hojeMin / 60) + 'h';
+        document.getElementById('stat-hoje-min').innerText = (hojeMin % 60) + 'min';
+        document.getElementById('stat-total').innerText   = Math.floor(totalMin / 60) + 'h';
+        document.getElementById('stat-total-min').innerText = (totalMin % 60) + 'min';
+        document.getElementById('stat-sessoes').innerText = historico.length;
+        document.getElementById('stat-streak').innerText  = streak;
 
         // Por matéria
         const porMateria = {};
-        historico.forEach(s => {
-            if (!porMateria[s.materia]) porMateria[s.materia] = 0;
-            porMateria[s.materia] += s.minutos;
-        });
-
+        historico.forEach(s => { porMateria[s.materia] = (porMateria[s.materia] || 0) + s.minutos; });
         const maxMin = Math.max(...Object.values(porMateria), 1);
-        const listaMaterias = document.getElementById('lista-por-materia');
 
-        if (Object.keys(porMateria).length === 0) {
-            listaMaterias.innerHTML = '<div class="empty-state"><p>Nenhuma sessão ainda</p></div>';
-        } else {
-            listaMaterias.innerHTML = Object.entries(porMateria)
-                .sort((a, b) => b[1] - a[1])
-                .map(([nome, min]) => `
-                    <div class="materia-bar-item">
-                        <div class="materia-bar-header">
-                            <span class="materia-bar-nome">${nome}</span>
-                            <span class="materia-bar-tempo">${formatarTempo(min)}</span>
-                        </div>
-                        <div class="materia-bar-track">
-                            <div class="materia-bar-fill" style="width:${(min/maxMin)*100}%"></div>
-                        </div>
+        document.getElementById('lista-por-materia').innerHTML = Object.keys(porMateria).length === 0
+            ? '<div class="empty-state"><p>Nenhuma sessão ainda</p></div>'
+            : Object.entries(porMateria).sort((a,b) => b[1]-a[1]).map(([nome, min]) => `
+                <div class="materia-bar-item">
+                    <div class="materia-bar-header">
+                        <span class="materia-bar-nome">${nome}</span>
+                        <span class="materia-bar-tempo">${formatarTempo(min)}</span>
                     </div>
-                `).join('');
-        }
+                    <div class="materia-bar-track">
+                        <div class="materia-bar-fill" style="width:${(min/maxMin)*100}%"></div>
+                    </div>
+                </div>`).join('');
 
         // Sessões recentes
-        const listaSessoes = document.getElementById('lista-sessoes');
-        const recentes = [...historico].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
-
-        if (recentes.length === 0) {
-            listaSessoes.innerHTML = '<div class="empty-state"><p>Complete sua primeira sessão!</p></div>';
-        } else {
-            listaSessoes.innerHTML = recentes.map(s => {
-                const data = new Date(s.timestamp);
-                const dataStr = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
-                const hora = data.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-                return `
-                    <div class="sessao-item">
-                        <div class="sessao-dot"></div>
-                        <div class="sessao-info">
-                            <div class="sessao-materia">${s.materia}</div>
-                            <div class="sessao-data">${dataStr} às ${hora}</div>
-                        </div>
-                        <div class="sessao-duracao">${formatarTempo(s.minutos)}</div>
+        const recentes = [...historico].sort((a,b) => b.timestamp - a.timestamp).slice(0, 10);
+        document.getElementById('lista-sessoes').innerHTML = recentes.length === 0
+            ? '<div class="empty-state"><p>Complete sua primeira sessão!</p></div>'
+            : recentes.map(s => {
+                const d = new Date(s.timestamp);
+                return `<div class="sessao-item">
+                    <div class="sessao-dot"></div>
+                    <div class="sessao-info">
+                        <div class="sessao-materia">${s.materia}</div>
+                        <div class="sessao-data">${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
                     </div>
-                `;
+                    <div class="sessao-duracao">${formatarTempo(s.minutos)}</div>
+                </div>`;
             }).join('');
-        }
 
     } catch(e) { console.error(e); }
 }
@@ -325,7 +296,6 @@ async function carregarHistorico() {
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {
     carregarMaterias();
-    atualizarXPPreview();
+    atualizarSetup();
     if (window.lucide) lucide.createIcons();
 });
-    
