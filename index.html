@@ -56,20 +56,6 @@
         .user-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.3); display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 30000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
         .modal-card { background: #16161a; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(138,43,226,0.3); }
-
-        /* META PROGRESSO */
-        .meta-progress-section { padding: 0 20px; margin-bottom: 16px; }
-        .meta-progress-card {
-            background: #0e0e12; border: 1px solid rgba(138,43,226,0.15);
-            border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px;
-        }
-        .meta-progress-header { display: flex; justify-content: space-between; align-items: center; }
-        .meta-progress-label { font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #555; text-transform: uppercase; }
-        .meta-progress-time { font-size: 11px; font-weight: 700; color: #8a2be2; }
-        .meta-progress-track { width: 100%; height: 4px; background: rgba(255,255,255,0.04); border-radius: 10px; overflow: hidden; }
-        .meta-progress-fill { height: 100%; background: #8a2be2; border-radius: 10px; box-shadow: 0 0 10px rgba(138,43,226,0.5); transition: width 0.5s ease; width: 0%; }
-        .meta-progress-fill.completa { background: #00c851; box-shadow: 0 0 10px rgba(0,200,81,0.5); }
-        .meta-progress-footer { display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: #333; }
     </style>
 </head>
 <body>
@@ -181,7 +167,8 @@
                 <div class="meta-progress-footer">
                     <span id="meta-progress-pct">0%</span>
                     <span id="meta-progress-falta" style="color:#444;">Bora estudar! 💪</span>
-                    <button class="meta-share-btn" id="meta-share-btn" onclick="compartilharMeta(0,0)">
+                    <!-- Botão de compartilhar — escondido por padrão, só aparece quando meta for batida -->
+                    <button id="meta-share-btn" style="display:none; background:none; border:none; color:#8a2be2; cursor:pointer; font-size:10px; font-weight:800; letter-spacing:1px; align-items:center; gap:4px;">
                         <i data-lucide="share-2" style="width:12px;"></i> COMPARTILHAR
                     </button>
                 </div>
@@ -225,7 +212,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('OneSignalSDKWorker.js')
-          .then(reg => { console.log('SW ativo!'); })
+          .then(() => console.log('SW ativo!'))
           .catch(err => console.log('Erro no SW:', err));
       }
       window.addEventListener('load', () => {
