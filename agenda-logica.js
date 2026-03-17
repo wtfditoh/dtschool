@@ -1,6 +1,5 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, updateDoc, increment, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { verificarConquistas, mostrarPopupConquista } from "./conquistas.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, updateDoc, increment, getDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -12,7 +11,7 @@ const firebaseConfig = {
   measurementId: "G-F7TG23TBTL"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
 
 const userEmail = localStorage.getItem('dt_user_email'); 
@@ -37,39 +36,91 @@ async function atualizarXPRanking(valorXP) {
     const emailAtual = localStorage.getItem('dt_user_email');
     if (userType === 'local' || !emailAtual) return;
     try {
-        const userRef = doc(db, "notas", emailAtual);
-        await setDoc(userRef, { xp: increment(valorXP) }, { merge: true });
+        await setDoc(doc(db, "notas", emailAtual), { xp: increment(valorXP) }, { merge: true });
     } catch (e) { console.error("Erro ao atualizar XP:", e); }
 }
 
 // ==========================================
-// VERIFICAR CONQUISTAS DE TAREFAS
+// CONQUISTAS DE TAREFAS (inline, sem import)
 // ==========================================
+const CONQUISTAS_TAREFAS = [
+    { id: 'organizado',  min: 5   },
+    { id: 'produtivo',   min: 20  },
+    { id: 'maquina',     min: 50  },
+    { id: 'implacavel',  min: 100 },
+];
+
+const NOMES_CONQUISTAS = {
+    organizado:   { emoji: '📋', nome: 'Organizado',  desc: 'Concluiu 5 tarefas'   },
+    produtivo:    { emoji: '⚙️',  nome: 'Produtivo',   desc: 'Concluiu 20 tarefas'  },
+    maquina:      { emoji: '🤖', nome: 'Máquina',     desc: 'Concluiu 50 tarefas'  },
+    implacavel:   { emoji: '💣', nome: 'Implacável',  desc: 'Concluiu 100 tarefas' },
+    perfeccionista: { emoji: '⭐', nome: 'Perfeccionista', desc: 'Concluiu todas as tarefas do dia' },
+};
+
+function mostrarPopupLocal(id) {
+    const c = NOMES_CONQUISTAS[id];
+    if (!c) return;
+    const existente = document.getElementById('popup-conquista');
+    if (existente) existente.remove();
+    const popup = document.createElement('div');
+    popup.id = 'popup-conquista';
+    popup.style.cssText = `
+        position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px);
+        background:#111116; border:1px solid rgba(138,43,226,0.4); border-radius:20px;
+        padding:16px 24px; z-index:99999; display:flex; align-items:center; gap:14px;
+        box-shadow:0 10px 40px rgba(138,43,226,0.3); transition:transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+        min-width:280px; max-width:340px;
+    `;
+    popup.innerHTML = `
+        <div style="font-size:36px; line-height:1;">${c.emoji}</div>
+        <div style="flex:1;">
+            <div style="font-size:9px; font-weight:800; letter-spacing:2px; color:#8a2be2; margin-bottom:3px;">CONQUISTA DESBLOQUEADA!</div>
+            <div style="font-size:15px; font-weight:900; color:white;">${c.nome}</div>
+            <div style="font-size:11px; color:#555; margin-top:2px;">${c.desc}</div>
+        </div>
+    `;
+    document.body.appendChild(popup);
+    setTimeout(() => { popup.style.transform = 'translateX(-50%) translateY(0)'; }, 50);
+    setTimeout(() => {
+        popup.style.transform = 'translateX(-50%) translateY(100px)';
+        popup.style.opacity = '0';
+        setTimeout(() => popup.remove(), 400);
+    }, 3500);
+}
+
 async function verificarConquistasTarefas() {
     const emailAtual = localStorage.getItem('dt_user_email');
     if (!emailAtual || userType === 'local') return;
     try {
         const snap = await getDoc(doc(db, "notas", emailAtual));
         if (!snap.exists()) return;
+        const conquistasAtuais = snap.data().conquistas || [];
 
-        // Conta tarefas concluídas do usuário
         const q = query(collection(db, "agenda"), where("usuario", "==", emailAtual));
         const agendaSnap = await getDocs(q);
         const tarefasConcluidas = agendaSnap.docs.filter(d => d.data().concluida).length;
 
-        // Verifica se todas as tarefas do dia foram concluídas
         const hoje = new Date().toISOString().split('T')[0];
         const tarefasHoje = agendaSnap.docs.map(d => d.data()).filter(t => t.dataFim === hoje);
-        const todasConcluidasHoje = tarefasHoje.length > 0 && tarefasHoje.every(t => t.concluida);
+        const todasHoje = tarefasHoje.length > 0 && tarefasHoje.every(t => t.concluida);
 
-        const dados = {
-            ...snap.data(),
-            tarefas_concluidas: tarefasConcluidas,
-            perfeccionista_hoje: todasConcluidasHoje
-        };
+        const novas = [];
 
-        const novas = await verificarConquistas(emailAtual, dados);
-        if (novas.length > 0) mostrarPopupConquista(novas);
+        CONQUISTAS_TAREFAS.forEach(c => {
+            if (tarefasConcluidas >= c.min && !conquistasAtuais.includes(c.id)) {
+                novas.push(c.id);
+            }
+        });
+
+        if (todasHoje && !conquistasAtuais.includes('perfeccionista')) {
+            novas.push('perfeccionista');
+        }
+
+        if (novas.length > 0) {
+            await updateDoc(doc(db, "notas", emailAtual), { conquistas: arrayUnion(...novas) });
+            novas.forEach((id, i) => setTimeout(() => mostrarPopupLocal(id), i * 1000));
+        }
     } catch(e) { console.error("Erro ao verificar conquistas:", e); }
 }
 
@@ -86,10 +137,7 @@ async function salvarPlayerIdNasAgendas() {
             if (!playerId) return;
             const q = query(collection(db, "agenda"), where("usuario", "==", emailAtual));
             const snap = await getDocs(q);
-            const atualizacoes = snap.docs.map(d => 
-                updateDoc(doc(db, "agenda", d.id), { onesignal_player_id: playerId })
-            );
-            await Promise.all(atualizacoes);
+            await Promise.all(snap.docs.map(d => updateDoc(doc(db, "agenda", d.id), { onesignal_player_id: playerId })));
         });
     } catch (e) { console.error("Erro ao salvar Player ID:", e); }
 }
@@ -165,13 +213,11 @@ window.carregarTarefas = (filtroData = null) => {
         }
 
         return `
-        <div class="tarefa-item" style="border-left: 5px solid ${corStatus}; opacity: ${t.concluida ? '0.6' : '1'}; margin-bottom:15px; background:rgba(255,255,255,0.05); padding:15px; border-radius:15px;">
+        <div class="tarefa-item" style="border-left:5px solid ${corStatus}; opacity:${t.concluida ? '0.6' : '1'}; margin-bottom:15px; background:rgba(255,255,255,0.05); padding:15px; border-radius:15px;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div style="flex: 1;"> 
+                <div style="flex:1;"> 
                     <span style="background:#8a2be2; font-size:10px; padding:3px 8px; border-radius:5px; font-weight:bold; color:white;">${t.materia}</span>
-                    <b onclick="alternarConcluida('${t.id_firebase}', ${t.criadoEm})" style="display:block; margin-top:8px; font-size:18px; color:white; text-decoration: ${t.concluida ? 'line-through' : 'none'}; cursor:pointer;">
-                        ${t.nome}
-                    </b>
+                    <b onclick="alternarConcluida('${t.id_firebase}', ${t.criadoEm})" style="display:block; margin-top:8px; font-size:18px; color:white; text-decoration:${t.concluida ? 'line-through' : 'none'}; cursor:pointer;">${t.nome}</b>
                     ${t.descricao ? `<p style="color:#aaa; font-size:13px; margin:8px 0;">${t.descricao}</p>` : ''}
                     <div style="font-size:11px; color:#888;">Prazo: ${t.dataFim.split('-').reverse().join('/')}</div>
                     <div style="margin-top:5px; color:${corStatus}; font-weight:bold; font-size:12px;">${textoStatus}</div>
@@ -282,8 +328,7 @@ window.adicionarTarefa = async function() {
 window.removerTarefa = async function(idFirebase, idLocal) {
     const tarefa = agendaGlobal.find(t => userType === 'local' ? t.criadoEm === idLocal : t.id_firebase === idFirebase);
     if (tarefa && tarefa.concluida) {
-        const xpEstorno = identificarXPTarefa(tarefa.nome) * -1;
-        await atualizarXPRanking(xpEstorno);
+        await atualizarXPRanking(identificarXPTarefa(tarefa.nome) * -1);
     }
     if (userType === 'local') {
         agendaGlobal = agendaGlobal.filter(t => t.criadoEm !== idLocal);
@@ -311,10 +356,7 @@ window.alternarConcluida = async function(idFirebase, idLocal) {
     }
     if (tarefa) {
         const baseXP = identificarXPTarefa(tarefa.nome);
-        const xpFinal = tarefa.concluida ? baseXP : (baseXP * -1);
-        await atualizarXPRanking(xpFinal);
-
-        // Verifica conquistas só quando concluir (não quando desmarcar)
+        await atualizarXPRanking(tarefa.concluida ? baseXP : baseXP * -1);
         if (tarefa.concluida) await verificarConquistasTarefas();
     }
     window.buscarDadosNuvem();
@@ -361,4 +403,4 @@ window.fecharModalAgenda = () => {
     document.getElementById('preview-container').innerHTML = "";
     imagemBase64 = ""; 
 };
-                                                  
+                                  
