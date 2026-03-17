@@ -7,7 +7,7 @@ const firebaseConfig = {
     authDomain: "dt-scho0l.firebaseapp.com",
     projectId: "dt-scho0l",
     storageBucket: "dt-scho0l.firebasestorage.app",
-    messagingSenderId: "78578509371",
+    messagingSenderId: "78578509391",
     appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
 };
 
@@ -195,13 +195,12 @@ const finalizarSessao = async (completa) => {
     clearInterval(timer);
     const minutos = Math.floor(totalSegs / 60);
     const xp = Math.floor(minutos / 25 * 10);
+    let temNovas = false;
 
     if (userEmail && completa) {
         try {
             const hoje = getHojeStr();
-            const horaAtual = new Date().getHours();
 
-            // Salva sessão e XP
             await setDoc(doc(db, "notas", userEmail), {
                 xp: increment(xp),
                 historico_foco: arrayUnion({
@@ -212,17 +211,19 @@ const finalizarSessao = async (completa) => {
                 })
             }, { merge: true });
 
-            // Verifica conquistas
             const snap = await getDoc(doc(db, "notas", userEmail));
             if (snap.exists()) {
                 const dados = { ...snap.data(), _sessaoAgora: true };
                 const novas = await verificarConquistas(userEmail, dados);
-                if (novas.length > 0) mostrarPopupConquista(novas);
+                if (novas.length > 0) {
+                    temNovas = true;
+                    mostrarPopupConquista(novas);
+                }
             }
-
         } catch(e) { console.error(e); }
     }
-    setTimeout(() => location.reload(), novas?.length > 0 ? 4000 : 500);
+
+    setTimeout(() => location.reload(), temNovas ? 4000 : 500);
 };
 
 // --- HISTÓRICO ---
@@ -234,8 +235,8 @@ async function carregarHistorico() {
         const historico = snap.data().historico_foco || [];
         const hoje = getHojeStr();
 
-        const totalMin  = historico.reduce((a, s) => a + s.minutos, 0);
-        const hojeMin   = historico.filter(s => s.data === hoje).reduce((a, s) => a + s.minutos, 0);
+        const totalMin = historico.reduce((a, s) => a + s.minutos, 0);
+        const hojeMin  = historico.filter(s => s.data === hoje).reduce((a, s) => a + s.minutos, 0);
 
         let streak = 0;
         const dias = [...new Set(historico.map(s => s.data))].sort().reverse();
@@ -245,12 +246,12 @@ async function carregarHistorico() {
             else break;
         }
 
-        document.getElementById('stat-hoje').innerText    = Math.floor(hojeMin / 60) + 'h';
+        document.getElementById('stat-hoje').innerText     = Math.floor(hojeMin / 60) + 'h';
         document.getElementById('stat-hoje-min').innerText = (hojeMin % 60) + 'min';
-        document.getElementById('stat-total').innerText   = Math.floor(totalMin / 60) + 'h';
+        document.getElementById('stat-total').innerText    = Math.floor(totalMin / 60) + 'h';
         document.getElementById('stat-total-min').innerText = (totalMin % 60) + 'min';
-        document.getElementById('stat-sessoes').innerText = historico.length;
-        document.getElementById('stat-streak').innerText  = streak;
+        document.getElementById('stat-sessoes').innerText  = historico.length;
+        document.getElementById('stat-streak').innerText   = streak;
 
         const porMateria = {};
         historico.forEach(s => { porMateria[s.materia] = (porMateria[s.materia] || 0) + s.minutos; });
@@ -293,4 +294,3 @@ document.addEventListener('DOMContentLoaded', () => {
     atualizarSetup();
     if (window.lucide) lucide.createIcons();
 });
-                                                                                                          
