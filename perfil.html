@@ -9,39 +9,53 @@
     <link rel="stylesheet" href="perfil.css">
     <style>
         .perfil-header {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 0 20px;
-            height: 70px;
-            box-sizing: border-box;
-            background: #0a0a0a;
+            display: flex; align-items: center; width: 100%; padding: 0 20px;
+            height: 70px; box-sizing: border-box; background: #0a0a0a;
             border-bottom: 1px solid rgba(138, 43, 226, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            position: sticky; top: 0; z-index: 1000;
         }
         #open-menu {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid #222;
-            color: white;
-            padding: 10px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid #222; color: white;
+            padding: 10px; border-radius: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
         .header-title {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            margin: 0;
-            font-size: 16px;
-            letter-spacing: 2px;
-            color: white;
-            white-space: nowrap;
+            position: absolute; left: 50%; transform: translateX(-50%);
+            margin: 0; font-size: 16px; letter-spacing: 2px; color: white; white-space: nowrap;
         }
+        /* META DIÁRIA */
+        .meta-card {
+            background: #0e0e12; border: 1px solid rgba(138,43,226,0.15);
+            border-radius: 20px; padding: 20px; margin: 16px 0;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .meta-header { display: flex; justify-content: space-between; align-items: center; }
+        .meta-title { font-size: 10px; font-weight: 800; letter-spacing: 2px; color: white; }
+        .meta-badge {
+            font-size: 10px; font-weight: 800; color: #8a2be2;
+            background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.2);
+            padding: 4px 10px; border-radius: 20px;
+        }
+        .meta-hint { font-size: 11px; color: #444; font-weight: 600; }
+        .meta-input-row { display: flex; align-items: center; justify-content: center; gap: 16px; }
+        .meta-input-group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .meta-input-group label { font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #333; }
+        .meta-stepper {
+            display: flex; align-items: center; gap: 14px;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px; padding: 10px 16px;
+        }
+        .meta-stepper span { font-size: 32px; color: white; min-width: 36px; text-align: center; line-height: 1; font-weight: 800; }
+        .meta-btn { background: none; border: none; color: #555; font-size: 22px; font-weight: 800; cursor: pointer; padding: 4px 8px; transition: 0.15s; }
+        .meta-btn:active { color: #8a2be2; }
+        .meta-sep { font-size: 28px; font-weight: 900; color: #1a1a1a; margin-bottom: 20px; }
+        .meta-save-btn {
+            width: 100%; padding: 14px; background: #8a2be2; border: none; border-radius: 14px;
+            color: white; font-size: 12px; font-weight: 900; letter-spacing: 2px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s; box-shadow: 0 4px 20px rgba(138,43,226,0.3);
+        }
+        .meta-save-btn:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -49,9 +63,7 @@
     <div id="toast-container"></div>
 
     <header class="perfil-header">
-        <button id="open-menu">
-            <i data-lucide="menu"></i>
-        </button>
+        <button id="open-menu"><i data-lucide="menu"></i></button>
         <h2 class="header-title">MEU <span class="purple">PERFIL</span></h2>
         <div style="width: 44px;"></div>
     </header>
@@ -86,6 +98,43 @@
         </div>
 
         <div class="perfil-stats" id="area-stats"></div>
+
+        <!-- META DIÁRIA -->
+        <div class="meta-card" id="meta-card">
+            <div class="meta-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i data-lucide="target" style="color:#8a2be2; width:18px;"></i>
+                    <span class="meta-title">META DIÁRIA</span>
+                </div>
+                <span class="meta-badge" id="meta-badge">Não definida</span>
+            </div>
+
+            <p class="meta-hint">Quantas horas você quer estudar por dia?</p>
+
+            <div class="meta-input-row">
+                <div class="meta-input-group">
+                    <label>HORAS</label>
+                    <div class="meta-stepper">
+                        <button class="meta-btn" id="meta-h-down">−</button>
+                        <span id="meta-h-val">0</span>
+                        <button class="meta-btn" id="meta-h-up">+</button>
+                    </div>
+                </div>
+                <div class="meta-sep">:</div>
+                <div class="meta-input-group">
+                    <label>MINUTOS</label>
+                    <div class="meta-stepper">
+                        <button class="meta-btn" id="meta-m-down">−</button>
+                        <span id="meta-m-val">30</span>
+                        <button class="meta-btn" id="meta-m-up">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="meta-save-btn" id="btn-salvar-meta">
+                <i data-lucide="check" style="width:16px;"></i> SALVAR META
+            </button>
+        </div>
 
         <button onclick="window.logout()" class="btn-logout">
             <i data-lucide="log-out"></i> SAIR DA CONTA
