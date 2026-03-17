@@ -15,8 +15,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const ONESIGNAL_APP_ID  = "f73275cd-17ad-4963-a25b-321ce2def2ba";
-const ONESIGNAL_API_KEY = "os_v2_app_64zhltixvvewhis3gioofxxsxkbmrecy22deufvfuzfzwf2t32oje7kef2xey7nuivljoibdhh65ksck2z5qjxpnle5kr4znj2n3qwi"; // mesma chave do servidor
+const RENDER_URL = "https://hubbrain-server.onrender.com";
+
 
 // SEGURANÇA
 const emailMestre = "ditoh2008@gmail.com";
@@ -184,20 +184,13 @@ window.enviarPushGlobal = async () => {
     }
     window.abrirModalAdmin("CONFIRMAR PUSH", `Enviar "<b>${titulo}</b>" para todos os alunos?`, "", async () => {
         try {
-            const response = await fetch("https://onesignal.com/api/v1/notifications", {
+            const response = await fetch("https://hubbrain-server.onrender.com/push-global", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Key ${ONESIGNAL_API_KEY}`
+                    "Authorization": "Bearer hubbrain-admin-2024"
                 },
-                body: JSON.stringify({
-                    app_id: ONESIGNAL_APP_ID,
-                    included_segments: ["All"],
-                    headings: { pt: titulo, en: titulo },
-                    contents: { pt: mensagem, en: mensagem },
-                    android_accent_color: "8a2be2",
-                    priority: 10
-                })
+                body: JSON.stringify({ titulo, mensagem })
             });
             const data = await response.json();
             if (data.id) {
@@ -345,3 +338,4 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarRelogio();
     if (window.lucide) lucide.createIcons();
 });
+                               
