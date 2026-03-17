@@ -84,18 +84,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (fill) fill.style.width = pct + '%';
 
                     if (pct >= 100) {
-                        // Mostra botão de compartilhar
-                        const shareBtn = document.getElementById('meta-share-btn');
-                        if (shareBtn) {
-                            shareBtn.setAttribute('onclick', `compartilharMeta(${estudadoHoje}, ${metaMin})`);
-                            shareBtn.classList.add('visivel');
-                        }
+                        // Meta batida — mostra botão de compartilhar
                         if (fill) fill.classList.add('completa');
                         document.getElementById('meta-progress-falta').innerText = 'Meta batida! 🎉';
                         document.getElementById('meta-progress-falta').style.color = '#00c851';
+
+                        const shareBtn = document.getElementById('meta-share-btn');
+                        if (shareBtn) {
+                            shareBtn.style.display = 'flex';
+                            shareBtn.onclick = () => compartilharMeta(estudadoHoje, metaMin);
+                        }
                     } else {
+                        // Meta não batida — botão escondido
                         document.getElementById('meta-progress-falta').innerText =
                             falta > 0 ? 'Faltam ' + formatarTempo(falta) : 'Bora estudar! 💪';
+                        const shareBtn = document.getElementById('meta-share-btn');
+                        if (shareBtn) shareBtn.style.display = 'none';
                     }
                 }
             }
@@ -173,38 +177,19 @@ window.compartilharMeta = async function(estudadoHoje, metaMin) {
 
     container.innerHTML = `
         <div id="meta-card-vitoria" style="
-            width: 1080px; height: 1920px;
-            background: #060608;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            position: relative; overflow: hidden;
-            font-family: 'Inter', sans-serif;
-        ">
-            <!-- Glow de fundo -->
+            width:1080px; height:1920px; background:#060608;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            position:relative; overflow:hidden; font-family:'Inter',sans-serif;">
             <div style="position:absolute; width:700px; height:700px; background:radial-gradient(circle, rgba(138,43,226,0.3) 0%, transparent 70%); border-radius:50%; filter:blur(80px);"></div>
             <div style="position:absolute; top:10%; left:5%; width:400px; height:400px; background:radial-gradient(circle, rgba(138,43,226,0.15) 0%, transparent 70%); border-radius:50%; filter:blur(60px);"></div>
             <div style="position:absolute; bottom:10%; right:5%; width:350px; height:350px; background:radial-gradient(circle, rgba(138,43,226,0.15) 0%, transparent 70%); border-radius:50%; filter:blur(60px);"></div>
-
-            <!-- Conteúdo -->
             <div style="position:relative; z-index:10; text-align:center; padding:80px;">
-                <!-- Ícone -->
                 <div style="font-size:120px; margin-bottom:40px;">🎯</div>
-
-                <!-- Meta batida -->
                 <p style="font-size:32px; font-weight:800; letter-spacing:6px; color:#8a2be2; text-transform:uppercase; margin-bottom:20px;">META BATIDA</p>
-
-                <!-- Tempo estudado -->
-                <h1 style="font-size:160px; font-weight:900; color:white; line-height:1; letter-spacing:-5px; margin-bottom:10px; font-family:'Bebas Neue', sans-serif;">${tempoStr}</h1>
-
+                <h1 style="font-size:160px; font-weight:900; color:white; line-height:1; letter-spacing:-5px; margin-bottom:10px;">${tempoStr}</h1>
                 <p style="font-size:36px; color:#555; font-weight:700; margin-bottom:60px;">de estudo hoje</p>
-
-                <!-- Nome -->
                 <p style="font-size:40px; font-weight:900; color:white; margin-bottom:80px;">${nome.toUpperCase()}</p>
-
-                <!-- Divisor -->
                 <div style="width:200px; height:2px; background:rgba(138,43,226,0.3); margin:0 auto 80px;"></div>
-
-                <!-- Branding -->
                 <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
                     <div style="width:60px; height:60px; background:rgba(138,43,226,0.2); border-radius:50%; border:2px solid #8a2be2; display:flex; align-items:center; justify-content:center;">
                         <span style="font-size:30px;">🧠</span>
@@ -215,10 +200,8 @@ window.compartilharMeta = async function(estudadoHoje, metaMin) {
                     </div>
                 </div>
             </div>
-        </div>
-    `;
+        </div>`;
 
-    // Carrega html2canvas se não tiver
     if (!window.html2canvas) {
         await new Promise((resolve, reject) => {
             const s = document.createElement('script');
@@ -252,4 +235,3 @@ window.compartilharMeta = async function(estudadoHoje, metaMin) {
         } catch(e) { console.error(e); }
     }, 300);
 };
-        
