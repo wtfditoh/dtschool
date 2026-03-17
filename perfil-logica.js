@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { CONQUISTAS, verificarConquistas } from "./conquistas.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -44,11 +45,9 @@ async function carregarPerfilOficial(userFirebase) {
     if (userType === 'local' || !userFirebase) {
         getEl('display-id').innerText = `VISITANTE`;
         getEl('user-name-input').value = "Visitante";
-        statsContainer.innerHTML = `
-            <div class="xp-card">
-                <p class="hint" style="text-align:center;">Entre para subir nas patentes e entrar no ranking global!</p>
-            </div>`;
+        statsContainer.innerHTML = `<div class="xp-card"><p class="hint" style="text-align:center;">Entre para subir nas patentes e entrar no ranking global!</p></div>`;
         getEl('meta-card').style.display = 'none';
+        getEl('area-conquistas').style.display = 'none';
         return;
     }
 
@@ -59,10 +58,10 @@ async function carregarPerfilOficial(userFirebase) {
 
         const querySnapshot = await getDocs(collection(db, "notas"));
         let todos = [];
-        querySnapshot.forEach(doc => todos.push({ id: doc.id, xp: doc.data().xp || 0 }));
+        querySnapshot.forEach(d => todos.push({ id: d.id, xp: d.data().xp || 0 }));
         todos.sort((a, b) => b.xp - a.xp);
-        
         const minhaPosicao = todos.findIndex(u => u.id === userEmail) + 1;
+
         const meuDoc = await getDoc(doc(db, "notas", userEmail));
         
         if (meuDoc.exists()) {
@@ -78,7 +77,6 @@ async function carregarPerfilOficial(userFirebase) {
 
             const progressoRelativo = ((xp - pMin) / (pMax - pMin)) * 100;
             const faltaParaProxima = pMax - xp;
-
             const materias = d.materias || [];
             let desempenho = 0;
             if (materias.length > 0) {
@@ -118,7 +116,7 @@ async function carregarPerfilOficial(userFirebase) {
                     </div>
                 </div>`;
 
-            // Carrega meta salva
+            // Meta
             if (d.meta_minutos) {
                 const h = Math.floor(d.meta_minutos / 60);
                 const m = d.meta_minutos % 60;
@@ -126,6 +124,9 @@ async function carregarPerfilOficial(userFirebase) {
                 getEl('meta-m-val').innerText = m;
                 atualizarBadgeMeta(d.meta_minutos);
             }
+
+            // Conquistas
+            renderizarConquistas(d.conquistas || [], minhaPosicao);
 
             if(window.lucide) lucide.createIcons();
         } else {
@@ -136,6 +137,57 @@ async function carregarPerfilOficial(userFirebase) {
             }
         }
     } catch (e) { console.error(e); }
+}
+
+// --- CONQUISTAS ---
+function renderizarConquistas(conquistasDesbloqueadas, rankPos) {
+    const area = getEl('area-conquistas');
+    if (!area) return;
+
+    const categorias = {
+        foco:     { label: '🔥 Sequência de Foco',  items: [] },
+        horas:    { label: '⏱️ Horas Estudadas',     items: [] },
+        metas:    { label: '🎯 Metas',               items: [] },
+        tarefas:  { label: '📋 Tarefas',             items: [] },
+        notas:    { label: '📚 Notas',               items: [] },
+        ranking:  { label: '🏆 Ranking',             items: [] },
+        especial: { label: '🧠 Especiais',           items: [] },
+    };
+
+    CONQUISTAS.forEach(c => {
+        if (categorias[c.categoria]) categorias[c.categoria].items.push(c);
+    });
+
+    const total = CONQUISTAS.length;
+    const desbloqueadas = conquistasDesbloqueadas.length;
+
+    area.innerHTML = `
+        <div class="conquistas-header">
+            <span class="conquistas-title">CONQUISTAS</span>
+            <span class="conquistas-count">${desbloqueadas}/${total}</span>
+        </div>
+        <div class="conquistas-barra-bg">
+            <div class="conquistas-barra-fill" style="width:${Math.round((desbloqueadas/total)*100)}%"></div>
+        </div>
+        ${Object.values(categorias).map(cat => `
+            <div class="conquista-categoria">
+                <span class="conquista-cat-label">${cat.label}</span>
+                <div class="conquista-grid">
+                    ${cat.items.map(c => {
+                        const desbloqueada = conquistasDesbloqueadas.includes(c.id);
+                        return `
+                        <div class="conquista-item ${desbloqueada ? 'desbloqueada' : 'bloqueada'}">
+                            <div class="conquista-emoji">${desbloqueada ? c.emoji : '🔒'}</div>
+                            <div class="conquista-nome">${c.nome}</div>
+                            <div class="conquista-desc">${c.desc}</div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>
+        `).join('')}
+    `;
+
+    if(window.lucide) lucide.createIcons();
 }
 
 // --- AVATAR ---
@@ -160,16 +212,13 @@ getEl('btn-salvar-perfil').onclick = async () => {
     } catch(e) { showToast("Erro ao salvar", "error"); }
 };
 
-// --- META DIÁRIA ---
+// --- META ---
 function atualizarBadgeMeta(totalMin) {
     const badge = getEl('meta-badge');
     if (!badge) return;
-    if (totalMin === 0) {
-        badge.innerText = 'Não definida';
-    } else {
-        const h = Math.floor(totalMin / 60), m = totalMin % 60;
-        badge.innerText = h > 0 ? (m > 0 ? `${h}h ${m}min` : `${h}h`) : `${m}min`;
-    }
+    if (totalMin === 0) { badge.innerText = 'Não definida'; return; }
+    const h = Math.floor(totalMin / 60), m = totalMin % 60;
+    badge.innerText = h > 0 ? (m > 0 ? `${h}h ${m}min` : `${h}h`) : `${m}min`;
 }
 
 const getMetaH = () => parseInt(getEl('meta-h-val').innerText);
@@ -192,3 +241,4 @@ getEl('btn-salvar-meta').onclick = async () => {
 };
 
 window.logout = () => { localStorage.clear(); window.location.href = 'login.html'; };
+    
