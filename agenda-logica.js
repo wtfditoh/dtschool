@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, updateDoc, increment, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { verificarConquistas, mostrarPopupConquista } from "./conquistas.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -38,10 +39,38 @@ async function atualizarXPRanking(valorXP) {
     try {
         const userRef = doc(db, "notas", emailAtual);
         await setDoc(userRef, { xp: increment(valorXP) }, { merge: true });
-        console.log(`XP atualizado: ${valorXP > 0 ? '+' : ''}${valorXP}`);
-    } catch (e) {
-        console.error("Erro ao atualizar XP:", e);
-    }
+    } catch (e) { console.error("Erro ao atualizar XP:", e); }
+}
+
+// ==========================================
+// VERIFICAR CONQUISTAS DE TAREFAS
+// ==========================================
+async function verificarConquistasTarefas() {
+    const emailAtual = localStorage.getItem('dt_user_email');
+    if (!emailAtual || userType === 'local') return;
+    try {
+        const snap = await getDoc(doc(db, "notas", emailAtual));
+        if (!snap.exists()) return;
+
+        // Conta tarefas concluídas do usuário
+        const q = query(collection(db, "agenda"), where("usuario", "==", emailAtual));
+        const agendaSnap = await getDocs(q);
+        const tarefasConcluidas = agendaSnap.docs.filter(d => d.data().concluida).length;
+
+        // Verifica se todas as tarefas do dia foram concluídas
+        const hoje = new Date().toISOString().split('T')[0];
+        const tarefasHoje = agendaSnap.docs.map(d => d.data()).filter(t => t.dataFim === hoje);
+        const todasConcluidasHoje = tarefasHoje.length > 0 && tarefasHoje.every(t => t.concluida);
+
+        const dados = {
+            ...snap.data(),
+            tarefas_concluidas: tarefasConcluidas,
+            perfeccionista_hoje: todasConcluidasHoje
+        };
+
+        const novas = await verificarConquistas(emailAtual, dados);
+        if (novas.length > 0) mostrarPopupConquista(novas);
+    } catch(e) { console.error("Erro ao verificar conquistas:", e); }
 }
 
 // ==========================================
@@ -55,18 +84,14 @@ async function salvarPlayerIdNasAgendas() {
         OneSignalDeferred.push(async function(OneSignal) {
             const playerId = OneSignal.User.PushSubscription.token;
             if (!playerId) return;
-
             const q = query(collection(db, "agenda"), where("usuario", "==", emailAtual));
             const snap = await getDocs(q);
             const atualizacoes = snap.docs.map(d => 
                 updateDoc(doc(db, "agenda", d.id), { onesignal_player_id: playerId })
             );
             await Promise.all(atualizacoes);
-            console.log("Player ID salvo nas tarefas:", playerId);
         });
-    } catch (e) {
-        console.error("Erro ao salvar Player ID nas agendas:", e);
-    }
+    } catch (e) { console.error("Erro ao salvar Player ID:", e); }
 }
 
 // ==========================================
@@ -226,7 +251,6 @@ window.adicionarTarefa = async function() {
 
     if (!nome || !dataInicio || !dataFim || !emailDono) return;
 
-    // Pega o Player ID do OneSignal pra salvar junto com a tarefa
     let playerId = null;
     if (window.OneSignalDeferred) {
         await new Promise(resolve => {
@@ -289,6 +313,9 @@ window.alternarConcluida = async function(idFirebase, idLocal) {
         const baseXP = identificarXPTarefa(tarefa.nome);
         const xpFinal = tarefa.concluida ? baseXP : (baseXP * -1);
         await atualizarXPRanking(xpFinal);
+
+        // Verifica conquistas só quando concluir (não quando desmarcar)
+        if (tarefa.concluida) await verificarConquistasTarefas();
     }
     window.buscarDadosNuvem();
 };
@@ -326,7 +353,6 @@ window.abrirModalAgendaHoje = () => {
     document.getElementById('tarefa-data-fim').value = dataSelecionada || hoje;
     document.getElementById('modal-agenda').style.display = 'flex'; 
 };
-
 window.fecharModalAgenda = () => { 
     document.getElementById('modal-agenda').style.display = 'none'; 
     document.getElementById('tarefa-nome').value = ""; 
@@ -335,3 +361,4 @@ window.fecharModalAgenda = () => {
     document.getElementById('preview-container').innerHTML = "";
     imagemBase64 = ""; 
 };
+                                                  
