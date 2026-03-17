@@ -1,12 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { verificarConquistas, mostrarPopupConquista } from "./conquistas.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
     authDomain: "dt-scho0l.firebaseapp.com",
     projectId: "dt-scho0l",
     storageBucket: "dt-scho0l.firebasestorage.app",
-    messagingSenderId: "78578509391",
+    messagingSenderId: "78578509371",
     appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
 };
 
@@ -53,23 +54,12 @@ const flipCard = (unit, newVal) => {
     const flapTxt = document.getElementById('flap-' + unit + '-txt');
     const topCur = document.getElementById('top-' + unit + '-cur');
     const botCur = document.getElementById('bot-' + unit + '-cur');
-
-    // Mostra o valor antigo no flap e inicia animação
     flapTxt.innerText = topCur.innerText;
     flap.classList.remove('flipping');
-    void flap.offsetWidth; // force reflow
+    void flap.offsetWidth;
     flap.classList.add('flipping');
-
-    // Atualiza os valores depois de meio flip
-    setTimeout(() => {
-        topCur.innerText = newVal;
-        botCur.innerText = newVal;
-        flapTxt.innerText = newVal;
-    }, 200);
-
-    setTimeout(() => {
-        flap.classList.remove('flipping');
-    }, 400);
+    setTimeout(() => { topCur.innerText = newVal; botCur.innerText = newVal; flapTxt.innerText = newVal; }, 200);
+    setTimeout(() => { flap.classList.remove('flipping'); }, 400);
 };
 
 const atualizarFlip = (h, m, s) => {
@@ -148,11 +138,9 @@ document.getElementById('btn-start').onclick = () => {
     const h = getH(), m = getM();
     if (h === 0 && m === 0) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
-
     segsRestantes = h * 3600 + m * 60;
     totalSegs = segsRestantes;
     sessionActive = true;
-
     document.getElementById('setup-controls').style.display = 'none';
     document.getElementById('progress-wrap').style.display = 'flex';
     document.getElementById('btn-start').style.display = 'none';
@@ -161,7 +149,6 @@ document.getElementById('btn-start').onclick = () => {
     document.getElementById('xp-tag').style.display = 'none';
     document.getElementById('materia-ativa-label').innerText = materiaSelecionada.toUpperCase();
     document.querySelectorAll('.chip-materia').forEach(c => c.style.opacity = '0.3');
-
     timer = setInterval(tick, 1000);
 };
 
@@ -169,17 +156,13 @@ const tick = () => {
     if (isPaused) return;
     segsRestantes--;
     playTick();
-
     const h = Math.floor(segsRestantes / 3600);
     const m = Math.floor((segsRestantes % 3600) / 60);
     const s = segsRestantes % 60;
-
     atualizarFlip(h, m, s);
-
     const pct = Math.round(((totalSegs - segsRestantes) / totalSegs) * 100);
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progresso-pct').innerText = pct + '%';
-
     if (segsRestantes <= 0) finalizarSessao(true);
 };
 
@@ -215,18 +198,31 @@ const finalizarSessao = async (completa) => {
 
     if (userEmail && completa) {
         try {
+            const hoje = getHojeStr();
+            const horaAtual = new Date().getHours();
+
+            // Salva sessão e XP
             await setDoc(doc(db, "notas", userEmail), {
                 xp: increment(xp),
                 historico_foco: arrayUnion({
                     materia: materiaSelecionada,
                     minutos: minutos,
-                    data: getHojeStr(),
+                    data: hoje,
                     timestamp: Date.now()
                 })
             }, { merge: true });
+
+            // Verifica conquistas
+            const snap = await getDoc(doc(db, "notas", userEmail));
+            if (snap.exists()) {
+                const dados = { ...snap.data(), _sessaoAgora: true };
+                const novas = await verificarConquistas(userEmail, dados);
+                if (novas.length > 0) mostrarPopupConquista(novas);
+            }
+
         } catch(e) { console.error(e); }
     }
-    location.reload();
+    setTimeout(() => location.reload(), novas?.length > 0 ? 4000 : 500);
 };
 
 // --- HISTÓRICO ---
@@ -256,7 +252,6 @@ async function carregarHistorico() {
         document.getElementById('stat-sessoes').innerText = historico.length;
         document.getElementById('stat-streak').innerText  = streak;
 
-        // Por matéria
         const porMateria = {};
         historico.forEach(s => { porMateria[s.materia] = (porMateria[s.materia] || 0) + s.minutos; });
         const maxMin = Math.max(...Object.values(porMateria), 1);
@@ -274,7 +269,6 @@ async function carregarHistorico() {
                     </div>
                 </div>`).join('');
 
-        // Sessões recentes
         const recentes = [...historico].sort((a,b) => b.timestamp - a.timestamp).slice(0, 10);
         document.getElementById('lista-sessoes').innerHTML = recentes.length === 0
             ? '<div class="empty-state"><p>Complete sua primeira sessão!</p></div>'
@@ -299,3 +293,4 @@ document.addEventListener('DOMContentLoaded', () => {
     atualizarSetup();
     if (window.lucide) lucide.createIcons();
 });
+                                                                                                          
