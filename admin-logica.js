@@ -16,7 +16,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const ONESIGNAL_APP_ID  = "f73275cd-17ad-4963-a25b-321ce2def2ba";
-const ONESIGNAL_API_KEY = "SUA_REST_API_KEY_AQUI"; // mesma chave do servidor
+const ONESIGNAL_API_KEY = "os_v2_app_64zhltixvvewhis3gioofxxsxkbmrecy22deufvfuzfzwf2t32oje7kef2xey7nuivljoibdhh65ksck2z5qjxpnle5kr4znj2n3qwi"; // mesma chave do servidor
 
 // SEGURANÇA
 const emailMestre = "ditoh2008@gmail.com";
