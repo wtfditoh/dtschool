@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { verificarConquistas, mostrarPopupConquista } from "./conquistas.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -15,10 +16,10 @@ const db = getFirestore(app);
 
 let materias = JSON.parse(localStorage.getItem('materias')) || [];
 let idParaExcluir = null;
-let versaoLocal = null; // Controle de Versão
+let versaoLocal = null;
 
 // ==========================================
-// MONITOR DE ATUALIZAÇÃO REMOTA (FORCE UPDATE)
+// MONITOR DE ATUALIZAÇÃO REMOTA
 // ==========================================
 function monitorarVersaoSistema() {
     const docRef = doc(db, "config", "versao_sistema");
@@ -28,7 +29,6 @@ function monitorarVersaoSistema() {
             if (versaoLocal === null) {
                 versaoLocal = novaVersao;
             } else if (novaVersao !== versaoLocal) {
-                console.log("🚀 Nova atualização do sistema detectada!");
                 setTimeout(() => { window.location.reload(true); }, 1000);
             }
         }
@@ -69,23 +69,34 @@ async function salvarNaNuvem() {
                 avatar: localStorage.getItem('dt_user_avatar') || "user",
                 atualizadoEm: Date.now()
             }, { merge: true });
-            console.log("☁️ Sincronizado com Firebase");
+
+            // Verifica conquistas de notas
+            await verificarConquistasNotas(emailAtual);
+
         } catch (e) { console.error("Erro Firebase:", e); }
     }
 }
 
 // ==========================================
+// VERIFICAR CONQUISTAS DE NOTAS
+// ==========================================
+async function verificarConquistasNotas(email) {
+    try {
+        const snap = await getDoc(doc(db, "notas", email));
+        if (!snap.exists()) return;
+        const dados = { ...snap.data(), materias };
+        const novas = await verificarConquistas(email, dados);
+        if (novas.length > 0) mostrarPopupConquista(novas);
+    } catch(e) { console.error("Erro ao verificar conquistas:", e); }
+}
+
+// ==========================================
 // FUNÇÕES DE INTERAÇÃO (WINDOW)
 // ==========================================
-
 window.confirmarNovaMateria = async function() {
     const input = document.getElementById('nome-materia-input');
     if(input && input.value.trim() !== "") {
-        const nova = { 
-            id: Date.now(), 
-            nome: input.value.trim(), 
-            n1:"", n2:"", n3:"", n4:"" 
-        };
+        const nova = { id: Date.now(), nome: input.value.trim(), n1:"", n2:"", n3:"", n4:"" };
         materias.push(nova);
         localStorage.setItem('materias', JSON.stringify(materias));
         window.atualizarLista();
@@ -145,7 +156,6 @@ window.atualizarLista = function() {
         </div>`;
     }).join('');
     
-    // Atualiza Stats
     const total = materias.length;
     const mediaGeral = total > 0 ? (materias.reduce((acc, m) => acc + ((Number(m.n1)||0)+(Number(m.n2)||0)+(Number(m.n3)||0)+(Number(m.n4)||0))/4, 0) / total).toFixed(1) : "0.0";
     const aprovadosCount = materias.filter(m => ((Number(m.n1)||0)+(Number(m.n2)||0)+(Number(m.n3)||0)+(Number(m.n4)||0)) >= 24).length;
@@ -167,7 +177,7 @@ window.salvarNota = async function(id, bimestre, valor) {
 };
 
 // ==========================================
-// SISTEMA DE COMPARTILHAMENTO (VOLTOU!)
+// SISTEMA DE COMPARTILHAMENTO
 // ==========================================
 window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     let container = document.getElementById('compartilhamento-container');
@@ -197,8 +207,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], `Vitoria_${nomeMateria}.png`, { type: 'image/png' });
                 if (navigator.share) {
-                    await navigator.share({ title: 'Hub Brain', text: `Menos uma! Passei em ${nomeMateria}. 🚀\n\nOrganize suas notas também no Hub Brain:\nhttps://hubbrain.netlify.app/`
-                                           , files: [file] });
+                    await navigator.share({ title: 'Hub Brain', text: `Menos uma! Passei em ${nomeMateria}. 🚀\n\nOrganize suas notas também no Hub Brain:\nhttps://hubbrain.netlify.app/`, files: [file] });
                 } else {
                     const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `Vitoria_${nomeMateria}.png`; link.click();
                 }
@@ -221,7 +230,7 @@ window.confirmarExclusao = async function() {
 
 // Carregamento Inicial
 document.addEventListener('DOMContentLoaded', async () => {
-    monitorarVersaoSistema(); // Ativa a escuta do Force Update
+    monitorarVersaoSistema();
     window.atualizarLista();
     const email = localStorage.getItem('dt_user_email');
     if (email) {
