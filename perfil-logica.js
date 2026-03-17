@@ -162,33 +162,48 @@ function renderizarConquistas(conquistasDesbloqueadas, rankPos) {
     const desbloqueadas = conquistasDesbloqueadas.length;
 
     area.innerHTML = `
-        <div class="conquistas-header">
-            <span class="conquistas-title">CONQUISTAS</span>
-            <span class="conquistas-count">${desbloqueadas}/${total}</span>
+        <div class="conquistas-header" onclick="toggleConquistas()" style="cursor:pointer;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="conquistas-title">CONQUISTAS</span>
+                <span class="conquistas-count">${desbloqueadas}/${total}</span>
+            </div>
+            <span id="conquistas-arrow" style="font-size:18px; color:#555; transition:transform 0.3s, color 0.3s;">↓</span>
         </div>
         <div class="conquistas-barra-bg">
             <div class="conquistas-barra-fill" style="width:${Math.round((desbloqueadas/total)*100)}%"></div>
         </div>
-        ${Object.values(categorias).map(cat => `
-            <div class="conquista-categoria">
-                <span class="conquista-cat-label">${cat.label}</span>
-                <div class="conquista-grid">
-                    ${cat.items.map(c => {
-                        const desbloqueada = conquistasDesbloqueadas.includes(c.id);
-                        return `
-                        <div class="conquista-item ${desbloqueada ? 'desbloqueada' : 'bloqueada'}">
-                            <div class="conquista-emoji">${desbloqueada ? c.emoji : '🔒'}</div>
-                            <div class="conquista-nome">${c.nome}</div>
-                            <div class="conquista-desc">${c.desc}</div>
-                        </div>`;
-                    }).join('')}
+        <div id="conquistas-corpo" style="display:none;">
+            ${Object.values(categorias).map(cat => `
+                <div class="conquista-categoria">
+                    <span class="conquista-cat-label">${cat.label}</span>
+                    <div class="conquista-grid">
+                        ${cat.items.map(c => {
+                            const desbloqueada = conquistasDesbloqueadas.includes(c.id);
+                            return `
+                            <div class="conquista-item ${desbloqueada ? 'desbloqueada' : 'bloqueada'}">
+                                <div class="conquista-emoji">${desbloqueada ? c.emoji : '🔒'}</div>
+                                <div class="conquista-nome">${c.nome}</div>
+                                <div class="conquista-desc">${c.desc}</div>
+                            </div>`;
+                        }).join('')}
+                    </div>
                 </div>
-            </div>
-        `).join('')}
+            `).join('')}
+        </div>
     `;
 
     if(window.lucide) lucide.createIcons();
 }
+
+window.toggleConquistas = () => {
+    const corpo = document.getElementById('conquistas-corpo');
+    const arrow = document.getElementById('conquistas-arrow');
+    if (!corpo) return;
+    const aberto = corpo.style.display !== 'none';
+    corpo.style.display = aberto ? 'none' : 'block';
+    arrow.style.transform = aberto ? 'rotate(0deg)' : 'rotate(180deg)';
+    arrow.style.color = aberto ? '#555' : '#8a2be2';
+};
 
 // --- AVATAR ---
 window.abrirGaleria = () => getEl('modal-avatar').style.display = 'flex';
@@ -235,10 +250,32 @@ getEl('btn-salvar-meta').onclick = async () => {
     const totalMin = getMetaH() * 60 + getMetaM();
     try {
         await updateDoc(doc(db, "notas", user.email), { meta_minutos: totalMin });
-        showToast('Meta salva!');
+        showToast('Meta salva!'); const mc = document.getElementById('meta-controls'); const ma = document.getElementById('meta-arrow'); if(mc) mc.style.display = 'none'; if(ma) { ma.style.transform = 'rotate(0deg)'; ma.style.color = '#555'; }
         atualizarBadgeMeta(totalMin);
     } catch(e) { showToast('Erro ao salvar meta', 'error'); }
 };
 
 window.logout = () => { localStorage.clear(); window.location.href = 'login.html'; };
-    
+
+// --- ACCORDION CONQUISTAS ---
+window.toggleConquistas = () => {
+    const corpo = document.getElementById('conquistas-corpo');
+    const arrow = document.getElementById('conquistas-arrow');
+    if (!corpo || !arrow) return;
+    const aberto = corpo.style.display !== 'none';
+    corpo.style.display = aberto ? 'none' : 'block';
+    arrow.style.transform = aberto ? 'rotate(0deg)' : 'rotate(180deg)';
+    arrow.style.color = aberto ? '#555' : '#8a2be2';
+};
+
+// --- ACCORDION META ---
+window.toggleMeta = () => {
+    const controls = document.getElementById('meta-controls');
+    const arrow = document.getElementById('meta-arrow');
+    const editBtn = document.getElementById('meta-edit-btn');
+    if (!controls) return;
+    const aberto = controls.style.display !== 'none';
+    controls.style.display = aberto ? 'none' : 'block';
+    if (arrow) { arrow.style.transform = aberto ? 'rotate(0deg)' : 'rotate(180deg)'; arrow.style.color = aberto ? '#555' : '#8a2be2'; }
+    if (editBtn) editBtn.innerText = aberto ? 'EDITAR' : 'FECHAR';
+};
