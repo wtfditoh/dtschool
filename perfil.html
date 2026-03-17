@@ -101,39 +101,44 @@
 
         <!-- META DIÁRIA -->
         <div class="meta-card" id="meta-card">
-            <div class="meta-header">
+            <div class="meta-header" onclick="toggleMeta()" style="cursor:pointer;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <i data-lucide="target" style="color:#8a2be2; width:18px;"></i>
                     <span class="meta-title">META DIÁRIA</span>
                 </div>
-                <span class="meta-badge" id="meta-badge">Não definida</span>
-            </div>
-
-            <p class="meta-hint">Quantas horas você quer estudar por dia?</p>
-
-            <div class="meta-input-row">
-                <div class="meta-input-group">
-                    <label>HORAS</label>
-                    <div class="meta-stepper">
-                        <button class="meta-btn" id="meta-h-down">−</button>
-                        <span id="meta-h-val">0</span>
-                        <button class="meta-btn" id="meta-h-up">+</button>
-                    </div>
-                </div>
-                <div class="meta-sep">:</div>
-                <div class="meta-input-group">
-                    <label>MINUTOS</label>
-                    <div class="meta-stepper">
-                        <button class="meta-btn" id="meta-m-down">−</button>
-                        <span id="meta-m-val">30</span>
-                        <button class="meta-btn" id="meta-m-up">+</button>
-                    </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="meta-badge" id="meta-badge">Não definida</span>
+                    <span id="meta-arrow" style="font-size:18px; color:#555; transition:transform 0.3s, color 0.3s;">↓</span>
                 </div>
             </div>
 
-            <button class="meta-save-btn" id="btn-salvar-meta">
-                <i data-lucide="check" style="width:16px;"></i> SALVAR META
-            </button>
+            <div id="meta-controls" style="display:none;">
+                <p class="meta-hint" style="margin-bottom:14px;">Quantas horas você quer estudar por dia?</p>
+
+                <div class="meta-input-row">
+                    <div class="meta-input-group">
+                        <label>HORAS</label>
+                        <div class="meta-stepper">
+                            <button class="meta-btn" id="meta-h-down">−</button>
+                            <span id="meta-h-val">0</span>
+                            <button class="meta-btn" id="meta-h-up">+</button>
+                        </div>
+                    </div>
+                    <div class="meta-sep">:</div>
+                    <div class="meta-input-group">
+                        <label>MINUTOS</label>
+                        <div class="meta-stepper">
+                            <button class="meta-btn" id="meta-m-down">−</button>
+                            <span id="meta-m-val">30</span>
+                            <button class="meta-btn" id="meta-m-up">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="meta-save-btn" id="btn-salvar-meta" style="margin-top:14px;">
+                    <i data-lucide="check" style="width:16px;"></i> SALVAR META
+                </button>
+            </div>
         </div>
 
         <div id="area-conquistas" style="margin: 16px 0;"></div>
