@@ -72,3 +72,29 @@ Body {
 .avatar-option:hover { border-color: #8a2be2; background: rgba(138,43,226,0.1); transform: scale(1.05); }
 .avatar-option i { color: white; width: 28px; height: 28px; }
 .btn-fechar-galeria { background: none; border: 1px solid #222; color: #555; padding: 12px; border-radius: 12px; font-weight: 800; cursor: pointer; width: 100%; }
+
+/* CONQUISTAS */
+#area-conquistas { margin: 16px 0; }
+
+.conquistas-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.conquistas-title { font-size: 10px; font-weight: 800; letter-spacing: 2px; color: white; text-transform: uppercase; }
+.conquistas-count { font-size: 11px; font-weight: 800; color: #8a2be2; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.2); padding: 4px 10px; border-radius: 20px; }
+
+.conquistas-barra-bg { width: 100%; height: 3px; background: rgba(255,255,255,0.04); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+.conquistas-barra-fill { height: 100%; background: #8a2be2; border-radius: 10px; box-shadow: 0 0 8px rgba(138,43,226,0.5); transition: width 0.5s ease; }
+
+.conquista-categoria { margin-bottom: 20px; }
+.conquista-cat-label { font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #333; text-transform: uppercase; display: block; margin-bottom: 10px; }
+
+.conquista-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+.conquista-item { background: #0e0e12; border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; transition: 0.2s; }
+
+.conquista-item.desbloqueada { border-color: rgba(138,43,226,0.3); background: rgba(138,43,226,0.05); }
+.conquista-item.bloqueada { opacity: 0.4; }
+
+.conquista-emoji { font-size: 28px; line-height: 1; }
+.conquista-nome { font-size: 10px; font-weight: 800; color: white; line-height: 1.2; }
+.conquista-desc { font-size: 9px; color: #444; font-weight: 600; line-height: 1.3; }
+
+.conquista-item.desbloqueada .conquista-nome { color: #c084fc; }
