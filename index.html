@@ -4,17 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Home</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="icon-514.png">
-
     <link rel="stylesheet" href="home.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* AJUSTE 2: CSS DA SPLASH SCREEN (NÃO MEXER NO RESTANTE) */
         #custom-splash {
             position: fixed; inset: 0; background: #000000; z-index: 9999999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -34,18 +31,13 @@
         }
         .splash-title span { color: #8a2be2; }
         .loading-bar-container {
-            width: 160px; height: 3px; background: rgba(255, 255, 255, 0.05);
+            width: 160px; height: 3px; background: rgba(255,255,255,0.05);
             border-radius: 10px; overflow: hidden; position: relative; margin: 0 auto;
         }
-        #splash-bar {
-            height: 100%; width: 0%; background: #8a2be2;
-            box-shadow: 0 0 15px #8a2be2; border-radius: 10px; transition: width 0.3s ease-out;
-        }
+        #splash-bar { height: 100%; width: 0%; background: #8a2be2; box-shadow: 0 0 15px #8a2be2; border-radius: 10px; transition: width 0.3s ease-out; }
         @keyframes pulseLogoGlow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } }
         @keyframes textTrackingIn { 0% { letter-spacing: -5px; opacity: 0; } 100% { letter-spacing: 10px; opacity: 1; } }
         .splash-hidden { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
-
-        /* SEUS ESTILOS ORIGINAIS ABAIXO */
         #global-alert {
             background: linear-gradient(90deg, #8a2be2, #4b0082);
             color: white; padding: 12px; text-align: center; font-size: 13px;
@@ -64,6 +56,20 @@
         .user-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.3); display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 30000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
         .modal-card { background: #16161a; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(138,43,226,0.3); }
+
+        /* META PROGRESSO */
+        .meta-progress-section { padding: 0 20px; margin-bottom: 16px; }
+        .meta-progress-card {
+            background: #0e0e12; border: 1px solid rgba(138,43,226,0.15);
+            border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px;
+        }
+        .meta-progress-header { display: flex; justify-content: space-between; align-items: center; }
+        .meta-progress-label { font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #555; text-transform: uppercase; }
+        .meta-progress-time { font-size: 11px; font-weight: 700; color: #8a2be2; }
+        .meta-progress-track { width: 100%; height: 4px; background: rgba(255,255,255,0.04); border-radius: 10px; overflow: hidden; }
+        .meta-progress-fill { height: 100%; background: #8a2be2; border-radius: 10px; box-shadow: 0 0 10px rgba(138,43,226,0.5); transition: width 0.5s ease; width: 0%; }
+        .meta-progress-fill.completa { background: #00c851; box-shadow: 0 0 10px rgba(0,200,81,0.5); }
+        .meta-progress-footer { display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: #333; }
     </style>
 </head>
 <body>
@@ -159,6 +165,29 @@
             <i data-lucide="chevron-right"></i>
         </div>
 
+        <!-- META DIÁRIA -->
+        <section class="meta-progress-section" id="meta-progress-section" style="display:none;">
+            <div class="meta-progress-card">
+                <div class="meta-progress-header">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="target" style="color:#8a2be2; width:16px;"></i>
+                        <span class="meta-progress-label">META DO DIA</span>
+                    </div>
+                    <span class="meta-progress-time" id="meta-progress-time">0min de 0min</span>
+                </div>
+                <div class="meta-progress-track">
+                    <div class="meta-progress-fill" id="meta-progress-fill"></div>
+                </div>
+                <div class="meta-progress-footer">
+                    <span id="meta-progress-pct">0%</span>
+                    <span id="meta-progress-falta" style="color:#444;">Bora estudar! 💪</span>
+                    <button class="meta-share-btn" id="meta-share-btn" onclick="compartilharMeta(0,0)">
+                        <i data-lucide="share-2" style="width:12px;"></i> COMPARTILHAR
+                    </button>
+                </div>
+            </div>
+        </section>
+
         <section class="summary-section">
             <div class="summary-header">
                 <h3>Resumo de hoje</h3>
@@ -194,34 +223,23 @@
 
     <script type="module" src="home-logica.js"></script>
     <script>
-      // REGISTRO DE SERVICE WORKER E SPLASH LOGIC
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => {
-              console.log('SW ativo!');
-              if(window.Notification) Notification.requestPermission();
-          })
+        navigator.serviceWorker.register('OneSignalSDKWorker.js')
+          .then(reg => { console.log('SW ativo!'); })
           .catch(err => console.log('Erro no SW:', err));
       }
-
-      // LÓGICA DE CARREGAMENTO DA SPLASH
       window.addEventListener('load', () => {
         let progress = 0;
         const bar = document.getElementById('splash-bar');
         const splash = document.getElementById('custom-splash');
-        
         const interval = setInterval(() => {
           progress += 20;
           if (bar) bar.style.width = progress + '%';
           if (progress >= 100) {
             clearInterval(interval);
-            setTimeout(() => {
-              if (splash) splash.classList.add('splash-hidden');
-            }, 600);
+            setTimeout(() => { if (splash) splash.classList.add('splash-hidden'); }, 600);
           }
         }, 250);
-        
-        // Inicializa ícones do Lucide que estão na Splash
         if(window.lucide) lucide.createIcons();
       });
     </script>
