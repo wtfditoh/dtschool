@@ -2,77 +2,54 @@
 <html lang="pt-br">
 <head>
     <script>
-    // Se não houver nenhum nome salvo (seja real ou Visitante), expulsa pro login
-    if (!localStorage.getItem('dt_user_name')) {
-        window.location.href = 'login.html';
-    }
+    if (!localStorage.getItem('dt_user_name')) { window.location.href = 'login.html'; }
     </script>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Agenda</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
     <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="estilo.css?v=12.0">
     <link rel="stylesheet" href="agenda-estilo.css">
-    
+    <link rel="stylesheet" href="transicoes.css">
     <style>
-        /* Topo Padrão Hub Brain com Suporte ao Menu */
-        .glass-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; height: 70px; background: rgba(10, 10, 10, 0.8) !important;
-            backdrop-filter: blur(15px); border-bottom: 1px solid rgba(138, 43, 226, 0.2);
-            position: sticky; top: 0; z-index: 1000;
-        }
-
-        .hub-logo-container { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .hub-logo-text { font-weight: 900; font-size: 18px; letter-spacing: 1px; color: white; text-transform: uppercase; }
-        .hub-logo-text.purple { color: #8a2be2; }
-        .hub-symbol-mini { 
-            background: rgba(138, 43, 226, 0.1); padding: 5px; border-radius: 8px; 
-            border: 1px solid rgba(138, 43, 226, 0.3); display: flex; 
-        }
-
-        .mes-indicador { 
-            text-align: center; padding: 20px 0 10px; font-size: 11px; 
-            font-weight: 800; letter-spacing: 3px; color: #666; text-transform: uppercase; 
-        }
-
-        .fab-button { 
-            background: #8a2be2 !important; 
-            box-shadow: 0 4px 20px rgba(138, 43, 226, 0.4) !important; 
-        }
-
-        .input-erro { border: 1px solid #ff4444 !important; animation: shake 0.3s; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
+        .glass-header { display:flex; align-items:center; justify-content:space-between; padding:0 15px; height:70px; background:rgba(10,10,10,0.9)!important; backdrop-filter:blur(15px); border-bottom:1px solid rgba(138,43,226,0.2); position:sticky; top:0; z-index:1000; }
+        .hub-logo-container { display:flex; align-items:center; gap:10px; cursor:pointer; transition:transform 0.1s; -webkit-tap-highlight-color:transparent; }
+        .hub-logo-container:active { transform:scale(0.92); }
+        .hub-logo-text { font-weight:900; font-size:19px; letter-spacing:1px; color:white; text-transform:uppercase; }
+        .hub-logo-text.purple { color:#8a2be2; text-shadow:0 0 10px rgba(138,43,226,0.3); }
+        .hub-symbol { background:rgba(138,43,226,0.1); padding:6px; border-radius:10px; border:1px solid rgba(138,43,226,0.3); display:flex; align-items:center; justify-content:center; animation:pulse-glow-logo 3s infinite ease-in-out; }
+        @keyframes pulse-glow-logo { 0%,100%{box-shadow:0 0 0px rgba(138,43,226,0);transform:scale(1);} 50%{box-shadow:0 0 15px rgba(138,43,226,0.4);transform:scale(1.05);} }
+        .mes-indicador { text-align:center; padding:20px 0 10px; font-size:11px; font-weight:800; letter-spacing:3px; color:#666; text-transform:uppercase; }
+        .fab-button { background:#8a2be2!important; box-shadow:0 4px 20px rgba(138,43,226,0.4)!important; }
+        .input-erro { border:1px solid #ff4444!important; animation:shake 0.3s; }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+        .modal-dono-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; backdrop-filter:blur(25px) saturate(180%); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
+        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5),0 0 20px rgba(138,43,226,0.2); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
+        .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
+        .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
+        .ring-1 { width:100%; height:100%; animation:spin-orb 2s linear infinite; opacity:0.6; }
+        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; opacity:0.8; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
+        @keyframes spin-orb { to{transform:rotate(360deg);} }
+        @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
+        .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
     </style>
 </head>
 <body class="bg-dark">
 
     <header class="glass-header">
-        <button id="open-menu" class="btn-menu">
-            <i data-lucide="menu"></i>
-        </button>
-        
-        <div class="hub-logo-container">
+        <button id="open-menu" class="btn-menu"><i data-lucide="menu"></i></button>
+        <div class="hub-logo-container" onclick="abrirSobreDono()">
             <span class="hub-logo-text">Hub</span>
-            <div class="hub-symbol-mini">
-                <i data-lucide="brain-circuit" style="color: #8a2be2; width: 18px; height: 18px;"></i>
-            </div>
+            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2; width:22px; height:22px;"></i></div>
             <span class="hub-logo-text purple">Brain</span>
         </div>
-
-        <div style="width: 40px;"></div>
+        <div style="width:40px;"></div>
     </header>
 
     <main class="container-agenda">
         <div class="mes-indicador" id="mes-topo">CARREGANDO...</div>
-
         <div class="calendar-card">
             <div class="calendar-nav">
                 <button onclick="mudarMes(-1)" class="btn-nav-clean"><i data-lucide="chevron-left"></i></button>
@@ -80,111 +57,105 @@
                 <button onclick="mudarMes(1)" class="btn-nav-clean"><i data-lucide="chevron-right"></i></button>
             </div>
         </div>
-
         <div class="agenda-section">
             <h3 class="section-title" id="titulo-lista">Compromissos</h3>
-            <div id="lista-agenda"></div> 
+            <div id="lista-agenda"></div>
         </div>
     </main>
 
-    <button class="fab-button" onclick="abrirModalAgendaHoje()">
-        <i data-lucide="plus"></i>
-    </button>
+    <button class="fab-button" onclick="abrirModalAgendaHoje()"><i data-lucide="plus"></i></button>
 
     <div id="modal-agenda" class="modal">
         <div class="modal-content glass">
-            <h3 style="color: #8a2be2; margin-bottom: 20px;">Nova Atividade</h3>
+            <h3 style="color:#8a2be2; margin-bottom:20px;">Nova Atividade</h3>
             <input type="text" id="tarefa-nome" placeholder="Título" class="input-ia">
-            <textarea id="tarefa-desc" placeholder="Detalhes" class="input-ia" style="height: 80px; resize: none;"></textarea>
-            
-            <select id="tarefa-materia" class="input-ia" style="background-color: #1a1a2e !important; color: white !important;">
+            <textarea id="tarefa-desc" placeholder="Detalhes" class="input-ia" style="height:80px; resize:none;"></textarea>
+            <select id="tarefa-materia" class="input-ia" style="background-color:#1a1a2e!important; color:white!important;">
                 <option value="Geral">Geral / Outros</option>
             </select>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                 <div>
-                    <label style="font-size: 10px; color: #8a2be2;">INÍCIO</label>
+                    <label style="font-size:10px; color:#8a2be2;">INÍCIO</label>
                     <input type="date" id="tarefa-data-inicio" class="input-ia">
                 </div>
                 <div>
-                    <label style="font-size: 10px; color: #ff4444;">PRAZO FINAL</label>
+                    <label style="font-size:10px; color:#ff4444;">PRAZO FINAL</label>
                     <input type="date" id="tarefa-data-fim" class="input-ia">
                 </div>
             </div>
-            
             <label class="btn-anexo" for="tarefa-img">
                 <i data-lucide="image"></i> Anexar Foto
-                <input type="file" id="tarefa-img" accept="image/*" style="display: none;" onchange="previewImg(this)">
+                <input type="file" id="tarefa-img" accept="image/*" style="display:none;" onchange="previewImg(this)">
             </label>
             <div id="preview-container"></div>
-
             <div class="area-botoes-modal">
                 <button onclick="fecharModalAgenda()" class="btn-modal-voltar">Sair</button>
-                <button id="btn-salvar-agenda" onclick="validarEAdicionar()" class="btn-modal-acao" type="button" style="background: #8a2be2; transition: 0.3s;">
-                    Agendar
-                </button>
+                <button id="btn-salvar-agenda" onclick="validarEAdicionar()" class="btn-modal-acao" type="button" style="background:#8a2be2; transition:0.3s;">Agendar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL DITOH -->
+    <div id="modal-dono" class="modal-dono-overlay">
+        <div class="modal-dono-card">
+            <div class="ditoh-core-orbital">
+                <div class="orbital-ring ring-1"></div>
+                <div class="orbital-ring ring-2"></div>
+                <div class="core-glow"><i data-lucide="zap" style="color:white; width:28px; height:28px; filter:drop-shadow(0 0 8px #8a2be2);"></i></div>
+            </div>
+            <h3 style="color:white; margin:0; font-size:26px; font-weight:900; letter-spacing:2px;">DITOH</h3>
+            <p style="color:#8a2be2; font-weight:bold; margin:5px 0 20px 0; font-size:12px; letter-spacing:4px; text-transform:uppercase;">Founder & Dev</p>
+            <div style="background:rgba(138,43,226,0.1); padding:20px; border-radius:20px; margin-bottom:25px; border-left:4px solid #8a2be2; text-align:left;">
+                <p style="color:#eee; font-size:13px; font-style:italic; line-height:1.6; margin:0;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."</p>
+            </div>
+            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-size:15px; margin-bottom:30px; background:rgba(255,255,255,0.05); padding:14px; border-radius:15px; border:1px solid rgba(138,43,226,0.2);">
+                <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i>
+                <span style="font-weight:600;">@wtfditoh</span>
+            </a>
+            <button onclick="fecharSobreDono()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; font-weight:900; cursor:pointer; text-transform:uppercase;">Voltar</button>
         </div>
     </div>
 
     <script src="menu.js"></script>
     <script type="module" src="agenda-logica.js"></script>
-    
     <script>
-        // MANTENDO TODA A SUA LÓGICA DE VALIDAÇÃO E INTERFACE
+        function abrirSobreDono() { document.getElementById('modal-dono').style.display='flex'; if(window.lucide) lucide.createIcons(); }
+        function fecharSobreDono() { document.getElementById('modal-dono').style.display='none'; }
+
         function validarEAdicionar() {
             const nomeInput = document.getElementById('tarefa-nome');
             const btn = document.getElementById('btn-salvar-agenda');
-            const textoOriginal = "Agendar";
-
             if (!nomeInput.value.trim()) {
                 btn.style.background = "#ff4444";
                 btn.innerText = "Preencha o título!";
                 nomeInput.classList.add('input-erro');
-
-                setTimeout(() => {
-                    btn.style.background = "#8a2be2";
-                    btn.innerText = textoOriginal;
-                    nomeInput.classList.remove('input-erro');
-                }, 2000);
+                setTimeout(() => { btn.style.background="#8a2be2"; btn.innerText="Agendar"; nomeInput.classList.remove('input-erro'); }, 2000);
                 return;
             }
-            if (typeof adicionarTarefa === "function") { adicionarTarefa(); }
+            if (typeof adicionarTarefa === "function") adicionarTarefa();
         }
 
         function ajustarInterface() {
-            const hojeBR = new Date().toLocaleDateString('pt-BR', {day: '2-digit'});
+            const hojeBR = new Date().toLocaleDateString('pt-BR', {day:'2-digit'});
             setTimeout(() => {
                 const todosOsDias = document.querySelectorAll('.calendar-day, .day, div[data-day]');
-                todosOsDias.forEach(quadrado => {
-                    quadrado.classList.remove('today', 'active', 'current');
-                    quadrado.style.border = "none";
-                    quadrado.style.background = "none";
-                    quadrado.style.color = "";
-
-                    if (quadrado.innerText.trim().padStart(2, '0') === hojeBR) {
-                        quadrado.style.border = "1px solid #8a2be2";
-                        quadrado.style.background = "rgba(138, 43, 226, 0.2)";
-                        quadrado.style.color = "#8a2be2";
-                        quadrado.style.fontWeight = "bold";
-                        quadrado.style.borderRadius = "8px";
+                todosOsDias.forEach(q => {
+                    q.classList.remove('today','active','current');
+                    q.style.border=q.style.background=q.style.color="";
+                    if (q.innerText.trim().padStart(2,'0')===hojeBR) {
+                        q.style.border="1px solid #8a2be2"; q.style.background="rgba(138,43,226,0.2)";
+                        q.style.color="#8a2be2"; q.style.fontWeight="bold"; q.style.borderRadius="8px";
                     }
                 });
-
-                const dataFormatada = new Date().toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'});
-                const elementoMes = document.getElementById('mes-topo');
-                if(elementoMes) elementoMes.innerText = dataFormatada.toUpperCase();
-                
+                const el = document.getElementById('mes-topo');
+                if(el) el.innerText = new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).toUpperCase();
                 if(window.lucide) lucide.createIcons();
             }, 400);
         }
 
         window.addEventListener('load', ajustarInterface);
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.btn-nav-clean')) {
-                setTimeout(ajustarInterface, 200);
-            }
-        });
+        document.addEventListener('click', (e) => { if(e.target.closest('.btn-nav-clean')) setTimeout(ajustarInterface,200); });
+        document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
     </script>
 </body>
 </html>
