@@ -275,6 +275,11 @@
             if (diff < -50 && atual > 0) { atual--; atualizarUI(); }
         });
 
+        // Fade de entrada
+        document.body.style.opacity = '0';
+        document.body.style.transition = 'opacity 0.3s ease';
+        setTimeout(function() { document.body.style.opacity = '1'; }, 50);
+
         atualizarUI();
         if (window.lucide) lucide.createIcons();
     </script>
