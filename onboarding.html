@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Brain - Bem-vindo!</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+        body {
+            background: #050508; color: white;
+            font-family: 'Inter', -apple-system, sans-serif;
+            min-height: 100svh; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* BOTÃO PULAR */
+        .btn-pular {
+            position: fixed; top: 20px; right: 20px;
+            background: none; border: none; color: #444;
+            font-size: 12px; font-weight: 700; letter-spacing: 1px;
+            cursor: pointer; z-index: 100; padding: 10px;
+            text-transform: uppercase;
+        }
+
+        /* CONTAINER DOS SLIDES */
+        .slides-wrapper {
+            flex: 1; display: flex; align-items: center;
+            overflow: hidden; position: relative;
+        }
+
+        .slides-track {
+            display: flex; width: 100%;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide {
+            min-width: 100vw; padding: 40px 32px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; gap: 20px;
+        }
+
+        /* ÍCONE DO SLIDE */
+        .slide-icon {
+            width: 100px; height: 100px;
+            background: rgba(138,43,226,0.1);
+            border: 1px solid rgba(138,43,226,0.3);
+            border-radius: 32px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 48px;
+            box-shadow: 0 0 40px rgba(138,43,226,0.2);
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+        @keyframes floatIcon {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .slide-badge {
+            font-size: 10px; font-weight: 800; letter-spacing: 3px;
+            color: #8a2be2; text-transform: uppercase;
+        }
+
+        .slide-title {
+            font-size: 28px; font-weight: 900;
+            line-height: 1.2; letter-spacing: -0.5px;
+        }
+
+        .slide-title span { color: #8a2be2; }
+
+        .slide-desc {
+            font-size: 15px; color: #555; line-height: 1.6;
+            font-weight: 500; max-width: 280px;
+        }
+
+        /* SLIDE FINAL */
+        .slide-final .slide-icon {
+            width: 120px; height: 120px; font-size: 56px;
+            background: rgba(138,43,226,0.15);
+            box-shadow: 0 0 60px rgba(138,43,226,0.3);
+        }
+
+        /* RODAPÉ */
+        .onboarding-footer {
+            padding: 24px 32px 48px;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 20px;
+        }
+
+        /* PONTOS DE PROGRESSO */
+        .dots {
+            display: flex; gap: 8px; align-items: center;
+        }
+        .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #222; transition: all 0.3s ease;
+        }
+        .dot.ativo {
+            width: 20px; border-radius: 10px;
+            background: #8a2be2;
+        }
+
+        /* BOTÕES */
+        .btn-proximo {
+            width: 100%; padding: 18px;
+            background: #8a2be2; border: none; border-radius: 18px;
+            color: white; font-size: 14px; font-weight: 900;
+            letter-spacing: 1px; cursor: pointer;
+            box-shadow: 0 4px 30px rgba(138,43,226,0.4);
+            transition: transform 0.15s;
+            text-transform: uppercase;
+        }
+        .btn-proximo:active { transform: scale(0.98); }
+
+        .btn-comecar {
+            width: 100%; padding: 18px;
+            background: linear-gradient(135deg, #8a2be2, #6a1cb2);
+            border: none; border-radius: 18px;
+            color: white; font-size: 14px; font-weight: 900;
+            letter-spacing: 2px; cursor: pointer;
+            box-shadow: 0 4px 40px rgba(138,43,226,0.5);
+            transition: transform 0.15s;
+            text-transform: uppercase;
+            display: none;
+        }
+        .btn-comecar:active { transform: scale(0.98); }
+
+        /* GLOW DE FUNDO */
+        .bg-glow {
+            position: fixed; pointer-events: none;
+            border-radius: 50%; filter: blur(80px);
+            opacity: 0.15; z-index: 0;
+        }
+        .bg-glow-1 { width: 300px; height: 300px; background: #8a2be2; top: -50px; right: -50px; }
+        .bg-glow-2 { width: 200px; height: 200px; background: #8a2be2; bottom: 100px; left: -50px; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <button class="btn-pular" onclick="pular()">Pular</button>
+
+    <div class="slides-wrapper">
+        <div class="slides-track" id="slides-track">
+
+            <!-- SLIDE 1 — BOAS VINDAS -->
+            <div class="slide">
+                <div class="slide-icon">🧠</div>
+                <span class="slide-badge">Bem-vindo ao</span>
+                <h1 class="slide-title">Hub <span>Brain</span></h1>
+                <p class="slide-desc">Seu app escolar inteligente. Organize, estude e suba no ranking.</p>
+            </div>
+
+            <!-- SLIDE 2 — NOTAS -->
+            <div class="slide">
+                <div class="slide-icon">📊</div>
+                <span class="slide-badge">Desempenho</span>
+                <h1 class="slide-title">Controle suas <span>Notas</span></h1>
+                <p class="slide-desc">Acompanhe suas notas por bimestre e veja seu aproveitamento em tempo real.</p>
+            </div>
+
+            <!-- SLIDE 3 — AGENDA -->
+            <div class="slide">
+                <div class="slide-icon">📋</div>
+                <span class="slide-badge">Organização</span>
+                <h1 class="slide-title">Nunca perca um <span>Prazo</span></h1>
+                <p class="slide-desc">Cadastre tarefas e provas. Receba notificações antes do vencimento.</p>
+            </div>
+
+            <!-- SLIDE 4 — MODO FOCO -->
+            <div class="slide">
+                <div class="slide-icon">⏱️</div>
+                <span class="slide-badge">Produtividade</span>
+                <h1 class="slide-title">Foco <span>Total</span></h1>
+                <p class="slide-desc">Timer com flip clock, histórico de sessões e meta diária de estudos.</p>
+            </div>
+
+            <!-- SLIDE 5 — RANKING -->
+            <div class="slide">
+                <div class="slide-icon">🏆</div>
+                <span class="slide-badge">Competição</span>
+                <h1 class="slide-title">Compete e <span>Evolui</span></h1>
+                <p class="slide-desc">Ganhe XP, suba no ranking global e desbloqueie conquistas exclusivas.</p>
+            </div>
+
+            <!-- SLIDE 6 — FINAL -->
+            <div class="slide slide-final" id="slide-final">
+                <div class="slide-icon">🚀</div>
+                <span class="slide-badge">Tudo pronto!</span>
+                <h1 class="slide-title" id="titulo-final">Bora, <span id="nome-final">estudante</span>!</h1>
+                <p class="slide-desc">O Hub Brain tá pronto pra te ajudar a dominar os estudos. Vamos nessa?</p>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="onboarding-footer">
+        <div class="dots" id="dots"></div>
+        <button class="btn-proximo" id="btn-proximo" onclick="proximo()">PRÓXIMO</button>
+        <button class="btn-comecar" id="btn-comecar" onclick="comecar()">VAMOS LÁ! 🚀</button>
+    </div>
+
+    <script>
+        const TOTAL = 6;
+        let atual = 0;
+
+        // Preenche nome no slide final
+        const nome = localStorage.getItem('dt_user_name') || 'Estudante';
+        const nomeEl = document.getElementById('nome-final');
+        if (nomeEl) nomeEl.innerText = nome.split(' ')[0];
+
+        // Cria os dots
+        const dotsEl = document.getElementById('dots');
+        for (let i = 0; i < TOTAL; i++) {
+            const d = document.createElement('div');
+            d.className = 'dot' + (i === 0 ? ' ativo' : '');
+            d.id = 'dot-' + i;
+            dotsEl.appendChild(d);
+        }
+
+        function atualizarUI() {
+            // Move o track
+            document.getElementById('slides-track').style.transform = `translateX(-${atual * 100}vw)`;
+
+            // Atualiza dots
+            for (let i = 0; i < TOTAL; i++) {
+                const d = document.getElementById('dot-' + i);
+                d.className = 'dot' + (i === atual ? ' ativo' : '');
+            }
+
+            // Mostra botão certo
+            const btnProx = document.getElementById('btn-proximo');
+            const btnCom = document.getElementById('btn-comecar');
+            if (atual === TOTAL - 1) {
+                btnProx.style.display = 'none';
+                btnCom.style.display = 'block';
+            } else {
+                btnProx.style.display = 'block';
+                btnCom.style.display = 'none';
+            }
+        }
+
+        function proximo() {
+            if (atual < TOTAL - 1) {
+                atual++;
+                atualizarUI();
+            }
+        }
+
+        function pular() {
+            concluir();
+        }
+
+        function comecar() {
+            concluir();
+        }
+
+        function concluir() {
+            localStorage.setItem('dt_onboarding_done', 'true');
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => { window.location.replace('index.html'); }, 300);
+        }
+
+        // Swipe para navegar
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+        document.addEventListener('touchend', (e) => {
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (diff > 50 && atual < TOTAL - 1) { atual++; atualizarUI(); }
+            if (diff < -50 && atual > 0) { atual--; atualizarUI(); }
+        });
+
+        atualizarUI();
+        if (window.lucide) lucide.createIcons();
+    </script>
+</body>
+</html>
