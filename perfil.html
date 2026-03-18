@@ -5,84 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Meu Perfil - Hub Brain</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="menu.css"> 
+    <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="perfil.css">
+    <link rel="stylesheet" href="transicoes.css">
     <style>
-        .perfil-header {
-            display: flex; align-items: center; width: 100%; padding: 0 20px;
-            height: 70px; box-sizing: border-box; background: #0a0a0a;
-            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
-            position: sticky; top: 0; z-index: 1000;
-        }
-        #open-menu {
-            background: rgba(255, 255, 255, 0.03); border: 1px solid #222; color: white;
-            padding: 10px; border-radius: 12px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .header-title {
-            position: absolute; left: 50%; transform: translateX(-50%);
-            margin: 0; font-size: 16px; letter-spacing: 2px; color: white; white-space: nowrap;
-        }
-        /* META DIÁRIA */
-        .meta-card {
-            background: #0e0e12; border: 1px solid rgba(138,43,226,0.15);
-            border-radius: 20px; padding: 20px; margin: 16px 0;
-            display: flex; flex-direction: column; gap: 14px;
-        }
-        .meta-header { display: flex; justify-content: space-between; align-items: center; }
-        .meta-title { font-size: 10px; font-weight: 800; letter-spacing: 2px; color: white; }
-        .meta-badge {
-            font-size: 10px; font-weight: 800; color: #8a2be2;
-            background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.2);
-            padding: 4px 10px; border-radius: 20px;
-        }
-        .meta-hint { font-size: 11px; color: #444; font-weight: 600; }
-        .meta-input-row { display: flex; align-items: center; justify-content: center; gap: 16px; }
-        .meta-input-group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .meta-input-group label { font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #333; }
-        .meta-stepper {
-            display: flex; align-items: center; gap: 14px;
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 14px; padding: 10px 16px;
-        }
-        .meta-stepper span { font-size: 32px; color: white; min-width: 36px; text-align: center; line-height: 1; font-weight: 800; }
-        .meta-btn { background: none; border: none; color: #555; font-size: 22px; font-weight: 800; cursor: pointer; padding: 4px 8px; transition: 0.15s; }
-        .meta-btn:active { color: #8a2be2; }
-        .meta-sep { font-size: 28px; font-weight: 900; color: #1a1a1a; margin-bottom: 20px; }
-        .meta-save-btn {
-            width: 100%; padding: 14px; background: #8a2be2; border: none; border-radius: 14px;
-            color: white; font-size: 12px; font-weight: 900; letter-spacing: 2px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: 0.2s; box-shadow: 0 4px 20px rgba(138,43,226,0.3);
-        }
-        .meta-save-btn:active { transform: scale(0.98); }
+        .glass-header { display:flex; align-items:center; justify-content:space-between; padding:0 15px; height:70px; background:rgba(10,10,10,0.9)!important; backdrop-filter:blur(15px); border-bottom:1px solid rgba(138,43,226,0.2); position:sticky; top:0; z-index:1000; }
+        .hub-logo-container { display:flex; align-items:center; gap:10px; cursor:pointer; transition:transform 0.1s; -webkit-tap-highlight-color:transparent; }
+        .hub-logo-container:active { transform:scale(0.92); }
+        .hub-logo-text { font-weight:900; font-size:19px; letter-spacing:1px; color:white; text-transform:uppercase; }
+        .hub-logo-text.purple { color:#8a2be2; text-shadow:0 0 10px rgba(138,43,226,0.3); }
+        .hub-symbol { background:rgba(138,43,226,0.1); padding:6px; border-radius:10px; border:1px solid rgba(138,43,226,0.3); display:flex; align-items:center; justify-content:center; animation:pulse-glow-logo 3s infinite ease-in-out; }
+        @keyframes pulse-glow-logo { 0%,100%{box-shadow:0 0 0px rgba(138,43,226,0);transform:scale(1);} 50%{box-shadow:0 0 15px rgba(138,43,226,0.4);transform:scale(1.05);} }
+        .meta-card { background:#0e0e12; border:1px solid rgba(138,43,226,0.15); border-radius:20px; padding:20px; margin:16px 0; display:flex; flex-direction:column; gap:14px; }
+        .meta-header { display:flex; justify-content:space-between; align-items:center; }
+        .meta-title { font-size:10px; font-weight:800; letter-spacing:2px; color:white; }
+        .meta-badge { font-size:10px; font-weight:800; color:#8a2be2; background:rgba(138,43,226,0.1); border:1px solid rgba(138,43,226,0.2); padding:4px 10px; border-radius:20px; }
+        .meta-hint { font-size:11px; color:#444; font-weight:600; }
+        .meta-input-row { display:flex; align-items:center; justify-content:center; gap:16px; }
+        .meta-input-group { display:flex; flex-direction:column; align-items:center; gap:8px; }
+        .meta-input-group label { font-size:9px; font-weight:800; letter-spacing:2px; color:#333; }
+        .meta-stepper { display:flex; align-items:center; gap:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:10px 16px; }
+        .meta-stepper span { font-size:32px; color:white; min-width:36px; text-align:center; line-height:1; font-weight:800; }
+        .meta-btn { background:none; border:none; color:#555; font-size:22px; font-weight:800; cursor:pointer; padding:4px 8px; transition:0.15s; }
+        .meta-btn:active { color:#8a2be2; }
+        .meta-sep { font-size:28px; font-weight:900; color:#1a1a1a; margin-bottom:20px; }
+        .meta-save-btn { width:100%; padding:14px; background:#8a2be2; border:none; border-radius:14px; color:white; font-size:12px; font-weight:900; letter-spacing:2px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s; box-shadow:0 4px 20px rgba(138,43,226,0.3); }
+        .meta-save-btn:active { transform:scale(0.98); }
+        .modal-dono-overlay { display:none; position:fixed; inset:0; align-items:center; justify-content:center; backdrop-filter:blur(25px) saturate(180%); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
+        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
+        .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
+        .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
+        .ring-1 { width:100%; height:100%; animation:spin-orb 2s linear infinite; opacity:0.6; }
+        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; opacity:0.8; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
+        @keyframes spin-orb { to{transform:rotate(360deg);} }
+        @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
+        .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
     </style>
 </head>
 <body>
-
     <div id="toast-container"></div>
 
-    <header class="perfil-header">
-        <button id="open-menu"><i data-lucide="menu"></i></button>
-        <h2 class="header-title">MEU <span class="purple">PERFIL</span></h2>
-        <div style="width: 44px;"></div>
+    <header class="glass-header">
+        <button id="open-menu" style="background:rgba(255,255,255,0.03); border:1px solid #222; color:white; padding:10px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+            <i data-lucide="menu"></i>
+        </button>
+        <div class="hub-logo-container" onclick="abrirSobreDono()">
+            <span class="hub-logo-text">Hub</span>
+            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2; width:22px; height:22px;"></i></div>
+            <span class="hub-logo-text purple">Brain</span>
+        </div>
+        <div style="width:44px;"></div>
     </header>
 
-    <div class="perfil-container" style="padding-top: 20px;">
+    <div class="perfil-container" style="padding-top:20px;">
         <div class="perfil-card">
             <div class="avatar-section">
-                <div class="avatar-wrapper">
-                    <i data-lucide="user" id="avatar-icon"></i>
-                </div>
+                <div class="avatar-wrapper"><i data-lucide="user" id="avatar-icon"></i></div>
                 <button class="btn-edit-photo" onclick="window.abrirGaleria()">
                     <i data-lucide="camera" style="width:16px;"></i>
                 </button>
             </div>
-
             <div class="id-badge-container">
                 <p class="user-id-display" id="display-id">Carregando...</p>
             </div>
-
             <div class="form-group">
                 <label>COMO QUERES SER CHAMADO?</label>
                 <div class="input-wrapper">
@@ -91,7 +77,6 @@
                 </div>
                 <p class="hint">Este nome aparecerá no Ranking Global.</p>
             </div>
-
             <button id="btn-salvar-perfil" class="btn-save">
                 <i data-lucide="check-circle"></i> SALVAR ALTERAÇÕES
             </button>
@@ -111,10 +96,8 @@
                     <span id="meta-arrow" style="font-size:18px; color:#555; transition:transform 0.3s, color 0.3s;">↓</span>
                 </div>
             </div>
-
             <div id="meta-controls" style="display:none;">
                 <p class="meta-hint" style="margin-bottom:14px;">Quantas horas você quer estudar por dia?</p>
-
                 <div class="meta-input-row">
                     <div class="meta-input-group">
                         <label>HORAS</label>
@@ -134,21 +117,38 @@
                         </div>
                     </div>
                 </div>
-
                 <button class="meta-save-btn" id="btn-salvar-meta" style="margin-top:14px;">
                     <i data-lucide="check" style="width:16px;"></i> SALVAR META
                 </button>
             </div>
         </div>
 
-        <div id="area-conquistas" style="margin: 16px 0;"></div>
-
-        <!-- CONQUISTAS -->
         <div id="area-conquistas"></div>
 
         <button onclick="window.logout()" class="btn-logout">
             <i data-lucide="log-out"></i> SAIR DA CONTA
         </button>
+    </div>
+
+    <!-- MODAL DITOH -->
+    <div id="modal-dono" class="modal-dono-overlay">
+        <div class="modal-dono-card">
+            <div class="ditoh-core-orbital">
+                <div class="orbital-ring ring-1"></div>
+                <div class="orbital-ring ring-2"></div>
+                <div class="core-glow"><i data-lucide="zap" style="color:white; width:28px; height:28px; filter:drop-shadow(0 0 8px #8a2be2);"></i></div>
+            </div>
+            <h3 style="color:white; margin:0; font-size:26px; font-weight:900; letter-spacing:2px;">DITOH</h3>
+            <p style="color:#8a2be2; font-weight:bold; margin:5px 0 20px 0; font-size:12px; letter-spacing:4px; text-transform:uppercase;">Founder & Dev</p>
+            <div style="background:rgba(138,43,226,0.1); padding:20px; border-radius:20px; margin-bottom:25px; border-left:4px solid #8a2be2; text-align:left;">
+                <p style="color:#eee; font-size:13px; font-style:italic; line-height:1.6; margin:0;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."</p>
+            </div>
+            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-size:15px; margin-bottom:30px; background:rgba(255,255,255,0.05); padding:14px; border-radius:15px; border:1px solid rgba(138,43,226,0.2);">
+                <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i>
+                <span style="font-weight:600;">@wtfditoh</span>
+            </a>
+            <button onclick="fecharSobreDono()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; font-weight:900; cursor:pointer; text-transform:uppercase;">Voltar</button>
+        </div>
     </div>
 
     <div id="modal-avatar" class="modal-avatar-overlay" style="display:none;">
@@ -176,6 +176,8 @@
     <script src="menu.js"></script>
     <script type="module" src="perfil-logica.js"></script>
     <script>
+        function abrirSobreDono() { document.getElementById('modal-dono').style.display='flex'; if(window.lucide) lucide.createIcons(); }
+        function fecharSobreDono() { document.getElementById('modal-dono').style.display='none'; }
         window.onload = () => { if(window.lucide) lucide.createIcons(); };
     </script>
 </body>
