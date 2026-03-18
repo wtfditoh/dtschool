@@ -4,81 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Grade Horária - Hub Brain</title>
-    
     <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="grade-estilo.css">
-    
+    <link rel="stylesheet" href="transicoes.css">
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-          appId: "f73275cd-17ad-4963-a25b-321ce2def2ba",
-        });
+        await OneSignal.init({ appId: "f73275cd-17ad-4963-a25b-321ce2def2ba" });
       });
     </script>
-
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Padronização do Header Hub Brain */
-        .glass-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; height: 70px; background: #0a0a0a !important;
-            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
-            position: sticky; top: 0; z-index: 1000;
-        }
-        .hub-logo-container { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .hub-logo-text { font-weight: 900; font-size: 19px; color: white; text-transform: uppercase; }
-        .hub-logo-text.purple { color: #8a2be2; }
-        
-        .btn-notif { background: none; border: none; color: #8a2be2; cursor: pointer; padding: 10px; transition: 0.3s; }
-        .btn-notif:active { transform: scale(0.8); color: white; }
-        
-        /* Botão de Ajuda Geral */
-        .btn-ajuda-geral {
-            background: rgba(138, 43, 226, 0.1);
-            border: 1px solid rgba(138, 43, 226, 0.4);
-            color: #b388ff;
-            padding: 12px;
-            border-radius: 15px;
-            margin: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn-ajuda-geral:active { transform: scale(0.95); background: rgba(138, 43, 226, 0.2); }
+        .glass-header { display:flex; align-items:center; justify-content:space-between; padding:0 15px; height:70px; background:rgba(10,10,10,0.9)!important; backdrop-filter:blur(15px); border-bottom:1px solid rgba(138,43,226,0.2); position:sticky; top:0; z-index:1000; }
+        .hub-logo-container { display:flex; align-items:center; gap:10px; cursor:pointer; transition:transform 0.1s; -webkit-tap-highlight-color:transparent; }
+        .hub-logo-container:active { transform:scale(0.92); }
+        .hub-logo-text { font-weight:900; font-size:19px; letter-spacing:1px; color:white; text-transform:uppercase; }
+        .hub-logo-text.purple { color:#8a2be2; text-shadow:0 0 10px rgba(138,43,226,0.3); }
+        .hub-symbol { background:rgba(138,43,226,0.1); padding:6px; border-radius:10px; border:1px solid rgba(138,43,226,0.3); display:flex; align-items:center; justify-content:center; animation:pulse-glow-logo 3s infinite ease-in-out; }
+        @keyframes pulse-glow-logo { 0%,100%{box-shadow:0 0 0px rgba(138,43,226,0);transform:scale(1);} 50%{box-shadow:0 0 15px rgba(138,43,226,0.4);transform:scale(1.05);} }
+        .btn-notif { background:none; border:none; color:#8a2be2; cursor:pointer; padding:10px; transition:0.3s; }
+        .btn-notif:active { transform:scale(0.8); color:white; }
+        .btn-ajuda-geral { background:rgba(138,43,226,0.1); border:1px solid rgba(138,43,226,0.4); color:#b388ff; padding:12px; border-radius:15px; margin:15px; display:flex; align-items:center; justify-content:center; gap:10px; font-size:13px; font-weight:600; cursor:pointer; transition:0.3s; }
+        .btn-ajuda-geral:active { transform:scale(0.95); background:rgba(138,43,226,0.2); }
+        .modal-dono-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; backdrop-filter:blur(25px) saturate(180%); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
+        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
+        .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
+        .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
+        .ring-1 { width:100%; height:100%; animation:spin-orb 2s linear infinite; opacity:0.6; }
+        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; opacity:0.8; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
+        @keyframes spin-orb { to{transform:rotate(360deg);} }
+        @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
+        .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
     </style>
 </head>
 <body class="bg-dark">
 
     <header class="glass-header">
-        <button id="open-menu" class="btn-menu">
-            <i data-lucide="menu"></i>
-        </button>
-
-        <div class="hub-logo-container">
+        <button id="open-menu" class="btn-menu"><i data-lucide="menu"></i></button>
+        <div class="hub-logo-container" onclick="abrirSobreDono()">
             <span class="hub-logo-text">Hub</span>
-            <i data-lucide="brain-circuit" style="color: #8a2be2; width: 22px;"></i>
+            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2; width:22px; height:22px;"></i></div>
             <span class="hub-logo-text purple">Brain</span>
         </div>
-
         <button onclick="ativarNotificacoesReal()" class="btn-notif" title="Ativar Notificações">
             <i data-lucide="bell"></i>
         </button>
     </header>
 
     <div class="grade-container">
-        
         <div class="btn-ajuda-geral" onclick="abrirAjudaBateria()">
             <i data-lucide="help-circle" style="width:18px;"></i>
             Notificações não chegam? Toque aqui.
         </div>
-
         <div class="dias-scroll">
             <button class="btn-dia active" data-dia="segunda" onclick="selecionarDia('segunda')">SEG</button>
             <button class="btn-dia" data-dia="terca" onclick="selecionarDia('terca')">TER</button>
@@ -86,24 +65,18 @@
             <button class="btn-dia" data-dia="quinta" onclick="selecionarDia('quinta')">QUI</button>
             <button class="btn-dia" data-dia="sexta" onclick="selecionarDia('sexta')">SEX</button>
         </div>
-
         <div id="lista-aulas" class="lista-aulas"></div>
-
-        <button class="fab-add-aula" onclick="abrirModalAula()">
-            <i data-lucide="plus"></i>
-        </button>
+        <button class="fab-add-aula" onclick="abrirModalAula()"><i data-lucide="plus"></i></button>
     </div>
 
-    <div id="modal-aula" class="modal-grade" style="display: none;">
+    <div id="modal-aula" class="modal-grade" style="display:none;">
         <div class="modal-content-grade">
             <h3 style="margin:0 0 20px 0; color:#8a2be2; text-align:center; font-weight:800;">Agendar Aula</h3>
-            
             <label class="label-input">TURNO</label>
             <select id="aula-turno" class="input-grade">
                 <option value="matutino">Manhã (Matutino)</option>
                 <option value="vespertino" selected>Tarde (Vespertino)</option>
             </select>
-
             <label class="label-input">QUAL AULA?</label>
             <select id="aula-numero" class="input-grade">
                 <option value="0">1ª Aula (Início)</option>
@@ -113,22 +86,13 @@
                 <option value="4">5ª Aula</option>
                 <option value="5">6ª Aula (Final)</option>
             </select>
-
             <label class="label-input">MATÉRIA DAS NOTAS</label>
-            <select id="aula-materia-select" class="input-grade">
-                <option value="">Carregando matérias...</option>
-            </select>
-            
+            <select id="aula-materia-select" class="input-grade"><option value="">Carregando matérias...</option></select>
             <label class="label-input">OU DIGITE O NOME</label>
             <input type="text" id="aula-materia-custom" class="input-grade" placeholder="Nome da matéria...">
-
             <label class="label-input">PROFESSOR (OPCIONAL)</label>
             <input type="text" id="aula-prof" class="input-grade" placeholder="Ex: Prof. Silva">
-
-            <div id="erro-modal" style="display:none; color:#ff4444; font-size:11px; text-align:center; font-weight:bold; margin-bottom:15px;">
-                ⚠️ Selecione ou digite a matéria!
-            </div>
-
+            <div id="erro-modal" style="display:none; color:#ff4444; font-size:11px; text-align:center; font-weight:bold; margin-bottom:15px;">⚠️ Selecione ou digite a matéria!</div>
             <div class="modal-btns">
                 <button onclick="fecharModalAula()" class="btn-cancelar">Cancelar</button>
                 <button id="btn-salvar-aula" onclick="salvarAula()" class="btn-salvar">Agendar</button>
@@ -136,31 +100,31 @@
         </div>
     </div>
 
-    <div id="modal-ajuda-bateria" class="modal-grade" style="display: none;">
+    <div id="modal-ajuda-bateria" class="modal-grade" style="display:none;">
         <div class="modal-content-grade">
             <h3 style="color:#8a2be2; text-align:center; margin-bottom:15px;">Dicas de Notificação 🔔</h3>
             <p style="color:white; font-size:13px; line-height:1.6; margin-bottom:15px;">Para o Hub Brain te avisar mesmo com o app fechado:</p>
             <div style="text-align:left; background:rgba(255,255,255,0.05); padding:15px; border-radius:12px;">
-                <p style="color:#b388ff; font-size:12px; font-weight:bold; margin-bottom:5px;">No Android (Geral):</p>
-                <p style="color:#bbb; font-size:11px; margin-bottom:10px;">Vá em Configurações > Apps > Hub Brain > Bateria > <b>Sem Restrições</b>.</p>
+                <p style="color:#b388ff; font-size:12px; font-weight:bold; margin-bottom:5px;">No Android:</p>
+                <p style="color:#bbb; font-size:11px; margin-bottom:10px;">Configurações > Apps > Hub Brain > Bateria > <b>Sem Restrições</b>.</p>
                 <p style="color:#b388ff; font-size:12px; font-weight:bold; margin-bottom:5px;">No iPhone:</p>
-                <p style="color:#bbb; font-size:11px; margin-bottom:10px;">Toque no ícone de "Compartilhar" e selecione <b>"Adicionar à Tela de Início"</b>.</p>
+                <p style="color:#bbb; font-size:11px; margin-bottom:10px;">Ícone "Compartilhar" > <b>"Adicionar à Tela de Início"</b>.</p>
                 <p style="color:#b388ff; font-size:12px; font-weight:bold; margin-bottom:5px;">Permissão:</p>
-                <p style="color:#bbb; font-size:11px;">Certifique-se de que o <b>sino</b> no topo da página foi clicado e aceito.</p>
+                <p style="color:#bbb; font-size:11px;">Certifique-se de que o <b>sino</b> foi clicado e aceito.</p>
             </div>
             <button onclick="fecharAjudaBateria()" class="btn-salvar" style="width:100%; margin-top:20px;">Entendi, valeu!</button>
         </div>
     </div>
 
-    <div id="modal-confirm-excluir" class="modal-grade" style="display: none;">
+    <div id="modal-confirm-excluir" class="modal-grade" style="display:none;">
         <div class="modal-content-grade" style="text-align:center;">
-            <div style="background:rgba(255,68,68,0.1); width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 15px auto;">
+            <div style="background:rgba(255,68,68,0.1); width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px auto;">
                 <i data-lucide="trash-2" style="color:#ff4444; width:30px; height:30px;"></i>
             </div>
             <h3 style="margin:0 0 10px 0; color:white;">Remover aula?</h3>
             <div class="modal-btns">
                 <button onclick="fecharModalExcluir()" class="btn-cancelar">Não</button>
-                <button id="btn-confirmar-delete" class="btn-salvar" style="background:#ff4444 !important;">Apagar</button>
+                <button id="btn-confirmar-delete" class="btn-salvar" style="background:#ff4444!important;">Apagar</button>
             </div>
         </div>
     </div>
@@ -170,16 +134,35 @@
         <span id="toast-message">Notificações Ativadas!</span>
     </div>
 
+    <!-- MODAL DITOH -->
+    <div id="modal-dono" class="modal-dono-overlay">
+        <div class="modal-dono-card">
+            <div class="ditoh-core-orbital">
+                <div class="orbital-ring ring-1"></div>
+                <div class="orbital-ring ring-2"></div>
+                <div class="core-glow"><i data-lucide="zap" style="color:white; width:28px; height:28px; filter:drop-shadow(0 0 8px #8a2be2);"></i></div>
+            </div>
+            <h3 style="color:white; margin:0; font-size:26px; font-weight:900; letter-spacing:2px;">DITOH</h3>
+            <p style="color:#8a2be2; font-weight:bold; margin:5px 0 20px 0; font-size:12px; letter-spacing:4px; text-transform:uppercase;">Founder & Dev</p>
+            <div style="background:rgba(138,43,226,0.1); padding:20px; border-radius:20px; margin-bottom:25px; border-left:4px solid #8a2be2; text-align:left;">
+                <p style="color:#eee; font-size:13px; font-style:italic; line-height:1.6; margin:0;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."</p>
+            </div>
+            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-size:15px; margin-bottom:30px; background:rgba(255,255,255,0.05); padding:14px; border-radius:15px; border:1px solid rgba(138,43,226,0.2);">
+                <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i>
+                <span style="font-weight:600;">@wtfditoh</span>
+            </a>
+            <button onclick="fecharSobreDono()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; font-weight:900; cursor:pointer; text-transform:uppercase;">Voltar</button>
+        </div>
+    </div>
+
     <script src="menu.js"></script>
     <script type="module" src="grade-logica.js"></script>
     <script>
-        // Funções de interface global
-        window.abrirAjudaBateria = () => document.getElementById('modal-ajuda-bateria').style.display = 'flex';
-        window.fecharAjudaBateria = () => document.getElementById('modal-ajuda-bateria').style.display = 'none';
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if(window.lucide) lucide.createIcons();
-        });
+        function abrirSobreDono() { document.getElementById('modal-dono').style.display='flex'; if(window.lucide) lucide.createIcons(); }
+        function fecharSobreDono() { document.getElementById('modal-dono').style.display='none'; }
+        window.abrirAjudaBateria = () => document.getElementById('modal-ajuda-bateria').style.display='flex';
+        window.fecharAjudaBateria = () => document.getElementById('modal-ajuda-bateria').style.display='none';
+        document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
     </script>
 </body>
 </html>
