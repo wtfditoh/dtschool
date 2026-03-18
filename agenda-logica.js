@@ -192,7 +192,11 @@ window.carregarTarefas = (filtroData = null) => {
         return;
     }
 
-    tarefas.sort((a, b) => (a.concluida === b.concluida) ? 0 : a.concluida ? 1 : -1);
+    tarefas.sort((a, b) => {
+        if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
+        if (!a.concluida && !b.concluida) return new Date(a.dataFim) - new Date(b.dataFim);
+        return 0;
+    });
 
     lista.innerHTML = tarefas.map(t => {
         const fim = new Date(t.dataFim + "T00:00:00");
@@ -403,4 +407,4 @@ window.fecharModalAgenda = () => {
     document.getElementById('preview-container').innerHTML = "";
     imagemBase64 = ""; 
 };
-                                  
+              
