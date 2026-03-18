@@ -7,64 +7,79 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="ranking.css">
+    <link rel="stylesheet" href="transicoes.css">
+    <style>
+        .glass-header { display:flex; align-items:center; justify-content:space-between; padding:0 15px; height:70px; background:rgba(10,10,10,0.9)!important; backdrop-filter:blur(15px); border-bottom:1px solid rgba(138,43,226,0.2); position:sticky; top:0; z-index:1000; }
+        .hub-logo-container { display:flex; align-items:center; gap:10px; cursor:pointer; transition:transform 0.1s; -webkit-tap-highlight-color:transparent; }
+        .hub-logo-container:active { transform:scale(0.92); }
+        .hub-logo-text { font-weight:900; font-size:19px; letter-spacing:1px; color:white; text-transform:uppercase; }
+        .hub-logo-text.purple { color:#8a2be2; text-shadow:0 0 10px rgba(138,43,226,0.3); }
+        .hub-symbol { background:rgba(138,43,226,0.1); padding:6px; border-radius:10px; border:1px solid rgba(138,43,226,0.3); display:flex; align-items:center; justify-content:center; animation:pulse-glow-logo 3s infinite ease-in-out; }
+        @keyframes pulse-glow-logo { 0%,100%{box-shadow:0 0 0px rgba(138,43,226,0);transform:scale(1);} 50%{box-shadow:0 0 15px rgba(138,43,226,0.4);transform:scale(1.05);} }
+        .modal-dono-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; backdrop-filter:blur(25px) saturate(180%); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
+        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
+        .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
+        .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
+        .ring-1 { width:100%; height:100%; animation:spin-orb 2s linear infinite; opacity:0.6; }
+        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; opacity:0.8; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
+        @keyframes spin-orb { to{transform:rotate(360deg);} }
+        @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
+        .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
+    </style>
 </head>
 <body>
 
-    <header class="ranking-header">
-        <button id="open-menu">
-            <i data-lucide="menu"></i>
+    <header class="glass-header">
+        <button id="open-menu"><i data-lucide="menu"></i></button>
+        <div class="hub-logo-container" onclick="abrirSobreDono()">
+            <span class="hub-logo-text">Hub</span>
+            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2; width:22px; height:22px;"></i></div>
+            <span class="hub-logo-text purple">Brain</span>
+        </div>
+        <button class="btn-help-floating" onclick="abrirAjudaXP()" style="background:none; border:none; color:#8a2be2; cursor:pointer; padding:8px;">
+            <i data-lucide="help-circle"></i>
         </button>
-        <h1 class="header-title">RANKING <span class="purple">GLOBAL</span></h1>
-        <div style="width: 44px;"></div> 
     </header>
-
-    <button class="btn-help-floating" onclick="abrirAjudaXP()">
-        <i data-lucide="help-circle"></i>
-    </button>
 
     <div id="modal-xp" class="modal-xp-overlay" style="display:none;">
         <div class="modal-xp-card">
             <div class="xp-header">
-                <i data-lucide="zap" class="purple" style="width: 32px; height: 32px;"></i>
+                <i data-lucide="zap" class="purple" style="width:32px; height:32px;"></i>
                 <h3>SISTEMA DE <span class="purple">PONTUAÇÃO</span></h3>
                 <p>Regras oficiais para dominar o topo.</p>
             </div>
-            
             <div class="xp-rules-scroll">
                 <div class="xp-section">
                     <div class="xp-tag">📊 DESEMPENHO ACADÊMICO</div>
-                    <div class="rule-box pos"><span>+100</span> <p>Nota 10: Excelência.</p></div>
-                    <div class="rule-box pos"><span>+50</span> <p>Nota 8.0 a 9.9.</p></div>
-                    <div class="rule-box pos"><span>+20</span> <p>Nota 6.0 a 7.9.</p></div>
-                    <div class="rule-box neg"><span>-20</span> <p>Nota 4.0 a 5.9.</p></div>
-                    <div class="rule-box neg"><span>-50</span> <p>Nota abaixo de 3.9.</p></div>
+                    <div class="rule-box pos"><span>+100</span><p>Nota 10: Excelência.</p></div>
+                    <div class="rule-box pos"><span>+50</span><p>Nota 8.0 a 9.9.</p></div>
+                    <div class="rule-box pos"><span>+20</span><p>Nota 6.0 a 7.9.</p></div>
+                    <div class="rule-box neg"><span>-20</span><p>Nota 4.0 a 5.9.</p></div>
+                    <div class="rule-box neg"><span>-50</span><p>Nota abaixo de 3.9.</p></div>
                 </div>
-
                 <div class="xp-section">
                     <div class="xp-tag">🤖 SIMULADOS COM IA</div>
-                    <div class="rule-box pos"><span>+150</span> <p>Gabarito (10/10).</p></div>
-                    <div class="rule-box pos"><span>+60</span> <p>7 a 9 acertos.</p></div>
-                    <div class="rule-box neg"><span>-30</span> <p>3 a 4 acertos.</p></div>
-                    <div class="rule-box neg"><span>-80</span> <p>0 a 2 acertos.</p></div>
+                    <div class="rule-box pos"><span>+150</span><p>Gabarito (10/10).</p></div>
+                    <div class="rule-box pos"><span>+60</span><p>7 a 9 acertos.</p></div>
+                    <div class="rule-box neg"><span>-30</span><p>3 a 4 acertos.</p></div>
+                    <div class="rule-box neg"><span>-80</span><p>0 a 2 acertos.</p></div>
                 </div>
-
                 <div class="xp-section">
                     <div class="xp-tag">📅 AGENDA E ROTINA</div>
-                    <div class="rule-box pos"><span>+15</span> <p>Atividade Concluída.</p></div>
-                    <div class="rule-box pos"><span>+40</span> <p>Horário Montado.</p></div>
-                    <div class="rule-box neg"><span>-25</span> <p>Atraso/Procrastinação.</p></div>
+                    <div class="rule-box pos"><span>+15</span><p>Atividade Concluída.</p></div>
+                    <div class="rule-box pos"><span>+40</span><p>Horário Montado.</p></div>
+                    <div class="rule-box neg"><span>-25</span><p>Atraso/Procrastinação.</p></div>
                 </div>
-
                 <div class="xp-section">
                     <div class="xp-tag">🎖️ AS PATENTES</div>
-                    <div class="patente-item"><span>0 - 500</span> <p>Novato 🟢</p></div>
-                    <div class="patente-item"><span>501 - 1500</span> <p>Estudioso 🔵</p></div>
-                    <div class="patente-item"><span>1501 - 4000</span> <p>Veterano 🟣</p></div>
-                    <div class="patente-item"><span>4001 - 8000</span> <p>Elite ⚡</p></div>
-                    <div class="patente-item"><span>+8000</span> <p>Lenda do Hub 🏆</p></div>
+                    <div class="patente-item"><span>0 - 500</span><p>Novato 🟢</p></div>
+                    <div class="patente-item"><span>501 - 1500</span><p>Estudioso 🔵</p></div>
+                    <div class="patente-item"><span>1501 - 4000</span><p>Veterano 🟣</p></div>
+                    <div class="patente-item"><span>4001 - 8000</span><p>Elite ⚡</p></div>
+                    <div class="patente-item"><span>+8000</span><p>Lenda do Hub 🏆</p></div>
                 </div>
             </div>
-
             <button onclick="fecharAjudaXP()" class="btn-close-modal">ENTENDIDO!</button>
         </div>
     </div>
@@ -76,7 +91,6 @@
                 <p class="p-name" id="p2-name">---</p>
                 <div class="p-xp silver"><span id="p2-score">0</span> XP</div>
             </div>
-
             <div class="podium-slot first">
                 <div class="avatar-frame top" id="avatar-p1">
                     <i data-lucide="crown" class="crown-icon"></i>
@@ -85,24 +99,46 @@
                 <p class="p-name" id="p1-name">---</p>
                 <div class="p-xp gold"><span id="p1-score">0</span> XP</div>
             </div>
-
             <div class="podium-slot third">
                 <div class="avatar-frame" id="avatar-p3"><i data-lucide="user"></i></div>
                 <p class="p-name" id="p3-name">---</p>
                 <div class="p-xp bronze"><span id="p3-score">0</span> XP</div>
             </div>
         </div>
-
         <div class="ranking-list-container" id="lista-ranking">
             <div class="loading">Sincronizando...</div>
+        </div>
+    </div>
+
+    <!-- MODAL DITOH -->
+    <div id="modal-dono" class="modal-dono-overlay">
+        <div class="modal-dono-card">
+            <div class="ditoh-core-orbital">
+                <div class="orbital-ring ring-1"></div>
+                <div class="orbital-ring ring-2"></div>
+                <div class="core-glow"><i data-lucide="zap" style="color:white; width:28px; height:28px; filter:drop-shadow(0 0 8px #8a2be2);"></i></div>
+            </div>
+            <h3 style="color:white; margin:0; font-size:26px; font-weight:900; letter-spacing:2px;">DITOH</h3>
+            <p style="color:#8a2be2; font-weight:bold; margin:5px 0 20px 0; font-size:12px; letter-spacing:4px; text-transform:uppercase;">Founder & Dev</p>
+            <div style="background:rgba(138,43,226,0.1); padding:20px; border-radius:20px; margin-bottom:25px; border-left:4px solid #8a2be2; text-align:left;">
+                <p style="color:#eee; font-size:13px; font-style:italic; line-height:1.6; margin:0;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."</p>
+            </div>
+            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-size:15px; margin-bottom:30px; background:rgba(255,255,255,0.05); padding:14px; border-radius:15px; border:1px solid rgba(138,43,226,0.2);">
+                <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i>
+                <span style="font-weight:600;">@wtfditoh</span>
+            </a>
+            <button onclick="fecharSobreDono()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; font-weight:900; cursor:pointer; text-transform:uppercase;">Voltar</button>
         </div>
     </div>
 
     <script src="menu.js"></script>
     <script type="module" src="ranking-logica.js"></script>
     <script>
-        window.abrirAjudaXP = () => { document.getElementById('modal-xp').style.display = 'flex'; lucide.createIcons(); }
-        window.fecharAjudaXP = () => { document.getElementById('modal-xp').style.display = 'none'; }
+        function abrirSobreDono() { document.getElementById('modal-dono').style.display='flex'; if(window.lucide) lucide.createIcons(); }
+        function fecharSobreDono() { document.getElementById('modal-dono').style.display='none'; }
+        window.abrirAjudaXP = () => { document.getElementById('modal-xp').style.display='flex'; lucide.createIcons(); }
+        window.fecharAjudaXP = () => { document.getElementById('modal-xp').style.display='none'; }
+        document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
     </script>
 </body>
 </html>
