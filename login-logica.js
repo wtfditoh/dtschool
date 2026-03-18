@@ -24,22 +24,17 @@ const inputPass = document.getElementById('user-pass');
 const pupils = document.querySelectorAll('.pupil');
 const checkManter = document.getElementById('manter-conectado');
 
-// FUNÇÃO DE MENSAGENS (ERRO OU SUCESSO)
 function avisar(msg, tipo = "erro") {
     if (!status) return;
-    
     status.innerText = (tipo === "erro" ? "⚠ " : "✓ ") + msg;
     status.classList.remove('sucesso');
-    
     if (tipo === "sucesso") {
         status.classList.add('sucesso');
     } else {
         if (card) card.classList.add('shake-error');
         if (monster) monster.classList.add('angry');
     }
-
     status.style.opacity = "1";
-
     setTimeout(() => {
         status.style.opacity = "0";
         if (monster) monster.classList.remove('angry');
@@ -47,7 +42,6 @@ function avisar(msg, tipo = "erro") {
     }, 1500);
 }
 
-// OLHOS DO MONSTRO
 document.addEventListener('mousemove', (e) => {
     if (monster && !monster.classList.contains('shame') && !monster.classList.contains('angry')) {
         let x = (e.clientX / window.innerWidth - 0.5) * 15;
@@ -62,7 +56,7 @@ if (inputEmail && inputPass) {
     [inputEmail, inputPass].forEach(el => el.addEventListener('blur', () => monster.classList.remove('looking', 'shame')));
 }
 
-// LOGIN - AJUSTADO PARA SALVAR EMAIL E TIPO
+// LOGIN — vai direto pra home
 window.tentarLogar = async (e) => {
     if (e) e.preventDefault();
     const email = inputEmail.value.trim();
@@ -73,22 +67,18 @@ window.tentarLogar = async (e) => {
         await signOut(auth);
         const persistencia = (checkManter && checkManter.checked) ? browserLocalPersistence : browserSessionPersistence;
         await setPersistence(auth, persistencia);
-        
         const res = await signInWithEmailAndPassword(auth, email, pass);
-        
         localStorage.setItem('dt_user_name', res.user.displayName || "Estudante");
         localStorage.setItem('dt_user_email', email.toLowerCase());
-        localStorage.setItem('dt_user_type', 'google'); 
-        
-        // --- CIRURGIA: Redirecionando para a Home ---
+        localStorage.setItem('dt_user_type', 'google');
         window.location.replace('index.html');
-    } catch (error) { 
+    } catch (error) {
         console.error(error);
-        avisar("E-mail ou senha inválidos!"); 
+        avisar("E-mail ou senha inválidos!");
     }
 };
 
-// CADASTRO - AJUSTADO PARA SALVAR EMAIL E TIPO
+// CADASTRO — vai pro onboarding na primeira vez
 window.realizarCadastro = async (e) => {
     if (e) e.preventDefault();
     const nomeInput = document.getElementById('user-name');
@@ -96,29 +86,28 @@ window.realizarCadastro = async (e) => {
     const email = inputEmail.value.trim();
     const pass = inputPass.value;
 
-    if (!nome || !email || !pass) {
-        return avisar("Preencha todos os campos!");
-    }
+    if (!nome || !email || !pass) return avisar("Preencha todos os campos!");
 
     try {
         const res = await createUserWithEmailAndPassword(auth, email, pass);
         await updateProfile(res.user, { displayName: nome });
-        
+
         localStorage.setItem('dt_user_name', nome);
         localStorage.setItem('dt_user_email', email.toLowerCase());
         localStorage.setItem('dt_user_type', 'google');
+        localStorage.removeItem('dt_onboarding_done'); // garante que o onboarding aparece
 
         await setDoc(doc(db, "notas", email.toLowerCase()), {
-            nome: nome, 
-            xp: 0, 
-            avatar: "user", 
-            materias: [], 
-            email: email.toLowerCase(), 
+            nome: nome,
+            xp: 0,
+            avatar: "user",
+            materias: [],
+            email: email.toLowerCase(),
             criadoEm: serverTimestamp()
         });
-        
-        // --- CIRURGIA: Redirecionando para a Home ---
-        window.location.replace('index.html');
+
+        // Vai pro onboarding após cadastro
+        window.location.replace('onboarding.html');
     } catch (error) {
         console.error(error);
         avisar("Erro ao criar conta. E-mail já existe?");
@@ -129,7 +118,6 @@ window.realizarCadastro = async (e) => {
 window.executarRecuperacao = async () => {
     const email = inputEmail.value.trim();
     if (!email) return avisar("Digite o e-mail primeiro!");
-
     try {
         await sendPasswordResetEmail(auth, email);
         avisar("Link enviado! Olhe seu e-mail.", "sucesso");
@@ -139,9 +127,8 @@ window.executarRecuperacao = async () => {
 };
 
 window.entrarComoVisitante = () => {
-    localStorage.clear(); 
+    localStorage.clear();
     localStorage.setItem('dt_user_name', 'Visitante');
     localStorage.setItem('dt_user_type', 'local');
-    // --- CIRURGIA: Redirecionando para a Home ---
     window.location.replace('index.html');
 };
