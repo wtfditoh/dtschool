@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -16,11 +16,118 @@ const db = getFirestore(app);
 const emailMestre = "ditoh2008@gmail.com";
 const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
 
-function gerarFraseIA() {
-    const v = ["Evolua", "Conquiste", "Domine", "Foque em", "Acelere", "Supere"];
-    const m = ["seu futuro", "os estudos", "o ranking", "sua rotina", "seus sonhos", "seus limites"];
-    const emojis = ["🚀", "🧠", "🔥", "✨", "🎯", "⚡"];
-    return `${v[Math.floor(Math.random()*v.length)]} ${m[Math.floor(Math.random()*m.length)]} ${emojis[Math.floor(Math.random()*emojis.length)]}`;
+// ==========================================
+// WIDGET DE MOTIVAÇÃO INTELIGENTE
+// ==========================================
+function gerarFraseInteligente(ctx) {
+    const hora = new Date().getHours();
+    const nome = ctx.nome.split(' ')[0];
+    const temMeta = ctx.metaMin > 0;
+    const metaBatida = ctx.pctMeta >= 100;
+    const quaseNaMeta = ctx.pctMeta >= 70 && ctx.pctMeta < 100;
+    const semEstudo = ctx.estudadoHoje === 0;
+    const temTarefas = ctx.tarefasPendentes > 0;
+    const streak = ctx.streak;
+    const rank = ctx.rankPos;
+    const xp = ctx.xp;
+
+    // Banco de frases por contexto
+    const frases = [];
+
+    // META BATIDA
+    if (metaBatida) {
+        frases.push(...[
+            `🎯 Meta batida, ${nome}! Você é imparável hoje.`,
+            `🔥 ${nome}, meta concluída! Que dia absurdo de foco.`,
+            `🏆 Missão cumprida, ${nome}! Agora descansa ou vai além?`,
+            `⚡ Meta no bolso, ${nome}! O ranking vai sentir isso.`,
+        ]);
+    }
+
+    // QUASE NA META
+    else if (quaseNaMeta && temMeta) {
+        const faltaStr = formatarTempo(ctx.metaMin - ctx.estudadoHoje);
+        frases.push(...[
+            `💪 Quase lá, ${nome}! Faltam só ${faltaStr} pra bater a meta.`,
+            `⚡ ${nome}, ${faltaStr} e você zera a meta hoje!`,
+            `🎯 Reta final, ${nome}! ${faltaStr} de foco e acabou.`,
+        ]);
+    }
+
+    // SEM ESTUDO + TEM META
+    else if (semEstudo && temMeta && hora >= 12) {
+        frases.push(...[
+            `😴 Dia parado, ${nome}? A meta tá te esperando.`,
+            `⏰ ${nome}, o dia tá passando e a meta tá zerada.`,
+            `🧠 ${nome}, uma sessão rápida de foco já muda o dia.`,
+        ]);
+    }
+
+    // STREAK
+    if (streak >= 7) {
+        frases.push(...[
+            `🔥 ${streak} dias seguidos, ${nome}! Isso é consistência de verdade.`,
+            `⚡ ${nome}, ${streak} dias sem parar. Você tá em chamas!`,
+        ]);
+    } else if (streak >= 3) {
+        frases.push(`🔥 ${streak} dias seguidos, ${nome}! Não para agora.`);
+    }
+
+    // RANKING
+    if (rank === 1) {
+        frases.push(...[
+            `👑 Líder do ranking, ${nome}! Defende o trono.`,
+            `🏆 ${nome}, você tá no topo. Mas alguém tá de olho.`,
+        ]);
+    } else if (rank <= 3) {
+        frases.push(`🥇 Top 3, ${nome}! O 1º lugar tá ao alcance.`);
+    } else if (rank <= 10) {
+        frases.push(`📈 Top 10, ${nome}! Você tá subindo forte.`);
+    }
+
+    // TAREFAS PENDENTES
+    if (temTarefas) {
+        frases.push(...[
+            `📋 ${nome}, você tem ${ctx.tarefasPendentes} tarefa${ctx.tarefasPendentes > 1 ? 's' : ''} pendente${ctx.tarefasPendentes > 1 ? 's' : ''} hoje.`,
+            `⏳ ${nome}, não deixa a agenda virar bola de neve.`,
+        ]);
+    }
+
+    // XP MILESTONES
+    if (xp >= 1000 && xp < 1100) {
+        frases.push(`🎉 ${nome}, você passou de 1000 XP! Que evolução.`);
+    } else if (xp >= 500 && xp < 600) {
+        frases.push(`⚡ ${nome}, meio caminho andado pro Veterano!`);
+    }
+
+    // HORÁRIO DO DIA (fallback)
+    if (hora >= 5 && hora < 12) {
+        frases.push(...[
+            `🌅 Bom dia, ${nome}! Quem começa cedo sai na frente.`,
+            `☀️ ${nome}, a manhã é sua. Aproveita!`,
+            `🧠 Bom dia, ${nome}! O cérebro tá fresco. Bora estudar.`,
+        ]);
+    } else if (hora >= 12 && hora < 18) {
+        frases.push(...[
+            `⚡ Boa tarde, ${nome}! Foco total agora.`,
+            `📚 ${nome}, tarde produtiva começa com uma decisão.`,
+            `🎯 ${nome}, a tarde é longa. Usa ela bem.`,
+        ]);
+    } else if (hora >= 18 && hora < 23) {
+        frases.push(...[
+            `🌙 Boa noite, ${nome}! Ainda dá tempo de estudar.`,
+            `🔥 ${nome}, final de dia. Vai fechar com chave de ouro?`,
+            `⭐ ${nome}, o dia não acabou ainda. Bora!`,
+        ]);
+    } else {
+        frases.push(...[
+            `🌙 ${nome}, você ainda tá aqui? Dedicação total!`,
+            `🦉 Madrugada de estudos, ${nome}? Isso é nível elite.`,
+        ]);
+    }
+
+    // Escolhe uma frase aleatória do banco gerado
+    return frases[Math.floor(Math.random() * frases.length)];
 }
 
 const formatarTempo = (min) => {
@@ -31,16 +138,17 @@ const formatarTempo = (min) => {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Interface Básica
-    const fraseEl = document.getElementById('frase-ia');
-    if(fraseEl) fraseEl.innerText = gerarFraseIA();
-    
+    // 1. Interface básica
     const nome = localStorage.getItem('dt_user_name') || "ESTUDANTE";
     const nomeDisplay = document.getElementById('user-display-name');
-    if(nomeDisplay) nomeDisplay.innerText = nome.split(' ')[0].toUpperCase();
-    
+    if (nomeDisplay) nomeDisplay.innerText = nome.split(' ')[0].toUpperCase();
+
     const dataEl = document.getElementById('current-date');
-    if(dataEl) dataEl.innerText = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
+    if (dataEl) dataEl.innerText = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
+
+    // Frase simples enquanto carrega os dados
+    const fraseEl = document.getElementById('frase-ia');
+    if (fraseEl) fraseEl.innerText = '...';
 
     // 2. Status de Manutenção
     onSnapshot(doc(db, "config", "status_sistema"), (s) => {
@@ -51,62 +159,97 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 3. Busca de XP + Meta
+    // 3. Busca de dados do usuário
     if (emailLogado) {
         try {
             const userSnap = await getDoc(doc(db, "notas", emailLogado));
             if (userSnap.exists()) {
                 const dados = userSnap.data();
+                const xp = dados.xp || 0;
 
-                // XP
+                // XP display
                 const xpDisplay = document.getElementById('xp-display');
-                if(xpDisplay) xpDisplay.innerText = `+${dados.xp || 0} XP`;
+                if (xpDisplay) xpDisplay.innerText = `+${xp} XP`;
+
+                // Dados pra frase inteligente
+                const historico = dados.historico_foco || [];
+                const hoje = new Date().toISOString().split('T')[0];
+                const estudadoHoje = historico.filter(s => s.data === hoje).reduce((a, s) => a + s.minutos, 0);
+                const metaMin = dados.meta_minutos || 0;
+                const pctMeta = metaMin > 0 ? Math.min(Math.round((estudadoHoje / metaMin) * 100), 100) : 0;
+
+                // Streak
+                let streak = 0;
+                const dias = [...new Set(historico.map(s => s.data))].sort().reverse();
+                let dCheck = new Date();
+                for (const dia of dias) {
+                    if (dia === dCheck.toISOString().split('T')[0]) { streak++; dCheck.setDate(dCheck.getDate() - 1); }
+                    else break;
+                }
+
+                // Rank (busca posição no ranking)
+                let rankPos = 999;
+                try {
+                    const rankSnap = await getDocs(collection(db, "notas"));
+                    const todos = [];
+                    rankSnap.forEach(d => { if (d.data().email) todos.push({ id: d.data().email.toLowerCase(), xp: d.data().xp || 0 }); });
+                    todos.sort((a, b) => b.xp - a.xp);
+                    const pos = todos.findIndex(u => u.id === emailLogado);
+                    if (pos !== -1) rankPos = pos + 1;
+                } catch(e) {}
+
+                // Tarefas pendentes hoje (aproximação local)
+                const tarefasPendentes = 0; // sem busca extra pro Firestore
+
+                // Gera frase inteligente com contexto completo
+                if (fraseEl) {
+                    fraseEl.innerText = gerarFraseInteligente({
+                        nome, metaMin, estudadoHoje, pctMeta,
+                        streak, rankPos, xp, tarefasPendentes
+                    });
+                }
 
                 // META DIÁRIA
-                const metaMin = dados.meta_minutos || 0;
                 if (metaMin > 0) {
-                    const historico = dados.historico_foco || [];
-                    const hoje = new Date().toISOString().split('T')[0];
-                    const estudadoHoje = historico
-                        .filter(s => s.data === hoje)
-                        .reduce((a, s) => a + s.minutos, 0);
-
                     const section = document.getElementById('meta-progress-section');
                     if (section) section.style.display = 'block';
 
-                    const pct = Math.min(Math.round((estudadoHoje / metaMin) * 100), 100);
                     const fill = document.getElementById('meta-progress-fill');
                     const falta = metaMin - estudadoHoje;
 
-                    document.getElementById('meta-progress-time').innerText =
-                        formatarTempo(estudadoHoje) + ' de ' + formatarTempo(metaMin);
-                    document.getElementById('meta-progress-pct').innerText = pct + '%';
-                    if (fill) fill.style.width = pct + '%';
+                    document.getElementById('meta-progress-time').innerText = formatarTempo(estudadoHoje) + ' de ' + formatarTempo(metaMin);
+                    document.getElementById('meta-progress-pct').innerText = pctMeta + '%';
+                    if (fill) fill.style.width = pctMeta + '%';
 
-                    if (pct >= 100) {
-                        // Meta batida — mostra botão de compartilhar
+                    if (pctMeta >= 100) {
                         if (fill) fill.classList.add('completa');
                         document.getElementById('meta-progress-falta').innerText = 'Meta batida! 🎉';
                         document.getElementById('meta-progress-falta').style.color = '#00c851';
-
                         const shareBtn = document.getElementById('meta-share-btn');
                         if (shareBtn) {
                             shareBtn.style.display = 'flex';
                             shareBtn.onclick = () => compartilharMeta(estudadoHoje, metaMin);
                         }
                     } else {
-                        // Meta não batida — botão escondido
-                        document.getElementById('meta-progress-falta').innerText =
-                            falta > 0 ? 'Faltam ' + formatarTempo(falta) : 'Bora estudar! 💪';
+                        document.getElementById('meta-progress-falta').innerText = falta > 0 ? 'Faltam ' + formatarTempo(falta) : 'Bora estudar! 💪';
                         const shareBtn = document.getElementById('meta-share-btn');
                         if (shareBtn) shareBtn.style.display = 'none';
                     }
                 }
+            } else {
+                // Sem dados — frase genérica por horário
+                if (fraseEl) fraseEl.innerText = gerarFraseInteligente({ nome, metaMin: 0, estudadoHoje: 0, pctMeta: 0, streak: 0, rankPos: 999, xp: 0, tarefasPendentes: 0 });
             }
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            if (fraseEl) fraseEl.innerText = gerarFraseInteligente({ nome, metaMin: 0, estudadoHoje: 0, pctMeta: 0, streak: 0, rankPos: 999, xp: 0, tarefasPendentes: 0 });
+        }
+    } else {
+        // Sem login — frase genérica
+        if (fraseEl) fraseEl.innerText = gerarFraseInteligente({ nome, metaMin: 0, estudadoHoje: 0, pctMeta: 0, streak: 0, rankPos: 999, xp: 0, tarefasPendentes: 0 });
     }
 
-    // 4. LÓGICA DO MURAL DINÂMICO
+    // 4. MURAL DINÂMICO
     onSnapshot(doc(db, "config", "mural"), (snap) => {
         if (snap.exists()) {
             const d = snap.data();
@@ -122,30 +265,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
 
             const corAtual = cores[d.cor] || cores.purple;
-            if(preview) preview.innerText = d.texto;
+            if (preview) preview.innerText = d.texto;
 
-            if(cardMural && d.texto !== "Nenhum aviso no momento.") {
+            if (cardMural && d.texto !== "Nenhum aviso no momento.") {
                 cardMural.classList.add('mural-animado');
                 cardMural.style.setProperty('--glow-color', corAtual.shadow);
                 cardMural.style.setProperty('--border-color', corAtual.hex);
-                if(iconMural) iconMural.style.color = corAtual.hex;
-                if(strongMural) strongMural.style.color = corAtual.hex;
+                if (iconMural) iconMural.style.color = corAtual.hex;
+                if (strongMural) strongMural.style.color = corAtual.hex;
             } else if (cardMural) {
                 cardMural.classList.remove('mural-animado');
                 cardMural.style.borderColor = "#1a1a1a";
-                if(iconMural) iconMural.style.color = "#8a2be2";
-                if(strongMural) strongMural.style.color = "white";
+                if (iconMural) iconMural.style.color = "#8a2be2";
+                if (strongMural) strongMural.style.color = "white";
             }
 
-            if(cardMural) {
+            if (cardMural) {
                 cardMural.onclick = () => {
                     const modal = document.getElementById('modal-mural');
                     const msg = document.getElementById('mural-msg');
                     if (modal && msg) {
                         msg.innerHTML = `
-                            <p style="white-space: pre-wrap; word-break: break-word; color: #eee; line-height: 1.6; text-align: left;">${d.texto}</p>
-                            <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; text-align: right;">
-                                <small style="color:${corAtual.hex}; font-weight:bold; text-transform: uppercase;">BY: ${d.autor}</small>
+                            <p style="white-space:pre-wrap; word-break:break-word; color:#eee; line-height:1.6; text-align:left;">${d.texto}</p>
+                            <div style="margin-top:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:15px; text-align:right;">
+                                <small style="color:${corAtual.hex}; font-weight:bold; text-transform:uppercase;">BY: ${d.autor}</small>
                             </div>
                         `;
                         modal.style.display = 'flex';
@@ -235,3 +378,4 @@ window.compartilharMeta = async function(estudadoHoje, metaMin) {
         } catch(e) { console.error(e); }
     }, 300);
 };
+        
