@@ -1,5 +1,7 @@
 /* TRANSIÇÕES ENTRE PÁGINAS */
-body {
+
+/* Fade de entrada — só aplica depois que a splash sumiu */
+body.pronto {
     animation: fadeIn 0.3s ease;
 }
 
@@ -8,7 +10,7 @@ body {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Fade de saída ao clicar em links */
+/* Fade de saída ao navegar */
 body.saindo {
     opacity: 0;
     transform: translateY(-6px);
