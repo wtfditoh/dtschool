@@ -10,14 +10,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="icon-514.png">
     <link rel="stylesheet" href="home.css">
-    <link rel="stylesheet" href="transicoes.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        #custom-splash {
-            position:fixed; inset:0; background:#000; z-index:9999999;
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
-            opacity:1; visibility:visible; transition:opacity 0.8s ease, visibility 0.8s;
-        }
+        #custom-splash { position:fixed; inset:0; background:#000; z-index:9999999; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:1; visibility:visible; transition:opacity 0.8s ease, visibility 0.8s; }
         .splash-content { text-align:center; }
         .brain-logo-wrapper { position:relative; margin-bottom:25px; }
         #custom-splash i[data-lucide="brain-circuit"] { width:80px; height:80px; color:#8a2be2; filter:drop-shadow(0 0 10px #8a2be2); animation:pulseLogoGlow 2s infinite ease-in-out; }
@@ -28,28 +23,16 @@
         @keyframes pulseLogoGlow { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.1);opacity:0.7;} }
         @keyframes textTrackingIn { 0%{letter-spacing:-5px;opacity:0;} 100%{letter-spacing:10px;opacity:1;} }
         .splash-hidden { opacity:0!important; visibility:hidden!important; pointer-events:none; }
-
         #global-alert { background:linear-gradient(90deg,#8a2be2,#4b0082); color:white; padding:12px; text-align:center; font-size:13px; font-weight:600; display:none; align-items:center; justify-content:center; gap:10px; z-index:2000; position:relative; }
         #manutencao-screen { display:none; position:fixed; inset:0; background:#080808; z-index:20000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px; }
         @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
         @keyframes progress-run { 0%{transform:translateX(-100%);} 100%{transform:translateX(250%);} }
-
-        .user-avatar { width:42px; height:42px; border-radius:50%; background:rgba(138,43,226,0.1); border:1px solid rgba(138,43,226,0.3); display:flex; align-items:center; justify-content:center; overflow:hidden; }
         .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:30000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); }
-        .modal-card { background:#16161a; padding:25px; border-radius:25px; width:100%; max-width:400px; text-align:center; border:1px solid rgba(138,43,226,0.3); }
-
-        /* HEADER PADRÃO */
-        .glass-header { display:flex; align-items:center; justify-content:space-between; padding:0 15px; height:70px; background:rgba(10,10,10,0.9)!important; backdrop-filter:blur(15px); border-bottom:1px solid rgba(138,43,226,0.2); position:sticky; top:0; z-index:1000; }
-        .hub-logo-container { display:flex; align-items:center; gap:10px; cursor:pointer; transition:transform 0.1s; -webkit-tap-highlight-color:transparent; }
-        .hub-logo-container:active { transform:scale(0.92); }
-        .hub-logo-text { font-weight:900; font-size:19px; letter-spacing:1px; color:white; text-transform:uppercase; }
-        .hub-logo-text.purple { color:#8a2be2; text-shadow:0 0 10px rgba(138,43,226,0.3); }
-        .hub-symbol { background:rgba(138,43,226,0.1); padding:6px; border-radius:10px; border:1px solid rgba(138,43,226,0.3); display:flex; align-items:center; justify-content:center; animation:pulse-glow-logo 3s infinite ease-in-out; }
-        @keyframes pulse-glow-logo { 0%,100%{box-shadow:0 0 0px rgba(138,43,226,0);transform:scale(1);} 50%{box-shadow:0 0 15px rgba(138,43,226,0.4);transform:scale(1.05);} }
+        .modal-card-mural { background:#16161a; padding:25px; border-radius:25px; width:100%; max-width:400px; text-align:center; border:1px solid rgba(138,43,226,0.3); }
 
         /* MODAL DITOH */
         .modal-dono-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; backdrop-filter:blur(25px) saturate(180%); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
-        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5),0 0 20px rgba(138,43,226,0.2); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
         @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
         .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
         .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
@@ -59,12 +42,12 @@
         @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
         .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
 
-        /* EASTER EGG MODO DEUS */
+        /* EASTER EGG */
         #easter-overlay { display:none; position:fixed; inset:0; background:#000; z-index:999999; align-items:center; justify-content:center; flex-direction:column; gap:20px; }
         #easter-overlay.ativo { display:flex; animation:easterIn 0.5s ease; }
         @keyframes easterIn { from{opacity:0;} to{opacity:1;} }
         .easter-particles { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
-        .particle { position:absolute; width:6px; height:6px; border-radius:50%; background:#8a2be2; animation:particleFall linear infinite; }
+        .particle { position:absolute; border-radius:50%; background:#8a2be2; animation:particleFall linear infinite; }
         @keyframes particleFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
     </style>
 </head>
@@ -97,7 +80,7 @@
         </div>
     </div>
 
-    <!-- EASTER EGG MODO DEUS -->
+    <!-- EASTER EGG -->
     <div id="easter-overlay">
         <div class="easter-particles" id="easter-particles"></div>
         <i data-lucide="brain-circuit" style="width:80px; height:80px; color:#8a2be2; filter:drop-shadow(0 0 20px #8a2be2); animation:pulseLogoGlow 1s infinite; position:relative; z-index:1;"></i>
@@ -109,7 +92,7 @@
     </div>
 
     <header class="glass-header">
-        <div style="width:40px;"></div>
+        <div style="width:42px;"></div>
         <div class="hub-logo-container" id="logo-home" onclick="abrirSobreDono()">
             <span class="hub-logo-text">Hub</span>
             <div class="hub-symbol">
@@ -213,7 +196,7 @@
     </main>
 
     <div id="modal-mural" class="modal-overlay">
-        <div class="modal-card">
+        <div class="modal-card-mural">
             <h3 style="color:white">Aviso Importante</h3>
             <div id="mural-msg" style="margin:20px 0; color:#bbb; font-size:14px; line-height:1.5;"></div>
             <button onclick="document.getElementById('modal-mural').style.display='none'" style="width:100%; padding:12px; background:#8a2be2; border:none; border-radius:12px; color:white; font-weight:bold;">FECHAR</button>
@@ -233,9 +216,7 @@
             <h3 style="color:white; margin:0; font-size:26px; font-weight:900; letter-spacing:2px;">DITOH</h3>
             <p style="color:#8a2be2; font-weight:bold; margin:5px 0 20px 0; font-size:12px; letter-spacing:4px; text-transform:uppercase;">Founder & Dev</p>
             <div style="background:rgba(138,43,226,0.1); padding:20px; border-radius:20px; margin-bottom:25px; border-left:4px solid #8a2be2; text-align:left;">
-                <p style="color:#eee; font-size:13px; font-style:italic; line-height:1.6; margin:0;">
-                    "O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."
-                </p>
+                <p style="color:#eee; font-size:13px; font-style:italic; line-height:1.6; margin:0;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."</p>
             </div>
             <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-size:15px; margin-bottom:30px; background:rgba(255,255,255,0.05); padding:14px; border-radius:15px; border:1px solid rgba(138,43,226,0.2);">
                 <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i>
@@ -249,46 +230,48 @@
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('OneSignalSDKWorker.js')
-          .then(() => console.log('SW ativo!'))
-          .catch(err => console.log('Erro no SW:', err));
+          .then(function() { console.log('SW ativo!'); })
+          .catch(function(err) { console.log('Erro no SW:', err); });
       }
 
-      window.addEventListener('load', () => {
-        let progress = 0;
-        const bar = document.getElementById('splash-bar');
-        const splash = document.getElementById('custom-splash');
-        const interval = setInterval(() => {
+      window.addEventListener('load', function() {
+        var progress = 0;
+        var bar = document.getElementById('splash-bar');
+        var splash = document.getElementById('custom-splash');
+        var interval = setInterval(function() {
           progress += 20;
           if (bar) bar.style.width = progress + '%';
           if (progress >= 100) {
             clearInterval(interval);
-            setTimeout(() => { if (splash) splash.classList.add('splash-hidden'); document.body.classList.add('pronto'); }, 600);
+            setTimeout(function() {
+              if (splash) splash.classList.add('splash-hidden');
+            }, 600);
           }
         }, 250);
-        if(window.lucide) lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
       });
 
-      // NAVEGAÇÃO COM FADE
       function navegarPara(url) {
         document.body.classList.add('saindo');
-        setTimeout(() => { window.location.href = url; }, 250);
+        setTimeout(function() { window.location.href = url; }, 250);
       }
 
-      // MODAL DITOH
       function abrirSobreDono() {
         document.getElementById('modal-dono').style.display = 'flex';
-        if(window.lucide) lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
       }
+
       function fecharSobreDono() {
         document.getElementById('modal-dono').style.display = 'none';
       }
 
       // EASTER EGG 1 — 7x no logo
-      let logoClicks = 0, logoTimer;
-      document.getElementById('logo-home').addEventListener('click', () => {
+      var logoClicks = 0;
+      var logoTimer;
+      document.getElementById('logo-home').addEventListener('click', function() {
         logoClicks++;
         clearTimeout(logoTimer);
-        logoTimer = setTimeout(() => { logoClicks = 0; }, 2000);
+        logoTimer = setTimeout(function() { logoClicks = 0; }, 2000);
         if (logoClicks >= 7) {
           logoClicks = 0;
           ativarModoDeus();
@@ -296,26 +279,51 @@
       });
 
       function ativarModoDeus() {
-        const overlay = document.getElementById('easter-overlay');
-        const container = document.getElementById('easter-particles');
+        var overlay = document.getElementById('easter-overlay');
+        var container = document.getElementById('easter-particles');
         container.innerHTML = '';
-        for (let i = 0; i < 30; i++) {
-          const p = document.createElement('div');
+        for (var i = 0; i < 30; i++) {
+          var p = document.createElement('div');
           p.className = 'particle';
-          p.style.left = Math.random() * 100 + 'vw';
+          p.style.left = (Math.random() * 100) + 'vw';
           p.style.animationDuration = (Math.random() * 2 + 1) + 's';
           p.style.animationDelay = (Math.random() * 2) + 's';
-          p.style.width = p.style.height = (Math.random() * 8 + 4) + 'px';
-          p.style.opacity = Math.random() * 0.8 + 0.2;
+          var size = (Math.random() * 8 + 4) + 'px';
+          p.style.width = size;
+          p.style.height = size;
           container.appendChild(p);
         }
         overlay.classList.add('ativo');
-        if(window.lucide) lucide.createIcons();
-        setTimeout(() => { overlay.classList.remove('ativo'); }, 4000);
+        if (window.lucide) lucide.createIcons();
+        setTimeout(function() { overlay.classList.remove('ativo'); }, 4000);
       }
 
-      // EASTER EGG 2 — 5x no rodapé
-      let rodapeClicks = 0, rodapeTimer;
-      const rodape = document.getElementById('rodape-home');
-      if (rodape) {
-        rodape.addEventListener('click', (e) =
+      // EASTER EGG 2 — 5x no rodapé home
+      var rodapeClicks = 0;
+      var rodapeTimer;
+      document.getElementById('rodape-home').addEventListener('click', function(e) {
+        if (e.target.tagName === 'A') return;
+        rodapeClicks++;
+        clearTimeout(rodapeTimer);
+        rodapeTimer = setTimeout(function() { rodapeClicks = 0; }, 2000);
+        if (rodapeClicks >= 5) {
+          rodapeClicks = 0;
+          abrirSobreDono();
+        }
+      });
+
+      // EASTER EGG 3 — 5x no rodapé manutenção
+      var manClicks = 0;
+      var manTimer;
+      document.getElementById('rodape-manutencao').addEventListener('click', function() {
+        manClicks++;
+        clearTimeout(manTimer);
+        manTimer = setTimeout(function() { manClicks = 0; }, 2000);
+        if (manClicks >= 5) {
+          manClicks = 0;
+          abrirSobreDono();
+        }
+      });
+    </script>
+</body>
+</html>
