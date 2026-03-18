@@ -31,16 +31,16 @@ function gerarFraseInteligente(ctx) {
     const rank = ctx.rankPos;
     const xp = ctx.xp;
 
-    // Banco de frases por contexto
+    // Banco de frases por contexto — curtas e sem caps
     const frases = [];
 
     // META BATIDA
     if (metaBatida) {
         frases.push(...[
-            `🎯 Meta batida, ${nome}! Você é imparável hoje.`,
-            `🔥 ${nome}, meta concluída! Que dia absurdo de foco.`,
-            `🏆 Missão cumprida, ${nome}! Agora descansa ou vai além?`,
-            `⚡ Meta no bolso, ${nome}! O ranking vai sentir isso.`,
+            `🎯 Meta batida, ${nome}!`,
+            `🔥 Foco total hoje, ${nome}!`,
+            `🏆 Missão cumprida, ${nome}!`,
+            `⚡ Meta no bolso, ${nome}!`,
         ]);
     }
 
@@ -48,81 +48,73 @@ function gerarFraseInteligente(ctx) {
     else if (quaseNaMeta && temMeta) {
         const faltaStr = formatarTempo(ctx.metaMin - ctx.estudadoHoje);
         frases.push(...[
-            `💪 Quase lá, ${nome}! Faltam só ${faltaStr} pra bater a meta.`,
-            `⚡ ${nome}, ${faltaStr} e você zera a meta hoje!`,
-            `🎯 Reta final, ${nome}! ${faltaStr} de foco e acabou.`,
+            `💪 Faltam ${faltaStr} pra meta, ${nome}!`,
+            `⚡ Reta final, ${nome}! Só ${faltaStr}.`,
+            `🎯 Quase lá, ${nome}!`,
         ]);
     }
 
     // SEM ESTUDO + TEM META
     else if (semEstudo && temMeta && hora >= 12) {
         frases.push(...[
-            `😴 Dia parado, ${nome}? A meta tá te esperando.`,
-            `⏰ ${nome}, o dia tá passando e a meta tá zerada.`,
-            `🧠 ${nome}, uma sessão rápida de foco já muda o dia.`,
+            `😴 Meta zerada ainda, ${nome}.`,
+            `⏰ Bora começar, ${nome}?`,
+            `🧠 Uma sessão muda o dia, ${nome}.`,
         ]);
     }
 
     // STREAK
     if (streak >= 7) {
         frases.push(...[
-            `🔥 ${streak} dias seguidos, ${nome}! Isso é consistência de verdade.`,
-            `⚡ ${nome}, ${streak} dias sem parar. Você tá em chamas!`,
+            `🔥 ${streak} dias seguidos, ${nome}!`,
+            `⚡ ${nome}, você tá em chamas!`,
         ]);
     } else if (streak >= 3) {
-        frases.push(`🔥 ${streak} dias seguidos, ${nome}! Não para agora.`);
+        frases.push(`🔥 ${streak} dias seguidos, ${nome}!`);
     }
 
     // RANKING
     if (rank === 1) {
         frases.push(...[
-            `👑 Líder do ranking, ${nome}! Defende o trono.`,
-            `🏆 ${nome}, você tá no topo. Mas alguém tá de olho.`,
+            `👑 Líder do ranking, ${nome}!`,
+            `🏆 ${nome}, defende o trono!`,
         ]);
     } else if (rank <= 3) {
-        frases.push(`🥇 Top 3, ${nome}! O 1º lugar tá ao alcance.`);
+        frases.push(`🥇 Top 3, ${nome}! Bora pro 1º!`);
     } else if (rank <= 10) {
-        frases.push(`📈 Top 10, ${nome}! Você tá subindo forte.`);
-    }
-
-    // TAREFAS PENDENTES
-    if (temTarefas) {
-        frases.push(...[
-            `📋 ${nome}, você tem ${ctx.tarefasPendentes} tarefa${ctx.tarefasPendentes > 1 ? 's' : ''} pendente${ctx.tarefasPendentes > 1 ? 's' : ''} hoje.`,
-            `⏳ ${nome}, não deixa a agenda virar bola de neve.`,
-        ]);
+        frases.push(`📈 Top 10, ${nome}!`);
     }
 
     // XP MILESTONES
     if (xp >= 1000 && xp < 1100) {
-        frases.push(`🎉 ${nome}, você passou de 1000 XP! Que evolução.`);
+        frases.push(`🎉 Passou de 1000 XP, ${nome}!`);
     } else if (xp >= 500 && xp < 600) {
-        frases.push(`⚡ ${nome}, meio caminho andado pro Veterano!`);
+        frases.push(`⚡ Quase Veterano, ${nome}!`);
     }
 
     // HORÁRIO DO DIA (fallback)
     if (hora >= 5 && hora < 12) {
         frases.push(...[
-            `🌅 Bom dia, ${nome}! Quem começa cedo sai na frente.`,
-            `☀️ ${nome}, a manhã é sua. Aproveita!`,
-            `🧠 Bom dia, ${nome}! O cérebro tá fresco. Bora estudar.`,
+            `🌅 Bom dia, ${nome}!`,
+            `☀️ Manhã sua, ${nome}. Aproveita!`,
+            `🧠 Cérebro fresco, ${nome}. Bora!`,
         ]);
     } else if (hora >= 12 && hora < 18) {
         frases.push(...[
-            `⚡ Boa tarde, ${nome}! Foco total agora.`,
-            `📚 ${nome}, tarde produtiva começa com uma decisão.`,
-            `🎯 ${nome}, a tarde é longa. Usa ela bem.`,
+            `⚡ Boa tarde, ${nome}!`,
+            `📚 Foco total, ${nome}!`,
+            `🎯 A tarde é sua, ${nome}!`,
         ]);
     } else if (hora >= 18 && hora < 23) {
         frases.push(...[
-            `🌙 Boa noite, ${nome}! Ainda dá tempo de estudar.`,
-            `🔥 ${nome}, final de dia. Vai fechar com chave de ouro?`,
-            `⭐ ${nome}, o dia não acabou ainda. Bora!`,
+            `🌙 Boa noite, ${nome}!`,
+            `🔥 Fecha o dia forte, ${nome}!`,
+            `⭐ Ainda dá tempo, ${nome}!`,
         ]);
     } else {
         frases.push(...[
-            `🌙 ${nome}, você ainda tá aqui? Dedicação total!`,
-            `🦉 Madrugada de estudos, ${nome}? Isso é nível elite.`,
+            `🦉 Madrugada, ${nome}? Nível elite!`,
+            `🌙 ${nome}, dedicação total!`,
         ]);
     }
 
@@ -378,4 +370,4 @@ window.compartilharMeta = async function(estudadoHoje, metaMin) {
         } catch(e) { console.error(e); }
     }, 300);
 };
-        
+                    
