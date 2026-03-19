@@ -12,66 +12,39 @@
     <link rel="stylesheet" href="home.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        #custom-splash {
-            position: fixed; inset: 0; background: #000000; z-index: 9999999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 1; visibility: visible; transition: opacity 0.8s ease, visibility 0.8s;
-        }
-        .splash-content { text-align: center; }
-        .brain-logo-wrapper { position: relative; margin-bottom: 25px; }
-        #custom-splash i[data-lucide="brain-circuit"] {
-            width: 80px; height: 80px; color: #8a2be2;
-            filter: drop-shadow(0 0 10px #8a2be2);
-            animation: pulseLogoGlow 2s infinite ease-in-out;
-        }
-        .splash-title {
-            color: #ffffff; font-size: 24px; font-weight: 900; text-transform: uppercase;
-            margin-bottom: 25px; letter-spacing: -2px; opacity: 0;
-            animation: textTrackingIn 1.5s cubic-bezier(0.215, 0.610, 0.355, 1.000) 0.3s forwards;
-        }
-        .splash-title span { color: #8a2be2; }
-        .loading-bar-container {
-            width: 160px; height: 3px; background: rgba(255,255,255,0.05);
-            border-radius: 10px; overflow: hidden; margin: 0 auto;
-        }
-        #splash-bar { height: 100%; width: 0%; background: #8a2be2; box-shadow: 0 0 15px #8a2be2; border-radius: 10px; transition: width 0.3s ease-out; }
-        @keyframes pulseLogoGlow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } }
-        @keyframes textTrackingIn { 0% { letter-spacing: -5px; opacity: 0; } 100% { letter-spacing: 10px; opacity: 1; } }
-        .splash-hidden { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
-        #global-alert {
-            background: linear-gradient(90deg, #8a2be2, #4b0082);
-            color: white; padding: 12px; text-align: center; font-size: 13px;
-            font-weight: 600; display: none; align-items: center; justify-content: center;
-            gap: 10px; z-index: 2000; position: relative;
-        }
-        #manutencao-screen {
-            display: none; position: fixed; inset: 0; background: #080808; z-index: 20000;
-            flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px;
-        }
-        .logo-pulse { display: inline-flex; align-items: center; gap: 8px; font-weight: 900; font-size: 20px; letter-spacing: 1px; color: white; }
-        .brain-icon-pulse { color: #8a2be2; animation: logo-glow 2s infinite ease-in-out; }
-        @keyframes logo-glow { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px #8a2be2); } 50% { transform: scale(1.2); filter: drop-shadow(0 0 8px #8a2be2); } }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes progress-run { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
-        .user-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.3); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 30000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
-        .modal-card { background: #16161a; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(138,43,226,0.3); }
-        .modal-dono-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; backdrop-filter: blur(25px) saturate(180%); background: rgba(10,10,10,0.75); z-index: 99999; padding: 20px; }
-        .modal-dono-card { border: 1px solid rgba(138,43,226,0.3); background: rgba(15,15,15,0.95); border-radius: 30px; width: 100%; max-width: 320px; padding: 40px 25px; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.5); animation: brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-        @keyframes brotarCard { from { opacity: 0; transform: scale(0.8) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .ditoh-core-orbital { width: 100px; height: 100px; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; position: relative; }
-        .orbital-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; border-top-color: #8a2be2; border-bottom-color: #8a2be2; }
-        .ring-1 { width: 100%; height: 100%; animation: spin-orb 2s linear infinite; opacity: 0.6; }
-        .ring-2 { width: 80%; height: 80%; animation: spin-orb-r 1.5s linear infinite; opacity: 0.8; border-left-color: #8a2be2; border-right-color: #8a2be2; border-top-color: transparent; border-bottom-color: transparent; }
-        @keyframes spin-orb { to { transform: rotate(360deg); } }
-        @keyframes spin-orb-r { to { transform: rotate(-360deg); } }
-        .core-glow { width: 50px; height: 50px; background: rgba(138,43,226,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(138,43,226,0.6); }
-        #easter-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 999999; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
-        #easter-overlay.ativo { display: flex; animation: easterIn 0.5s ease; }
-        @keyframes easterIn { from { opacity: 0; } to { opacity: 1; } }
-        .easter-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-        .particle { position: absolute; border-radius: 50%; background: #8a2be2; animation: particleFall linear infinite; }
-        @keyframes particleFall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+        #custom-splash { position:fixed; inset:0; background:#000; z-index:9999999; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:1; visibility:visible; transition:opacity 0.8s ease, visibility 0.8s; }
+        .splash-content { text-align:center; }
+        .brain-logo-wrapper { position:relative; margin-bottom:25px; }
+        #custom-splash i[data-lucide="brain-circuit"] { width:80px; height:80px; color:#8a2be2; filter:drop-shadow(0 0 10px #8a2be2); animation:pulseLogoGlow 2s infinite ease-in-out; }
+        .splash-title { color:#fff; font-size:24px; font-weight:900; text-transform:uppercase; margin-bottom:25px; letter-spacing:-2px; opacity:0; animation:textTrackingIn 1.5s cubic-bezier(0.215,0.610,0.355,1.000) 0.3s forwards; }
+        .splash-title span { color:#8a2be2; }
+        .loading-bar-container { width:160px; height:3px; background:rgba(255,255,255,0.05); border-radius:10px; overflow:hidden; margin:0 auto; }
+        #splash-bar { height:100%; width:0%; background:#8a2be2; box-shadow:0 0 15px #8a2be2; border-radius:10px; transition:width 0.3s ease-out; }
+        @keyframes pulseLogoGlow { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.1);opacity:0.7;} }
+        @keyframes textTrackingIn { 0%{letter-spacing:-5px;opacity:0;} 100%{letter-spacing:10px;opacity:1;} }
+        .splash-hidden { opacity:0!important; visibility:hidden!important; pointer-events:none; }
+        #global-alert { background:linear-gradient(90deg,#8a2be2,#4b0082); color:white; padding:12px; text-align:center; font-size:13px; font-weight:600; display:none; align-items:center; justify-content:center; gap:10px; z-index:2000; position:relative; }
+        #manutencao-screen { display:none; position:fixed; inset:0; background:#080808; z-index:20000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px; }
+        @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+        @keyframes progress-run { 0%{transform:translateX(-100%);} 100%{transform:translateX(250%);} }
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:30000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); }
+        .modal-card-mural { background:#16161a; padding:25px; border-radius:25px; width:100%; max-width:400px; text-align:center; border:1px solid rgba(138,43,226,0.3); }
+        .modal-dono-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; backdrop-filter:blur(25px) saturate(180%); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
+        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
+        .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
+        .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
+        .ring-1 { width:100%; height:100%; animation:spin-orb 2s linear infinite; opacity:0.6; }
+        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; opacity:0.8; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
+        @keyframes spin-orb { to{transform:rotate(360deg);} }
+        @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
+        .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
+        #easter-overlay { display:none; position:fixed; inset:0; background:#000; z-index:999999; align-items:center; justify-content:center; flex-direction:column; gap:20px; }
+        #easter-overlay.ativo { display:flex; animation:easterIn 0.5s ease; }
+        @keyframes easterIn { from{opacity:0;} to{opacity:1;} }
+        .easter-particles { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+        .particle { position:absolute; border-radius:50%; background:#8a2be2; animation:particleFall linear infinite; }
+        @keyframes particleFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
     </style>
 </head>
 <body>
@@ -87,18 +60,18 @@
     <div id="global-alert"></div>
 
     <div id="manutencao-screen">
-        <div style="position: relative; margin-bottom: 30px;">
-            <i data-lucide="cog" style="width: 50px; height: 50px; color: #8a2be2; animation: spin 4s linear infinite;"></i>
-            <div style="position: absolute; inset: 0; background: #8a2be2; filter: blur(35px); opacity: 0.3;"></div>
+        <div style="position:relative; margin-bottom:30px;">
+            <i data-lucide="cog" style="width:50px; height:50px; color:#8a2be2; animation:spin 4s linear infinite;"></i>
+            <div style="position:absolute; inset:0; background:#8a2be2; filter:blur(35px); opacity:0.3;"></div>
         </div>
-        <h2 style="color: white; font-weight: 900; font-size: 24px; margin-bottom: 10px;">ESTAMOS <span style="color:#8a2be2">EVOLUINDO</span></h2>
-        <p style="color: #666; font-size: 14px; max-width: 250px; line-height: 1.6; font-weight: 500;">O Hub Brain está passando por ajustes técnicos para melhorar sua experiência.</p>
-        <div style="width: 120px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-top: 30px; overflow: hidden;">
-            <div style="width: 40%; height: 100%; background: #8a2be2; border-radius: 10px; animation: progress-run 2s infinite ease-in-out;"></div>
+        <h2 style="color:white; font-weight:900; font-size:24px; margin-bottom:10px;">ESTAMOS <span style="color:#8a2be2">EVOLUINDO</span></h2>
+        <p style="color:#666; font-size:14px; max-width:250px; line-height:1.6; font-weight:500;">O Hub Brain está passando por ajustes técnicos para melhorar sua experiência.</p>
+        <div style="width:120px; height:4px; background:rgba(255,255,255,0.05); border-radius:10px; margin-top:30px; overflow:hidden;">
+            <div style="width:40%; height:100%; background:#8a2be2; border-radius:10px; animation:progress-run 2s infinite ease-in-out;"></div>
         </div>
-        <div style="position: absolute; bottom: 40px; text-align: center; opacity: 0.5;">
-            <p id="rodape-manutencao" style="font-size: 10px; letter-spacing: 2px; color: #eee; font-weight: 300; cursor: pointer;">
-                FOUND & DEV <span style="font-weight: 800; color: #8a2be2;">DITOH</span>
+        <div style="position:absolute; bottom:40px; text-align:center; opacity:0.5;">
+            <p id="rodape-manutencao" style="font-size:10px; letter-spacing:2px; color:#eee; font-weight:300; cursor:pointer;">
+                FOUND & DEV <span style="font-weight:800; color:#8a2be2;">DITOH</span>
             </p>
         </div>
     </div>
@@ -114,11 +87,13 @@
     </div>
 
     <header class="glass-header">
-        <div style="width: 40px;"></div>
-        <div class="logo-pulse" id="logo-home" onclick="abrirSobreDono()" style="cursor:pointer;">
-            <span>HUB</span>
-            <i data-lucide="brain-circuit" class="brain-icon-pulse"></i>
-            <span>BRAIN</span>
+        <div style="width:42px;"></div>
+        <div class="hub-logo-container" id="logo-home" onclick="abrirSobreDono()">
+            <span class="hub-logo-text">Hub</span>
+            <div class="hub-symbol">
+                <i data-lucide="brain-circuit" style="color:#8a2be2; width:22px; height:22px;"></i>
+            </div>
+            <span class="hub-logo-text purple">Brain</span>
         </div>
         <div class="user-avatar" onclick="navegarPara('perfil.html')" style="cursor:pointer;">
             <i data-lucide="user" style="color:#8a2be2; width:22px;"></i>
@@ -132,31 +107,31 @@
         </section>
 
         <div class="app-grid">
-            <div class="app-item" onclick="window.location.href='notas.html'">
+            <div class="app-item" onclick="navegarPara('notas.html')">
                 <div class="app-icon purple"><i data-lucide="layout-dashboard"></i></div>
                 <span>Notas</span>
             </div>
-            <div class="app-item" onclick="window.location.href='agenda.html'">
+            <div class="app-item" onclick="navegarPara('agenda.html')">
                 <div class="app-icon blue"><i data-lucide="list-todo"></i></div>
                 <span>Agenda</span>
             </div>
-            <div class="app-item" onclick="window.location.href='foco.html'">
+            <div class="app-item" onclick="navegarPara('foco.html')">
                 <div class="app-icon red"><i data-lucide="timer"></i></div>
                 <span>Modo Foco</span>
             </div>
-            <div class="app-item" onclick="window.location.href='horario.html'">
+            <div class="app-item" onclick="navegarPara('horario.html')">
                 <div class="app-icon orange"><i data-lucide="clock"></i></div>
                 <span>Horário</span>
             </div>
-            <div class="app-item" onclick="window.location.href='estudos.html'">
+            <div class="app-item" onclick="navegarPara('estudos.html')">
                 <div class="app-icon green"><i data-lucide="brain-circuit"></i></div>
                 <span>Estudos & IA</span>
             </div>
-            <div class="app-item" onclick="window.location.href='ranking.html'">
+            <div class="app-item" onclick="navegarPara('ranking.html')">
                 <div class="app-icon gold"><i data-lucide="trophy"></i></div>
                 <span>Ranking</span>
             </div>
-            <div class="app-item" onclick="window.location.href='caderno.html'">
+            <div class="app-item" onclick="navegarPara('caderno.html')">
                 <div class="app-icon" style="color:#c084fc; background:rgba(192,132,252,0.08)!important; border-color:rgba(192,132,252,0.2)!important;"><i data-lucide="notebook-pen"></i></div>
                 <span>Caderno</span>
             </div>
@@ -212,16 +187,15 @@
             </div>
         </section>
 
-        <div style="width: 100%; padding: 40px 0 40px 0; text-align: center; opacity: 0.5;">
-            <p id="rodape-home" style="font-size: 10px; letter-spacing: 2px; color: #eee; font-weight: 300; text-transform: uppercase; font-family: sans-serif; cursor: pointer;">
-                FOUND & DEV
-                <a href="https://www.instagram.com/wtfditoh" target="_blank" style="font-weight: 800; color: #8a2be2; text-decoration: none;">DITOH</a>
+        <div style="width:100%; padding:40px 0; text-align:center; opacity:0.5;">
+            <p id="rodape-home" style="font-size:10px; letter-spacing:2px; color:#eee; font-weight:300; text-transform:uppercase; font-family:sans-serif; cursor:pointer;">
+                FOUND & DEV <a href="https://www.instagram.com/wtfditoh" target="_blank" style="font-weight:800; color:#8a2be2; text-decoration:none;">DITOH</a>
             </p>
         </div>
     </main>
 
     <div id="modal-mural" class="modal-overlay">
-        <div class="modal-card">
+        <div class="modal-card-mural">
             <h3 style="color:white">Aviso Importante</h3>
             <div id="mural-msg" style="margin:20px 0; color:#bbb; font-size:14px; line-height:1.5;"></div>
             <button onclick="document.getElementById('modal-mural').style.display='none'" style="width:100%; padding:12px; background:#8a2be2; border:none; border-radius:12px; color:white; font-weight:bold;">FECHAR</button>
@@ -233,7 +207,9 @@
             <div class="ditoh-core-orbital">
                 <div class="orbital-ring ring-1"></div>
                 <div class="orbital-ring ring-2"></div>
-                <div class="core-glow"><i data-lucide="zap" style="color:white; width:28px; height:28px; filter:drop-shadow(0 0 8px #8a2be2);"></i></div>
+                <div class="core-glow">
+                    <i data-lucide="zap" style="color:white; width:28px; height:28px; filter:drop-shadow(0 0 8px #8a2be2);"></i>
+                </div>
             </div>
             <h3 style="color:white; margin:0; font-size:26px; font-weight:900; letter-spacing:2px;">DITOH</h3>
             <p style="color:#8a2be2; font-weight:bold; margin:5px 0 20px 0; font-size:12px; letter-spacing:4px; text-transform:uppercase;">Founder & Dev</p>
@@ -328,4 +304,12 @@
 
       var manClicks = 0;
       var manTimer;
-      document.getElementById('rodape-manutencao').addEventListener('click',
+      document.getElementById('rodape-manutencao').addEventListener('click', function() {
+        manClicks++;
+        clearTimeout(manTimer);
+        manTimer = setTimeout(function() { manClicks = 0; }, 2000);
+        if (manClicks >= 5) { manClicks = 0; abrirSobreDono(); }
+      });
+    </script>
+</body>
+</html>
