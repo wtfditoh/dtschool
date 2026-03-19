@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script>
+    if (!localStorage.getItem('dt_user_name')) { window.location.href = 'login.html'; }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Brain - Caderno</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="caderno.css">
+</head>
+<body>
+
+    <div id="toast-caderno" style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#0e0e12; border:1px solid rgba(138,43,226,0.4); color:white; padding:10px 20px; border-radius:12px; font-size:12px; font-weight:700; z-index:99999; display:none; transition:0.3s;"></div>
+
+    <!-- TELA: LISTA DE NOTAS -->
+    <div id="tela-lista">
+        <header class="glass-header">
+            <button id="open-menu" style="background:none; border:none; color:white; cursor:pointer; width:42px; height:42px; display:flex; align-items:center; justify-content:center;">
+                <i data-lucide="menu" style="width:22px; height:22px;"></i>
+            </button>
+            <div class="hub-logo-container" onclick="abrirSobreDono()">
+                <span class="hub-logo-text">Hub</span>
+                <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2; width:22px; height:22px;"></i></div>
+                <span class="hub-logo-text purple">Brain</span>
+            </div>
+            <button onclick="novaNota()" style="background:#8a2be2; border:none; color:white; width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 15px rgba(138,43,226,0.3);">
+                <i data-lucide="plus" style="width:20px; height:20px;"></i>
+            </button>
+        </header>
+
+        <div class="caderno-container">
+            <div class="caderno-hero">
+                <h1 class="caderno-titulo">Caderno</h1>
+                <p class="caderno-sub" id="sub-contagem">Carregando...</p>
+            </div>
+
+            <div class="busca-wrap">
+                <i data-lucide="search" style="width:16px; color:#555;"></i>
+                <input type="text" id="campo-busca" placeholder="Buscar notas..." oninput="filtrarNotas()">
+            </div>
+
+            <div id="lista-notas" class="lista-notas">
+                <div class="empty-caderno">
+                    <div class="empty-icon">📓</div>
+                    <p>Nenhuma nota ainda</p>
+                    <span>Toque no + para criar sua primeira nota</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA: EDITOR -->
+    <div id="tela-editor" style="display:none;">
+        <header class="editor-header">
+            <button onclick="voltarLista()" style="background:none; border:none; color:#555; cursor:pointer; width:42px; height:42px; display:flex; align-items:center; justify-content:center;">
+                <i data-lucide="arrow-left" style="width:22px; height:22px;"></i>
+            </button>
+            <div class="editor-status" id="editor-status">Salvo</div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="abrirMenuIA()" id="btn-ia" style="background:rgba(138,43,226,0.15); border:1px solid rgba(138,43,226,0.3); color:#c084fc; width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                    <i data-lucide="sparkles" style="width:18px; height:18px;"></i>
+                </button>
+                <button onclick="excluirNota()" style="background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.2); color:#ff6b6b; width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                    <i data-lucide="trash-2" style="width:18px; height:18px;"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- TOOLBAR DE FORMATAÇÃO -->
+        <div class="format-toolbar" id="format-toolbar">
+            <button class="fmt-btn" onclick="formatar('h1')" title="Título">H1</button>
+            <button class="fmt-btn" onclick="formatar('h2')" title="Subtítulo">H2</button>
+            <div class="fmt-sep"></div>
+            <button class="fmt-btn" onclick="formatar('bold')" title="Negrito"><b>B</b></button>
+            <button class="fmt-btn" onclick="formatar('italic')" title="Itálico"><i>I</i></button>
+            <div class="fmt-sep"></div>
+            <button class="fmt-btn" onclick="inserirChecklist()" title="Checklist">☑</button>
+            <button class="fmt-btn" onclick="formatar('insertUnorderedList')" title="Lista">•</button>
+            <div class="fmt-sep"></div>
+            <button class="fmt-btn" onclick="inserirSeparador()" title="Separador">—</button>
+            <div class="fmt-sep"></div>
+            <span class="fmt-contador" id="contador-palavras">0 palavras</span>
+        </div>
+
+        <div class="editor-body">
+            <input type="text" id="titulo-nota" class="titulo-input" placeholder="Título da nota..." oninput="autoSave()">
+            <div id="corpo-editor" class="corpo-editor" contenteditable="true" oninput="autoSave(); contarPalavras();" onkeydown="handleEditorKey(event)" placeholder="Comece a escrever..."></div>
+        </div>
+    </div>
+
+    <!-- MENU IA -->
+    <div id="menu-ia" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; backdrop-filter:blur(10px); align-items:flex-end; justify-content:center; padding:20px;">
+        <div class="ia-panel">
+            <div class="ia-panel-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:32px; height:32px; background:rgba(138,43,226,0.2); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="sparkles" style="width:16px; color:#c084fc;"></i>
+                    </div>
+                    <span style="font-weight:800; font-size:14px;">IA do Caderno</span>
+                </div>
+                <button onclick="fecharMenuIA()" style="background:none; border:none; color:#555; cursor:pointer; font-size:20px;">✕</button>
+            </div>
+            <p style="font-size:11px; color:#555; margin-bottom:16px; font-weight:600;">O que a IA deve fazer com sua nota?</p>
+            <div class="ia-opcoes">
+                <button class="ia-opcao" onclick="usarIA('resumir')">📝 Resumir a nota</button>
+                <button class="ia-opcao" onclick="usarIA('explicar')">🧠 Explicar de forma simples</button>
+                <button class="ia-opcao" onclick="usarIA('lista')">📋 Transformar em lista</button>
+                <button class="ia-opcao" onclick="usarIA('questoes')">❓ Gerar questões de estudo</button>
+                <button class="ia-opcao" onclick="usarIA('melhorar')">✨ Melhorar o texto</button>
+                <button class="ia-opcao" onclick="usarIA('informal')">😎 Deixar mais informal</button>
+            </div>
+            <div id="ia-resultado" style="display:none; margin-top:16px; background:#07070a; border:1px solid rgba(138,43,226,0.2); border-radius:14px; padding:16px; font-size:13px; color:#ccc; line-height:1.6; max-height:200px; overflow-y:auto;"></div>
+            <div id="ia-acoes" style="display:none; display:flex; gap:8px; margin-top:12px;">
+                <button onclick="aceitarIA()" style="flex:1; padding:12px; background:#8a2be2; border:none; border-radius:12px; color:white; font-weight:800; cursor:pointer;">✓ SUBSTITUIR</button>
+                <button onclick="fecharMenuIA()" style="flex:1; padding:12px; background:rgba(255,255,255,0.05); border:1px solid #222; border-radius:12px; color:#666; font-weight:800; cursor:pointer;">✕ DESCARTAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DITOH -->
+    <div id="modal-dono" style="display:none; position:fixed; inset:0; align-items:center; justify-content:center; backdrop-filter:blur(25px); background:rgba(10,10,10,0.75); z-index:99999; padding:20px;">
+        <div style="border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center;">
+            <h3 style="color:white; margin:0 0 5px; font-size:26px; font-weight:900; letter-spacing:2px;">DITOH</h3>
+            <p style="color:#8a2be2; font-weight:bold; margin:0 0 20px; font-size:12px; letter-spacing:4px; text-transform:uppercase;">Founder & Dev</p>
+            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-size:15px; margin-bottom:20px; background:rgba(255,255,255,0.05); padding:14px; border-radius:15px; border:1px solid rgba(138,43,226,0.2);">
+                <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i>
+                <span style="font-weight:600;">@wtfditoh</span>
+            </a>
+            <button onclick="fecharSobreDono()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; font-weight:900; cursor:pointer;">Voltar</button>
+        </div>
+    </div>
+
+    <script src="menu.js"></script>
+    <script type="module" src="caderno-logica.js"></script>
+    <script>
+        function abrirSobreDono() { document.getElementById('modal-dono').style.display='flex'; if(window.lucide) lucide.createIcons(); }
+        function fecharSobreDono() { document.getElementById('modal-dono').style.display='none'; }
+        document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
+    </script>
+</body>
+</html>
