@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Brain - Home</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="icon-514.png">
+    <link rel="stylesheet" href="home.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        #custom-splash { position:fixed; inset:0; background:#000; z-index:9999999; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:1; visibility:visible; transition:opacity 0.8s ease, visibility 0.8s; }
+        .splash-content { text-align:center; }
+        .brain-logo-wrapper { position:relative; margin-bottom:25px; }
+        #custom-splash i[data-lucide="brain-circuit"] { width:80px; height:80px; color:#8a2be2; filter:drop-shadow(0 0 10px #8a2be2); animation:pulseLogoGlow 2s infinite ease-in-out; }
+        .splash-title { color:#fff; font-size:24px; font-weight:900; text-transform:uppercase; margin-bottom:25px; letter-spacing:-2px; opacity:0; animation:textTrackingIn 1.5s cubic-bezier(0.215,0.610,0.355,1.000) 0.3s forwards; }
+        .splash-title span { color:#8a2be2; }
+        .loading-bar-container { width:160px; height:3px; background:rgba(255,255,255,0.05); border-radius:10px; overflow:hidden; margin:0 auto; }
+        #splash-bar { height:100%; width:0%; background:#8a2be2; box-shadow:0 0 15px #8a2be2; border-radius:10px; transition:width 0.3s ease-out; }
+        @keyframes pulseLogoGlow { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.1);opacity:0.7;} }
+        @keyframes textTrackingIn { 0%{letter-spacing:-5px;opacity:0;} 100%{letter-spacing:10px;opacity:1;} }
+        .splash-hidden { opacity:0!important; visibility:hidden!important; pointer-events:none; }
+        #global-alert { background:linear-gradient(90deg,#8a2be2,#4b0082); color:white; padding:12px; text-align:center; font-size:13px; font-weight:600; display:none; align-items:center; justify-content:center; gap:10px; z-index:2000; position:relative; }
+        #manutencao-screen { display:none; position:fixed; inset:0; background:#080808; z-index:20000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px; }
+        @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+        @keyframes progress-run { 0%{transform:translateX(-100%);} 100%{transform:translateX(250%);} }
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:30000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); }
+        .modal-card-mural { background:#16161a; padding:25px; border-radius:25px; width:100%; max-width:400px; text-align:center; border:1px solid rgba(138,43,226,0.3); }
+        .modal-dono-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; backdrop-filter:blur(25px) saturate(180%); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
+        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
+        .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
+        .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
+        .ring-1 { width:100%; height:100%; animation:spin-orb 2s linear infinite; opacity:0.6; }
+        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; opacity:0.8; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
+        @keyframes spin-orb { to{transform:rotate(360deg);} }
+        @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
+        .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
+        #easter-overlay { display:none; position:fixed; inset:0; background:#000; z-index:999999; align-items:center; justify-content:center; flex-direction:column; gap:20px; }
+        #easter-overlay.ativo { display:flex; animation:easterIn 0.5s ease; }
+        @keyframes easterIn { from{opacity:0;} to{opacity:1;} }
+        .easter-particles { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+        .particle { position:absolute; border-radius:50%; background:#8a2be2; animation:particleFall linear infinite; }
+        @keyframes particleFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
+
+        /* WIDGET CHECKLIST */
+        .checklist-widget { background:#0d0d0f; border:1px solid rgba(138,43,226,0.15); border-radius:20px; padding:16px 18px; margin-bottom:16px; }
+        .checklist-widget-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .checklist-widget-title { display:flex; align-items:center; gap:8px; font-size:9px; font-weight:800; letter-spacing:2px; color:#555; text-transform:uppercase; }
+        .checklist-widget-link { font-size:10px; font-weight:800; color:#8a2be2; cursor:pointer; letter-spacing:1px; background:none; border:none; padding:0; }
+        .checklist-widget-items { display:flex; flex-direction:column; gap:8px; }
+        .check-widget-item { display:flex; align-items:center; gap:12px; padding:10px 12px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid rgba(255,255,255,0.04); }
+        .check-widget-item input[type="checkbox"] { width:18px; height:18px; accent-color:#8a2be2; cursor:pointer; flex-shrink:0; }
+        .check-widget-item span { font-size:13px; color:#ccc; font-weight:600; flex:1; }
+        .check-widget-item.feito span { text-decoration:line-through; color:#444; }
+        .checklist-progresso { display:flex; align-items:center; gap:10px; margin-top:10px; }
+        .checklist-barra { flex:1; height:3px; background:rgba(255,255,255,0.04); border-radius:10px; overflow:hidden; }
+        .checklist-barra-fill { height:100%; background:#8a2be2; border-radius:10px; transition:width 0.4s ease; }
+        .checklist-pct { font-size:10px; font-weight:800; color:#8a2be2; min-width:30px; text-align:right; }
+    </style>
+</head>
+<body>
+
+    <div id="custom-splash">
+        <div class="splash-content">
+            <div class="brain-logo-wrapper"><i data-lucide="brain-circuit"></i></div>
+            <h1 class="splash-title">HUB <span>BRAIN</span></h1>
+            <div class="loading-bar-container"><div id="splash-bar"></div></div>
+        </div>
+    </div>
+
+    <div id="global-alert"></div>
+
+    <div id="manutencao-screen">
+        <div style="position:relative; margin-bottom:30px;">
+            <i data-lucide="cog" style="width:50px; height:50px; color:#8a2be2; animation:spin 4s linear infinite;"></i>
+            <div style="position:absolute; inset:0; background:#8a2be2; filter:blur(35px); opacity:0.3;"></div>
+        </div>
+        <h2 style="color:white; font-weight:900; font-size:24px; margin-bottom:10px;">ESTAMOS <span style="color:#8a2be2">EVOLUINDO</span></h2>
+        <p style="color:#666; font-size:14px; max-width:250px; line-height:1.6; font-weight:500;">O Hub Brain está passando por ajustes técnicos para melhorar sua experiência.</p>
+        <div style="width:120px; height:4px; background:rgba(255,255,255,0.05); border-radius:10px; margin-top:30px; overflow:hidden;">
+            <div style="width:40%; height:100%; background:#8a2be2; border-radius:10px; animation:progress-run 2s infinite ease-in-out;"></div>
+        </div>
+        <div style="position:absolute; bottom:40px; text-align:center; opacity:0.5;">
+            <p id="rodape-manutencao" style="font-size:10px; letter-spacing:2px; color:#eee; font-weight:300; cursor:pointer;">
+                FOUND & DEV <span style="font-weight:800; color:#8a2be2;">DITOH</span>
+            </p>
+        </div>
+    </div>
+
+    <div id="easter-overlay">
+        <div class="easter-particles" id="easter-particles"></div>
+        <i data-lucide="brain-circuit" style="width:80px; height:80px; color:#8a2be2; filter:drop-shadow(0 0 20px #8a2be2); animation:pulseLogoGlow 1s infinite; position:relative; z-index:1;"></i>
+        <div style="text-align:center; position:relative; z-index:1;">
+            <p style="font-size:10px; letter-spacing:4px; color:#8a2be2; font-weight:800; margin-bottom:8px;">MODO DEUS ATIVADO</p>
+            <h2 style="color:white; font-size:22px; font-weight:900; margin:0;">Você encontrou o segredo</h2>
+            <p style="color:#555; font-size:13px; margin-top:8px;">do Hub Brain 🧠</p>
+        </div>
+    </div>
+
+    <header class="glass-header">
+        <div style="width:42px;"></div>
+        <div class="hub-logo-container" id="logo-home" onclick="abrirSobreDono()">
+            <span class="hub-logo-text">Hub</span>
+            <div class="hub-symbol">
+                <i data-lucide="brain-circuit" style="color:#8a2be2; width:22px; height:22px;"></i>
+            </div>
+            <span class="hub-logo-text purple">Brain</span>
+        </div>
+        <div class="user-avatar" onclick="navegarPara('perfil.html')" style="cursor:pointer;">
+            <i data-lucide="user" style="color:#8a2be2; width:22px;"></i>
+        </div>
+    </header>
+
+    <main class="home-container">
+        <section class="welcome-section">
+            <span id="frase-ia" class="day-phrase" style="color:#8a2be2; font-weight:700;">...</span>
+            <h1 id="user-display-name">ESTUDANTE</h1>
+        </section>
+
+        <div class="app-grid">
+            <div class="app-item" onclick="navegarPara('notas.html')">
+                <div class="app-icon purple"><i data-lucide="layout-dashboard"></i></div>
+                <span>Notas</span>
+            </div>
+            <div class="app-item" onclick="navegarPara('agenda.html')">
+                <div class="app-icon blue"><i data-lucide="list-todo"></i></div>
+                <span>Agenda</span>
+            </div>
+            <div class="app-item" onclick="navegarPara('foco.html')">
+                <div class="app-icon red"><i data-lucide="timer"></i></div>
+                <span>Modo Foco</span>
+            </div>
+            <div class="app-item" onclick="navegarPara('horario.html')">
+                <div class="app-icon orange"><i data-lucide="clock"></i></div>
+                <span>Horário</span>
+            </div>
+            <div class="app-item" onclick="navegarPara('estudos.html')">
+                <div class="app-icon green"><i data-lucide="brain-circuit"></i></div>
+                <span>Estudos & IA</span>
+            </div>
+            <div class="app-item" onclick="navegarPara('ranking.html')">
+                <div class="app-icon gold"><i data-lucide="trophy"></i></div>
+                <span>Ranking</span>
+            </div>
+            <div class="app-item" onclick="navegarPara('caderno.html')">
+                <div class="app-icon" style="color:#c084fc; background:rgba(192,132,252,0.08)!important; border-color:rgba(192,132,252,0.2)!important;"><i data-lucide="notebook-pen"></i></div>
+                <span>Caderno</span>
+            </div>
+        </div>
+
+        <div class="mural-card" id="btn-mural-main">
+            <div class="mural-content" style="display:flex; align-items:center; gap:12px;">
+                <i data-lucide="megaphone" style="color:#8a2be2"></i>
+                <div class="mural-text">
+                    <strong>Mural de Avisos</strong>
+                    <span id="mural-preview">Toque para ler</span>
+                </div>
+            </div>
+            <i data-lucide="chevron-right"></i>
+        </div>
+
+        <!-- WIDGET ROTINA DIÁRIA -->
+        <div class="checklist-widget" id="checklist-widget" style="display:none;">
+            <div class="checklist-widget-header">
+                <div class="checklist-widget-title">
+                    <i data-lucide="repeat" style="width:14px; color:#8a2be2;"></i>
+                    ROTINA DO DIA
+                </div>
+                <button class="checklist-widget-link" onclick="navegarPara('caderno.html')">VER CADERNO →</button>
+            </div>
+            <div class="checklist-widget-items" id="checklist-widget-items"></div>
+            <div class="checklist-progresso" id="checklist-progresso" style="display:none;">
+                <div class="checklist-barra"><div class="checklist-barra-fill" id="checklist-barra-fill" style="width:0%"></div></div>
+                <span class="checklist-pct" id="checklist-pct">0%</span>
+            </div>
+        </div>
+
+        <section class="meta-progress-section" id="meta-progress-section" style="display:none;">
+            <div class="meta-progress-card">
+                <div class="meta-progress-header">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="target" style="color:#8a2be2; width:16px;"></i>
+                        <span class="meta-progress-label">META DO DIA</span>
+                    </div>
+                    <span class="meta-progress-time" id="meta-progress-time">0min de 0min</span>
+                </div>
+                <div class="meta-progress-track">
+                    <div class="meta-progress-fill" id="meta-progress-fill"></div>
+                </div>
+                <div class="meta-progress-footer">
+                    <span id="meta-progress-pct">0%</span>
+                    <span id="meta-progress-falta" style="color:#444;">Bora estudar! 💪</span>
+                    <button id="meta-share-btn" style="display:none; background:none; border:none; color:#8a2be2; cursor:pointer; font-size:10px; font-weight:800; letter-spacing:1px; align-items:center; gap:4px;">
+                        <i data-lucide="share-2" style="width:12px;"></i> COMPARTILHAR
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="summary-section">
+            <div class="summary-header">
+                <h3>Resumo de hoje</h3>
+                <span id="current-date">--/--</span>
+            </div>
+            <div class="summary-card">
+                <div class="status-row" style="display:flex; align-items:center; gap:15px;">
+                    <div class="pulse-circle"></div>
+                    <div class="status-info" style="flex:1">
+                        <strong>Status do Sistema</strong>
+                        <span id="status-desc" style="font-size:11px; color:#666;">Online</span>
+                    </div>
+                    <span class="xp-tag" id="xp-display">+0 XP</span>
+                </div>
+            </div>
+        </section>
+
+        <div style="width:100%; padding:40px 0; text-align:center; opacity:0.5;">
+            <p id="rodape-home" style="font-size:10px; letter-spacing:2px; color:#eee; font-weight:300; text-transform:uppercase; font-family:sans-serif; cursor:pointer;">
+                FOUND & DEV <a href="https://www.instagram.com/wtfditoh" target="_blank" style="font-weight:800; color:#8a2be2; text-decoration:none;">DITOH</a>
+            </p>
+        </div>
+    </main>
+
+    <div id="modal-mural" class="modal-overlay">
+        <div class="modal-card-mural">
+            <h3 style="color:white">Aviso Importante</h3>
+            <div id="mural-msg" style="margin:20px 0; color:#bbb; font-size:14px; line-height:1.5;"></div>
+            <button onclick="document.getElementById('modal-mural').style.display='none'" style="width:100%; padding:12px; background:#8a2be2; border:none; border-radius:12px; color:white; font-weight:bold;">FECHAR</button>
+        </div>
+    </div>
+
+    <div id="modal-dono" class="modal-dono-overlay">
+        <div class="modal-dono-card">
+            <div class="ditoh-core-orbital">
+                <div class="orbital-ring ring-1"></div>
+                <div class="orbital-ring ring-2"></div>
+                <div class="core-glow">
+                    <i data-lucide="zap" style="color:white; width:28px; height:28px; filter:drop-shadow(0 0 8px #8a2be2);"></i>
+                </div>
+            </div>
+            <h3 style="color:white; margin:0; font-size:26px; font-weight:900; letter-spacing:2px;">DITOH</h3>
+            <p style="color:#8a2be2; font-weight:bold; margin:5px 0 20px 0; font-size:12px; letter-spacing:4px; text-transform:uppercase;">Founder & Dev</p>
+            <div style="background:rgba(138,43,226,0.1); padding:20px; border-radius:20px; margin-bottom:25px; border-left:4px solid #8a2be2; text-align:left;">
+                <p style="color:#eee; font-size:13px; font-style:italic; line-height:1.6; margin:0;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."</p>
+            </div>
+            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-size:15px; margin-bottom:30px; background:rgba(255,255,255,0.05); padding:14px; border-radius:15px; border:1px solid rgba(138,43,226,0.2);">
+                <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i>
+                <span style="font-weight:600;">@wtfditoh</span>
+            </a>
+            <button onclick="fecharSobreDono()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; font-weight:900; cursor:pointer; text-transform:uppercase;">Voltar</button>
+        </div>
+    </div>
+
+    <script type="module" src="home-logica.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('OneSignalSDKWorker.js')
+          .then(function() { console.log('SW ativo!'); })
+          .catch(function(err) { console.log('Erro no SW:', err); });
+      }
+
+      window.addEventListener('load', function() {
+        var progress = 0;
+        var bar = document.getElementById('splash-bar');
+        var splash = document.getElementById('custom-splash');
+        var interval = setInterval(function() {
+          progress += 20;
+          if (bar) bar.style.width = progress + '%';
+          if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(function() {
+              if (splash) splash.classList.add('splash-hidden');
+            }, 600);
+          }
+        }, 250);
+        if (window.lucide) lucide.createIcons();
+        carregarChecklistWidget();
+      });
+
+      function carregarChecklistWidget() {
+        var hoje = new Date().toISOString().split('T')[0];
+        var notas = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
+        var itensRotina = [];
+        for (var n = 0; n < notas.length; n++) {
+          var nota = notas[n];
+          if (!nota.rotinaDiaria || !nota.corpo) continue;
+          var div = document.createElement('div');
+          div.innerHTML = nota.corpo;
+          var checks = div.querySelectorAll('.check-item');
+          var estadoHoje = JSON.parse(localStorage.getItem('dt_checklist_' + hoje) || '{}');
+          for (var c = 0; c < checks.length; c++) {
+            var span = checks[c].querySelector('span');
+            var texto = span ? (span.innerText || span.textContent || '').trim() : '';
+            if (!texto) continue;
+            var itemId = nota.id + '_' + c;
+            itensRotina.push({ id: itemId, texto: texto, feito: estadoHoje[itemId] || false });
+          }
+        }
+        var widget = document.getElementById('checklist-widget');
+        var container = document.getElementById('checklist-widget-items');
+        var progressoEl = document.getElementById('checklist-progresso');
+        if (!widget || !container) return;
+        if (itensRotina.length === 0) { widget.style.display = 'none'; return; }
+        widget.style.display = 'block';
+        if (progressoEl) progressoEl.style.display = 'flex';
+        renderizarWidget(itensRotina, hoje);
+      }
+
+      function renderizarWidget(itens, hoje) {
+        var container = document.getElementById('checklist-widget-items');
+        var barraFill = document.getElementById('checklist-barra-fill');
+        var pctEl = document.getElementById('checklist-pct');
+        if (!container) return;
+        var feitos = 0;
+        for (var i = 0; i < itens.length; i++) { if (itens[i].feito) feitos++; }
+        var pct = itens.length > 0 ? Math.round((feitos / itens.length) * 100) : 0;
+        if (barraFill) barraFill.style.width = pct + '%';
+        if (pctEl) pctEl.innerText = pct + '%';
+        var html = '';
+        var visiveis = itens.length > 4 ? itens.slice(0, 4) : itens;
+        for (var j = 0; j < visiveis.length; j++) {
+          var item = visiveis[j];
+          html += '<div class="check-widget-item ' + (item.feito ? 'feito' : '') + '" id="cwi_' + item.id + '">';
+          html += '<input type="checkbox" ' + (item.feito ? 'checked' : '') + ' onchange="toggleCheckWidget(this)">';
+          html += '<span>' + item.texto + '</span></div>';
+        }
+        if (itens.length > 4) {
+          html += '<div style="font-size:10px;color:#444;font-weight:700;text-align:center;padding:6px 0;">+' + (itens.length - 4) + ' itens no Caderno</div>';
+        }
+        container.innerHTML = html;
+      }
+
+      function toggleCheckWidget(checkbox) {
+        var itemEl = checkbox.closest('.check-widget-item');
+        var itemId = itemEl ? itemEl.id.replace('cwi_', '') : '';
+        var feito = checkbox.checked;
+        var hoje = new Date().toISOString().split('T')[0];
+        var estado = JSON.parse(localStorage.getItem('dt_checklist_' + hoje) || '{}');
+        estado[itemId] = feito;
+        localStorage.setItem('dt_checklist_' + hoje, JSON.stringify(estado));
+        if (itemEl) itemEl.classList.toggle('feito', feito);
+        carregarChecklistWidget();
+      }
+
+      function navegarPara(url) {
+        document.body.classList.add('saindo');
+        setTimeout(function() { window.location.href = url; }, 250);
+      }
+
+      function abrirSobreDono() {
+        document.getElementById('modal-dono').style.display = 'flex';
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function fecharSobreDono() {
+        document.getElementById('modal-dono').style.display = 'none';
+      }
+
+      var logoClicks = 0;
+      var logoTimer;
+      document.getElementById('logo-home').addEventListener('click', function() {
+        logoClicks++;
+        clearTimeout(logoTimer);
+        logoTimer = setTimeout(function() { logoClicks = 0; }, 2000);
+        if (logoClicks >= 7) { logoClicks = 0; ativarModoDeus(); }
+      });
+
+      function ativarModoDeus() {
+        var overlay = document.getElementById('easter-overlay');
+        var container = document.getElementById('easter-particles');
+        container.innerHTML = '';
+        for (var i = 0; i < 30; i++) {
+          var p = document.createElement('div');
+          p.className = 'particle';
+          p.style.left = (Math.random() * 100) + 'vw';
+          p.style.animationDuration = (Math.random() * 2 + 1) + 's';
+          p.style.animationDelay = (Math.random() * 2) + 's';
+          var size = (Math.random() * 8 + 4) + 'px';
+          p.style.width = size;
+          p.style.height = size;
+          container.appendChild(p);
+        }
+        overlay.classList.add('ativo');
+        if (window.lucide) lucide.createIcons();
+        setTimeout(function() { overlay.classList.remove('ativo'); }, 4000);
+      }
+
+      var rodapeClicks = 0;
+      var rodapeTimer;
+      document.getElementById('rodape-home').addEventListener('click', function(e) {
+        if (e.target.tagName === 'A') return;
+        rodapeClicks++;
+        clearTimeout(rodapeTimer);
+        rodapeTimer = setTimeout(function() { rodapeClicks = 0; }, 2000);
+        if (rodapeClicks >= 5) { rodapeClicks = 0; abrirSobreDono(); }
+      });
+
+      var manClicks = 0;
+      var manTimer;
+      document.getElementById('rodape-manutencao').addEventListener('click', function() {
+        manClicks++;
+        clearTimeout(manTimer);
+        manTimer = setTimeout(function() { manClicks = 0; }, 2000);
+        if (manClicks >= 5) { manClicks = 0; abrirSobreDono(); }
+      });
+    </script>
+</body>
+</html>
