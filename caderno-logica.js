@@ -18,7 +18,7 @@ const userType = localStorage.getItem('dt_user_type');
 
 // ⚠️ SUBSTITUA PELA SUA CHAVE DO HUGGING FACE
 const HF_KEY = "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";
-const HF_MODEL = "mistralai/Mistral-7B-Instruct-v0.3";
+const HF_MODEL = "HuggingFaceH4/zephyr-7b-beta";
 
 let notaAtual = null;
 let autoSaveTimer = null;
@@ -47,10 +47,11 @@ async function carregarNotas() {
         return;
     }
     try {
-        const q = query(collection(db, "caderno"), where("usuario", "==", userEmail), orderBy("atualizadoEm", "desc"));
+        const q = query(collection(db, "caderno"), where("usuario", "==", userEmail));
         const snap = await getDocs(q);
         todasNotas = [];
         snap.forEach(d => todasNotas.push({ id: d.id, ...d.data() }));
+        todasNotas.sort((a, b) => (b.atualizadoEm || 0) - (a.atualizadoEm || 0));
         renderizarLista(todasNotas);
     } catch(e) { console.error(e); }
 }
@@ -429,7 +430,7 @@ window.usarIA = async function(acao) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                inputs: `<s>[INST] ${prompts[acao]} [/INST]`,
+                inputs: `<|system|>\nVocê é um assistente de estudos útil que responde em português brasileiro.</s>\n<|user|>\n${prompts[acao]}</s>\n<|assistant|>`,
                 parameters: { max_new_tokens: 500, temperature: 0.7, return_full_text: false }
             })
         });
@@ -468,4 +469,3 @@ document.addEventListener('DOMContentLoaded', () => {
     carregarNotas();
     if (window.lucide) lucide.createIcons();
 });
-          
