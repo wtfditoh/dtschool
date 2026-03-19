@@ -12,56 +12,82 @@
     <link rel="stylesheet" href="home.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        #custom-splash { position:fixed; inset:0; background:#000; z-index:9999999; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:1; visibility:visible; transition:opacity 0.8s ease, visibility 0.8s; }
-        .splash-content { text-align:center; }
-        .brain-logo-wrapper { position:relative; margin-bottom:25px; }
-        #custom-splash i[data-lucide="brain-circuit"] { width:80px; height:80px; color:#8a2be2; filter:drop-shadow(0 0 10px #8a2be2); animation:pulseLogoGlow 2s infinite ease-in-out; }
-        .splash-title { color:#fff; font-size:24px; font-weight:900; text-transform:uppercase; margin-bottom:25px; letter-spacing:-2px; opacity:0; animation:textTrackingIn 1.5s cubic-bezier(0.215,0.610,0.355,1.000) 0.3s forwards; }
-        .splash-title span { color:#8a2be2; }
-        .loading-bar-container { width:160px; height:3px; background:rgba(255,255,255,0.05); border-radius:10px; overflow:hidden; margin:0 auto; }
-        #splash-bar { height:100%; width:0%; background:#8a2be2; box-shadow:0 0 15px #8a2be2; border-radius:10px; transition:width 0.3s ease-out; }
-        @keyframes pulseLogoGlow { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.1);opacity:0.7;} }
-        @keyframes textTrackingIn { 0%{letter-spacing:-5px;opacity:0;} 100%{letter-spacing:10px;opacity:1;} }
-        .splash-hidden { opacity:0!important; visibility:hidden!important; pointer-events:none; }
-        #global-alert { background:linear-gradient(90deg,#8a2be2,#4b0082); color:white; padding:12px; text-align:center; font-size:13px; font-weight:600; display:none; align-items:center; justify-content:center; gap:10px; z-index:2000; position:relative; }
-        #manutencao-screen { display:none; position:fixed; inset:0; background:#080808; z-index:20000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px; }
-        @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
-        @keyframes progress-run { 0%{transform:translateX(-100%);} 100%{transform:translateX(250%);} }
-        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:30000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); }
-        .modal-card-mural { background:#16161a; padding:25px; border-radius:25px; width:100%; max-width:400px; text-align:center; border:1px solid rgba(138,43,226,0.3); }
-        .modal-dono-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; backdrop-filter:blur(25px) saturate(180%); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
-        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-        @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
-        .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
-        .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
-        .ring-1 { width:100%; height:100%; animation:spin-orb 2s linear infinite; opacity:0.6; }
-        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; opacity:0.8; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
-        @keyframes spin-orb { to{transform:rotate(360deg);} }
-        @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
-        .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
-        #easter-overlay { display:none; position:fixed; inset:0; background:#000; z-index:999999; align-items:center; justify-content:center; flex-direction:column; gap:20px; }
-        #easter-overlay.ativo { display:flex; animation:easterIn 0.5s ease; }
-        @keyframes easterIn { from{opacity:0;} to{opacity:1;} }
-        .easter-particles { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
-        .particle { position:absolute; border-radius:50%; background:#8a2be2; animation:particleFall linear infinite; }
-        @keyframes particleFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
+        #custom-splash {
+            position: fixed; inset: 0; background: #000000; z-index: 9999999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 1; visibility: visible; transition: opacity 0.8s ease, visibility 0.8s;
+        }
+        .splash-content { text-align: center; }
+        .brain-logo-wrapper { position: relative; margin-bottom: 25px; }
+        #custom-splash i[data-lucide="brain-circuit"] {
+            width: 80px; height: 80px; color: #8a2be2;
+            filter: drop-shadow(0 0 10px #8a2be2);
+            animation: pulseLogoGlow 2s infinite ease-in-out;
+        }
+        .splash-title {
+            color: #ffffff; font-size: 24px; font-weight: 900; text-transform: uppercase;
+            margin-bottom: 25px; letter-spacing: -2px; opacity: 0;
+            animation: textTrackingIn 1.5s cubic-bezier(0.215, 0.610, 0.355, 1.000) 0.3s forwards;
+        }
+        .splash-title span { color: #8a2be2; }
+        .loading-bar-container {
+            width: 160px; height: 3px; background: rgba(255,255,255,0.05);
+            border-radius: 10px; overflow: hidden; margin: 0 auto;
+        }
+        #splash-bar { height: 100%; width: 0%; background: #8a2be2; box-shadow: 0 0 15px #8a2be2; border-radius: 10px; transition: width 0.3s ease-out; }
+        @keyframes pulseLogoGlow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } }
+        @keyframes textTrackingIn { 0% { letter-spacing: -5px; opacity: 0; } 100% { letter-spacing: 10px; opacity: 1; } }
+        .splash-hidden { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
+
+        #global-alert {
+            background: linear-gradient(90deg, #8a2be2, #4b0082);
+            color: white; padding: 12px; text-align: center; font-size: 13px;
+            font-weight: 600; display: none; align-items: center; justify-content: center;
+            gap: 10px; z-index: 2000; position: relative;
+        }
+        #manutencao-screen {
+            display: none; position: fixed; inset: 0; background: #080808; z-index: 20000;
+            flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px;
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes progress-run { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 30000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
+        .modal-card-mural { background: #16161a; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(138,43,226,0.3); }
+
+        .modal-dono-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; backdrop-filter: blur(25px) saturate(180%); background: rgba(10,10,10,0.75); z-index: 99999; padding: 20px; }
+        .modal-dono-card { border: 1px solid rgba(138,43,226,0.3); background: rgba(15,15,15,0.95); border-radius: 30px; width: 100%; max-width: 320px; padding: 40px 25px; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.5); animation: brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        @keyframes brotarCard { from { opacity: 0; transform: scale(0.8) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .ditoh-core-orbital { width: 100px; height: 100px; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .orbital-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; border-top-color: #8a2be2; border-bottom-color: #8a2be2; }
+        .ring-1 { width: 100%; height: 100%; animation: spin-orb 2s linear infinite; opacity: 0.6; }
+        .ring-2 { width: 80%; height: 80%; animation: spin-orb-r 1.5s linear infinite; opacity: 0.8; border-left-color: #8a2be2; border-right-color: #8a2be2; border-top-color: transparent; border-bottom-color: transparent; }
+        @keyframes spin-orb { to { transform: rotate(360deg); } }
+        @keyframes spin-orb-r { to { transform: rotate(-360deg); } }
+        .core-glow { width: 50px; height: 50px; background: rgba(138,43,226,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(138,43,226,0.6); }
+
+        #easter-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 999999; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
+        #easter-overlay.ativo { display: flex; animation: easterIn 0.5s ease; }
+        @keyframes easterIn { from { opacity: 0; } to { opacity: 1; } }
+        .easter-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+        .particle { position: absolute; border-radius: 50%; background: #8a2be2; animation: particleFall linear infinite; }
+        @keyframes particleFall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
 
         /* WIDGET CHECKLIST */
-        .checklist-widget { background:#0d0d0f; border:1px solid rgba(138,43,226,0.15); border-radius:20px; padding:16px 18px; margin-bottom:16px; }
-        .checklist-widget-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-        .checklist-widget-title { display:flex; align-items:center; gap:8px; font-size:9px; font-weight:800; letter-spacing:2px; color:#555; text-transform:uppercase; }
-        .checklist-widget-link { font-size:10px; font-weight:800; color:#8a2be2; cursor:pointer; letter-spacing:1px; background:none; border:none; }
-        .checklist-widget-items { display:flex; flex-direction:column; gap:8px; }
-        .check-widget-item { display:flex; align-items:center; gap:12px; padding:10px 12px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid rgba(255,255,255,0.04); transition:0.2s; }
-        .check-widget-item.feito { opacity:0.4; }
-        .check-widget-item input[type="checkbox"] { width:18px; height:18px; accent-color:#8a2be2; cursor:pointer; flex-shrink:0; }
-        .check-widget-item span { font-size:13px; color:#ccc; font-weight:600; flex:1; }
-        .check-widget-item.feito span { text-decoration:line-through; color:#444; }
-        .checklist-vazio { text-align:center; padding:16px 0; font-size:12px; color:#333; font-weight:600; }
-        .checklist-progresso { display:flex; align-items:center; gap:10px; margin-top:10px; }
-        .checklist-barra { flex:1; height:3px; background:rgba(255,255,255,0.04); border-radius:10px; overflow:hidden; }
-        .checklist-barra-fill { height:100%; background:#8a2be2; border-radius:10px; transition:width 0.4s ease; }
-        .checklist-pct { font-size:10px; font-weight:800; color:#8a2be2; min-width:30px; text-align:right; }
+        .checklist-widget { background: #0d0d0f; border: 1px solid rgba(138,43,226,0.15); border-radius: 20px; padding: 16px 18px; margin-bottom: 16px; }
+        .checklist-widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .checklist-widget-title { display: flex; align-items: center; gap: 8px; font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #555; text-transform: uppercase; }
+        .checklist-widget-link { font-size: 10px; font-weight: 800; color: #8a2be2; cursor: pointer; letter-spacing: 1px; background: none; border: none; padding: 0; }
+        .checklist-widget-items { display: flex; flex-direction: column; gap: 8px; }
+        .check-widget-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); }
+        .check-widget-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #8a2be2; cursor: pointer; flex-shrink: 0; }
+        .check-widget-item span { font-size: 13px; color: #ccc; font-weight: 600; flex: 1; }
+        .check-widget-item.feito span { text-decoration: line-through; color: #444; }
+        .checklist-vazio { text-align: center; padding: 12px 0; font-size: 12px; color: #333; font-weight: 600; }
+        .checklist-progresso { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .checklist-barra { flex: 1; height: 3px; background: rgba(255,255,255,0.04); border-radius: 10px; overflow: hidden; }
+        .checklist-barra-fill { height: 100%; background: #8a2be2; border-radius: 10px; transition: width 0.4s ease; }
+        .checklist-pct { font-size: 10px; font-weight: 800; color: #8a2be2; min-width: 30px; text-align: right; }
     </style>
 </head>
 <body>
@@ -77,18 +103,18 @@
     <div id="global-alert"></div>
 
     <div id="manutencao-screen">
-        <div style="position:relative; margin-bottom:30px;">
-            <i data-lucide="cog" style="width:50px; height:50px; color:#8a2be2; animation:spin 4s linear infinite;"></i>
-            <div style="position:absolute; inset:0; background:#8a2be2; filter:blur(35px); opacity:0.3;"></div>
+        <div style="position: relative; margin-bottom: 30px;">
+            <i data-lucide="cog" style="width: 50px; height: 50px; color: #8a2be2; animation: spin 4s linear infinite;"></i>
+            <div style="position: absolute; inset: 0; background: #8a2be2; filter: blur(35px); opacity: 0.3;"></div>
         </div>
-        <h2 style="color:white; font-weight:900; font-size:24px; margin-bottom:10px;">ESTAMOS <span style="color:#8a2be2">EVOLUINDO</span></h2>
-        <p style="color:#666; font-size:14px; max-width:250px; line-height:1.6; font-weight:500;">O Hub Brain está passando por ajustes técnicos para melhorar sua experiência.</p>
-        <div style="width:120px; height:4px; background:rgba(255,255,255,0.05); border-radius:10px; margin-top:30px; overflow:hidden;">
-            <div style="width:40%; height:100%; background:#8a2be2; border-radius:10px; animation:progress-run 2s infinite ease-in-out;"></div>
+        <h2 style="color: white; font-weight: 900; font-size: 24px; margin-bottom: 10px;">ESTAMOS <span style="color:#8a2be2">EVOLUINDO</span></h2>
+        <p style="color: #666; font-size: 14px; max-width: 250px; line-height: 1.6; font-weight: 500;">O Hub Brain está passando por ajustes técnicos para melhorar sua experiência.</p>
+        <div style="width: 120px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-top: 30px; overflow: hidden;">
+            <div style="width: 40%; height: 100%; background: #8a2be2; border-radius: 10px; animation: progress-run 2s infinite ease-in-out;"></div>
         </div>
-        <div style="position:absolute; bottom:40px; text-align:center; opacity:0.5;">
-            <p id="rodape-manutencao" style="font-size:10px; letter-spacing:2px; color:#eee; font-weight:300; cursor:pointer;">
-                FOUND & DEV <span style="font-weight:800; color:#8a2be2;">DITOH</span>
+        <div style="position: absolute; bottom: 40px; text-align: center; opacity: 0.5;">
+            <p id="rodape-manutencao" style="font-size: 10px; letter-spacing: 2px; color: #eee; font-weight: 300; cursor: pointer;">
+                FOUND & DEV <span style="font-weight: 800; color: #8a2be2;">DITOH</span>
             </p>
         </div>
     </div>
@@ -165,21 +191,19 @@
             <i data-lucide="chevron-right"></i>
         </div>
 
-        <!-- WIDGET CHECKLIST DO CADERNO -->
+        <!-- WIDGET CHECKLIST -->
         <div class="checklist-widget" id="checklist-widget" style="display:none;">
             <div class="checklist-widget-header">
                 <div class="checklist-widget-title">
-                    <i data-lucide="check-square" style="width:14px; color:#8a2be2;"></i>
+                    <i data-lucide="repeat" style="width:14px; color:#8a2be2;"></i>
                     ROTINA DO DIA
                 </div>
                 <button class="checklist-widget-link" onclick="navegarPara('caderno.html')">VER CADERNO →</button>
             </div>
-            <div class="checklist-widget-items" id="checklist-widget-items">
-                <div class="checklist-vazio">Nenhuma checklist no caderno</div>
-            </div>
+            <div class="checklist-widget-items" id="checklist-widget-items"></div>
             <div class="checklist-progresso" id="checklist-progresso" style="display:none;">
                 <div class="checklist-barra">
-                    <div class="checklist-barra-fill" id="checklist-barra-fill"></div>
+                    <div class="checklist-barra-fill" id="checklist-barra-fill" style="width:0%"></div>
                 </div>
                 <span class="checklist-pct" id="checklist-pct">0%</span>
             </div>
@@ -224,9 +248,9 @@
             </div>
         </section>
 
-        <div style="width:100%; padding:40px 0; text-align:center; opacity:0.5;">
-            <p id="rodape-home" style="font-size:10px; letter-spacing:2px; color:#eee; font-weight:300; text-transform:uppercase; font-family:sans-serif; cursor:pointer;">
-                FOUND & DEV <a href="https://www.instagram.com/wtfditoh" target="_blank" style="font-weight:800; color:#8a2be2; text-decoration:none;">DITOH</a>
+        <div style="width: 100%; padding: 40px 0; text-align: center; opacity: 0.5;">
+            <p id="rodape-home" style="font-size: 10px; letter-spacing: 2px; color: #eee; font-weight: 300; text-transform: uppercase; font-family: sans-serif; cursor: pointer;">
+                FOUND & DEV <a href="https://www.instagram.com/wtfditoh" target="_blank" style="font-weight: 800; color: #8a2be2; text-decoration: none;">DITOH</a>
             </p>
         </div>
     </main>
@@ -268,30 +292,16 @@
       }
 
       window.addEventListener('load', function() {
-        // SPLASH — roda primeiro, isolado de tudo
-        try {
-          var progress = 0;
-          var bar = document.getElementById('splash-bar');
-          var splash = document.getElementById('custom-splash');
-          var interval = setInterval(function() {
-            progress += 20;
-            if (bar) bar.style.width = progress + '%';
-            if (progress >= 100) {
-              clearInterval(interval);
-              setTimeout(function() {
-                if (splash) splash.classList.add('splash-hidden');
-              }, 600);
-            }
-          }, 250);
-        } catch(e) { console.error('Splash error:', e); }
-
-        // LUCIDE
-        try { if (window.lucide) lucide.createIcons(); } catch(e) {}
-
-        // WIDGET CHECKLIST — roda depois com delay
-        setTimeout(function() {
-          try { carregarChecklistWidget(); } catch(e) { console.error('Checklist error:', e); }
-        }, 500);
-      });
-
-      function carregarC
+        var progress = 0;
+        var bar = document.getElementById('splash-bar');
+        var splash = document.getElementById('custom-splash');
+        var interval = setInterval(function() {
+          progress += 20;
+          if (bar) bar.style.width = progress + '%';
+          if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(function() {
+              if (splash) splash.classList.add('splash-hidden');
+            }, 600);
+          }
+        }, 
