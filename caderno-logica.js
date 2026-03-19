@@ -1,5 +1,4 @@
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// caderno-logica.js — SEM módulo ES6, funciona como script normal
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -10,143 +9,160 @@ const firebaseConfig = {
     appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const db = getFirestore(app);
+// Inicializa Firebase via CDN global (não módulo)
+let db;
+function initFirebase() {
+    if (!window.firebase) return;
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+}
+
+const HF_KEY = "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";
+const HF_MODEL = "google/flan-t5-large";
 
 const userEmail = (localStorage.getItem('dt_user_email') || '').toLowerCase();
 const userType = localStorage.getItem('dt_user_type');
-
-// ⚠️ SUBSTITUA PELA SUA CHAVE DO HUGGING FACE
-const HF_KEY = "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";
-const HF_MODEL = "google/flan-t5-large";
 
 let notaAtual = null;
 let autoSaveTimer = null;
 let resultadoIA = '';
 let todasNotas = [];
 
-// ==========================================
 // TOAST
-// ==========================================
-function toast(msg, cor = '#8a2be2') {
+function toast(msg, cor) {
+    cor = cor || '#8a2be2';
     const el = document.getElementById('toast-caderno');
+    if (!el) return;
     el.innerText = msg;
     el.style.borderColor = cor + '66';
     el.style.display = 'block';
     el.style.opacity = '1';
-    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.style.display = 'none', 300); }, 2500);
+    setTimeout(function() {
+        el.style.opacity = '0';
+        setTimeout(function() { el.style.display = 'none'; }, 300);
+    }, 2500);
 }
 
-// ==========================================
 // CARREGAR NOTAS
-// ==========================================
 async function carregarNotas() {
-    if (!userEmail || userType === 'local') {
-        todasNotas = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
+    // Sempre carrega do localStorage primeiro
+    const local = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
+    
+    if (!userEmail || userType === 'local' || !db) {
+        todasNotas = local;
         renderizarLista(todasNotas);
         return;
     }
+
     try {
-        const q = query(collection(db, "caderno"), where("usuario", "==", userEmail));
-        const snap = await getDocs(q);
+        const snap = await db.collection("caderno").where("usuario", "==", userEmail).get();
         todasNotas = [];
-        snap.forEach(d => todasNotas.push({ id: d.id, ...d.data() }));
-        todasNotas.sort((a, b) => (b.atualizadoEm || 0) - (a.atualizadoEm || 0));
+        snap.forEach(function(d) {
+            const nota = Object.assign({ id: d.id }, d.data());
+            // Recupera foto e arquivo do localStorage
+            const localNota = local.find(function(n) { return n.id === d.id; });
+            if (localNota) {
+                nota.fotoLocal = localNota.fotoLocal || null;
+                nota.anexoNome = localNota.anexoNome || nota.anexoNome || null;
+                nota.anexoBase64 = localNota.anexoBase64 || null;
+            }
+            todasNotas.push(nota);
+        });
+        todasNotas.sort(function(a, b) { return (b.atualizadoEm || 0) - (a.atualizadoEm || 0); });
         renderizarLista(todasNotas);
-    } catch(e) { console.error(e); }
+    } catch(e) {
+        console.error(e);
+        todasNotas = local;
+        renderizarLista(todasNotas);
+    }
 }
 
 function renderizarLista(notas) {
     const lista = document.getElementById('lista-notas');
     const sub = document.getElementById('sub-contagem');
-    sub.innerText = notas.length === 0 ? 'Nenhuma nota' : `${notas.length} nota${notas.length > 1 ? 's' : ''}`;
+    if (!lista) return;
+    if (sub) sub.innerText = notas.length === 0 ? 'Nenhuma nota' : notas.length + ' nota' + (notas.length > 1 ? 's' : '');
 
     if (notas.length === 0) {
-        lista.innerHTML = `<div class="empty-caderno"><div class="empty-icon">📓</div><p>Nenhuma nota ainda</p><span>Toque no + para criar sua primeira nota</span></div>`;
+        lista.innerHTML = '<div class="empty-caderno"><div class="empty-icon">📓</div><p>Nenhuma nota ainda</p><span>Toque no + para criar sua primeira nota</span></div>';
         return;
     }
 
-    const fixadas = notas.filter(n => n.fixada);
-    const normais = notas.filter(n => !n.fixada);
-    const ordenadas = [...fixadas, ...normais];
+    const fixadas = notas.filter(function(n) { return n.fixada; });
+    const normais = notas.filter(function(n) { return !n.fixada; });
+    const ordenadas = fixadas.concat(normais);
 
-    lista.innerHTML = ordenadas.map(n => {
+    lista.innerHTML = ordenadas.map(function(n) {
         const preview = n.corpo ? n.corpo.replace(/<[^>]*>/g, '').slice(0, 80) : '';
         const data = n.atualizadoEm ? new Date(n.atualizadoEm).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) : '';
-        const temAnexo = n.anexoNome || n.fotoLocal;
-        return `
-        <div class="nota-card ${n.fixada ? 'fixada' : ''}" onclick="abrirNota('${n.id}')">
-            <div class="nota-card-header">
-                <span class="nota-card-titulo">${n.titulo || 'Sem título'}</span>
-                ${n.fixada ? '<span class="nota-card-pin">📌</span>' : ''}
-            </div>
-            ${preview ? `<p class="nota-card-preview">${preview}</p>` : ''}
-            <div class="nota-card-footer">
-                <span class="nota-card-data">${data}</span>
-                <div style="display:flex; gap:6px; align-items:center;">
-                    ${temAnexo ? '<span class="nota-card-tag">📎 ANEXO</span>' : ''}
-                    ${n.fixada ? '<span class="nota-card-tag">📌 FIXADA</span>' : ''}
-                </div>
-            </div>
-        </div>`;
+        return '<div class="nota-card ' + (n.fixada ? 'fixada' : '') + '" onclick="abrirNota(\'' + n.id + '\')">' +
+            '<div class="nota-card-header"><span class="nota-card-titulo">' + (n.titulo || 'Sem título') + '</span>' +
+            (n.fixada ? '<span>📌</span>' : '') + '</div>' +
+            (preview ? '<p class="nota-card-preview">' + preview + '</p>' : '') +
+            '<div class="nota-card-footer"><span class="nota-card-data">' + data + '</span>' +
+            '<div style="display:flex;gap:6px;">' +
+            (n.fotoLocal ? '<span class="nota-card-tag">📸</span>' : '') +
+            (n.anexoNome ? '<span class="nota-card-tag">📎</span>' : '') +
+            (n.fixada ? '<span class="nota-card-tag">📌</span>' : '') +
+            '</div></div></div>';
     }).join('');
 }
 
-// ==========================================
 // NOVA NOTA
-// ==========================================
 window.novaNota = async function() {
     const nova = {
         titulo: '', corpo: '', fixada: false,
-        usuario: userEmail, fotoLocal: null, anexoNome: null,
+        usuario: userEmail, fotoLocal: null, anexoNome: null, anexoBase64: null,
         criadoEm: Date.now(), atualizadoEm: Date.now()
     };
-    if (userType === 'local' || !userEmail) {
+
+    if (!userEmail || userType === 'local' || !db) {
         nova.id = 'local_' + Date.now();
         todasNotas.unshift(nova);
-        localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+        salvarLocal();
         abrirEditor(nova);
-    } else {
-        try {
-            const ref = await addDoc(collection(db, "caderno"), nova);
-            nova.id = ref.id;
-            todasNotas.unshift(nova);
-            abrirEditor(nova);
-        } catch(e) { console.error(e); }
+        return;
+    }
+
+    try {
+        const ref = await db.collection("caderno").add(nova);
+        nova.id = ref.id;
+        todasNotas.unshift(nova);
+        salvarLocal();
+        abrirEditor(nova);
+    } catch(e) {
+        console.error(e);
+        nova.id = 'local_' + Date.now();
+        todasNotas.unshift(nova);
+        salvarLocal();
+        abrirEditor(nova);
     }
 };
 
-// ==========================================
+// SALVAR LOCAL
+function salvarLocal() {
+    localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+}
+
 // ABRIR NOTA
-// ==========================================
 window.abrirNota = function(id) {
-    const nota = todasNotas.find(n => n.id === id);
+    const nota = todasNotas.find(function(n) { return n.id === id; });
     if (nota) abrirEditor(nota);
 };
 
 function abrirEditor(nota) {
-    // Busca dados locais atualizados (foto/arquivo ficam só no localStorage)
-    const local = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
-    const localNota = local.find(n => n.id === nota.id);
-    if (localNota) {
-        nota.fotoLocal = localNota.fotoLocal || nota.fotoLocal;
-        nota.anexoNome = localNota.anexoNome || nota.anexoNome;
-        nota.anexoBase64 = localNota.anexoBase64 || nota.anexoBase64;
-    }
-
     notaAtual = nota;
     document.getElementById('tela-lista').style.display = 'none';
     document.getElementById('tela-editor').style.display = 'block';
     document.getElementById('titulo-nota').value = nota.titulo || '';
     document.getElementById('corpo-editor').innerHTML = nota.corpo || '';
-    document.getElementById('editor-status').innerText = 'Salvo ✓';
-    document.getElementById('editor-status').style.color = '#2ecc71';
 
-    // Botão de fixar
+    const statusEl = document.getElementById('editor-status');
+    if (statusEl) { statusEl.innerText = 'Salvo ✓'; statusEl.style.color = '#2ecc71'; }
+
     const btnFixar = document.getElementById('btn-fixar');
     if (btnFixar) btnFixar.style.color = nota.fixada ? '#8a2be2' : '#555';
 
-    // Foto
     const fotoPreview = document.getElementById('foto-preview');
     const fotoContainer = document.getElementById('foto-container');
     if (fotoPreview) {
@@ -160,7 +176,6 @@ function abrirEditor(nota) {
         }
     }
 
-    // Arquivo
     const anexoInfo = document.getElementById('anexo-info');
     if (anexoInfo) {
         anexoInfo.style.display = nota.anexoNome ? 'flex' : 'none';
@@ -170,12 +185,11 @@ function abrirEditor(nota) {
 
     contarPalavras();
     window.scrollTo(0, 0);
-    setTimeout(() => { if (!nota.titulo) document.getElementById('titulo-nota').focus(); }, 100);
+    if (window.lucide) lucide.createIcons();
+    setTimeout(function() { if (!nota.titulo) document.getElementById('titulo-nota').focus(); }, 100);
 }
 
-// ==========================================
 // VOLTAR
-// ==========================================
 window.voltarLista = function() {
     if (autoSaveTimer) { clearTimeout(autoSaveTimer); salvarNota(); }
     document.getElementById('tela-editor').style.display = 'none';
@@ -184,47 +198,41 @@ window.voltarLista = function() {
     carregarNotas();
 };
 
-// ==========================================
 // AUTO SAVE
-// ==========================================
 window.autoSave = function() {
     const statusEl = document.getElementById('editor-status');
-    statusEl.innerText = 'Editando...';
-    statusEl.style.color = '#555';
+    if (statusEl) { statusEl.innerText = 'Salvando...'; statusEl.style.color = '#555'; }
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(salvarNota, 1500);
 };
 
 async function salvarNota() {
     if (!notaAtual) return;
-    const titulo = document.getElementById('titulo-nota').value;
-    const corpo = document.getElementById('corpo-editor').innerHTML;
-    notaAtual.titulo = titulo;
-    notaAtual.corpo = corpo;
+    notaAtual.titulo = document.getElementById('titulo-nota').value;
+    notaAtual.corpo = document.getElementById('corpo-editor').innerHTML;
     notaAtual.atualizadoEm = Date.now();
 
-    const statusEl = document.getElementById('editor-status');
+    const idx = todasNotas.findIndex(function(n) { return n.id === notaAtual.id; });
+    if (idx !== -1) todasNotas[idx] = notaAtual;
+    salvarLocal();
 
-    if (userType === 'local' || !userEmail) {
-        const idx = todasNotas.findIndex(n => n.id === notaAtual.id);
-        if (idx !== -1) todasNotas[idx] = notaAtual;
-        localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
-    } else {
+    if (userType !== 'local' && userEmail && db && !notaAtual.id.startsWith('local_')) {
         try {
-            await updateDoc(doc(db, "caderno", notaAtual.id), {
-                titulo, corpo, atualizadoEm: Date.now(),
+            await db.collection("caderno").doc(notaAtual.id).update({
+                titulo: notaAtual.titulo,
+                corpo: notaAtual.corpo,
                 fixada: notaAtual.fixada,
+                atualizadoEm: notaAtual.atualizadoEm,
                 anexoNome: notaAtual.anexoNome || null
             });
         } catch(e) { console.error(e); }
     }
-    statusEl.innerText = 'Salvo ✓';
-    statusEl.style.color = '#2ecc71';
+
+    const statusEl = document.getElementById('editor-status');
+    if (statusEl) { statusEl.innerText = 'Salvo ✓'; statusEl.style.color = '#2ecc71'; }
 }
 
-// ==========================================
-// FIXAR NOTA
-// ==========================================
+// FIXAR
 window.toggleFixar = async function() {
     if (!notaAtual) return;
     notaAtual.fixada = !notaAtual.fixada;
@@ -234,9 +242,7 @@ window.toggleFixar = async function() {
     await salvarNota();
 };
 
-// ==========================================
-// EXCLUIR NOTA (modal bonito)
-// ==========================================
+// EXCLUIR
 window.excluirNota = function() {
     document.getElementById('modal-excluir-nota').style.display = 'flex';
 };
@@ -244,11 +250,10 @@ window.excluirNota = function() {
 window.confirmarExcluirNota = async function() {
     document.getElementById('modal-excluir-nota').style.display = 'none';
     if (!notaAtual) return;
-    if (userType === 'local' || !userEmail) {
-        todasNotas = todasNotas.filter(n => n.id !== notaAtual.id);
-        localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
-    } else {
-        try { await deleteDoc(doc(db, "caderno", notaAtual.id)); } catch(e) { console.error(e); }
+    todasNotas = todasNotas.filter(function(n) { return n.id !== notaAtual.id; });
+    salvarLocal();
+    if (userType !== 'local' && userEmail && db && !notaAtual.id.startsWith('local_')) {
+        try { await db.collection("caderno").doc(notaAtual.id).delete(); } catch(e) { console.error(e); }
     }
     voltarLista();
     toast('Nota excluída');
@@ -258,65 +263,47 @@ window.cancelarExcluirNota = function() {
     document.getElementById('modal-excluir-nota').style.display = 'none';
 };
 
-// ==========================================
 // FOTO
-// ==========================================
-window.abrirFoto = function() {
-    document.getElementById('input-foto').click();
-};
+window.abrirFoto = function() { document.getElementById('input-foto').click(); };
 
 window.processarFoto = function(input) {
     if (!input.files || !input.files[0]) return;
-    const file = input.files[0];
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = function(e) {
         if (!notaAtual) return;
         notaAtual.fotoLocal = e.target.result;
         const fotoPreview = document.getElementById('foto-preview');
         const fotoContainer = document.getElementById('foto-container');
         if (fotoPreview) { fotoPreview.src = e.target.result; fotoPreview.style.display = 'block'; }
         if (fotoContainer) fotoContainer.style.display = 'block';
-        // Salva localmente E no Firebase
-        const idx = todasNotas.findIndex(n => n.id === notaAtual.id);
+        const idx = todasNotas.findIndex(function(n) { return n.id === notaAtual.id; });
         if (idx !== -1) todasNotas[idx] = notaAtual;
-        localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
-        if (userType !== 'local' && userEmail && notaAtual.id && !notaAtual.id.startsWith('local_')) {
-            try { await updateDoc(doc(db, "caderno", notaAtual.id), { fotoLocal: e.target.result, atualizadoEm: Date.now() }); } catch(e) { console.error(e); }
-        }
+        salvarLocal();
         toast('📸 Foto adicionada!');
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(input.files[0]);
 };
 
-window.removerFoto = async function() {
+window.removerFoto = function() {
     if (!notaAtual) return;
     notaAtual.fotoLocal = null;
-    const fotoPreview = document.getElementById('foto-preview');
-    const fotoContainer = document.getElementById('foto-container');
-    if (fotoPreview) fotoPreview.style.display = 'none';
-    if (fotoContainer) fotoContainer.style.display = 'none';
-    const idx = todasNotas.findIndex(n => n.id === notaAtual.id);
+    document.getElementById('foto-preview').style.display = 'none';
+    document.getElementById('foto-container').style.display = 'none';
+    const idx = todasNotas.findIndex(function(n) { return n.id === notaAtual.id; });
     if (idx !== -1) todasNotas[idx] = notaAtual;
-    localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
-    if (userType !== 'local' && userEmail && notaAtual.id && !notaAtual.id.startsWith('local_')) {
-        try { await updateDoc(doc(db, "caderno", notaAtual.id), { fotoLocal: null, atualizadoEm: Date.now() }); } catch(e) { console.error(e); }
-    }
+    salvarLocal();
     toast('Foto removida');
 };
 
-// ==========================================
 // ARQUIVO
-// ==========================================
-window.abrirArquivo = function() {
-    document.getElementById('input-arquivo').click();
-};
+window.abrirArquivo = function() { document.getElementById('input-arquivo').click(); };
 
 window.processarArquivo = function(input) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
-    if (!notaAtual) return;
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = function(e) {
+        if (!notaAtual) return;
         notaAtual.anexoNome = file.name;
         notaAtual.anexoTipo = file.type;
         notaAtual.anexoBase64 = e.target.result;
@@ -324,10 +311,9 @@ window.processarArquivo = function(input) {
         const nomeEl = document.getElementById('anexo-nome');
         if (anexoInfo) anexoInfo.style.display = 'flex';
         if (nomeEl) nomeEl.innerText = file.name;
-        // Salva localmente
-        const idx = todasNotas.findIndex(n => n.id === notaAtual.id);
+        const idx = todasNotas.findIndex(function(n) { return n.id === notaAtual.id; });
         if (idx !== -1) todasNotas[idx] = notaAtual;
-        localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+        salvarLocal();
         toast('📎 Arquivo anexado!');
     };
     reader.readAsDataURL(file);
@@ -344,82 +330,75 @@ window.abrirAnexo = function() {
 window.removerArquivo = function() {
     if (!notaAtual) return;
     notaAtual.anexoNome = null;
-    notaAtual.anexoTipo = null;
+    notaAtual.anexoBase64 = null;
     const anexoInfo = document.getElementById('anexo-info');
     if (anexoInfo) anexoInfo.style.display = 'none';
-    autoSave();
+    const idx = todasNotas.findIndex(function(n) { return n.id === notaAtual.id; });
+    if (idx !== -1) todasNotas[idx] = notaAtual;
+    salvarLocal();
     toast('Arquivo removido');
 };
 
-// ==========================================
 // FORMATAÇÃO
-// ==========================================
 window.formatar = function(cmd) {
     document.getElementById('corpo-editor').focus();
     document.execCommand(cmd, false, null);
-    autoSave();
+    window.autoSave();
 };
 
 window.inserirSeparador = function() {
     document.getElementById('corpo-editor').focus();
     document.execCommand('insertHTML', false, '<hr>');
-    autoSave();
+    window.autoSave();
 };
 
 window.inserirChecklist = function() {
     document.getElementById('corpo-editor').focus();
     const id = 'chk_' + Date.now();
-    const html = `<div class="check-item" id="${id}"><input type="checkbox" onchange="toggleCheck('${id}')"><span contenteditable="true">Item</span></div>`;
-    document.execCommand('insertHTML', false, html);
-    autoSave();
+    document.execCommand('insertHTML', false,
+        '<div class="check-item" id="' + id + '"><input type="checkbox" onchange="toggleCheck(\'' + id + '\')"><span contenteditable="true">Item</span></div>');
+    window.autoSave();
 };
 
 window.toggleCheck = function(id) {
     const item = document.getElementById(id);
-    if (item) { item.classList.toggle('concluido'); autoSave(); }
+    if (item) { item.classList.toggle('concluido'); window.autoSave(); }
 };
 
 window.handleEditorKey = function(e) {
     if (e.key === 'Enter') {
         const sel = window.getSelection();
-        if (sel?.anchorNode) {
-            const checkItem = sel.anchorNode.closest?.('.check-item');
+        if (sel && sel.anchorNode && sel.anchorNode.closest) {
+            const checkItem = sel.anchorNode.closest('.check-item');
             if (checkItem) {
                 e.preventDefault();
                 const id = 'chk_' + Date.now();
-                const html = `<div class="check-item" id="${id}"><input type="checkbox" onchange="toggleCheck('${id}')"><span contenteditable="true"></span></div>`;
-                document.execCommand('insertHTML', false, html);
-                autoSave();
+                document.execCommand('insertHTML', false,
+                    '<div class="check-item" id="' + id + '"><input type="checkbox" onchange="toggleCheck(\'' + id + '\')"><span contenteditable="true"></span></div>');
+                window.autoSave();
             }
         }
     }
 };
 
-// ==========================================
-// CONTADOR DE PALAVRAS
-// ==========================================
 window.contarPalavras = function() {
     const texto = document.getElementById('corpo-editor').innerText || '';
     const palavras = texto.trim() ? texto.trim().split(/\s+/).length : 0;
-    document.getElementById('contador-palavras').innerText = palavras + ' palavra' + (palavras !== 1 ? 's' : '');
+    const el = document.getElementById('contador-palavras');
+    if (el) el.innerText = palavras + ' palavra' + (palavras !== 1 ? 's' : '');
 };
 
-// ==========================================
 // BUSCA
-// ==========================================
 window.filtrarNotas = function() {
     const termo = document.getElementById('campo-busca').value.toLowerCase();
     if (!termo) { renderizarLista(todasNotas); return; }
-    const filtradas = todasNotas.filter(n =>
-        (n.titulo || '').toLowerCase().includes(termo) ||
-        (n.corpo || '').replace(/<[^>]*>/g, '').toLowerCase().includes(termo)
-    );
-    renderizarLista(filtradas);
+    renderizarLista(todasNotas.filter(function(n) {
+        return (n.titulo || '').toLowerCase().includes(termo) ||
+               (n.corpo || '').replace(/<[^>]*>/g, '').toLowerCase().includes(termo);
+    }));
 };
 
-// ==========================================
-// IA DO CADERNO (Hugging Face)
-// ==========================================
+// IA
 window.abrirMenuIA = function() {
     document.getElementById('menu-ia').style.display = 'flex';
     document.getElementById('ia-resultado').style.display = 'none';
@@ -435,56 +414,43 @@ window.fecharMenuIA = function() {
 window.usarIA = async function(acao) {
     const corpo = document.getElementById('corpo-editor').innerText || '';
     const titulo = document.getElementById('titulo-nota').value || '';
-
-    if (!corpo.trim() && !titulo.trim()) {
-        toast('Escreva algo primeiro!', '#ff4444');
-        return;
-    }
+    if (!corpo.trim() && !titulo.trim()) { toast('Escreva algo primeiro!', '#ff4444'); return; }
 
     const prompts = {
-        resumir:  `Resuma a seguinte nota de estudo em tópicos principais, em português brasileiro. Seja conciso:\n\n${titulo}\n${corpo}`,
-        explicar: `Explique o conteúdo abaixo de forma simples e clara para um estudante do ensino médio, em português brasileiro:\n\n${titulo}\n${corpo}`,
-        lista:    `Transforme o texto abaixo em uma lista de bullet points bem organizada, em português brasileiro:\n\n${titulo}\n${corpo}`,
-        questoes: `Crie 5 questões de estudo com respostas curtas baseadas no conteúdo abaixo, em português brasileiro:\n\n${titulo}\n${corpo}`,
-        melhorar: `Melhore a escrita do texto abaixo, tornando-o mais claro e bem estruturado. Mantenha o conteúdo original, em português brasileiro:\n\n${corpo}`,
-        informal: `Reescreva o texto abaixo de forma mais casual e informal, como explicando para um amigo, em português brasileiro:\n\n${corpo}`
+        resumir:  'Resuma em português: ' + titulo + ' ' + corpo,
+        explicar: 'Explique de forma simples em português: ' + titulo + ' ' + corpo,
+        lista:    'Transforme em lista de tópicos em português: ' + titulo + ' ' + corpo,
+        questoes: 'Crie 3 questões de estudo em português sobre: ' + titulo + ' ' + corpo,
+        melhorar: 'Melhore o texto em português: ' + corpo,
+        informal: 'Reescreva de forma informal em português: ' + corpo
     };
 
     const resultadoEl = document.getElementById('ia-resultado');
     const acoesEl = document.getElementById('ia-acoes');
-
     resultadoEl.style.display = 'block';
-    resultadoEl.innerHTML = `<div class="ia-loading"><div class="ia-dot"></div><div class="ia-dot"></div><div class="ia-dot"></div></div>`;
+    resultadoEl.innerHTML = '<div class="ia-loading"><div class="ia-dot"></div><div class="ia-dot"></div><div class="ia-dot"></div></div>';
     acoesEl.style.display = 'none';
 
     try {
-        const response = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${HF_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                inputs: prompts[acao],
-                parameters: { max_new_tokens: 500, temperature: 0.7 }
-            })
+        const response = await fetch('https://api-inference.huggingface.co/models/' + HF_MODEL, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + HF_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ inputs: prompts[acao], parameters: { max_new_tokens: 400 } })
         });
 
         if (!response.ok) {
             const err = await response.json();
-            console.error('HF Error:', err);
-            if (err.error?.includes('loading')) {
-                resultadoEl.innerText = '⏳ Modelo carregando, aguarde 20 segundos e tente novamente.';
+            if (err.error && err.error.includes('loading')) {
+                resultadoEl.innerText = '⏳ Modelo carregando, aguarde 20s e tente novamente.';
             } else {
-                resultadoEl.innerText = 'IA indisponível no momento. Tente novamente em breve.';
+                resultadoEl.innerText = 'IA indisponível. Tente novamente em breve.';
             }
             return;
         }
 
         const data = await response.json();
-        resultadoIA = Array.isArray(data) ? data[0]?.generated_text || '' : data?.generated_text || '';
+        resultadoIA = Array.isArray(data) ? (data[0].generated_text || '') : (data.generated_text || '');
         resultadoIA = resultadoIA.trim();
-        
         resultadoEl.innerText = resultadoIA;
         acoesEl.style.display = 'flex';
     } catch(e) {
@@ -497,4 +463,14 @@ window.aceitarIA = function() {
     if (!resultadoIA) return;
     const editor = document.getElementById('corpo-editor');
     editor.innerHTML += '<hr><p>' + resultadoIA.replace(/\n/g, '<br>') + '</p>';
-    fecharMenuIA(
+    window.fecharMenuIA();
+    window.autoSave();
+    toast('✓ Resultado aplicado!');
+};
+
+// INIT
+document.addEventListener('DOMContentLoaded', function() {
+    initFirebase();
+    carregarNotas();
+    if (window.lucide) lucide.createIcons();
+});
