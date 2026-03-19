@@ -38,7 +38,6 @@
         @keyframes pulseLogoGlow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } }
         @keyframes textTrackingIn { 0% { letter-spacing: -5px; opacity: 0; } 100% { letter-spacing: 10px; opacity: 1; } }
         .splash-hidden { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
-
         #global-alert {
             background: linear-gradient(90deg, #8a2be2, #4b0082);
             color: white; padding: 12px; text-align: center; font-size: 13px;
@@ -49,12 +48,14 @@
             display: none; position: fixed; inset: 0; background: #080808; z-index: 20000;
             flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px;
         }
+        .logo-pulse { display: inline-flex; align-items: center; gap: 8px; font-weight: 900; font-size: 20px; letter-spacing: 1px; color: white; }
+        .brain-icon-pulse { color: #8a2be2; animation: logo-glow 2s infinite ease-in-out; }
+        @keyframes logo-glow { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px #8a2be2); } 50% { transform: scale(1.2); filter: drop-shadow(0 0 8px #8a2be2); } }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes progress-run { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
-
+        .user-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.3); display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 30000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
-        .modal-card-mural { background: #16161a; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(138,43,226,0.3); }
-
+        .modal-card { background: #16161a; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(138,43,226,0.3); }
         .modal-dono-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; backdrop-filter: blur(25px) saturate(180%); background: rgba(10,10,10,0.75); z-index: 99999; padding: 20px; }
         .modal-dono-card { border: 1px solid rgba(138,43,226,0.3); background: rgba(15,15,15,0.95); border-radius: 30px; width: 100%; max-width: 320px; padding: 40px 25px; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.5); animation: brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
         @keyframes brotarCard { from { opacity: 0; transform: scale(0.8) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
@@ -65,29 +66,12 @@
         @keyframes spin-orb { to { transform: rotate(360deg); } }
         @keyframes spin-orb-r { to { transform: rotate(-360deg); } }
         .core-glow { width: 50px; height: 50px; background: rgba(138,43,226,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(138,43,226,0.6); }
-
         #easter-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 999999; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
         #easter-overlay.ativo { display: flex; animation: easterIn 0.5s ease; }
         @keyframes easterIn { from { opacity: 0; } to { opacity: 1; } }
         .easter-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
         .particle { position: absolute; border-radius: 50%; background: #8a2be2; animation: particleFall linear infinite; }
         @keyframes particleFall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
-
-        /* WIDGET CHECKLIST */
-        .checklist-widget { background: #0d0d0f; border: 1px solid rgba(138,43,226,0.15); border-radius: 20px; padding: 16px 18px; margin-bottom: 16px; }
-        .checklist-widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .checklist-widget-title { display: flex; align-items: center; gap: 8px; font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #555; text-transform: uppercase; }
-        .checklist-widget-link { font-size: 10px; font-weight: 800; color: #8a2be2; cursor: pointer; letter-spacing: 1px; background: none; border: none; padding: 0; }
-        .checklist-widget-items { display: flex; flex-direction: column; gap: 8px; }
-        .check-widget-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); }
-        .check-widget-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #8a2be2; cursor: pointer; flex-shrink: 0; }
-        .check-widget-item span { font-size: 13px; color: #ccc; font-weight: 600; flex: 1; }
-        .check-widget-item.feito span { text-decoration: line-through; color: #444; }
-        .checklist-vazio { text-align: center; padding: 12px 0; font-size: 12px; color: #333; font-weight: 600; }
-        .checklist-progresso { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-        .checklist-barra { flex: 1; height: 3px; background: rgba(255,255,255,0.04); border-radius: 10px; overflow: hidden; }
-        .checklist-barra-fill { height: 100%; background: #8a2be2; border-radius: 10px; transition: width 0.4s ease; }
-        .checklist-pct { font-size: 10px; font-weight: 800; color: #8a2be2; min-width: 30px; text-align: right; }
     </style>
 </head>
 <body>
@@ -130,11 +114,11 @@
     </div>
 
     <header class="glass-header">
-        <div style="width:42px;"></div>
-        <div class="hub-logo-container" id="logo-home" onclick="abrirSobreDono()">
-            <span class="hub-logo-text">Hub</span>
-            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2; width:22px; height:22px;"></i></div>
-            <span class="hub-logo-text purple">Brain</span>
+        <div style="width: 40px;"></div>
+        <div class="logo-pulse" id="logo-home" onclick="abrirSobreDono()" style="cursor:pointer;">
+            <span>HUB</span>
+            <i data-lucide="brain-circuit" class="brain-icon-pulse"></i>
+            <span>BRAIN</span>
         </div>
         <div class="user-avatar" onclick="navegarPara('perfil.html')" style="cursor:pointer;">
             <i data-lucide="user" style="color:#8a2be2; width:22px;"></i>
@@ -143,39 +127,37 @@
 
     <main class="home-container">
         <section class="welcome-section">
-            <span id="frase-ia" class="day-phrase" style="color:#8a2be2; font-weight:600;">...</span>
+            <span id="frase-ia" class="day-phrase" style="color:#8a2be2; font-weight:700;">...</span>
             <h1 id="user-display-name">ESTUDANTE</h1>
         </section>
 
         <div class="app-grid">
-            <div class="app-item" onclick="navegarPara('notas.html')">
+            <div class="app-item" onclick="window.location.href='notas.html'">
                 <div class="app-icon purple"><i data-lucide="layout-dashboard"></i></div>
                 <span>Notas</span>
             </div>
-            <div class="app-item" onclick="navegarPara('agenda.html')">
+            <div class="app-item" onclick="window.location.href='agenda.html'">
                 <div class="app-icon blue"><i data-lucide="list-todo"></i></div>
                 <span>Agenda</span>
             </div>
-            <div class="app-item" onclick="navegarPara('foco.html')">
+            <div class="app-item" onclick="window.location.href='foco.html'">
                 <div class="app-icon red"><i data-lucide="timer"></i></div>
                 <span>Modo Foco</span>
             </div>
-            <div class="app-item" onclick="navegarPara('horario.html')">
+            <div class="app-item" onclick="window.location.href='horario.html'">
                 <div class="app-icon orange"><i data-lucide="clock"></i></div>
                 <span>Horário</span>
             </div>
-            <div class="app-item" onclick="navegarPara('estudos.html')">
+            <div class="app-item" onclick="window.location.href='estudos.html'">
                 <div class="app-icon green"><i data-lucide="brain-circuit"></i></div>
                 <span>Estudos & IA</span>
             </div>
-            <div class="app-item" onclick="navegarPara('ranking.html')">
+            <div class="app-item" onclick="window.location.href='ranking.html'">
                 <div class="app-icon gold"><i data-lucide="trophy"></i></div>
                 <span>Ranking</span>
             </div>
-            <div class="app-item" onclick="navegarPara('caderno.html')">
-                <div class="app-icon" style="color:#c084fc; background:rgba(192,132,252,0.08)!important; border-color:rgba(192,132,252,0.2)!important;">
-                    <i data-lucide="notebook-pen"></i>
-                </div>
+            <div class="app-item" onclick="window.location.href='caderno.html'">
+                <div class="app-icon" style="color:#c084fc; background:rgba(192,132,252,0.08)!important; border-color:rgba(192,132,252,0.2)!important;"><i data-lucide="notebook-pen"></i></div>
                 <span>Caderno</span>
             </div>
         </div>
@@ -189,24 +171,6 @@
                 </div>
             </div>
             <i data-lucide="chevron-right"></i>
-        </div>
-
-        <!-- WIDGET CHECKLIST -->
-        <div class="checklist-widget" id="checklist-widget" style="display:none;">
-            <div class="checklist-widget-header">
-                <div class="checklist-widget-title">
-                    <i data-lucide="repeat" style="width:14px; color:#8a2be2;"></i>
-                    ROTINA DO DIA
-                </div>
-                <button class="checklist-widget-link" onclick="navegarPara('caderno.html')">VER CADERNO →</button>
-            </div>
-            <div class="checklist-widget-items" id="checklist-widget-items"></div>
-            <div class="checklist-progresso" id="checklist-progresso" style="display:none;">
-                <div class="checklist-barra">
-                    <div class="checklist-barra-fill" id="checklist-barra-fill" style="width:0%"></div>
-                </div>
-                <span class="checklist-pct" id="checklist-pct">0%</span>
-            </div>
         </div>
 
         <section class="meta-progress-section" id="meta-progress-section" style="display:none;">
@@ -248,15 +212,16 @@
             </div>
         </section>
 
-        <div style="width: 100%; padding: 40px 0; text-align: center; opacity: 0.5;">
+        <div style="width: 100%; padding: 40px 0 40px 0; text-align: center; opacity: 0.5;">
             <p id="rodape-home" style="font-size: 10px; letter-spacing: 2px; color: #eee; font-weight: 300; text-transform: uppercase; font-family: sans-serif; cursor: pointer;">
-                FOUND & DEV <a href="https://www.instagram.com/wtfditoh" target="_blank" style="font-weight: 800; color: #8a2be2; text-decoration: none;">DITOH</a>
+                FOUND & DEV
+                <a href="https://www.instagram.com/wtfditoh" target="_blank" style="font-weight: 800; color: #8a2be2; text-decoration: none;">DITOH</a>
             </p>
         </div>
     </main>
 
     <div id="modal-mural" class="modal-overlay">
-        <div class="modal-card-mural">
+        <div class="modal-card">
             <h3 style="color:white">Aviso Importante</h3>
             <div id="mural-msg" style="margin:20px 0; color:#bbb; font-size:14px; line-height:1.5;"></div>
             <button onclick="document.getElementById('modal-mural').style.display='none'" style="width:100%; padding:12px; background:#8a2be2; border:none; border-radius:12px; color:white; font-weight:bold;">FECHAR</button>
@@ -304,4 +269,63 @@
               if (splash) splash.classList.add('splash-hidden');
             }, 600);
           }
-        }, 
+        }, 250);
+        if (window.lucide) lucide.createIcons();
+      });
+
+      function navegarPara(url) {
+        document.body.classList.add('saindo');
+        setTimeout(function() { window.location.href = url; }, 250);
+      }
+
+      function abrirSobreDono() {
+        document.getElementById('modal-dono').style.display = 'flex';
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function fecharSobreDono() {
+        document.getElementById('modal-dono').style.display = 'none';
+      }
+
+      var logoClicks = 0;
+      var logoTimer;
+      document.getElementById('logo-home').addEventListener('click', function() {
+        logoClicks++;
+        clearTimeout(logoTimer);
+        logoTimer = setTimeout(function() { logoClicks = 0; }, 2000);
+        if (logoClicks >= 7) { logoClicks = 0; ativarModoDeus(); }
+      });
+
+      function ativarModoDeus() {
+        var overlay = document.getElementById('easter-overlay');
+        var container = document.getElementById('easter-particles');
+        container.innerHTML = '';
+        for (var i = 0; i < 30; i++) {
+          var p = document.createElement('div');
+          p.className = 'particle';
+          p.style.left = (Math.random() * 100) + 'vw';
+          p.style.animationDuration = (Math.random() * 2 + 1) + 's';
+          p.style.animationDelay = (Math.random() * 2) + 's';
+          var size = (Math.random() * 8 + 4) + 'px';
+          p.style.width = size;
+          p.style.height = size;
+          container.appendChild(p);
+        }
+        overlay.classList.add('ativo');
+        if (window.lucide) lucide.createIcons();
+        setTimeout(function() { overlay.classList.remove('ativo'); }, 4000);
+      }
+
+      var rodapeClicks = 0;
+      var rodapeTimer;
+      document.getElementById('rodape-home').addEventListener('click', function(e) {
+        if (e.target.tagName === 'A') return;
+        rodapeClicks++;
+        clearTimeout(rodapeTimer);
+        rodapeTimer = setTimeout(function() { rodapeClicks = 0; }, 2000);
+        if (rodapeClicks >= 5) { rodapeClicks = 0; abrirSobreDono(); }
+      });
+
+      var manClicks = 0;
+      var manTimer;
+      document.getElementById('rodape-manutencao').addEventListener('click',
