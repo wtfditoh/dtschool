@@ -45,6 +45,21 @@
         .easter-particles { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
         .particle { position:absolute; border-radius:50%; background:#8a2be2; animation:particleFall linear infinite; }
         @keyframes particleFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
+
+        /* WIDGET CHECKLIST */
+        .checklist-widget { background:#0d0d0f; border:1px solid rgba(138,43,226,0.15); border-radius:20px; padding:16px 18px; margin-bottom:16px; }
+        .checklist-widget-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .checklist-widget-title { display:flex; align-items:center; gap:8px; font-size:9px; font-weight:800; letter-spacing:2px; color:#555; text-transform:uppercase; }
+        .checklist-widget-link { font-size:10px; font-weight:800; color:#8a2be2; cursor:pointer; letter-spacing:1px; background:none; border:none; padding:0; }
+        .checklist-widget-items { display:flex; flex-direction:column; gap:8px; }
+        .check-widget-item { display:flex; align-items:center; gap:12px; padding:10px 12px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid rgba(255,255,255,0.04); }
+        .check-widget-item input[type="checkbox"] { width:18px; height:18px; accent-color:#8a2be2; cursor:pointer; flex-shrink:0; }
+        .check-widget-item span { font-size:13px; color:#ccc; font-weight:600; flex:1; }
+        .check-widget-item.feito span { text-decoration:line-through; color:#444; }
+        .checklist-progresso { display:flex; align-items:center; gap:10px; margin-top:10px; }
+        .checklist-barra { flex:1; height:3px; background:rgba(255,255,255,0.04); border-radius:10px; overflow:hidden; }
+        .checklist-barra-fill { height:100%; background:#8a2be2; border-radius:10px; transition:width 0.4s ease; }
+        .checklist-pct { font-size:10px; font-weight:800; color:#8a2be2; min-width:30px; text-align:right; }
     </style>
 </head>
 <body>
@@ -148,6 +163,22 @@
             <i data-lucide="chevron-right"></i>
         </div>
 
+        <!-- WIDGET ROTINA DIÁRIA -->
+        <div class="checklist-widget" id="checklist-widget" style="display:none;">
+            <div class="checklist-widget-header">
+                <div class="checklist-widget-title">
+                    <i data-lucide="repeat" style="width:14px; color:#8a2be2;"></i>
+                    ROTINA DO DIA
+                </div>
+                <button class="checklist-widget-link" onclick="navegarPara('caderno.html')">VER CADERNO →</button>
+            </div>
+            <div class="checklist-widget-items" id="checklist-widget-items"></div>
+            <div class="checklist-progresso" id="checklist-progresso" style="display:none;">
+                <div class="checklist-barra"><div class="checklist-barra-fill" id="checklist-barra-fill" style="width:0%"></div></div>
+                <span class="checklist-pct" id="checklist-pct">0%</span>
+            </div>
+        </div>
+
         <section class="meta-progress-section" id="meta-progress-section" style="display:none;">
             <div class="meta-progress-card">
                 <div class="meta-progress-header">
@@ -247,69 +278,18 @@
           }
         }, 250);
         if (window.lucide) lucide.createIcons();
+        carregarChecklistWidget();
       });
 
-      function navegarPara(url) {
-        document.body.classList.add('saindo');
-        setTimeout(function() { window.location.href = url; }, 250);
-      }
-
-      function abrirSobreDono() {
-        document.getElementById('modal-dono').style.display = 'flex';
-        if (window.lucide) lucide.createIcons();
-      }
-
-      function fecharSobreDono() {
-        document.getElementById('modal-dono').style.display = 'none';
-      }
-
-      var logoClicks = 0;
-      var logoTimer;
-      document.getElementById('logo-home').addEventListener('click', function() {
-        logoClicks++;
-        clearTimeout(logoTimer);
-        logoTimer = setTimeout(function() { logoClicks = 0; }, 2000);
-        if (logoClicks >= 7) { logoClicks = 0; ativarModoDeus(); }
-      });
-
-      function ativarModoDeus() {
-        var overlay = document.getElementById('easter-overlay');
-        var container = document.getElementById('easter-particles');
-        container.innerHTML = '';
-        for (var i = 0; i < 30; i++) {
-          var p = document.createElement('div');
-          p.className = 'particle';
-          p.style.left = (Math.random() * 100) + 'vw';
-          p.style.animationDuration = (Math.random() * 2 + 1) + 's';
-          p.style.animationDelay = (Math.random() * 2) + 's';
-          var size = (Math.random() * 8 + 4) + 'px';
-          p.style.width = size;
-          p.style.height = size;
-          container.appendChild(p);
-        }
-        overlay.classList.add('ativo');
-        if (window.lucide) lucide.createIcons();
-        setTimeout(function() { overlay.classList.remove('ativo'); }, 4000);
-      }
-
-      var rodapeClicks = 0;
-      var rodapeTimer;
-      document.getElementById('rodape-home').addEventListener('click', function(e) {
-        if (e.target.tagName === 'A') return;
-        rodapeClicks++;
-        clearTimeout(rodapeTimer);
-        rodapeTimer = setTimeout(function() { rodapeClicks = 0; }, 2000);
-        if (rodapeClicks >= 5) { rodapeClicks = 0; abrirSobreDono(); }
-      });
-
-      var manClicks = 0;
-      var manTimer;
-      document.getElementById('rodape-manutencao').addEventListener('click', function() {
-        manClicks++;
-        clearTimeout(manTimer);
-        manTimer = setTimeout(function() { manClicks = 0; }, 2000);
-        if (manClicks >= 5) { manClicks = 0; abrirSobreDono(); }
-      });
-    </script>
-</body>
-</html>
+      function carregarChecklistWidget() {
+        var hoje = new Date().toISOString().split('T')[0];
+        var notas = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
+        var itensRotina = [];
+        for (var n = 0; n < notas.length; n++) {
+          var nota = notas[n];
+          if (!nota.rotinaDiaria || !nota.corpo) continue;
+          var div = document.createElement('div');
+          div.innerHTML = nota.corpo;
+          var checks = div.querySelectorAll('.check-item');
+          var estadoHoje = JSON.parse(localStorage.getItem('dt_checklist_' + hoje) || '{}');
+          for (var c = 0; c < checks.length; c++
