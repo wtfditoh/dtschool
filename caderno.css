@@ -99,4 +99,20 @@ body { background: #050508; color: white; font-family: 'Inter', -apple-system, s
 .ia-dot:nth-child(2) { animation-delay:0.2s; }
 .ia-dot:nth-child(3) { animation-delay:0.4s; }
 @keyframes iaDot { 0%,60%,100%{transform:scale(0.6);opacity:0.4;} 30%{transform:scale(1);opacity:1;} }
-                                  
+
+/* FOTO NO EDITOR */
+#foto-preview { width:100%; border-radius:16px; max-height:250px; object-fit:cover; margin-bottom:16px; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+
+/* IA PANEL */
+.ia-panel { background:#0e0e12; border:1px solid rgba(138,43,226,0.2); border-radius:24px; padding:20px; width:100%; max-width:420px; max-height:85vh; overflow-y:auto; }
+.ia-panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.ia-opcoes { display:flex; flex-direction:column; gap:8px; }
+.ia-opcao { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); color:#ccc; padding:14px 16px; border-radius:14px; font-size:13px; font-weight:700; cursor:pointer; text-align:left; transition:0.15s; font-family:inherit; }
+.ia-opcao:active { background:rgba(138,43,226,0.1); border-color:rgba(138,43,226,0.3); color:#c084fc; }
+
+/* LOADING IA */
+.ia-loading { display:flex; gap:6px; align-items:center; padding:8px 0; }
+.ia-dot { width:6px; height:6px; border-radius:50%; background:#8a2be2; animation:iaDot 1.2s ease-in-out infinite; }
+.ia-dot:nth-child(2) { animation-delay:0.2s; }
+.ia-dot:nth-child(3) { animation-delay:0.4s; }
+@keyframes iaDot { 0%,60%,100%{transform:scale(0.6);opacity:0.4;} 30%{transform:scale(1);opacity:1;} }
