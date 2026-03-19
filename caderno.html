@@ -182,13 +182,20 @@
                 });
             }
 
-            // Botão + cria nota (sem conflito com menu.js)
+            // Botão + cria nota — aguarda módulo carregar
             const btnNovaNota = document.getElementById('btn-nova-nota');
             if (btnNovaNota) {
                 btnNovaNota.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (typeof novaNota === 'function') novaNota();
+                    if (typeof window.novaNota === 'function') {
+                        window.novaNota();
+                    } else {
+                        // Tenta de novo em 300ms se módulo ainda não carregou
+                        setTimeout(function() {
+                            if (typeof window.novaNota === 'function') window.novaNota();
+                        }, 300);
+                    }
                 });
             }
 
