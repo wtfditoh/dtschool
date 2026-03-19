@@ -242,6 +242,19 @@ window.toggleFixar = async function() {
     await salvarNota();
 };
 
+// ROTINA DIÁRIA
+window.toggleRotina = async function() {
+    if (!notaAtual) return;
+    notaAtual.rotinaDiaria = !notaAtual.rotinaDiaria;
+    var btnRotina = document.getElementById('btn-rotina');
+    if (btnRotina) {
+        btnRotina.style.color = notaAtual.rotinaDiaria ? '#2ecc71' : '#555';
+        btnRotina.title = notaAtual.rotinaDiaria ? 'Rotina ativa' : 'Marcar como rotina diária';
+    }
+    toast(notaAtual.rotinaDiaria ? '🔄 Rotina diária ativada!' : 'Rotina desativada');
+    await salvarNota();
+};
+
 // EXCLUIR
 window.excluirNota = function() {
     document.getElementById('modal-excluir-nota').style.display = 'flex';
@@ -474,3 +487,4 @@ document.addEventListener('DOMContentLoaded', function() {
     carregarNotas();
     if (window.lucide) lucide.createIcons();
 });
+        
