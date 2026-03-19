@@ -16,6 +16,10 @@ const db = getFirestore(app);
 const userEmail = (localStorage.getItem('dt_user_email') || '').toLowerCase();
 const userType = localStorage.getItem('dt_user_type');
 
+// ⚠️ SUBSTITUA PELA SUA CHAVE DO HUGGING FACE
+const HF_KEY = "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";
+const HF_MODEL = "mistralai/Mistral-7B-Instruct-v0.3";
+
 let notaAtual = null;
 let autoSaveTimer = null;
 let resultadoIA = '';
@@ -30,7 +34,7 @@ function toast(msg, cor = '#8a2be2') {
     el.style.borderColor = cor + '66';
     el.style.display = 'block';
     el.style.opacity = '1';
-    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => { el.style.display = 'none'; }, 300); }, 2000);
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.style.display = 'none', 300); }, 2500);
 }
 
 // ==========================================
@@ -68,6 +72,7 @@ function renderizarLista(notas) {
     lista.innerHTML = ordenadas.map(n => {
         const preview = n.corpo ? n.corpo.replace(/<[^>]*>/g, '').slice(0, 80) : '';
         const data = n.atualizadoEm ? new Date(n.atualizadoEm).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) : '';
+        const temAnexo = n.anexoNome || n.fotoLocal;
         return `
         <div class="nota-card ${n.fixada ? 'fixada' : ''}" onclick="abrirNota('${n.id}')">
             <div class="nota-card-header">
@@ -77,7 +82,10 @@ function renderizarLista(notas) {
             ${preview ? `<p class="nota-card-preview">${preview}</p>` : ''}
             <div class="nota-card-footer">
                 <span class="nota-card-data">${data}</span>
-                ${n.fixada ? '<span class="nota-card-tag">FIXADA</span>' : ''}
+                <div style="display:flex; gap:6px; align-items:center;">
+                    ${temAnexo ? '<span class="nota-card-tag">📎 ANEXO</span>' : ''}
+                    ${n.fixada ? '<span class="nota-card-tag">📌 FIXADA</span>' : ''}
+                </div>
             </div>
         </div>`;
     }).join('');
@@ -88,14 +96,10 @@ function renderizarLista(notas) {
 // ==========================================
 window.novaNota = async function() {
     const nova = {
-        titulo: '',
-        corpo: '',
-        fixada: false,
-        usuario: userEmail,
-        criadoEm: Date.now(),
-        atualizadoEm: Date.now()
+        titulo: '', corpo: '', fixada: false,
+        usuario: userEmail, fotoLocal: null, anexoNome: null,
+        criadoEm: Date.now(), atualizadoEm: Date.now()
     };
-
     if (userType === 'local' || !userEmail) {
         nova.id = 'local_' + Date.now();
         todasNotas.unshift(nova);
@@ -112,7 +116,7 @@ window.novaNota = async function() {
 };
 
 // ==========================================
-// ABRIR NOTA EXISTENTE
+// ABRIR NOTA
 // ==========================================
 window.abrirNota = function(id) {
     const nota = todasNotas.find(n => n.id === id);
@@ -125,16 +129,39 @@ function abrirEditor(nota) {
     document.getElementById('tela-editor').style.display = 'block';
     document.getElementById('titulo-nota').value = nota.titulo || '';
     document.getElementById('corpo-editor').innerHTML = nota.corpo || '';
-    document.getElementById('editor-status').innerText = 'Salvo';
+    document.getElementById('editor-status').innerText = 'Salvo ✓';
+    document.getElementById('editor-status').style.color = '#2ecc71';
+
+    // Botão de fixar
+    const btnFixar = document.getElementById('btn-fixar');
+    if (btnFixar) btnFixar.style.color = nota.fixada ? '#8a2be2' : '#555';
+
+    // Foto
+    const fotoPreview = document.getElementById('foto-preview');
+    if (fotoPreview) {
+        if (nota.fotoLocal) {
+            fotoPreview.src = nota.fotoLocal;
+            fotoPreview.style.display = 'block';
+        } else {
+            fotoPreview.style.display = 'none';
+        }
+    }
+
+    // Arquivo
+    const anexoInfo = document.getElementById('anexo-info');
+    if (anexoInfo) {
+        anexoInfo.style.display = nota.anexoNome ? 'flex' : 'none';
+        const nomeEl = document.getElementById('anexo-nome');
+        if (nomeEl) nomeEl.innerText = nota.anexoNome || '';
+    }
+
     contarPalavras();
     window.scrollTo(0, 0);
-    setTimeout(() => {
-        if (!nota.titulo) document.getElementById('titulo-nota').focus();
-    }, 100);
+    setTimeout(() => { if (!nota.titulo) document.getElementById('titulo-nota').focus(); }, 100);
 }
 
 // ==========================================
-// VOLTAR PRA LISTA
+// VOLTAR
 // ==========================================
 window.voltarLista = function() {
     if (autoSaveTimer) { clearTimeout(autoSaveTimer); salvarNota(); }
@@ -148,7 +175,9 @@ window.voltarLista = function() {
 // AUTO SAVE
 // ==========================================
 window.autoSave = function() {
-    document.getElementById('editor-status').innerText = 'Editando...';
+    const statusEl = document.getElementById('editor-status');
+    statusEl.innerText = 'Editando...';
+    statusEl.style.color = '#555';
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(salvarNota, 1500);
 };
@@ -157,12 +186,11 @@ async function salvarNota() {
     if (!notaAtual) return;
     const titulo = document.getElementById('titulo-nota').value;
     const corpo = document.getElementById('corpo-editor').innerHTML;
-
     notaAtual.titulo = titulo;
     notaAtual.corpo = corpo;
     notaAtual.atualizadoEm = Date.now();
 
-    document.getElementById('editor-status').innerText = 'Salvando...';
+    const statusEl = document.getElementById('editor-status');
 
     if (userType === 'local' || !userEmail) {
         const idx = todasNotas.findIndex(n => n.id === notaAtual.id);
@@ -170,19 +198,39 @@ async function salvarNota() {
         localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
     } else {
         try {
-            await updateDoc(doc(db, "caderno", notaAtual.id), { titulo, corpo, atualizadoEm: Date.now() });
+            await updateDoc(doc(db, "caderno", notaAtual.id), {
+                titulo, corpo, atualizadoEm: Date.now(),
+                fixada: notaAtual.fixada,
+                anexoNome: notaAtual.anexoNome || null
+            });
         } catch(e) { console.error(e); }
     }
-    document.getElementById('editor-status').innerText = 'Salvo ✓';
+    statusEl.innerText = 'Salvo ✓';
+    statusEl.style.color = '#2ecc71';
 }
 
 // ==========================================
-// EXCLUIR NOTA
+// FIXAR NOTA
 // ==========================================
-window.excluirNota = async function() {
+window.toggleFixar = async function() {
     if (!notaAtual) return;
-    if (!confirm('Excluir essa nota?')) return;
+    notaAtual.fixada = !notaAtual.fixada;
+    const btnFixar = document.getElementById('btn-fixar');
+    if (btnFixar) btnFixar.style.color = notaAtual.fixada ? '#8a2be2' : '#555';
+    toast(notaAtual.fixada ? '📌 Nota fixada!' : 'Nota desafixada');
+    await salvarNota();
+};
 
+// ==========================================
+// EXCLUIR NOTA (modal bonito)
+// ==========================================
+window.excluirNota = function() {
+    document.getElementById('modal-excluir-nota').style.display = 'flex';
+};
+
+window.confirmarExcluirNota = async function() {
+    document.getElementById('modal-excluir-nota').style.display = 'none';
+    if (!notaAtual) return;
     if (userType === 'local' || !userEmail) {
         todasNotas = todasNotas.filter(n => n.id !== notaAtual.id);
         localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
@@ -193,17 +241,93 @@ window.excluirNota = async function() {
     toast('Nota excluída');
 };
 
+window.cancelarExcluirNota = function() {
+    document.getElementById('modal-excluir-nota').style.display = 'none';
+};
+
+// ==========================================
+// FOTO
+// ==========================================
+window.abrirFoto = function() {
+    document.getElementById('input-foto').click();
+};
+
+window.processarFoto = function(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        if (!notaAtual) return;
+        notaAtual.fotoLocal = e.target.result;
+        const fotoPreview = document.getElementById('foto-preview');
+        if (fotoPreview) {
+            fotoPreview.src = e.target.result;
+            fotoPreview.style.display = 'block';
+        }
+        // Salva localmente
+        const idx = todasNotas.findIndex(n => n.id === notaAtual.id);
+        if (idx !== -1) todasNotas[idx] = notaAtual;
+        localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+        toast('📸 Foto adicionada!');
+    };
+    reader.readAsDataURL(file);
+};
+
+window.removerFoto = function() {
+    if (!notaAtual) return;
+    notaAtual.fotoLocal = null;
+    const fotoPreview = document.getElementById('foto-preview');
+    if (fotoPreview) fotoPreview.style.display = 'none';
+    const idx = todasNotas.findIndex(n => n.id === notaAtual.id);
+    if (idx !== -1) todasNotas[idx] = notaAtual;
+    localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+    toast('Foto removida');
+};
+
+// ==========================================
+// ARQUIVO
+// ==========================================
+window.abrirArquivo = function() {
+    document.getElementById('input-arquivo').click();
+};
+
+window.processarArquivo = function(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    if (!notaAtual) return;
+    notaAtual.anexoNome = file.name;
+    notaAtual.anexoTipo = file.type;
+    const anexoInfo = document.getElementById('anexo-info');
+    const nomeEl = document.getElementById('anexo-nome');
+    if (anexoInfo) anexoInfo.style.display = 'flex';
+    if (nomeEl) nomeEl.innerText = file.name;
+    autoSave();
+    toast('📎 Arquivo anexado!');
+};
+
+window.removerArquivo = function() {
+    if (!notaAtual) return;
+    notaAtual.anexoNome = null;
+    notaAtual.anexoTipo = null;
+    const anexoInfo = document.getElementById('anexo-info');
+    if (anexoInfo) anexoInfo.style.display = 'none';
+    autoSave();
+    toast('Arquivo removido');
+};
+
 // ==========================================
 // FORMATAÇÃO
 // ==========================================
 window.formatar = function(cmd) {
     document.getElementById('corpo-editor').focus();
     document.execCommand(cmd, false, null);
+    autoSave();
 };
 
 window.inserirSeparador = function() {
     document.getElementById('corpo-editor').focus();
     document.execCommand('insertHTML', false, '<hr>');
+    autoSave();
 };
 
 window.inserirChecklist = function() {
@@ -216,17 +340,14 @@ window.inserirChecklist = function() {
 
 window.toggleCheck = function(id) {
     const item = document.getElementById(id);
-    if (item) {
-        item.classList.toggle('concluido');
-        autoSave();
-    }
+    if (item) { item.classList.toggle('concluido'); autoSave(); }
 };
 
 window.handleEditorKey = function(e) {
     if (e.key === 'Enter') {
         const sel = window.getSelection();
-        if (sel && sel.anchorNode) {
-            const checkItem = sel.anchorNode.closest && sel.anchorNode.closest('.check-item');
+        if (sel?.anchorNode) {
+            const checkItem = sel.anchorNode.closest?.('.check-item');
             if (checkItem) {
                 e.preventDefault();
                 const id = 'chk_' + Date.now();
@@ -261,11 +382,10 @@ window.filtrarNotas = function() {
 };
 
 // ==========================================
-// IA DO CADERNO
+// IA DO CADERNO (Hugging Face)
 // ==========================================
 window.abrirMenuIA = function() {
-    const menu = document.getElementById('menu-ia');
-    menu.style.display = 'flex';
+    document.getElementById('menu-ia').style.display = 'flex';
     document.getElementById('ia-resultado').style.display = 'none';
     document.getElementById('ia-acoes').style.display = 'none';
     if (window.lucide) lucide.createIcons();
@@ -280,18 +400,18 @@ window.usarIA = async function(acao) {
     const corpo = document.getElementById('corpo-editor').innerText || '';
     const titulo = document.getElementById('titulo-nota').value || '';
 
-    if (!corpo && !titulo) {
+    if (!corpo.trim() && !titulo.trim()) {
         toast('Escreva algo primeiro!', '#ff4444');
         return;
     }
 
     const prompts = {
-        resumir:  `Resuma a seguinte nota de estudo em poucos pontos principais, em português:\n\n${titulo}\n${corpo}`,
-        explicar: `Explique o conteúdo abaixo de forma simples e clara, como se fosse pra um estudante do ensino médio, em português:\n\n${titulo}\n${corpo}`,
-        lista:    `Transforme o texto abaixo em uma lista de bullet points organizada, em português:\n\n${titulo}\n${corpo}`,
-        questoes: `Crie 5 questões de estudo baseadas no conteúdo abaixo, com respostas curtas, em português:\n\n${titulo}\n${corpo}`,
-        melhorar: `Melhore a escrita do texto abaixo, tornando-o mais claro e bem estruturado, mantendo o conteúdo original, em português:\n\n${corpo}`,
-        informal: `Reescreva o texto abaixo de forma mais casual e informal, como se estivesse explicando pra um amigo, em português:\n\n${corpo}`
+        resumir:  `Resuma a seguinte nota de estudo em tópicos principais, em português brasileiro. Seja conciso:\n\n${titulo}\n${corpo}`,
+        explicar: `Explique o conteúdo abaixo de forma simples e clara para um estudante do ensino médio, em português brasileiro:\n\n${titulo}\n${corpo}`,
+        lista:    `Transforme o texto abaixo em uma lista de bullet points bem organizada, em português brasileiro:\n\n${titulo}\n${corpo}`,
+        questoes: `Crie 5 questões de estudo com respostas curtas baseadas no conteúdo abaixo, em português brasileiro:\n\n${titulo}\n${corpo}`,
+        melhorar: `Melhore a escrita do texto abaixo, tornando-o mais claro e bem estruturado. Mantenha o conteúdo original, em português brasileiro:\n\n${corpo}`,
+        informal: `Reescreva o texto abaixo de forma mais casual e informal, como explicando para um amigo, em português brasileiro:\n\n${corpo}`
     };
 
     const resultadoEl = document.getElementById('ia-resultado');
@@ -302,17 +422,28 @@ window.usarIA = async function(acao) {
     acoesEl.style.display = 'none';
 
     try {
-        const response = await fetch("https://api.anthropic.com/v1/messages", {
+        const response = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Authorization": `Bearer ${HF_KEY}`,
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
-                model: "claude-sonnet-4-20250514",
-                max_tokens: 1000,
-                messages: [{ role: "user", content: prompts[acao] }]
+                inputs: `<s>[INST] ${prompts[acao]} [/INST]`,
+                parameters: { max_new_tokens: 500, temperature: 0.7, return_full_text: false }
             })
         });
+
         const data = await response.json();
-        resultadoIA = data.content?.[0]?.text || 'Erro ao gerar resposta.';
+        
+        if (data.error) {
+            resultadoEl.innerText = 'IA indisponível no momento. Tente novamente.';
+            return;
+        }
+
+        resultadoIA = Array.isArray(data) ? data[0]?.generated_text || '' : data?.generated_text || '';
+        resultadoIA = resultadoIA.replace(/\[\/INST\]/g, '').trim();
+        
         resultadoEl.innerText = resultadoIA;
         acoesEl.style.display = 'flex';
     } catch(e) {
@@ -324,10 +455,10 @@ window.usarIA = async function(acao) {
 window.aceitarIA = function() {
     if (!resultadoIA) return;
     const editor = document.getElementById('corpo-editor');
-    editor.innerHTML += '<hr>' + resultadoIA.replace(/\n/g, '<br>');
+    editor.innerHTML += '<hr><p>' + resultadoIA.replace(/\n/g, '<br>') + '</p>';
     fecharMenuIA();
     autoSave();
-    toast('Resultado aplicado ✓');
+    toast('✓ Resultado aplicado!');
 };
 
 // ==========================================
@@ -337,3 +468,4 @@ document.addEventListener('DOMContentLoaded', () => {
     carregarNotas();
     if (window.lucide) lucide.createIcons();
 });
+          
