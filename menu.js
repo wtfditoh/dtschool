@@ -88,14 +88,14 @@ const criarMenuGlobal = () => {
     }
 
     // --- MARCAR LINK ATIVO ---
-    const path = window.location.pathname;
-    if (path === "/" || path.endsWith("index.html")) {
+    const pathAtivo = window.location.pathname;
+    if (pathAtivo === "/" || pathAtivo.endsWith("index.html")) {
         const linkHome = document.getElementById('link-home');
         if (linkHome) linkHome.classList.add('active');
     }
     const paginas = ['notas', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco', 'admin', 'caderno'];
     paginas.forEach(pg => {
-        if (path.includes(pg)) {
+        if (pathAtivo.includes(pg)) {
             const link = document.getElementById(`link-${pg}`);
             if (link) link.classList.add('active');
         }
@@ -103,11 +103,13 @@ const criarMenuGlobal = () => {
 
     // --- TRANSIÇÕES ENTRE PÁGINAS ---
     // Fade de entrada — página aparece suavemente ao carregar
+    var path = window.location.pathname;
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.3s ease';
+    var fadeDelay = path.includes('caderno') ? 300 : 50;
     setTimeout(function() {
         document.body.style.opacity = '1';
-    }, 50);
+    }, fadeDelay);
 
     // Fade de saída — intercepta todos os links do menu
     document.querySelectorAll('.menu-links a').forEach(function(link) {
