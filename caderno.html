@@ -181,11 +181,14 @@
             });
 
             // Botão + cria nota
-            document.getElementById('btn-nova-nota').addEventListener('click', function(e) {
+            var btnNota = document.getElementById('btn-nova-nota');
+            btnNota.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                e.stopImmediatePropagation();
                 if (typeof window.novaNota === 'function') window.novaNota();
-            });
+                return false;
+            }, true);
 
             if (window.lucide) lucide.createIcons();
         });
