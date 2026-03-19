@@ -125,6 +125,15 @@ window.abrirNota = function(id) {
 };
 
 function abrirEditor(nota) {
+    // Busca dados locais atualizados (foto/arquivo ficam só no localStorage)
+    const local = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
+    const localNota = local.find(n => n.id === nota.id);
+    if (localNota) {
+        nota.fotoLocal = localNota.fotoLocal || nota.fotoLocal;
+        nota.anexoNome = localNota.anexoNome || nota.anexoNome;
+        nota.anexoBase64 = localNota.anexoBase64 || nota.anexoBase64;
+    }
+
     notaAtual = nota;
     document.getElementById('tela-lista').style.display = 'none';
     document.getElementById('tela-editor').style.display = 'block';
@@ -139,12 +148,15 @@ function abrirEditor(nota) {
 
     // Foto
     const fotoPreview = document.getElementById('foto-preview');
+    const fotoContainer = document.getElementById('foto-container');
     if (fotoPreview) {
         if (nota.fotoLocal) {
             fotoPreview.src = nota.fotoLocal;
             fotoPreview.style.display = 'block';
+            if (fotoContainer) fotoContainer.style.display = 'block';
         } else {
             fotoPreview.style.display = 'none';
+            if (fotoContainer) fotoContainer.style.display = 'none';
         }
     }
 
@@ -257,31 +269,38 @@ window.processarFoto = function(input) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         if (!notaAtual) return;
         notaAtual.fotoLocal = e.target.result;
         const fotoPreview = document.getElementById('foto-preview');
-        if (fotoPreview) {
-            fotoPreview.src = e.target.result;
-            fotoPreview.style.display = 'block';
-        }
-        // Salva localmente
+        const fotoContainer = document.getElementById('foto-container');
+        if (fotoPreview) { fotoPreview.src = e.target.result; fotoPreview.style.display = 'block'; }
+        if (fotoContainer) fotoContainer.style.display = 'block';
+        // Salva localmente E no Firebase
         const idx = todasNotas.findIndex(n => n.id === notaAtual.id);
         if (idx !== -1) todasNotas[idx] = notaAtual;
         localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+        if (userType !== 'local' && userEmail && notaAtual.id && !notaAtual.id.startsWith('local_')) {
+            try { await updateDoc(doc(db, "caderno", notaAtual.id), { fotoLocal: e.target.result, atualizadoEm: Date.now() }); } catch(e) { console.error(e); }
+        }
         toast('📸 Foto adicionada!');
     };
     reader.readAsDataURL(file);
 };
 
-window.removerFoto = function() {
+window.removerFoto = async function() {
     if (!notaAtual) return;
     notaAtual.fotoLocal = null;
     const fotoPreview = document.getElementById('foto-preview');
+    const fotoContainer = document.getElementById('foto-container');
     if (fotoPreview) fotoPreview.style.display = 'none';
+    if (fotoContainer) fotoContainer.style.display = 'none';
     const idx = todasNotas.findIndex(n => n.id === notaAtual.id);
     if (idx !== -1) todasNotas[idx] = notaAtual;
     localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+    if (userType !== 'local' && userEmail && notaAtual.id && !notaAtual.id.startsWith('local_')) {
+        try { await updateDoc(doc(db, "caderno", notaAtual.id), { fotoLocal: null, atualizadoEm: Date.now() }); } catch(e) { console.error(e); }
+    }
     toast('Foto removida');
 };
 
@@ -296,14 +315,30 @@ window.processarArquivo = function(input) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
     if (!notaAtual) return;
-    notaAtual.anexoNome = file.name;
-    notaAtual.anexoTipo = file.type;
-    const anexoInfo = document.getElementById('anexo-info');
-    const nomeEl = document.getElementById('anexo-nome');
-    if (anexoInfo) anexoInfo.style.display = 'flex';
-    if (nomeEl) nomeEl.innerText = file.name;
-    autoSave();
-    toast('📎 Arquivo anexado!');
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        notaAtual.anexoNome = file.name;
+        notaAtual.anexoTipo = file.type;
+        notaAtual.anexoBase64 = e.target.result;
+        const anexoInfo = document.getElementById('anexo-info');
+        const nomeEl = document.getElementById('anexo-nome');
+        if (anexoInfo) anexoInfo.style.display = 'flex';
+        if (nomeEl) nomeEl.innerText = file.name;
+        // Salva localmente
+        const idx = todasNotas.findIndex(n => n.id === notaAtual.id);
+        if (idx !== -1) todasNotas[idx] = notaAtual;
+        localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+        toast('📎 Arquivo anexado!');
+    };
+    reader.readAsDataURL(file);
+};
+
+window.abrirAnexo = function() {
+    if (!notaAtual || !notaAtual.anexoBase64) { toast('Arquivo não disponível', '#ff4444'); return; }
+    const link = document.createElement('a');
+    link.href = notaAtual.anexoBase64;
+    link.download = notaAtual.anexoNome || 'arquivo';
+    link.click();
 };
 
 window.removerArquivo = function() {
@@ -462,10 +497,4 @@ window.aceitarIA = function() {
     toast('✓ Resultado aplicado!');
 };
 
-// ==========================================
-// INIT
-// ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-    carregarNotas();
-    if (window.lucide) lucide.createIcons();
-});
+// ======================================
