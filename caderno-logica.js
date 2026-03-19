@@ -44,11 +44,12 @@ function toast(msg, cor) {
 // CARREGAR NOTAS
 async function carregarNotas() {
     const local = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
-    if (!userEmail || userType === 'local' || !db) {
-        todasNotas = local;
-        renderizarLista(todasNotas);
-        return;
-    }
+    // Mostra local primeiro pra não ficar preso no "Carregando"
+    todasNotas = local;
+    renderizarLista(todasNotas);
+
+    if (!userEmail || userType === 'local' || !db) return;
+
     try {
         const snap = await db.collection("caderno").where("usuario", "==", userEmail).get();
         todasNotas = [];
@@ -505,4 +506,4 @@ window.usarIA = async function(acao) {
     const resultadoEl = document.getElementById('ia-resultado');
     const acoesEl = document.getElementById('ia-acoes');
     resultadoEl.style.display = 'block';
-    resultadoEl.innerHTML = '<div class="ia-loading"><div class="ia-dot"></div><div class="ia-dot"></div><div cl
+    resultadoEl.innerHTML = '<div class="ia-loading"><div class="ia-d
