@@ -18,7 +18,7 @@ const userType = localStorage.getItem('dt_user_type');
 
 // ⚠️ SUBSTITUA PELA SUA CHAVE DO HUGGING FACE
 const HF_KEY = "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";
-const HF_MODEL = "HuggingFaceH4/zephyr-7b-beta";
+const HF_MODEL = "google/flan-t5-large";
 
 let notaAtual = null;
 let autoSaveTimer = null;
@@ -465,20 +465,25 @@ window.usarIA = async function(acao) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                inputs: `<|system|>\nVocê é um assistente de estudos útil que responde em português brasileiro.</s>\n<|user|>\n${prompts[acao]}</s>\n<|assistant|>`,
-                parameters: { max_new_tokens: 500, temperature: 0.7, return_full_text: false }
+                inputs: prompts[acao],
+                parameters: { max_new_tokens: 500, temperature: 0.7 }
             })
         });
 
-        const data = await response.json();
-        
-        if (data.error) {
-            resultadoEl.innerText = 'IA indisponível no momento. Tente novamente.';
+        if (!response.ok) {
+            const err = await response.json();
+            console.error('HF Error:', err);
+            if (err.error?.includes('loading')) {
+                resultadoEl.innerText = '⏳ Modelo carregando, aguarde 20 segundos e tente novamente.';
+            } else {
+                resultadoEl.innerText = 'IA indisponível no momento. Tente novamente em breve.';
+            }
             return;
         }
 
+        const data = await response.json();
         resultadoIA = Array.isArray(data) ? data[0]?.generated_text || '' : data?.generated_text || '';
-        resultadoIA = resultadoIA.replace(/\[\/INST\]/g, '').trim();
+        resultadoIA = resultadoIA.trim();
         
         resultadoEl.innerText = resultadoIA;
         acoesEl.style.display = 'flex';
@@ -492,9 +497,4 @@ window.aceitarIA = function() {
     if (!resultadoIA) return;
     const editor = document.getElementById('corpo-editor');
     editor.innerHTML += '<hr><p>' + resultadoIA.replace(/\n/g, '<br>') + '</p>';
-    fecharMenuIA();
-    autoSave();
-    toast('✓ Resultado aplicado!');
-};
-
-// ======================================
+    fecharMenuIA(
