@@ -29,8 +29,6 @@
         @keyframes progress-run { 0%{transform:translateX(-100%);} 100%{transform:translateX(250%);} }
         .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:30000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); }
         .modal-card-mural { background:#16161a; padding:25px; border-radius:25px; width:100%; max-width:400px; text-align:center; border:1px solid rgba(138,43,226,0.3); }
-
-        /* MODAL DITOH */
         .modal-dono-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; backdrop-filter:blur(25px) saturate(180%); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
         .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
         @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
@@ -41,14 +39,29 @@
         @keyframes spin-orb { to{transform:rotate(360deg);} }
         @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
         .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
-
-        /* EASTER EGG */
         #easter-overlay { display:none; position:fixed; inset:0; background:#000; z-index:999999; align-items:center; justify-content:center; flex-direction:column; gap:20px; }
         #easter-overlay.ativo { display:flex; animation:easterIn 0.5s ease; }
         @keyframes easterIn { from{opacity:0;} to{opacity:1;} }
         .easter-particles { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
         .particle { position:absolute; border-radius:50%; background:#8a2be2; animation:particleFall linear infinite; }
         @keyframes particleFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
+
+        /* WIDGET CHECKLIST */
+        .checklist-widget { background:#0d0d0f; border:1px solid rgba(138,43,226,0.15); border-radius:20px; padding:16px 18px; margin-bottom:16px; }
+        .checklist-widget-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .checklist-widget-title { display:flex; align-items:center; gap:8px; font-size:9px; font-weight:800; letter-spacing:2px; color:#555; text-transform:uppercase; }
+        .checklist-widget-link { font-size:10px; font-weight:800; color:#8a2be2; cursor:pointer; letter-spacing:1px; background:none; border:none; }
+        .checklist-widget-items { display:flex; flex-direction:column; gap:8px; }
+        .check-widget-item { display:flex; align-items:center; gap:12px; padding:10px 12px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid rgba(255,255,255,0.04); transition:0.2s; }
+        .check-widget-item.feito { opacity:0.4; }
+        .check-widget-item input[type="checkbox"] { width:18px; height:18px; accent-color:#8a2be2; cursor:pointer; flex-shrink:0; }
+        .check-widget-item span { font-size:13px; color:#ccc; font-weight:600; flex:1; }
+        .check-widget-item.feito span { text-decoration:line-through; color:#444; }
+        .checklist-vazio { text-align:center; padding:16px 0; font-size:12px; color:#333; font-weight:600; }
+        .checklist-progresso { display:flex; align-items:center; gap:10px; margin-top:10px; }
+        .checklist-barra { flex:1; height:3px; background:rgba(255,255,255,0.04); border-radius:10px; overflow:hidden; }
+        .checklist-barra-fill { height:100%; background:#8a2be2; border-radius:10px; transition:width 0.4s ease; }
+        .checklist-pct { font-size:10px; font-weight:800; color:#8a2be2; min-width:30px; text-align:right; }
     </style>
 </head>
 <body>
@@ -80,7 +93,6 @@
         </div>
     </div>
 
-    <!-- EASTER EGG -->
     <div id="easter-overlay">
         <div class="easter-particles" id="easter-particles"></div>
         <i data-lucide="brain-circuit" style="width:80px; height:80px; color:#8a2be2; filter:drop-shadow(0 0 20px #8a2be2); animation:pulseLogoGlow 1s infinite; position:relative; z-index:1;"></i>
@@ -95,9 +107,7 @@
         <div style="width:42px;"></div>
         <div class="hub-logo-container" id="logo-home" onclick="abrirSobreDono()">
             <span class="hub-logo-text">Hub</span>
-            <div class="hub-symbol">
-                <i data-lucide="brain-circuit" style="color:#8a2be2; width:22px; height:22px;"></i>
-            </div>
+            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2; width:22px; height:22px;"></i></div>
             <span class="hub-logo-text purple">Brain</span>
         </div>
         <div class="user-avatar" onclick="navegarPara('perfil.html')" style="cursor:pointer;">
@@ -107,7 +117,7 @@
 
     <main class="home-container">
         <section class="welcome-section">
-            <span id="frase-ia" class="day-phrase" style="color:#8a2be2; font-weight:700;">...</span>
+            <span id="frase-ia" class="day-phrase" style="color:#8a2be2; font-weight:600;">...</span>
             <h1 id="user-display-name">ESTUDANTE</h1>
         </section>
 
@@ -136,6 +146,12 @@
                 <div class="app-icon gold"><i data-lucide="trophy"></i></div>
                 <span>Ranking</span>
             </div>
+            <div class="app-item" onclick="navegarPara('caderno.html')">
+                <div class="app-icon" style="color:#c084fc; background:rgba(192,132,252,0.08)!important; border-color:rgba(192,132,252,0.2)!important;">
+                    <i data-lucide="notebook-pen"></i>
+                </div>
+                <span>Caderno</span>
+            </div>
         </div>
 
         <div class="mural-card" id="btn-mural-main">
@@ -147,6 +163,26 @@
                 </div>
             </div>
             <i data-lucide="chevron-right"></i>
+        </div>
+
+        <!-- WIDGET CHECKLIST DO CADERNO -->
+        <div class="checklist-widget" id="checklist-widget" style="display:none;">
+            <div class="checklist-widget-header">
+                <div class="checklist-widget-title">
+                    <i data-lucide="check-square" style="width:14px; color:#8a2be2;"></i>
+                    ROTINA DO DIA
+                </div>
+                <button class="checklist-widget-link" onclick="navegarPara('caderno.html')">VER CADERNO →</button>
+            </div>
+            <div class="checklist-widget-items" id="checklist-widget-items">
+                <div class="checklist-vazio">Nenhuma checklist no caderno</div>
+            </div>
+            <div class="checklist-progresso" id="checklist-progresso" style="display:none;">
+                <div class="checklist-barra">
+                    <div class="checklist-barra-fill" id="checklist-barra-fill"></div>
+                </div>
+                <span class="checklist-pct" id="checklist-pct">0%</span>
+            </div>
         </div>
 
         <section class="meta-progress-section" id="meta-progress-section" style="display:none;">
@@ -203,15 +239,12 @@
         </div>
     </div>
 
-    <!-- MODAL DITOH -->
     <div id="modal-dono" class="modal-dono-overlay">
         <div class="modal-dono-card">
             <div class="ditoh-core-orbital">
                 <div class="orbital-ring ring-1"></div>
                 <div class="orbital-ring ring-2"></div>
-                <div class="core-glow">
-                    <i data-lucide="zap" style="color:white; width:28px; height:28px; filter:drop-shadow(0 0 8px #8a2be2);"></i>
-                </div>
+                <div class="core-glow"><i data-lucide="zap" style="color:white; width:28px; height:28px; filter:drop-shadow(0 0 8px #8a2be2);"></i></div>
             </div>
             <h3 style="color:white; margin:0; font-size:26px; font-weight:900; letter-spacing:2px;">DITOH</h3>
             <p style="color:#8a2be2; font-weight:bold; margin:5px 0 20px 0; font-size:12px; letter-spacing:4px; text-transform:uppercase;">Founder & Dev</p>
@@ -243,87 +276,21 @@
           if (bar) bar.style.width = progress + '%';
           if (progress >= 100) {
             clearInterval(interval);
-            setTimeout(function() {
-              if (splash) splash.classList.add('splash-hidden');
-            }, 600);
+            setTimeout(function() { if (splash) splash.classList.add('splash-hidden'); }, 600);
           }
         }, 250);
         if (window.lucide) lucide.createIcons();
+
+        // WIDGET CHECKLIST — carrega do localStorage
+        carregarChecklistWidget();
       });
 
-      function navegarPara(url) {
-        document.body.classList.add('saindo');
-        setTimeout(function() { window.location.href = url; }, 250);
-      }
+      function carregarChecklistWidget() {
+        var hoje = new Date().toISOString().split('T')[0];
+        var notas = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
+        var itensRotina = [];
 
-      function abrirSobreDono() {
-        document.getElementById('modal-dono').style.display = 'flex';
-        if (window.lucide) lucide.createIcons();
-      }
-
-      function fecharSobreDono() {
-        document.getElementById('modal-dono').style.display = 'none';
-      }
-
-      // EASTER EGG 1 — 7x no logo
-      var logoClicks = 0;
-      var logoTimer;
-      document.getElementById('logo-home').addEventListener('click', function() {
-        logoClicks++;
-        clearTimeout(logoTimer);
-        logoTimer = setTimeout(function() { logoClicks = 0; }, 2000);
-        if (logoClicks >= 7) {
-          logoClicks = 0;
-          ativarModoDeus();
-        }
-      });
-
-      function ativarModoDeus() {
-        var overlay = document.getElementById('easter-overlay');
-        var container = document.getElementById('easter-particles');
-        container.innerHTML = '';
-        for (var i = 0; i < 30; i++) {
-          var p = document.createElement('div');
-          p.className = 'particle';
-          p.style.left = (Math.random() * 100) + 'vw';
-          p.style.animationDuration = (Math.random() * 2 + 1) + 's';
-          p.style.animationDelay = (Math.random() * 2) + 's';
-          var size = (Math.random() * 8 + 4) + 'px';
-          p.style.width = size;
-          p.style.height = size;
-          container.appendChild(p);
-        }
-        overlay.classList.add('ativo');
-        if (window.lucide) lucide.createIcons();
-        setTimeout(function() { overlay.classList.remove('ativo'); }, 4000);
-      }
-
-      // EASTER EGG 2 — 5x no rodapé home
-      var rodapeClicks = 0;
-      var rodapeTimer;
-      document.getElementById('rodape-home').addEventListener('click', function(e) {
-        if (e.target.tagName === 'A') return;
-        rodapeClicks++;
-        clearTimeout(rodapeTimer);
-        rodapeTimer = setTimeout(function() { rodapeClicks = 0; }, 2000);
-        if (rodapeClicks >= 5) {
-          rodapeClicks = 0;
-          abrirSobreDono();
-        }
-      });
-
-      // EASTER EGG 3 — 5x no rodapé manutenção
-      var manClicks = 0;
-      var manTimer;
-      document.getElementById('rodape-manutencao').addEventListener('click', function() {
-        manClicks++;
-        clearTimeout(manTimer);
-        manTimer = setTimeout(function() { manClicks = 0; }, 2000);
-        if (manClicks >= 5) {
-          manClicks = 0;
-          abrirSobreDono();
-        }
-      });
-    </script>
-</body>
-</html>
+        notas.forEach(function(nota) {
+            if (!nota.corpo) return;
+            // Busca check-items no HTML da nota
+            
