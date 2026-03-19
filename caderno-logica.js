@@ -9,7 +9,6 @@ const firebaseConfig = {
     appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
 };
 
-// Inicializa Firebase via CDN global (não módulo)
 let db;
 function initFirebase() {
     if (!window.firebase) return;
@@ -28,7 +27,6 @@ let autoSaveTimer = null;
 let resultadoIA = '';
 let todasNotas = [];
 
-// TOAST
 function toast(msg, cor) {
     cor = cor || '#8a2be2';
     const el = document.getElementById('toast-caderno');
@@ -45,26 +43,23 @@ function toast(msg, cor) {
 
 // CARREGAR NOTAS
 async function carregarNotas() {
-    // Sempre carrega do localStorage primeiro
     const local = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
-    
     if (!userEmail || userType === 'local' || !db) {
         todasNotas = local;
         renderizarLista(todasNotas);
         return;
     }
-
     try {
         const snap = await db.collection("caderno").where("usuario", "==", userEmail).get();
         todasNotas = [];
         snap.forEach(function(d) {
             const nota = Object.assign({ id: d.id }, d.data());
-            // Recupera foto e arquivo do localStorage
             const localNota = local.find(function(n) { return n.id === d.id; });
             if (localNota) {
                 nota.fotoLocal = localNota.fotoLocal || null;
                 nota.anexoNome = localNota.anexoNome || nota.anexoNome || null;
                 nota.anexoBase64 = localNota.anexoBase64 || null;
+                nota.rotinaDiaria = localNota.rotinaDiaria || nota.rotinaDiaria || false;
             }
             todasNotas.push(nota);
         });
@@ -82,16 +77,13 @@ function renderizarLista(notas) {
     const sub = document.getElementById('sub-contagem');
     if (!lista) return;
     if (sub) sub.innerText = notas.length === 0 ? 'Nenhuma nota' : notas.length + ' nota' + (notas.length > 1 ? 's' : '');
-
     if (notas.length === 0) {
         lista.innerHTML = '<div class="empty-caderno"><div class="empty-icon">📓</div><p>Nenhuma nota ainda</p><span>Toque no + para criar sua primeira nota</span></div>';
         return;
     }
-
     const fixadas = notas.filter(function(n) { return n.fixada; });
     const normais = notas.filter(function(n) { return !n.fixada; });
     const ordenadas = fixadas.concat(normais);
-
     lista.innerHTML = ordenadas.map(function(n) {
         const preview = n.corpo ? n.corpo.replace(/<[^>]*>/g, '').slice(0, 80) : '';
         const data = n.atualizadoEm ? new Date(n.atualizadoEm).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) : '';
@@ -101,6 +93,7 @@ function renderizarLista(notas) {
             (preview ? '<p class="nota-card-preview">' + preview + '</p>' : '') +
             '<div class="nota-card-footer"><span class="nota-card-data">' + data + '</span>' +
             '<div style="display:flex;gap:6px;">' +
+            (n.rotinaDiaria ? '<span class="nota-card-tag">🔄</span>' : '') +
             (n.fotoLocal ? '<span class="nota-card-tag">📸</span>' : '') +
             (n.anexoNome ? '<span class="nota-card-tag">📎</span>' : '') +
             (n.fixada ? '<span class="nota-card-tag">📌</span>' : '') +
@@ -111,11 +104,10 @@ function renderizarLista(notas) {
 // NOVA NOTA
 window.novaNota = async function() {
     const nova = {
-        titulo: '', corpo: '', fixada: false,
+        titulo: '', corpo: '', fixada: false, rotinaDiaria: false,
         usuario: userEmail, fotoLocal: null, anexoNome: null, anexoBase64: null,
         criadoEm: Date.now(), atualizadoEm: Date.now()
     };
-
     if (!userEmail || userType === 'local' || !db) {
         nova.id = 'local_' + Date.now();
         todasNotas.unshift(nova);
@@ -123,7 +115,6 @@ window.novaNota = async function() {
         abrirEditor(nova);
         return;
     }
-
     try {
         const ref = await db.collection("caderno").add(nova);
         nova.id = ref.id;
@@ -139,12 +130,10 @@ window.novaNota = async function() {
     }
 };
 
-// SALVAR LOCAL
 function salvarLocal() {
     localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
 }
 
-// ABRIR NOTA
 window.abrirNota = function(id) {
     const nota = todasNotas.find(function(n) { return n.id === id; });
     if (nota) abrirEditor(nota);
@@ -155,13 +144,39 @@ function abrirEditor(nota) {
     document.getElementById('tela-lista').style.display = 'none';
     document.getElementById('tela-editor').style.display = 'block';
     document.getElementById('titulo-nota').value = nota.titulo || '';
-    document.getElementById('corpo-editor').innerHTML = nota.corpo || '';
+
+    // Carrega corpo e sincroniza checks com estado do dia
+    var corpo = nota.corpo || '';
+    if (nota.rotinaDiaria && corpo) {
+        var hoje = new Date().toISOString().split('T')[0];
+        var estadoHoje = JSON.parse(localStorage.getItem('dt_checklist_' + hoje) || '{}');
+        var div = document.createElement('div');
+        div.innerHTML = corpo;
+        var checks = div.querySelectorAll('.check-item');
+        for (var c = 0; c < checks.length; c++) {
+            var itemId = nota.id + '_' + c;
+            var input = checks[c].querySelector('input[type="checkbox"]');
+            if (input) {
+                input.checked = estadoHoje[itemId] || false;
+                if (estadoHoje[itemId]) {
+                    checks[c].classList.add('concluido');
+                } else {
+                    checks[c].classList.remove('concluido');
+                }
+            }
+        }
+        corpo = div.innerHTML;
+    }
+    document.getElementById('corpo-editor').innerHTML = corpo;
 
     const statusEl = document.getElementById('editor-status');
     if (statusEl) { statusEl.innerText = 'Salvo ✓'; statusEl.style.color = '#2ecc71'; }
 
     const btnFixar = document.getElementById('btn-fixar');
     if (btnFixar) btnFixar.style.color = nota.fixada ? '#8a2be2' : '#555';
+
+    const btnRotina = document.getElementById('btn-rotina');
+    if (btnRotina) btnRotina.style.color = nota.rotinaDiaria ? '#2ecc71' : '#555';
 
     const fotoPreview = document.getElementById('foto-preview');
     const fotoContainer = document.getElementById('foto-container');
@@ -189,7 +204,6 @@ function abrirEditor(nota) {
     setTimeout(function() { if (!nota.titulo) document.getElementById('titulo-nota').focus(); }, 100);
 }
 
-// VOLTAR
 window.voltarLista = function() {
     if (autoSaveTimer) { clearTimeout(autoSaveTimer); salvarNota(); }
     document.getElementById('tela-editor').style.display = 'none';
@@ -198,7 +212,6 @@ window.voltarLista = function() {
     carregarNotas();
 };
 
-// AUTO SAVE
 window.autoSave = function() {
     const statusEl = document.getElementById('editor-status');
     if (statusEl) { statusEl.innerText = 'Salvando...'; statusEl.style.color = '#555'; }
@@ -222,6 +235,7 @@ async function salvarNota() {
                 titulo: notaAtual.titulo,
                 corpo: notaAtual.corpo,
                 fixada: notaAtual.fixada,
+                rotinaDiaria: notaAtual.rotinaDiaria || false,
                 atualizadoEm: notaAtual.atualizadoEm,
                 anexoNome: notaAtual.anexoNome || null
             });
@@ -232,7 +246,6 @@ async function salvarNota() {
     if (statusEl) { statusEl.innerText = 'Salvo ✓'; statusEl.style.color = '#2ecc71'; }
 }
 
-// FIXAR
 window.toggleFixar = async function() {
     if (!notaAtual) return;
     notaAtual.fixada = !notaAtual.fixada;
@@ -242,20 +255,15 @@ window.toggleFixar = async function() {
     await salvarNota();
 };
 
-// ROTINA DIÁRIA
 window.toggleRotina = async function() {
     if (!notaAtual) return;
     notaAtual.rotinaDiaria = !notaAtual.rotinaDiaria;
-    var btnRotina = document.getElementById('btn-rotina');
-    if (btnRotina) {
-        btnRotina.style.color = notaAtual.rotinaDiaria ? '#2ecc71' : '#555';
-        btnRotina.title = notaAtual.rotinaDiaria ? 'Rotina ativa' : 'Marcar como rotina diária';
-    }
+    const btnRotina = document.getElementById('btn-rotina');
+    if (btnRotina) btnRotina.style.color = notaAtual.rotinaDiaria ? '#2ecc71' : '#555';
     toast(notaAtual.rotinaDiaria ? '🔄 Rotina diária ativada!' : 'Rotina desativada');
     await salvarNota();
 };
 
-// EXCLUIR
 window.excluirNota = function() {
     document.getElementById('modal-excluir-nota').style.display = 'flex';
 };
@@ -276,7 +284,6 @@ window.cancelarExcluirNota = function() {
     document.getElementById('modal-excluir-nota').style.display = 'none';
 };
 
-// FOTO
 window.abrirFoto = function() { document.getElementById('input-foto').click(); };
 
 window.processarFoto = function(input) {
@@ -308,7 +315,6 @@ window.removerFoto = function() {
     toast('Foto removida');
 };
 
-// ARQUIVO
 window.abrirArquivo = function() { document.getElementById('input-arquivo').click(); };
 
 window.processarArquivo = function(input) {
@@ -352,7 +358,6 @@ window.removerArquivo = function() {
     toast('Arquivo removido');
 };
 
-// FORMATAÇÃO
 window.formatar = function(cmd) {
     document.getElementById('corpo-editor').focus();
     document.execCommand(cmd, false, null);
@@ -365,33 +370,96 @@ window.inserirSeparador = function() {
     window.autoSave();
 };
 
+// CHECKLIST — corrigido pra mobile
 window.inserirChecklist = function() {
-    document.getElementById('corpo-editor').focus();
+    const editor = document.getElementById('corpo-editor');
+    editor.focus();
     const id = 'chk_' + Date.now();
-    document.execCommand('insertHTML', false,
-        '<div class="check-item" id="' + id + '"><input type="checkbox" onchange="toggleCheck(\'' + id + '\')"><span contenteditable="true">Item</span></div>');
+    // Usa div separado pra não bugar o cursor no mobile
+    const novoItem = document.createElement('div');
+    novoItem.className = 'check-item';
+    novoItem.id = id;
+    novoItem.innerHTML = '<input type="checkbox" onchange="toggleCheck(\'' + id + '\')"><span contenteditable="true">Item</span>';
+
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        range.collapse(false);
+        range.insertNode(novoItem);
+        // Move cursor pro span
+        const span = novoItem.querySelector('span');
+        if (span) {
+            const newRange = document.createRange();
+            newRange.selectNodeContents(span);
+            newRange.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+        }
+    } else {
+        editor.appendChild(novoItem);
+    }
     window.autoSave();
 };
 
 window.toggleCheck = function(id) {
     const item = document.getElementById(id);
-    if (item) { item.classList.toggle('concluido'); window.autoSave(); }
-};
+    if (!item || !notaAtual) return;
+    item.classList.toggle('concluido');
 
-window.handleEditorKey = function(e) {
-    if (e.key === 'Enter') {
-        const sel = window.getSelection();
-        if (sel && sel.anchorNode && sel.anchorNode.closest) {
-            const checkItem = sel.anchorNode.closest('.check-item');
-            if (checkItem) {
-                e.preventDefault();
-                const id = 'chk_' + Date.now();
-                document.execCommand('insertHTML', false,
-                    '<div class="check-item" id="' + id + '"><input type="checkbox" onchange="toggleCheck(\'' + id + '\')"><span contenteditable="true"></span></div>');
-                window.autoSave();
+    // Se for rotina diária, salva estado no localStorage por data
+    if (notaAtual.rotinaDiaria) {
+        var hoje = new Date().toISOString().split('T')[0];
+        var estado = JSON.parse(localStorage.getItem('dt_checklist_' + hoje) || '{}');
+        // Encontra índice do item
+        var editor = document.getElementById('corpo-editor');
+        var checks = editor.querySelectorAll('.check-item');
+        for (var c = 0; c < checks.length; c++) {
+            if (checks[c].id === id) {
+                var itemId = notaAtual.id + '_' + c;
+                estado[itemId] = item.classList.contains('concluido');
+                break;
             }
         }
+        localStorage.setItem('dt_checklist_' + hoje, JSON.stringify(estado));
     }
+
+    window.autoSave();
+};
+
+// ENTER no checklist — corrigido pra mobile
+window.handleEditorKey = function(e) {
+    if (e.key !== 'Enter') return;
+    const sel = window.getSelection();
+    if (!sel || !sel.anchorNode) return;
+    var node = sel.anchorNode;
+    // Sobe na árvore até achar .check-item
+    var checkItem = null;
+    var current = node.nodeType === 3 ? node.parentNode : node;
+    while (current && current !== document.getElementById('corpo-editor')) {
+        if (current.classList && current.classList.contains('check-item')) {
+            checkItem = current;
+            break;
+        }
+        current = current.parentNode;
+    }
+    if (!checkItem) return;
+    e.preventDefault();
+    const id = 'chk_' + Date.now();
+    const novoItem = document.createElement('div');
+    novoItem.className = 'check-item';
+    novoItem.id = id;
+    novoItem.innerHTML = '<input type="checkbox" onchange="toggleCheck(\'' + id + '\')"><span contenteditable="true"></span>';
+    checkItem.parentNode.insertBefore(novoItem, checkItem.nextSibling);
+    const span = novoItem.querySelector('span');
+    if (span) {
+        const newRange = document.createRange();
+        newRange.setStart(span, 0);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+        span.focus();
+    }
+    window.autoSave();
 };
 
 window.contarPalavras = function() {
@@ -401,7 +469,6 @@ window.contarPalavras = function() {
     if (el) el.innerText = palavras + ' palavra' + (palavras !== 1 ? 's' : '');
 };
 
-// BUSCA
 window.filtrarNotas = function() {
     const termo = document.getElementById('campo-busca').value.toLowerCase();
     if (!termo) { renderizarLista(todasNotas); return; }
@@ -411,7 +478,6 @@ window.filtrarNotas = function() {
     }));
 };
 
-// IA
 window.abrirMenuIA = function() {
     document.getElementById('menu-ia').style.display = 'flex';
     document.getElementById('ia-resultado').style.display = 'none';
@@ -428,7 +494,6 @@ window.usarIA = async function(acao) {
     const corpo = document.getElementById('corpo-editor').innerText || '';
     const titulo = document.getElementById('titulo-nota').value || '';
     if (!corpo.trim() && !titulo.trim()) { toast('Escreva algo primeiro!', '#ff4444'); return; }
-
     const prompts = {
         resumir:  'Resuma em português: ' + titulo + ' ' + corpo,
         explicar: 'Explique de forma simples em português: ' + titulo + ' ' + corpo,
@@ -437,54 +502,7 @@ window.usarIA = async function(acao) {
         melhorar: 'Melhore o texto em português: ' + corpo,
         informal: 'Reescreva de forma informal em português: ' + corpo
     };
-
     const resultadoEl = document.getElementById('ia-resultado');
     const acoesEl = document.getElementById('ia-acoes');
     resultadoEl.style.display = 'block';
-    resultadoEl.innerHTML = '<div class="ia-loading"><div class="ia-dot"></div><div class="ia-dot"></div><div class="ia-dot"></div></div>';
-    acoesEl.style.display = 'none';
-
-    try {
-        const response = await fetch('https://api-inference.huggingface.co/models/' + HF_MODEL, {
-            method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + HF_KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ inputs: prompts[acao], parameters: { max_new_tokens: 400 } })
-        });
-
-        if (!response.ok) {
-            const err = await response.json();
-            if (err.error && err.error.includes('loading')) {
-                resultadoEl.innerText = '⏳ Modelo carregando, aguarde 20s e tente novamente.';
-            } else {
-                resultadoEl.innerText = 'IA indisponível. Tente novamente em breve.';
-            }
-            return;
-        }
-
-        const data = await response.json();
-        resultadoIA = Array.isArray(data) ? (data[0].generated_text || '') : (data.generated_text || '');
-        resultadoIA = resultadoIA.trim();
-        resultadoEl.innerText = resultadoIA;
-        acoesEl.style.display = 'flex';
-    } catch(e) {
-        resultadoEl.innerText = 'Erro ao conectar com a IA.';
-        console.error(e);
-    }
-};
-
-window.aceitarIA = function() {
-    if (!resultadoIA) return;
-    const editor = document.getElementById('corpo-editor');
-    editor.innerHTML += '<hr><p>' + resultadoIA.replace(/\n/g, '<br>') + '</p>';
-    window.fecharMenuIA();
-    window.autoSave();
-    toast('✓ Resultado aplicado!');
-};
-
-// INIT
-document.addEventListener('DOMContentLoaded', function() {
-    initFirebase();
-    carregarNotas();
-    if (window.lucide) lucide.createIcons();
-});
-        
+    resultadoEl.innerHTML = '<div class="ia-loading"><div class="ia-dot"></div><div class="ia-dot"></div><div cl
