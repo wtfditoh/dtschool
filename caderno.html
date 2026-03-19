@@ -8,6 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Caderno</title>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="caderno.css">
 </head>
@@ -166,7 +168,7 @@
     </div>
 
     <script src="menu.js"></script>
-    <script type="module" src="caderno-logica.js"></script>
+    <script src="caderno-logica.js"></script>
     <script>
         function abrirSobreDono() { document.getElementById('modal-dono').style.display='flex'; if(window.lucide) lucide.createIcons(); }
         function fecharSobreDono() { document.getElementById('modal-dono').style.display='none'; }
