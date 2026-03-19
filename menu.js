@@ -11,10 +11,11 @@ const criarMenuGlobal = () => {
                 <a href="perfil.html" id="link-perfil"><i data-lucide="user"></i> Perfil</a>
                 <a href="notas.html" id="link-notas"><i data-lucide="layout-dashboard"></i> Notas</a>
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
-                <a href="estudos.html" id="link-estudos"><i data-lucide="brain-circuit"></i> Estudos & IA</a>
+                <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
+                <a href="caderno.html" id="link-caderno"><i data-lucide="notebook-pen"></i> Caderno</a>
                 <a href="foco.html" id="link-foco" class="foco-highlight"><i data-lucide="timer"></i> 
                     <span>Modo Foco <small class="xp-badge">+XP</small></span></a>
-                <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
+                <a href="estudos.html" id="link-estudos"><i data-lucide="brain-circuit"></i> Estudos & IA</a>
                 <a href="ranking.html" id="link-ranking"><i data-lucide="trophy"></i> Ranking</a>
             </nav>
             <div class="menu-footer">
@@ -92,7 +93,7 @@ const criarMenuGlobal = () => {
         const linkHome = document.getElementById('link-home');
         if (linkHome) linkHome.classList.add('active');
     }
-    const paginas = ['notas', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco', 'admin'];
+    const paginas = ['notas', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco', 'admin', 'caderno'];
     paginas.forEach(pg => {
         if (path.includes(pg)) {
             const link = document.getElementById(`link-${pg}`);
