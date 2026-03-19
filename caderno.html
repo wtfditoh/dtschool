@@ -13,9 +13,9 @@
 </head>
 <body>
 
-    <div id="toast-caderno" style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#0e0e12; border:1px solid rgba(138,43,226,0.4); color:white; padding:10px 20px; border-radius:12px; font-size:12px; font-weight:700; z-index:99999; display:none; transition:0.3s;"></div>
+    <div id="toast-caderno" style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#0e0e12; border:1px solid rgba(138,43,226,0.4); color:white; padding:10px 20px; border-radius:12px; font-size:12px; font-weight:700; z-index:99999; display:none; transition:opacity 0.3s;"></div>
 
-    <!-- TELA: LISTA DE NOTAS -->
+    <!-- TELA LISTA -->
     <div id="tela-lista">
         <header class="glass-header">
             <button id="open-menu" style="background:none; border:none; color:white; cursor:pointer; width:42px; height:42px; display:flex; align-items:center; justify-content:center;">
@@ -36,31 +36,26 @@
                 <h1 class="caderno-titulo">Caderno</h1>
                 <p class="caderno-sub" id="sub-contagem">Carregando...</p>
             </div>
-
             <div class="busca-wrap">
-                <i data-lucide="search" style="width:16px; color:#555;"></i>
+                <i data-lucide="search" style="width:16px; color:#555; flex-shrink:0;"></i>
                 <input type="text" id="campo-busca" placeholder="Buscar notas..." oninput="filtrarNotas()">
             </div>
-
-            <div id="lista-notas" class="lista-notas">
-                <div class="empty-caderno">
-                    <div class="empty-icon">📓</div>
-                    <p>Nenhuma nota ainda</p>
-                    <span>Toque no + para criar sua primeira nota</span>
-                </div>
-            </div>
+            <div id="lista-notas" class="lista-notas"></div>
         </div>
     </div>
 
-    <!-- TELA: EDITOR -->
+    <!-- TELA EDITOR -->
     <div id="tela-editor" style="display:none;">
         <header class="editor-header">
             <button onclick="voltarLista()" style="background:none; border:none; color:#555; cursor:pointer; width:42px; height:42px; display:flex; align-items:center; justify-content:center;">
                 <i data-lucide="arrow-left" style="width:22px; height:22px;"></i>
             </button>
-            <div class="editor-status" id="editor-status">Salvo</div>
-            <div style="display:flex; gap:8px;">
-                <button onclick="abrirMenuIA()" id="btn-ia" style="background:rgba(138,43,226,0.15); border:1px solid rgba(138,43,226,0.3); color:#c084fc; width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+            <div class="editor-status" id="editor-status">Salvo ✓</div>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button id="btn-fixar" onclick="toggleFixar()" style="background:none; border:none; color:#555; cursor:pointer; width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:12px; transition:0.2s;">
+                    <i data-lucide="pin" style="width:20px; height:20px;"></i>
+                </button>
+                <button onclick="abrirMenuIA()" style="background:rgba(138,43,226,0.15); border:1px solid rgba(138,43,226,0.3); color:#c084fc; width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
                     <i data-lucide="sparkles" style="width:18px; height:18px;"></i>
                 </button>
                 <button onclick="excluirNota()" style="background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.2); color:#ff6b6b; width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
@@ -69,30 +64,51 @@
             </div>
         </header>
 
-        <!-- TOOLBAR DE FORMATAÇÃO -->
-        <div class="format-toolbar" id="format-toolbar">
-            <button class="fmt-btn" onclick="formatar('h1')" title="Título">H1</button>
-            <button class="fmt-btn" onclick="formatar('h2')" title="Subtítulo">H2</button>
+        <div class="format-toolbar">
+            <button class="fmt-btn" onclick="formatar('formatBlock'); document.execCommand('formatBlock',false,'h1')">H1</button>
+            <button class="fmt-btn" onclick="document.execCommand('formatBlock',false,'h2')">H2</button>
             <div class="fmt-sep"></div>
-            <button class="fmt-btn" onclick="formatar('bold')" title="Negrito"><b>B</b></button>
-            <button class="fmt-btn" onclick="formatar('italic')" title="Itálico"><i>I</i></button>
+            <button class="fmt-btn" onclick="formatar('bold')"><b>B</b></button>
+            <button class="fmt-btn" onclick="formatar('italic')"><i>I</i></button>
             <div class="fmt-sep"></div>
-            <button class="fmt-btn" onclick="inserirChecklist()" title="Checklist">☑</button>
-            <button class="fmt-btn" onclick="formatar('insertUnorderedList')" title="Lista">•</button>
+            <button class="fmt-btn" onclick="inserirChecklist()">☑</button>
+            <button class="fmt-btn" onclick="formatar('insertUnorderedList')">•</button>
             <div class="fmt-sep"></div>
-            <button class="fmt-btn" onclick="inserirSeparador()" title="Separador">—</button>
+            <button class="fmt-btn" onclick="inserirSeparador()">—</button>
             <div class="fmt-sep"></div>
+            <button class="fmt-btn" onclick="abrirFoto()" title="Foto">📸</button>
+            <button class="fmt-btn" onclick="abrirArquivo()" title="Arquivo">📎</button>
             <span class="fmt-contador" id="contador-palavras">0 palavras</span>
         </div>
 
+        <input type="file" id="input-foto" accept="image/*" style="display:none;" onchange="processarFoto(this)">
+        <input type="file" id="input-arquivo" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" style="display:none;" onchange="processarArquivo(this)">
+
         <div class="editor-body">
             <input type="text" id="titulo-nota" class="titulo-input" placeholder="Título da nota..." oninput="autoSave()">
-            <div id="corpo-editor" class="corpo-editor" contenteditable="true" oninput="autoSave(); contarPalavras();" onkeydown="handleEditorKey(event)" placeholder="Comece a escrever..."></div>
+
+            <!-- FOTO PREVIEW -->
+            <div id="foto-container" style="position:relative; margin-bottom:16px; display:none;">
+                <img id="foto-preview" style="width:100%; border-radius:16px; display:none; max-height:250px; object-fit:cover;">
+                <button onclick="removerFoto()" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.7); border:none; color:white; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">✕</button>
+            </div>
+
+            <!-- ARQUIVO ANEXADO -->
+            <div id="anexo-info" style="display:none; align-items:center; gap:10px; background:#0e0e12; border:1px solid rgba(138,43,226,0.2); border-radius:14px; padding:12px 16px; margin-bottom:16px;">
+                <i data-lucide="file-text" style="width:20px; color:#8a2be2; flex-shrink:0;"></i>
+                <span id="anexo-nome" style="flex:1; font-size:12px; color:#ccc; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+                <button onclick="removerArquivo()" style="background:none; border:none; color:#ff6b6b; cursor:pointer; font-size:16px; padding:4px;">✕</button>
+            </div>
+
+            <div id="corpo-editor" class="corpo-editor" contenteditable="true"
+                oninput="autoSave(); contarPalavras();"
+                onkeydown="handleEditorKey(event)"
+                placeholder="Comece a escrever..."></div>
         </div>
     </div>
 
-    <!-- MENU IA -->
-    <div id="menu-ia" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; backdrop-filter:blur(10px); align-items:flex-end; justify-content:center; padding:20px;">
+    <!-- MODAL IA — CENTRALIZADO -->
+    <div id="menu-ia" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:20px;">
         <div class="ia-panel">
             <div class="ia-panel-header">
                 <div style="display:flex; align-items:center; gap:10px;">
@@ -101,9 +117,9 @@
                     </div>
                     <span style="font-weight:800; font-size:14px;">IA do Caderno</span>
                 </div>
-                <button onclick="fecharMenuIA()" style="background:none; border:none; color:#555; cursor:pointer; font-size:20px;">✕</button>
+                <button onclick="fecharMenuIA()" style="background:rgba(255,255,255,0.05); border:1px solid #1a1a1a; color:#555; width:32px; height:32px; border-radius:10px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">✕</button>
             </div>
-            <p style="font-size:11px; color:#555; margin-bottom:16px; font-weight:600;">O que a IA deve fazer com sua nota?</p>
+            <p style="font-size:11px; color:#444; margin-bottom:14px; font-weight:600;">O que a IA deve fazer com sua nota?</p>
             <div class="ia-opcoes">
                 <button class="ia-opcao" onclick="usarIA('resumir')">📝 Resumir a nota</button>
                 <button class="ia-opcao" onclick="usarIA('explicar')">🧠 Explicar de forma simples</button>
@@ -112,10 +128,25 @@
                 <button class="ia-opcao" onclick="usarIA('melhorar')">✨ Melhorar o texto</button>
                 <button class="ia-opcao" onclick="usarIA('informal')">😎 Deixar mais informal</button>
             </div>
-            <div id="ia-resultado" style="display:none; margin-top:16px; background:#07070a; border:1px solid rgba(138,43,226,0.2); border-radius:14px; padding:16px; font-size:13px; color:#ccc; line-height:1.6; max-height:200px; overflow-y:auto;"></div>
-            <div id="ia-acoes" style="display:none; display:flex; gap:8px; margin-top:12px;">
-                <button onclick="aceitarIA()" style="flex:1; padding:12px; background:#8a2be2; border:none; border-radius:12px; color:white; font-weight:800; cursor:pointer;">✓ SUBSTITUIR</button>
-                <button onclick="fecharMenuIA()" style="flex:1; padding:12px; background:rgba(255,255,255,0.05); border:1px solid #222; border-radius:12px; color:#666; font-weight:800; cursor:pointer;">✕ DESCARTAR</button>
+            <div id="ia-resultado" style="display:none; margin-top:14px; background:#07070a; border:1px solid rgba(138,43,226,0.15); border-radius:14px; padding:16px; font-size:13px; color:#ccc; line-height:1.6; max-height:180px; overflow-y:auto;"></div>
+            <div id="ia-acoes" style="display:none; gap:8px; margin-top:12px;">
+                <button onclick="aceitarIA()" style="flex:1; padding:12px; background:#8a2be2; border:none; border-radius:12px; color:white; font-weight:800; cursor:pointer;">✓ APLICAR</button>
+                <button onclick="fecharMenuIA()" style="flex:1; padding:12px; background:rgba(255,255,255,0.04); border:1px solid #1a1a1a; border-radius:12px; color:#555; font-weight:800; cursor:pointer;">✕ DESCARTAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EXCLUIR -->
+    <div id="modal-excluir-nota" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; backdrop-filter:blur(12px); align-items:center; justify-content:center; padding:20px;">
+        <div style="background:#0e0e12; border:1px solid rgba(255,68,68,0.2); border-radius:24px; padding:30px 24px; width:100%; max-width:320px; text-align:center;">
+            <div style="width:56px; height:56px; background:rgba(255,68,68,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                <i data-lucide="trash-2" style="width:26px; height:26px; color:#ff6b6b;"></i>
+            </div>
+            <h3 style="color:white; font-size:18px; font-weight:900; margin-bottom:8px;">Excluir nota?</h3>
+            <p style="color:#555; font-size:13px; margin-bottom:24px;">Essa ação não pode ser desfeita.</p>
+            <div style="display:flex; gap:10px;">
+                <button onclick="cancelarExcluirNota()" style="flex:1; padding:14px; background:rgba(255,255,255,0.04); border:1px solid #1a1a1a; border-radius:14px; color:#666; font-weight:800; cursor:pointer; font-family:inherit;">Cancelar</button>
+                <button onclick="confirmarExcluirNota()" style="flex:1; padding:14px; background:rgba(255,68,68,0.15); border:1px solid rgba(255,68,68,0.3); border-radius:14px; color:#ff6b6b; font-weight:800; cursor:pointer; font-family:inherit;">Excluir</button>
             </div>
         </div>
     </div>
@@ -125,7 +156,7 @@
         <div style="border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center;">
             <h3 style="color:white; margin:0 0 5px; font-size:26px; font-weight:900; letter-spacing:2px;">DITOH</h3>
             <p style="color:#8a2be2; font-weight:bold; margin:0 0 20px; font-size:12px; letter-spacing:4px; text-transform:uppercase;">Founder & Dev</p>
-            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-size:15px; margin-bottom:20px; background:rgba(255,255,255,0.05); padding:14px; border-radius:15px; border:1px solid rgba(138,43,226,0.2);">
+            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; color:white; margin-bottom:20px; background:rgba(255,255,255,0.05); padding:14px; border-radius:15px; border:1px solid rgba(138,43,226,0.2);">
                 <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i>
                 <span style="font-weight:600;">@wtfditoh</span>
             </a>
@@ -138,6 +169,17 @@
     <script>
         function abrirSobreDono() { document.getElementById('modal-dono').style.display='flex'; if(window.lucide) lucide.createIcons(); }
         function fecharSobreDono() { document.getElementById('modal-dono').style.display='none'; }
+        
+        // Mostra container foto quando preview aparecer
+        const fotoPreview = document.getElementById('foto-preview');
+        if (fotoPreview) {
+            const observer = new MutationObserver(() => {
+                const container = document.getElementById('foto-container');
+                if (container) container.style.display = fotoPreview.style.display === 'block' ? 'block' : 'none';
+            });
+            observer.observe(fotoPreview, { attributes: true, attributeFilter: ['style'] });
+        }
+
         document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
     </script>
 </body>
