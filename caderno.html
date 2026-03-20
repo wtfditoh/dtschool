@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script>
+    if (!localStorage.getItem('dt_user_name')) { window.location.href = 'login.html'; }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Brain - Caderno</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="caderno.css">
+</head>
+<body>
+
+    <div id="toast-caderno" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0e0e12;border:1px solid rgba(138,43,226,0.4);color:white;padding:10px 20px;border-radius:12px;font-size:12px;font-weight:700;z-index:99999;display:none;transition:opacity 0.3s;"></div>
+
+    <div id="tela-lista">
+        <header class="glass-header">
+            <button id="open-menu" style="background:none;border:none;color:white;cursor:pointer;width:42px;height:42px;display:flex;align-items:center;justify-content:center;">
+                <i data-lucide="menu" style="width:22px;height:22px;"></i>
+            </button>
+            <div class="hub-logo-container" id="logo-caderno">
+                <span class="hub-logo-text">Hub</span>
+                <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2;width:22px;height:22px;"></i></div>
+                <span class="hub-logo-text purple">Brain</span>
+            </div>
+            <button onclick="window.novaNota()" style="background:#8a2be2;border:none;color:white;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 15px rgba(138,43,226,0.3);">
+                <i data-lucide="plus" style="width:20px;height:20px;"></i>
+            </button>
+        </header>
+        <div class="caderno-container">
+            <div class="caderno-hero">
+                <h1 class="caderno-titulo">Caderno</h1>
+                <p class="caderno-sub" id="sub-contagem">0 notas</p>
+            </div>
+            <div class="busca-wrap">
+                <i data-lucide="search" style="width:16px;color:#555;flex-shrink:0;"></i>
+                <input type="text" id="campo-busca" placeholder="Buscar notas..." oninput="filtrarNotas()">
+            </div>
+            <div id="lista-notas" class="lista-notas"></div>
+        </div>
+    </div>
+
+    <div id="tela-editor" style="display:none;">
+        <header class="editor-header">
+            <button onclick="voltarLista()" style="background:none;border:none;color:#555;cursor:pointer;width:42px;height:42px;display:flex;align-items:center;justify-content:center;">
+                <i data-lucide="arrow-left" style="width:22px;height:22px;"></i>
+            </button>
+            <div class="editor-status" id="editor-status">Salvo ✓</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button id="btn-rotina" onclick="toggleRotina()" title="Rotina diária" style="background:none;border:none;color:#555;cursor:pointer;width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:12px;transition:0.2s;">
+                    <i data-lucide="repeat" style="width:20px;height:20px;"></i>
+                </button>
+                <button id="btn-fixar" onclick="toggleFixar()" style="background:none;border:none;color:#555;cursor:pointer;width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:12px;transition:0.2s;">
+                    <i data-lucide="pin" style="width:20px;height:20px;"></i>
+                </button>
+                <button onclick="abrirMenuIA()" style="background:rgba(138,43,226,0.15);border:1px solid rgba(138,43,226,0.3);color:#c084fc;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                    <i data-lucide="sparkles" style="width:18px;height:18px;"></i>
+                </button>
+                <button onclick="excluirNota()" style="background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.2);color:#ff6b6b;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                    <i data-lucide="trash-2" style="width:18px;height:18px;"></i>
+                </button>
+            </div>
+        </header>
+        <div class="format-toolbar">
+            <button class="fmt-btn" onclick="document.execCommand('formatBlock',false,'h1')">H1</button>
+            <button class="fmt-btn" onclick="document.execCommand('formatBlock',false,'h2')">H2</button>
+            <div class="fmt-sep"></div>
+            <button class="fmt-btn" onclick="formatar('bold')"><b>B</b></button>
+            <button class="fmt-btn" onclick="formatar('italic')"><i>I</i></button>
+            <div class="fmt-sep"></div>
+            <button class="fmt-btn" onclick="inserirChecklist()">☑</button>
+            <button class="fmt-btn" onclick="formatar('insertUnorderedList')">•</button>
+            <div class="fmt-sep"></div>
+            <button class="fmt-btn" onclick="inserirSeparador()">—</button>
+            <div class="fmt-sep"></div>
+            <button class="fmt-btn" onclick="abrirFoto()">📸</button>
+            <button class="fmt-btn" onclick="abrirArquivo()">📎</button>
+            <span class="fmt-contador" id="contador-palavras">0 palavras</span>
+        </div>
+        <input type="file" id="input-foto" accept="image/*" style="display:none;" onchange="processarFoto(this)">
+        <input type="file" id="input-arquivo" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" style="display:none;" onchange="processarArquivo(this)">
+        <div class="editor-body">
+            <input type="text" id="titulo-nota" class="titulo-input" placeholder="Título da nota..." oninput="autoSave()">
+            <div id="foto-container" style="position:relative;margin-bottom:16px;display:none;">
+                <img id="foto-preview" onclick="abrirFotoFullscreen()" style="width:100%;border-radius:16px;max-height:250px;object-fit:cover;cursor:zoom-in;">
+                <button onclick="removerFoto()" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.7);border:none;color:white;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
+            </div>
+
+            <!-- MODAL FOTO FULLSCREEN -->
+            <div id="modal-foto" onclick="fecharFotoFullscreen()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out;">
+                <img id="foto-fullscreen" style="max-width:95vw;max-height:95vh;object-fit:contain;border-radius:12px;">
+            </div>
+            <div id="anexo-info" style="display:none;align-items:center;gap:10px;background:#0e0e12;border:1px solid rgba(138,43,226,0.2);border-radius:14px;padding:12px 16px;margin-bottom:16px;cursor:pointer;" onclick="abrirAnexo()">
+                <i data-lucide="file-text" style="width:20px;color:#8a2be2;flex-shrink:0;"></i>
+                <span id="anexo-nome" style="flex:1;font-size:12px;color:#ccc;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+                <span style="font-size:9px;color:#8a2be2;font-weight:800;letter-spacing:1px;">ABRIR</span>
+                <button onclick="event.stopPropagation();removerArquivo()" style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:16px;padding:4px;">✕</button>
+            </div>
+            <div id="corpo-editor" class="corpo-editor" contenteditable="true" oninput="autoSave();contarPalavras();" onkeydown="handleEditorKey(event)" placeholder="Comece a escrever..."></div>
+        </div>
+    </div>
+
+    <div id="menu-ia" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:20px;">
+        <div class="ia-panel">
+            <div class="ia-panel-header">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:32px;height:32px;background:rgba(138,43,226,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                        <i data-lucide="sparkles" style="width:16px;color:#c084fc;"></i>
+                    </div>
+                    <span style="font-weight:800;font-size:14px;">IA do Caderno</span>
+                </div>
+                <button onclick="fecharMenuIA()" style="background:rgba(255,255,255,0.05);border:1px solid #1a1a1a;color:#555;width:32px;height:32px;border-radius:10px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
+            </div>
+            <p style="font-size:11px;color:#444;margin-bottom:14px;font-weight:600;">O que a IA deve fazer com sua nota?</p>
+            <div class="ia-opcoes">
+                <button class="ia-opcao" onclick="usarIA('resumir')">📝 Resumir a nota</button>
+                <button class="ia-opcao" onclick="usarIA('explicar')">🧠 Explicar de forma simples</button>
+                <button class="ia-opcao" onclick="usarIA('lista')">📋 Transformar em lista</button>
+                <button class="ia-opcao" onclick="usarIA('questoes')">❓ Gerar questões de estudo</button>
+                <button class="ia-opcao" onclick="usarIA('melhorar')">✨ Melhorar o texto</button>
+                <button class="ia-opcao" onclick="usarIA('informal')">😎 Deixar mais informal</button>
+            </div>
+            <div id="ia-resultado" style="display:none;margin-top:14px;background:#07070a;border:1px solid rgba(138,43,226,0.15);border-radius:14px;padding:16px;font-size:13px;color:#ccc;line-height:1.6;max-height:180px;overflow-y:auto;"></div>
+            <div id="ia-acoes" style="display:none;gap:8px;margin-top:12px;">
+                <button onclick="aceitarIA()" style="flex:1;padding:12px;background:#8a2be2;border:none;border-radius:12px;color:white;font-weight:800;cursor:pointer;">✓ APLICAR</button>
+                <button onclick="fecharMenuIA()" style="flex:1;padding:12px;background:rgba(255,255,255,0.04);border:1px solid #1a1a1a;border-radius:12px;color:#555;font-weight:800;cursor:pointer;">✕ DESCARTAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-excluir-nota" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:20px;">
+        <div style="background:#0e0e12;border:1px solid rgba(255,68,68,0.2);border-radius:24px;padding:30px 24px;width:100%;max-width:320px;text-align:center;">
+            <div style="width:56px;height:56px;background:rgba(255,68,68,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                <i data-lucide="trash-2" style="width:26px;height:26px;color:#ff6b6b;"></i>
+            </div>
+            <h3 style="color:white;font-size:18px;font-weight:900;margin-bottom:8px;">Excluir nota?</h3>
+            <p style="color:#555;font-size:13px;margin-bottom:24px;">Essa ação não pode ser desfeita.</p>
+            <div style="display:flex;gap:10px;">
+                <button onclick="cancelarExcluirNota()" style="flex:1;padding:14px;background:rgba(255,255,255,0.04);border:1px solid #1a1a1a;border-radius:14px;color:#666;font-weight:800;cursor:pointer;font-family:inherit;">Cancelar</button>
+                <button onclick="confirmarExcluirNota()" style="flex:1;padding:14px;background:rgba(255,68,68,0.15);border:1px solid rgba(255,68,68,0.3);border-radius:14px;color:#ff6b6b;font-weight:800;cursor:pointer;font-family:inherit;">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-dono" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;backdrop-filter:blur(25px);background:rgba(10,10,10,0.75);z-index:99999;padding:20px;">
+        <div style="border:1px solid rgba(138,43,226,0.3);background:rgba(15,15,15,0.95);border-radius:30px;width:100%;max-width:320px;padding:40px 25px;text-align:center;box-shadow:0 0 40px rgba(0,0,0,0.5);">
+            <h3 style="color:white;margin:0 0 5px;font-size:26px;font-weight:900;letter-spacing:2px;">DITOH</h3>
+            <p style="color:#8a2be2;font-weight:bold;margin:0 0 20px;font-size:12px;letter-spacing:4px;text-transform:uppercase;">Founder & Dev</p>
+            <div style="background:rgba(138,43,226,0.1);padding:20px;border-radius:20px;margin-bottom:25px;border-left:4px solid #8a2be2;text-align:left;">
+                <p style="color:#eee;font-size:13px;font-style:italic;line-height:1.6;margin:0;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."</p>
+            </div>
+            <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:10px;color:white;margin-bottom:25px;background:rgba(255,255,255,0.05);padding:14px;border-radius:15px;border:1px solid rgba(138,43,226,0.2);">
+                <i data-lucide="instagram" style="width:18px;color:#8a2be2;"></i>
+                <span style="font-weight:600;">@wtfditoh</span>
+            </a>
+            <button onclick="fecharSobreDono()" style="width:100%;background:#8a2be2;color:white;border:none;padding:15px;border-radius:12px;font-weight:900;cursor:pointer;">Voltar</button>
+        </div>
+    </div>
+
+    <script src="menu.js"></script>
+    <script>
+// DEFINE novaNota IMEDIATAMENTE — antes de qualquer async
+window.novaNota = function() {
+    var nova = {
+        titulo: '', corpo: '', fixada: false, rotinaDiaria: false,
+        usuario: (localStorage.getItem('dt_user_email') || '').toLowerCase(),
+        fotoLocal: null, anexoNome: null, anexoBase64: null,
+        criadoEm: Date.now(), atualizadoEm: Date.now()
+    };
+    nova.id = 'local_' + Date.now();
+    todasNotas.unshift(nova);
+    localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+    abrirEditor(nova);
+    // Salva no Firebase em background se disponível
+    if (db && userEmail && userType !== 'local') {
+        db.collection("caderno").add(Object.assign({}, nova, {fotoLocal: null, anexoBase64: null}))
+        .then(function(ref) {
+            nova.id = ref.id;
+            var idx = todasNotas.findIndex(function(n) { return n.id === nova.id; });
+            if (idx !== -1) todasNotas[idx] = nova;
+            localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+        }).catch(function(e) { console.error(e); });
+    }
+};
+
+// caderno-logica.js — SEM módulo ES6, funciona como script normal
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+    authDomain: "dt-scho0l.firebaseapp.com",
+    projectId: "dt-scho0l",
+    storageBucket: "dt-scho0l.firebasestorage.app",
+    messagingSenderId: "78578509391",
+    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+};
+
+let db;
+function initFirebase() {
+    if (!window.firebase) return;
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+}
+
+const HF_KEY = "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";
+const HF_MODEL = "google/flan-t5-large";
+
+const userEmail = (localStorage.getItem('dt_user_email') || '').toLowerCase();
+const userType = localStorage.getItem('dt_user_type');
+
+let notaAtual = null;
+let autoSaveTimer = null;
+let resultadoIA = '';
+let todasNotas = [];
+
+function toast(msg, cor) {
+    cor = cor || '#8a2be2';
+    const el = document.getElementById('toast-caderno');
+    if (!el) return;
+    el.innerText = msg;
+    el.style.borderColor = cor + '66';
+    el.style.display = 'block';
+    el.style.opacity = '1';
+    setTimeout(function() {
+        el.style.opacity = '0';
+        setTimeout(function() { el.style.display = 'none'; }, 300);
+    }, 2500);
+}
+
+// CARREGAR NOTAS
+async function carregarNotas() {
+    const local = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
+    // Mostra local primeiro pra não ficar preso no "Carregando"
+    todasNotas = local;
+    renderizarLista(todasNotas);
+
+    if (!userEmail || userType === 'local' || !db) return;
+
+    try {
+        const snap = await db.collection("caderno").where("usuario", "==", userEmail).get();
+        todasNotas = [];
+        snap.forEach(function(d) {
+            const nota = Object.assign({ id: d.id }, d.data());
+            const localNota = local.find(function(n) { return n.id === d.id; });
+            if (localNota) {
+                nota.fotoLocal = localNota.fotoLocal || null;
+                nota.anexoNome = localNota.anexoNome || nota.anexoNome || null;
+                nota.anexoBase64 = localNota.anexoBase64 || null;
+                nota.rotinaDiaria = localNota.rotinaDiaria || nota.rotinaDiaria || false;
+            }
+            todasNotas.push(nota);
+        });
+        todasNotas.sort(function(a, b) { return (b.atualizadoEm || 0) - (a.atualizadoEm || 0); });
+        renderizarLista(todasNotas);
+    } catch(e) {
+        console.error(e);
+        todasNotas = local;
+        renderizarLista(todasNotas);
+    }
+}
+
+function renderizarLista(notas) {
+    const lista = document.getElementById('lista-notas');
+    const sub = document.getElementById('sub-contagem');
+    if (!lista) return;
+    if (sub) sub.innerText = notas.length === 0 ? 'Nenhuma nota' : notas.length + ' nota' + (notas.length > 1 ? 's' : '');
+    if (notas.length === 0) {
+        lista.innerHTML = '<div class="empty-caderno"><div class="empty-icon">📓</div><p>Nenhuma nota ainda</p><span>Toque no + para criar sua primeira nota</span></div>';
+        return;
+    }
+    const fixadas = notas.filter(function(n) { return n.fixada; });
+    const normais = notas.filter(function(n) { return !n.fixada; });
+    const ordenadas = fixadas.concat(normais);
+    lista.innerHTML = ordenadas.map(function(n) {
+        const preview = n.corpo ? n.corpo.replace(/<[^>]*>/g, '').slice(0, 80) : '';
+        const data = n.atualizadoEm ? new Date(n.atualizadoEm).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) : '';
+        return '<div class="nota-card ' + (n.fixada ? 'fixada' : '') + '" onclick="abrirNota(\'' + n.id + '\')">' +
+            '<div class="nota-card-header"><span class="nota-card-titulo">' + (n.titulo || 'Sem título') + '</span>' +
+            (n.fixada ? '<span>📌</span>' : '') + '</div>' +
+            (preview ? '<p class="nota-card-preview">' + preview + '</p>' : '') +
+            '<div class="nota-card-footer"><span class="nota-card-data">' + data + '</span>' +
+            '<div style="display:flex;gap:6px;">' +
+            (n.rotinaDiaria ? '<span class="nota-card-tag">🔄</span>' : '') +
+            (n.fotoLocal ? '<span class="nota-card-tag">📸</span>' : '') +
+            (n.anexoNome ? '<span class="nota-card-tag">📎</span>' : '') +
+            (n.fixada ? '<span class="nota-card-tag">📌</span>' : '') +
+            '</div></div></div>';
+    }).join('');
+}
+
+
+
+function salvarLocal() {
+    localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+}
+
+window.abrirNota = function(id) {
+    const nota = todasNotas.find(function(n) { return n.id === id; });
+    if (nota) abrirEditor(nota);
+};
+
+function abrirEditor(nota) {
+    notaAtual = nota;
+    document.getElementById('tela-lista').style.display = 'none';
+    document.getElementById('tela-editor').style.display = 'block';
+    document.getElementById('titulo-nota').value = nota.titulo || '';
+
+    // Carrega corpo e sincroniza checks com estado do dia
+    var corpo = nota.corpo || '';
+    if (nota.rotinaDiaria && corpo) {
+        var hoje = new Date().toISOString().split('T')[0];
+        var estadoHoje = JSON.parse(localStorage.getItem('dt_checklist_' + hoje) || '{}');
+        var div = document.createElement('div');
+        div.innerHTML = corpo;
+        var checks = div.querySelectorAll('.check-item');
+        for (var c = 0; c < checks.length; c++) {
+            var itemId = nota.id + '_' + c;
+            var input = checks[c].querySelector('input[type="checkbox"]');
+            if (input) {
+                input.checked = estadoHoje[itemId] || false;
+                if (estadoHoje[itemId]) {
+                    checks[c].classList.add('concluido');
+                } else {
+                    checks[c].classList.remove('concluido');
+                }
+            }
+        }
+        corpo = div.innerHTML;
+    }
+    document.getElementById('corpo-editor').innerHTML = corpo;
+
+    const statusEl = document.getElementById('editor-status');
+    if (statusEl) { statusEl.innerText = 'Salvo ✓'; statusEl.style.color = '#2ecc71'; }
+
+    const btnFixar = document.getElementById('btn-fixar');
+    if (btnFixar) btnFixar.style.color = nota.fixada ? '#8a2be2' : '#555';
+
+    const btnRotina = document.getElementById('btn-rotina');
+    if (btnRotina) btnRotina.style.color = nota.rotinaDiaria ? '#2ecc71' : '#555';
+
+    const fotoPreview = document.getElementById('foto-preview');
+    const fotoContainer = document.getElementById('foto-container');
+    if (fotoPreview) {
+        if (nota.fotoLocal) {
+            fotoPreview.src = nota.fotoLocal;
+            fotoPreview.style.display = 'block';
+            if (fotoContainer) fotoContainer.style.display = 'block';
+        } else {
+            fotoPreview.style.display = 'none';
+            if (fotoContainer) fotoContainer.style.display = 'none';
+        }
+    }
+
+    const anexoInfo = document.getElementById('anexo-info');
+    if (anexoInfo) {
+        anexoInfo.style.display = nota.anexoNome ? 'flex' : 'none';
+        const nomeEl = document.getElementById('anexo-nome');
+        if (nomeEl) nomeEl.innerText = nota.anexoNome || '';
+    }
+
+    contarPalavras();
+    window.scrollTo(0, 0);
+    if (window.lucide) lucide.createIcons();
+    setTimeout(function() { if (!nota.titulo) document.getElementById('titulo-nota').focus(); }, 100);
+}
+
+window.voltarLista = function() {
+    if (autoSaveTimer) { clearTimeout(autoSaveTimer); salvarNota(); }
+    document.getElementById('tela-editor').style.display = 'none';
+    document.getElementById('tela-lista').style.display = 'block';
+    notaAtual = null;
+    carregarNotas();
+};
+
+window.autoSave = function() {
+    const statusEl = document.getElementById('editor-status');
+    if (statusEl) { statusEl.innerText = 'Salvando...'; statusEl.style.color = '#555'; }
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(salvarNota, 1500);
+};
+
+async function salvarNota() {
+    if (!notaAtual) return;
+    notaAtual.titulo = document.getElementById('titulo-nota').value;
+    notaAtual.corpo = document.getElementById('corpo-editor').innerHTML;
+    notaAtual.atualizadoEm = Date.now();
+
+    const idx = todasNotas.findIndex(function(n) { return n.id === notaAtual.id; });
+    if (idx !== -1) todasNotas[idx] = notaAtual;
+    salvarLocal();
+
+    if (userType !== 'local' && userEmail && db && !notaAtual.id.startsWith('local_')) {
+        try {
+            await db.collection("caderno").doc(notaAtual.id).update({
+                titulo: notaAtual.titulo,
+                corpo: notaAtual.corpo,
+                fixada: notaAtual.fixada,
+                rotinaDiaria: notaAtual.rotinaDiaria || false,
+                atualizadoEm: notaAtual.atualizadoEm,
+                anexoNome: notaAtual.anexoNome || null
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    const statusEl = document.getElementById('editor-status');
+    if (statusEl) { statusEl.innerText = 'Salvo ✓'; statusEl.style.color = '#2ecc71'; }
+}
+
+window.toggleFixar = async function() {
+    if (!notaAtual) return;
+    notaAtual.fixada = !notaAtual.fixada;
+    const btnFixar = document.getElementById('btn-fixar');
+    if (btnFixar) btnFixar.style.color = notaAtual.fixada ? '#8a2be2' : '#555';
+    toast(notaAtual.fixada ? '📌 Nota fixada!' : 'Nota desafixada');
+    await salvarNota();
+};
+
+window.toggleRotina = async function() {
+    if (!notaAtual) return;
+    notaAtual.rotinaDiaria = !notaAtual.rotinaDiaria;
+    const btnRotina = document.getElementById('btn-rotina');
+    if (btnRotina) btnRotina.style.color = notaAtual.rotinaDiaria ? '#2ecc71' : '#555';
+    toast(notaAtual.rotinaDiaria ? '🔄 Rotina diária ativada!' : 'Rotina desativada');
+    await salvarNota();
+};
+
+window.excluirNota = function() {
+    document.getElementById('modal-excluir-nota').style.display = 'flex';
+};
+
+window.confirmarExcluirNota = async function() {
+    document.getElementById('modal-excluir-nota').style.display = 'none';
+    if (!notaAtual) return;
+    todasNotas = todasNotas.filter(function(n) { return n.id !== notaAtual.id; });
+    salvarLocal();
+    if (userType !== 'local' && userEmail && db && !notaAtual.id.startsWith('local_')) {
+        try { await db.collection("caderno").doc(notaAtual.id).delete(); } catch(e) { console.error(e); }
+    }
+    voltarLista();
+    toast('Nota excluída');
+};
+
+window.cancelarExcluirNota = function() {
+    document.getElementById('modal-excluir-nota').style.display = 'none';
+};
+
+window.abrirFoto = function() { document.getElementById('input-foto').click(); };
+
+window.processarFoto = function(input) {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        if (!notaAtual) return;
+        notaAtual.fotoLocal = e.target.result;
+        const fotoPreview = document.getElementById('foto-preview');
+        const fotoContainer = document.getElementById('foto-container');
+        if (fotoPreview) { fotoPreview.src = e.target.result; fotoPreview.style.display = 'block'; }
+        if (fotoContainer) fotoContainer.style.display = 'block';
+        const idx = todasNotas.findIndex(function(n) { return n.id === notaAtual.id; });
+        if (idx !== -1) todasNotas[idx] = notaAtual;
+        salvarLocal();
+        toast('📸 Foto adicionada!');
+    };
+    reader.readAsDataURL(input.files[0]);
+};
+
+window.removerFoto = function() {
+    if (!notaAtual) return;
+    notaAtual.fotoLocal = null;
+    document.getElementById('foto-preview').style.display = 'none';
+    document.getElementById('foto-container').style.display = 'none';
+    const idx = todasNotas.findIndex(function(n) { return n.id === notaAtual.id; });
+    if (idx !== -1) todasNotas[idx] = notaAtual;
+    salvarLocal();
+    toast('Foto removida');
+};
+
+window.abrirArquivo = function() { document.getElementById('input-arquivo').click(); };
+
+window.processarArquivo = function(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        if (!notaAtual) return;
+        notaAtual.anexoNome = file.name;
+        notaAtual.anexoTipo = file.type;
+        notaAtual.anexoBase64 = e.target.result;
+        const anexoInfo = document.getElementById('anexo-info');
+        const nomeEl = document.getElementById('anexo-nome');
+        if (anexoInfo) anexoInfo.style.display = 'flex';
+        if (nomeEl) nomeEl.innerText = file.name;
+        const idx = todasNotas.findIndex(function(n) { return n.id === notaAtual.id; });
+        if (idx !== -1) todasNotas[idx] = notaAtual;
+        salvarLocal();
+        toast('📎 Arquivo anexado!');
+    };
+    reader.readAsDataURL(file);
+};
+
+window.abrirAnexo = function() {
+    if (!notaAtual || !notaAtual.anexoBase64) { toast('Arquivo não disponível', '#ff4444'); return; }
+    const link = document.createElement('a');
+    link.href = notaAtual.anexoBase64;
+    link.download = notaAtual.anexoNome || 'arquivo';
+    link.click();
+};
+
+window.removerArquivo = function() {
+    if (!notaAtual) return;
+    notaAtual.anexoNome = null;
+    notaAtual.anexoBase64 = null;
+    const anexoInfo = document.getElementById('anexo-info');
+    if (anexoInfo) anexoInfo.style.display = 'none';
+    const idx = todasNotas.findIndex(function(n) { return n.id === notaAtual.id; });
+    if (idx !== -1) todasNotas[idx] = notaAtual;
+    salvarLocal();
+    toast('Arquivo removido');
+};
+
+window.formatar = function(cmd) {
+    document.getElementById('corpo-editor').focus();
+    document.execCommand(cmd, false, null);
+    window.autoSave();
+};
+
+window.inserirSeparador = function() {
+    document.getElementById('corpo-editor').focus();
+    document.execCommand('insertHTML', false, '<hr>');
+    window.autoSave();
+};
+
+// CHECKLIST — corrigido pra mobile
+window.inserirChecklist = function() {
+    const editor = document.getElementById('corpo-editor');
+    editor.focus();
+    const id = 'chk_' + Date.now();
+    // Usa div separado pra não bugar o cursor no mobile
+    const novoItem = document.createElement('div');
+    novoItem.className = 'check-item';
+    novoItem.id = id;
+    novoItem.innerHTML = '<input type="checkbox" onchange="toggleCheck(\'' + id + '\')"><span contenteditable="true">Item</span>';
+
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        range.collapse(false);
+        range.insertNode(novoItem);
+        // Move cursor pro span
+        const span = novoItem.querySelector('span');
+        if (span) {
+            const newRange = document.createRange();
+            newRange.selectNodeContents(span);
+            newRange.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+        }
+    } else {
+        editor.appendChild(novoItem);
+    }
+    window.autoSave();
+};
+
+window.toggleCheck = function(id) {
+    const item = document.getElementById(id);
+    if (!item || !notaAtual) return;
+    item.classList.toggle('concluido');
+
+    // Se for rotina diária, salva estado no localStorage por data
+    if (notaAtual.rotinaDiaria) {
+        var hoje = new Date().toISOString().split('T')[0];
+        var estado = JSON.parse(localStorage.getItem('dt_checklist_' + hoje) || '{}');
+        // Encontra índice do item
+        var editor = document.getElementById('corpo-editor');
+        var checks = editor.querySelectorAll('.check-item');
+        for (var c = 0; c < checks.length; c++) {
+            if (checks[c].id === id) {
+                var itemId = notaAtual.id + '_' + c;
+                estado[itemId] = item.classList.contains('concluido');
+                break;
+            }
+        }
+        localStorage.setItem('dt_checklist_' + hoje, JSON.stringify(estado));
+    }
+
+    window.autoSave();
+};
+
+// ENTER no checklist — corrigido pra mobile
+window.handleEditorKey = function(e) {
+    if (e.key !== 'Enter') return;
+    const sel = window.getSelection();
+    if (!sel || !sel.anchorNode) return;
+    var node = sel.anchorNode;
+    // Sobe na árvore até achar .check-item
+    var checkItem = null;
+    var current = node.nodeType === 3 ? node.parentNode : node;
+    while (current && current !== document.getElementById('corpo-editor')) {
+        if (current.classList && current.classList.contains('check-item')) {
+            checkItem = current;
+            break;
+        }
+        current = current.parentNode;
+    }
+    if (!checkItem) return;
+    e.preventDefault();
+    const id = 'chk_' + Date.now();
+    const novoItem = document.createElement('div');
+    novoItem.className = 'check-item';
+    novoItem.id = id;
+    novoItem.innerHTML = '<input type="checkbox" onchange="toggleCheck(\'' + id + '\')"><span contenteditable="true"></span>';
+    checkItem.parentNode.insertBefore(novoItem, checkItem.nextSibling);
+    const span = novoItem.querySelector('span');
+    if (span) {
+        const newRange = document.createRange();
+        newRange.setStart(span, 0);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+        span.focus();
+    }
+    window.autoSave();
+};
+
+window.contarPalavras = function() {
+    const texto = document.getElementById('corpo-editor').innerText || '';
+    const palavras = texto.trim() ? texto.trim().split(/\s+/).length : 0;
+    const el = document.getElementById('contador-palavras');
+    if (el) el.innerText = palavras + ' palavra' + (palavras !== 1 ? 's' : '');
+};
+
+window.filtrarNotas = function() {
+    const termo = document.getElementById('campo-busca').value.toLowerCase();
+    if (!termo) { renderizarLista(todasNotas); return; }
+    renderizarLista(todasNotas.filter(function(n) {
+        return (n.titulo || '').toLowerCase().includes(termo) ||
+               (n.corpo || '').replace(/<[^>]*>/g, '').toLowerCase().includes(termo);
+    }));
+};
+
+window.abrirMenuIA = function() {
+    document.getElementById('menu-ia').style.display = 'flex';
+    document.getElementById('ia-resultado').style.display = 'none';
+    document.getElementById('ia-acoes').style.display = 'none';
+    if (window.lucide) lucide.createIcons();
+};
+
+window.fecharMenuIA = function() {
+    document.getElementById('menu-ia').style.display = 'none';
+    resultadoIA = '';
+};
+
+window.usarIA = async function(acao) {
+    const corpo = document.getElementById('corpo-editor').innerText || '';
+    const titulo = document.getElementById('titulo-nota').value || '';
+    if (!corpo.trim() && !titulo.trim()) { toast('Escreva algo primeiro!', '#ff4444'); return; }
+    const prompts = {
+        resumir:  'Resuma em português: ' + titulo + ' ' + corpo,
+        explicar: 'Explique de forma simples em português: ' + titulo + ' ' + corpo,
+        lista:    'Transforme em lista de tópicos em português: ' + titulo + ' ' + corpo,
+        questoes: 'Crie 3 questões de estudo em português sobre: ' + titulo + ' ' + corpo,
+        melhorar: 'Melhore o texto em português: ' + corpo,
+        informal: 'Reescreva de forma informal em português: ' + corpo
+    };
+    const resultadoEl = document.getElementById('ia-resultado');
+    const acoesEl = document.getElementById('ia-acoes');
+    resultadoEl.style.display = 'block';
+    resultadoEl.innerHTML = '<div class="ia-loading"><div class="ia-dot"></div><div class="ia-dot"></div><div class="ia-dot"></div></div>';
+    acoesEl.style.display = 'none';
+    try {
+        const response = await fetch('https://api-inference.huggingface.co/models/' + HF_MODEL, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + HF_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ inputs: prompts[acao], parameters: { max_new_tokens: 400 } })
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            resultadoEl.innerText = err.error && err.error.includes('loading') ?
+                '⏳ Modelo carregando, aguarde 20s e tente novamente.' :
+                'IA indisponível. Tente novamente em breve.';
+            return;
+        }
+        const data = await response.json();
+        resultadoIA = Array.isArray(data) ? (data[0].generated_text || '') : (data.generated_text || '');
+        resultadoIA = resultadoIA.trim();
+        resultadoEl.innerText = resultadoIA;
+        acoesEl.style.display = 'flex';
+    } catch(e) {
+        resultadoEl.innerText = 'Erro ao conectar com a IA.';
+        console.error(e);
+    }
+};
+
+window.aceitarIA = function() {
+    if (!resultadoIA) return;
+    const editor = document.getElementById('corpo-editor');
+    editor.innerHTML += '<hr><p>' + resultadoIA.replace(/\n/g, '<br>') + '</p>';
+    window.fecharMenuIA();
+    window.autoSave();
+    toast('✓ Resultado aplicado!');
+};
+
+function iniciar() {
+    initFirebase();
+    carregarNotas();
+    if (window.lucide) lucide.createIcons();
+}
+
+// Espera Firebase carregar antes de iniciar
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pequeno delay pra garantir que os scripts do Firebase carregaram
+        setTimeout(iniciar, 100);
+    });
+} else {
+    setTimeout(iniciar, 100);
+}
+
+</script>
+    <script>
+        function abrirSobreDono() {
+            document.getElementById('modal-dono').style.display = 'flex';
+            if (window.lucide) lucide.createIcons();
+        }
+        function fecharSobreDono() {
+            document.getElementById('modal-dono').style.display = 'none';
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('logo-caderno').addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                abrirSobreDono();
+            });
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
