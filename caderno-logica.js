@@ -91,7 +91,27 @@ function abrirEditor(nota) {
     document.getElementById('tela-lista').style.display = 'none';
     document.getElementById('tela-editor').style.display = 'block';
     document.getElementById('titulo-nota').value = nota.titulo || '';
-    document.getElementById('corpo-editor').innerHTML = nota.corpo || '';
+
+    // Sincroniza estado dos checks do dia
+    var corpo = nota.corpo || '';
+    if (nota.rotinaDiaria && corpo) {
+        var hoje = new Date().toISOString().split('T')[0];
+        var estadoHoje = JSON.parse(localStorage.getItem('dt_checklist_' + hoje) || '{}');
+        var tmpDiv = document.createElement('div');
+        tmpDiv.innerHTML = corpo;
+        var checks = tmpDiv.querySelectorAll('.check-item');
+        for (var c = 0; c < checks.length; c++) {
+            var inp = checks[c].querySelector('input[type="checkbox"]');
+            if (inp) {
+                var feito = estadoHoje[nota.id + '_' + c] || false;
+                inp.checked = feito;
+                if (feito) checks[c].classList.add('concluido');
+                else checks[c].classList.remove('concluido');
+            }
+        }
+        corpo = tmpDiv.innerHTML;
+    }
+    document.getElementById('corpo-editor').innerHTML = corpo;
     var statusEl = document.getElementById('editor-status');
     if (statusEl) { statusEl.innerText = 'Salvo ✓'; statusEl.style.color = '#2ecc71'; }
     var btnFixar = document.getElementById('btn-fixar');
@@ -249,6 +269,20 @@ window.removerFoto = function() {
     if (idx !== -1) todasNotas[idx] = notaAtual;
     salvarLocal();
     toast('Foto removida');
+};
+
+window.abrirFotoFullscreen = function() {
+    var preview = document.getElementById('foto-preview');
+    var modal = document.getElementById('modal-foto');
+    var fullscreen = document.getElementById('foto-fullscreen');
+    if (!preview || !modal || !fullscreen) return;
+    fullscreen.src = preview.src;
+    modal.style.display = 'flex';
+};
+
+window.fecharFotoFullscreen = function() {
+    var modal = document.getElementById('modal-foto');
+    if (modal) modal.style.display = 'none';
 };
 
 window.abrirArquivo = function() { document.getElementById('input-arquivo').click(); };
@@ -444,19 +478,4 @@ window.usarIA = function(acao) {
 window.aceitarIA = function() {
     if (!resultadoIA) return;
     var editor = document.getElementById('corpo-editor');
-    editor.innerHTML += '<hr><p>' + resultadoIA.replace(/\n/g, '<br>') + '</p>';
-    window.fecharMenuIA();
-    window.autoSave();
-    toast('✓ Resultado aplicado!');
-};
-
-// INIT
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.firebase) {
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-    }
-    carregarNotas();
-    if (window.lucide) lucide.createIcons();
-});
-        
+    editor.innerHTML += '<hr><p>' + resultadoIA.replace(/\n/g, 
