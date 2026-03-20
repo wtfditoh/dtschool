@@ -27,7 +27,7 @@
                 <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2;width:22px;height:22px;"></i></div>
                 <span class="hub-logo-text purple">Brain</span>
             </div>
-            <button onclick="if(window.novaNota){window.novaNota();}else{alert('novaNota nao existe ainda');}" style="background:#8a2be2;border:none;color:white;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 15px rgba(138,43,226,0.3);">
+            <button onclick="window.novaNota()" style="background:#8a2be2;border:none;color:white;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 15px rgba(138,43,226,0.3);">
                 <i data-lucide="plus" style="width:20px;height:20px;"></i>
             </button>
         </header>
@@ -86,8 +86,13 @@
         <div class="editor-body">
             <input type="text" id="titulo-nota" class="titulo-input" placeholder="Título da nota..." oninput="autoSave()">
             <div id="foto-container" style="position:relative;margin-bottom:16px;display:none;">
-                <img id="foto-preview" style="width:100%;border-radius:16px;max-height:250px;object-fit:cover;">
+                <img id="foto-preview" onclick="abrirFotoFullscreen()" style="width:100%;border-radius:16px;max-height:250px;object-fit:cover;cursor:zoom-in;">
                 <button onclick="removerFoto()" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.7);border:none;color:white;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
+            </div>
+
+            <!-- MODAL FOTO FULLSCREEN -->
+            <div id="modal-foto" onclick="fecharFotoFullscreen()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out;">
+                <img id="foto-fullscreen" style="max-width:95vw;max-height:95vh;object-fit:contain;border-radius:12px;">
             </div>
             <div id="anexo-info" style="display:none;align-items:center;gap:10px;background:#0e0e12;border:1px solid rgba(138,43,226,0.2);border-radius:14px;padding:12px 16px;margin-bottom:16px;cursor:pointer;" onclick="abrirAnexo()">
                 <i data-lucide="file-text" style="width:20px;color:#8a2be2;flex-shrink:0;"></i>
@@ -157,23 +162,151 @@
     </div>
 
     <script src="menu.js"></script>
-    <script src="caderno-logica.js"></script>
     <script>
-        function abrirSobreDono() {
-            document.getElementById('modal-dono').style.display = 'flex';
-            if (window.lucide) lucide.createIcons();
-        }
-        function fecharSobreDono() {
-            document.getElementById('modal-dono').style.display = 'none';
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('logo-caderno').addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                abrirSobreDono();
-            });
-            if (window.lucide) lucide.createIcons();
+// DEFINE novaNota IMEDIATAMENTE — antes de qualquer async
+window.novaNota = function() {
+    var nova = {
+        titulo: '', corpo: '', fixada: false, rotinaDiaria: false,
+        usuario: (localStorage.getItem('dt_user_email') || '').toLowerCase(),
+        fotoLocal: null, anexoNome: null, anexoBase64: null,
+        criadoEm: Date.now(), atualizadoEm: Date.now()
+    };
+    nova.id = 'local_' + Date.now();
+    todasNotas.unshift(nova);
+    localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+    abrirEditor(nova);
+    // Salva no Firebase em background se disponível
+    if (db && userEmail && userType !== 'local') {
+        db.collection("caderno").add(Object.assign({}, nova, {fotoLocal: null, anexoBase64: null}))
+        .then(function(ref) {
+            nova.id = ref.id;
+            var idx = todasNotas.findIndex(function(n) { return n.id === nova.id; });
+            if (idx !== -1) todasNotas[idx] = nova;
+            localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+        }).catch(function(e) { console.error(e); });
+    }
+};
+
+// caderno-logica.js — SEM módulo ES6, funciona como script normal
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+    authDomain: "dt-scho0l.firebaseapp.com",
+    projectId: "dt-scho0l",
+    storageBucket: "dt-scho0l.firebasestorage.app",
+    messagingSenderId: "78578509391",
+    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+};
+
+let db;
+function initFirebase() {
+    if (!window.firebase) return;
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+}
+
+const HF_KEY = "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";
+const HF_MODEL = "google/flan-t5-large";
+
+const userEmail = (localStorage.getItem('dt_user_email') || '').toLowerCase();
+const userType = localStorage.getItem('dt_user_type');
+
+let notaAtual = null;
+let autoSaveTimer = null;
+let resultadoIA = '';
+let todasNotas = [];
+
+function toast(msg, cor) {
+    cor = cor || '#8a2be2';
+    const el = document.getElementById('toast-caderno');
+    if (!el) return;
+    el.innerText = msg;
+    el.style.borderColor = cor + '66';
+    el.style.display = 'block';
+    el.style.opacity = '1';
+    setTimeout(function() {
+        el.style.opacity = '0';
+        setTimeout(function() { el.style.display = 'none'; }, 300);
+    }, 2500);
+}
+
+// CARREGAR NOTAS
+async function carregarNotas() {
+    const local = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
+    // Mostra local primeiro pra não ficar preso no "Carregando"
+    todasNotas = local;
+    renderizarLista(todasNotas);
+
+    if (!userEmail || userType === 'local' || !db) return;
+
+    try {
+        const snap = await db.collection("caderno").where("usuario", "==", userEmail).get();
+        todasNotas = [];
+        snap.forEach(function(d) {
+            const nota = Object.assign({ id: d.id }, d.data());
+            const localNota = local.find(function(n) { return n.id === d.id; });
+            if (localNota) {
+                nota.fotoLocal = localNota.fotoLocal || null;
+                nota.anexoNome = localNota.anexoNome || nota.anexoNome || null;
+                nota.anexoBase64 = localNota.anexoBase64 || null;
+                nota.rotinaDiaria = localNota.rotinaDiaria || nota.rotinaDiaria || false;
+            }
+            todasNotas.push(nota);
         });
-    </script>
-</body>
-</html>
+        todasNotas.sort(function(a, b) { return (b.atualizadoEm || 0) - (a.atualizadoEm || 0); });
+        renderizarLista(todasNotas);
+    } catch(e) {
+        console.error(e);
+        todasNotas = local;
+        renderizarLista(todasNotas);
+    }
+}
+
+function renderizarLista(notas) {
+    const lista = document.getElementById('lista-notas');
+    const sub = document.getElementById('sub-contagem');
+    if (!lista) return;
+    if (sub) sub.innerText = notas.length === 0 ? 'Nenhuma nota' : notas.length + ' nota' + (notas.length > 1 ? 's' : '');
+    if (notas.length === 0) {
+        lista.innerHTML = '<div class="empty-caderno"><div class="empty-icon">📓</div><p>Nenhuma nota ainda</p><span>Toque no + para criar sua primeira nota</span></div>';
+        return;
+    }
+    const fixadas = notas.filter(function(n) { return n.fixada; });
+    const normais = notas.filter(function(n) { return !n.fixada; });
+    const ordenadas = fixadas.concat(normais);
+    lista.innerHTML = ordenadas.map(function(n) {
+        const preview = n.corpo ? n.corpo.replace(/<[^>]*>/g, '').slice(0, 80) : '';
+        const data = n.atualizadoEm ? new Date(n.atualizadoEm).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) : '';
+        return '<div class="nota-card ' + (n.fixada ? 'fixada' : '') + '" onclick="abrirNota(\'' + n.id + '\')">' +
+            '<div class="nota-card-header"><span class="nota-card-titulo">' + (n.titulo || 'Sem título') + '</span>' +
+            (n.fixada ? '<span>📌</span>' : '') + '</div>' +
+            (preview ? '<p class="nota-card-preview">' + preview + '</p>' : '') +
+            '<div class="nota-card-footer"><span class="nota-card-data">' + data + '</span>' +
+            '<div style="display:flex;gap:6px;">' +
+            (n.rotinaDiaria ? '<span class="nota-card-tag">🔄</span>' : '') +
+            (n.fotoLocal ? '<span class="nota-card-tag">📸</span>' : '') +
+            (n.anexoNome ? '<span class="nota-card-tag">📎</span>' : '') +
+            (n.fixada ? '<span class="nota-card-tag">📌</span>' : '') +
+            '</div></div></div>';
+    }).join('');
+}
+
+
+
+function salvarLocal() {
+    localStorage.setItem('dt_caderno', JSON.stringify(todasNotas));
+}
+
+window.abrirNota = function(id) {
+    const nota = todasNotas.find(function(n) { return n.id === id; });
+    if (nota) abrirEditor(nota);
+};
+
+function abrirEditor(nota) {
+    notaAtual = nota;
+    document.getElementById('tela-lista').style.display = 'none';
+    document.getElementById('tela-editor').style.display = 'block';
+    document.getElementById('titulo-nota').value = nota.titulo || '';
+
+    // Carrega corpo e sincroniza checks com estado do dia
+    var corp
