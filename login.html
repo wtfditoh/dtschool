@@ -10,178 +10,179 @@
     <link rel="stylesheet" href="login.css">
     <style>
         /* MASCOTE */
-        .mascote-wrap {
+        .monster-wrap {
             position: relative;
-            width: 120px;
-            height: 130px;
-            margin-bottom: -22px;
+            width: 100px;
+            height: 105px;
+            margin-bottom: -18px;
             z-index: 10;
-            animation: mascoteFloat 3s ease-in-out infinite;
-            filter: drop-shadow(0 8px 24px rgba(138,43,226,0.5));
+            animation: monFloat 3s ease-in-out infinite;
+            filter: drop-shadow(0 6px 20px rgba(138,43,226,0.55));
         }
-        .mascote-wrap.shame { animation: none; }
-        .mascote-wrap.angry { animation: mascoteShake 0.15s infinite; filter: drop-shadow(0 8px 24px rgba(255,50,50,0.6)); }
-        .mascote-wrap.happy { animation: mascoteJump 0.5s ease; filter: drop-shadow(0 8px 24px rgba(0,229,160,0.5)); }
-
-        @keyframes mascoteFloat {
-            0%,100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
+        .monster-wrap.shame { animation: none !important; }
+        .monster-wrap.angry {
+            animation: monShake 0.15s infinite !important;
+            filter: drop-shadow(0 6px 24px rgba(255,50,50,0.7)) !important;
         }
-        @keyframes mascoteShake {
-            0%,100% { transform: translateX(0); }
-            25% { transform: translateX(-6px) rotate(-3deg); }
-            75% { transform: translateX(6px) rotate(3deg); }
+        .monster-wrap.happy {
+            animation: monJump 0.55s ease !important;
+            filter: drop-shadow(0 6px 24px rgba(0,229,160,0.5)) !important;
         }
-        @keyframes mascoteJump {
-            0% { transform: translateY(0) scale(1); }
-            30% { transform: translateY(-16px) scale(1.05); }
-            60% { transform: translateY(-8px) scale(1.02); }
-            100% { transform: translateY(0) scale(1); }
-        }
+        @keyframes monFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-7px);} }
+        @keyframes monShake { 0%,100%{transform:translateX(0) rotate(0);} 25%{transform:translateX(-7px) rotate(-4deg);} 75%{transform:translateX(7px) rotate(4deg);} }
+        @keyframes monJump { 0%{transform:translateY(0) scale(1);} 35%{transform:translateY(-18px) scale(1.06);} 65%{transform:translateY(-8px) scale(1.02);} 100%{transform:translateY(0) scale(1);} }
 
         /* MÃOS */
-        .mascote-hand {
+        .mon-hand {
             position: absolute;
-            width: 38px;
-            height: 38px;
-            background: radial-gradient(circle at 40% 35%, #a050f0, #5a10b0);
-            border-radius: 50%;
-            top: 52px;
+            width: 34px; height: 34px;
+            top: 48px;
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
-            box-shadow: 0 0 12px rgba(138,43,226,0.5);
+            transform: translateY(28px);
+            transition: all 0.45s cubic-bezier(0.34,1.56,0.64,1);
             z-index: 20;
         }
-        .mascote-hand::before {
-            content: '';
-            position: absolute;
-            width: 10px; height: 10px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 50%;
-            top: 6px; left: 8px;
-        }
-        .mascote-hand.left { left: -8px; }
-        .mascote-hand.right { right: -8px; }
+        .mon-hand.left { left: -10px; }
+        .mon-hand.right { right: -10px; }
+        .monster-wrap.shame .mon-hand { opacity: 1; transform: translateY(-14px); }
 
-        .mascote-wrap.shame .mascote-hand {
-            opacity: 1;
-            transform: translateY(-16px);
-        }
-
-        /* PUPILA */
-        .mascote-wrap svg .pupil {
-            transition: transform 0.08s ease;
-        }
-        /* ESCONDE OLHOS NO SHAME */
-        .mascote-wrap.shame svg #eye-area { opacity: 0; transition: opacity 0.2s; }
-        .mascote-wrap svg #eye-area { opacity: 1; transition: opacity 0.2s; }
-
-        /* ANGRY — muda cor */
-        .mascote-wrap.angry svg #body-main { fill: #8a1020; }
-        .mascote-wrap.angry svg #body-grad stop:first-child { stop-color: #cc2030; }
-        .mascote-wrap.angry svg #brow-l, .mascote-wrap.angry svg #brow-r { stroke: #ff6070; }
+        /* OLHOS SOMEM NO SHAME */
+        .monster-wrap svg #eyes { transition: opacity 0.25s; }
+        .monster-wrap.shame svg #eyes { opacity: 0; }
     </style>
 </head>
 <body>
 <div class="wrapper">
 
-    <!-- MASCOTE -->
-    <div class="mascote-wrap" id="mascote">
-        <div class="mascote-hand left" id="hand-l"></div>
-        <div class="mascote-hand right" id="hand-r"></div>
-        <svg viewBox="0 0 120 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <!-- MASCOTE MELHORADO -->
+    <div class="monster-wrap" id="mascote">
+        <!-- MÃOS SVG -->
+        <svg class="mon-hand left" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
+            <defs><radialGradient id="hg1" cx="40%" cy="35%" r="65%"><stop offset="0%" stop-color="#b060ff"/><stop offset="100%" stop-color="#6010c0"/></radialGradient></defs>
+            <circle fill="url(#hg1)" cx="17" cy="17" r="15" stroke="#3a0880" stroke-width="2"/>
+            <circle fill="rgba(255,255,255,0.12)" cx="11" cy="11" r="5"/>
+            <circle fill="rgba(255,255,255,0.06)" cx="22" cy="9" r="3"/>
+        </svg>
+        <svg class="mon-hand right" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
+            <defs><radialGradient id="hg2" cx="40%" cy="35%" r="65%"><stop offset="0%" stop-color="#b060ff"/><stop offset="100%" stop-color="#6010c0"/></radialGradient></defs>
+            <circle fill="url(#hg2)" cx="17" cy="17" r="15" stroke="#3a0880" stroke-width="2"/>
+            <circle fill="rgba(255,255,255,0.12)" cx="11" cy="11" r="5"/>
+            <circle fill="rgba(255,255,255,0.06)" cx="22" cy="9" r="3"/>
+        </svg>
+
+        <!-- CORPO PRINCIPAL -->
+        <svg viewBox="0 0 100 105" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
             <defs>
-                <radialGradient id="bodyG" cx="45%" cy="35%" r="65%">
-                    <stop offset="0%" stop-color="#9535e8"/>
+                <radialGradient id="bodyG" cx="40%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#a040f8"/>
+                    <stop offset="60%" stop-color="#7a20d8"/>
                     <stop offset="100%" stop-color="#3d0880"/>
                 </radialGradient>
-                <radialGradient id="bellyG" cx="50%" cy="40%" r="60%">
-                    <stop offset="0%" stop-color="#1e0a38"/>
-                    <stop offset="100%" stop-color="#0e0520"/>
+                <radialGradient id="hornG" cx="40%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#b858ff"/>
+                    <stop offset="100%" stop-color="#5a10b0"/>
                 </radialGradient>
-                <radialGradient id="eyeG" cx="38%" cy="32%" r="65%">
-                    <stop offset="0%" stop-color="#e8d0ff"/>
-                    <stop offset="100%" stop-color="#c084fc"/>
+                <radialGradient id="eyeWhiteG" cx="38%" cy="32%" r="65%">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="100%" stop-color="#ddd0ff"/>
                 </radialGradient>
-                <radialGradient id="irisG" cx="40%" cy="35%" r="60%">
-                    <stop offset="0%" stop-color="#9040f0"/>
-                    <stop offset="100%" stop-color="#4a10a0"/>
+                <radialGradient id="irisG" cx="38%" cy="32%" r="65%">
+                    <stop offset="0%" stop-color="#8030e0"/>
+                    <stop offset="100%" stop-color="#3a0890"/>
                 </radialGradient>
-                <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.4"/>
+                <filter id="bodyShadow">
+                    <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.45"/>
+                </filter>
+                <filter id="glowF">
+                    <feGaussianBlur stdDeviation="3" result="b"/>
+                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
                 </filter>
             </defs>
 
-            <!-- ORELHAS / CHIFRES -->
-            <!-- Orelha esquerda -->
-            <ellipse fill="#6a18c8" cx="32" cy="22" rx="12" ry="20" transform="rotate(-18 32 22)"/>
-            <ellipse fill="#9535e8" cx="32" cy="22" rx="8" ry="14" transform="rotate(-18 32 22)"/>
-            <ellipse fill="#c080f8" opacity="0.5" cx="32" cy="22" rx="4" ry="8" transform="rotate(-18 32 22)"/>
-            <!-- Orelha direita -->
-            <ellipse fill="#6a18c8" cx="88" cy="22" rx="12" ry="20" transform="rotate(18 88 22)"/>
-            <ellipse fill="#9535e8" cx="88" cy="22" rx="8" ry="14" transform="rotate(18 88 22)"/>
-            <ellipse fill="#c080f8" opacity="0.5" cx="88" cy="22" rx="4" ry="8" transform="rotate(18 88 22)"/>
+            <!-- CHIFRE ESQUERDO -->
+            <ellipse fill="url(#hornG)" cx="28" cy="16" rx="9" ry="16" transform="rotate(-22 28 16)"/>
+            <ellipse fill="rgba(255,255,255,0.15)" cx="25" cy="10" rx="3.5" ry="7" transform="rotate(-22 25 10)"/>
+            <ellipse fill="#2a0858" cx="28" cy="16" rx="5" ry="10" transform="rotate(-22 28 16)"/>
+            <ellipse fill="rgba(138,43,226,0.3)" cx="26" cy="12" rx="2" ry="5" transform="rotate(-22 26 12)"/>
 
-            <!-- CORPO PRINCIPAL -->
-            <ellipse id="body-main" fill="url(#bodyG)" cx="60" cy="82" rx="50" ry="46" filter="url(#softShadow)"/>
+            <!-- CHIFRE DIREITO -->
+            <ellipse fill="url(#hornG)" cx="72" cy="16" rx="9" ry="16" transform="rotate(22 72 16)"/>
+            <ellipse fill="rgba(255,255,255,0.15)" cx="75" cy="10" rx="3.5" ry="7" transform="rotate(22 75 10)"/>
+            <ellipse fill="#2a0858" cx="72" cy="16" rx="5" ry="10" transform="rotate(22 72 16)"/>
+            <ellipse fill="rgba(138,43,226,0.3)" cx="74" cy="12" rx="2" ry="5" transform="rotate(22 74 12)"/>
 
-            <!-- CONTORNO -->
-            <ellipse fill="none" stroke="#2a0858" stroke-width="2.5" cx="60" cy="82" rx="50" ry="46"/>
+            <!-- CORPO -->
+            <rect fill="url(#bodyG)" x="8" y="20" width="84" height="78" rx="24" filter="url(#bodyShadow)"/>
 
-            <!-- BARRIGA / PAINEL CLARO -->
-            <ellipse fill="url(#bellyG)" cx="60" cy="87" rx="33" ry="30"/>
-            <ellipse fill="none" stroke="#3a1068" stroke-width="1.5" cx="60" cy="87" rx="33" ry="30"/>
+            <!-- BORDA BRILHANTE TOPO -->
+            <rect fill="none" stroke="rgba(200,150,255,0.25)" stroke-width="1.5" x="8" y="20" width="84" height="78" rx="24"/>
 
-            <!-- DETALHE CIRCUITO NA BARRIGA -->
-            <path fill="none" stroke="#3a1068" stroke-width="1.2" stroke-linecap="round" d="M 44 95 L 50 95 L 52 90 L 56 100 L 60 90 L 64 100 L 68 90 L 70 95 L 76 95"/>
+            <!-- BRILHO CANTO SUPERIOR -->
+            <ellipse fill="white" opacity="0.09" cx="30" cy="33" rx="20" ry="10" transform="rotate(-10 30 33)"/>
 
-            <!-- SOBRANCELHAS -->
-            <path id="brow-l" fill="none" stroke="#8a2be2" stroke-width="2.8" stroke-linecap="round" d="M 34 62 Q 42 57 50 61"/>
-            <path id="brow-r" fill="none" stroke="#8a2be2" stroke-width="2.8" stroke-linecap="round" d="M 70 61 Q 78 57 86 62"/>
+            <!-- PAINEL ESCURO INTERNO -->
+            <rect fill="#0e0520" x="18" y="30" width="64" height="58" rx="18" opacity="0.85"/>
+            <rect fill="none" stroke="rgba(100,30,200,0.3)" stroke-width="1" x="18" y="30" width="64" height="58" rx="18"/>
+
+            <!-- DETALHE CIRCUITO TOPO DO PAINEL -->
+            <path fill="none" stroke="rgba(138,43,226,0.25)" stroke-width="1" stroke-linecap="round"
+                  d="M 28 38 L 34 38 M 38 38 L 44 38 M 56 38 L 62 38 M 66 38 L 72 38"/>
+            <circle fill="rgba(138,43,226,0.4)" cx="36" cy="38" r="1.5"/>
+            <circle fill="rgba(138,43,226,0.4)" cx="64" cy="38" r="1.5"/>
 
             <!-- OLHOS -->
-            <g id="eye-area">
-                <!-- Olho esquerdo -->
-                <circle fill="#0a0318" cx="42" cy="72" r="14"/>
-                <circle fill="none" stroke="#5a10b8" stroke-width="1.5" cx="42" cy="72" r="14"/>
-                <circle fill="url(#eyeG)" cx="42" cy="72" r="10"/>
-                <circle fill="url(#irisG)" cx="42" cy="72" r="6.5"/>
-                <circle class="pupil" id="pupil-l" fill="#05010f" cx="42" cy="72" r="4"/>
-                <circle fill="white" cx="45" cy="69" r="2.5" opacity="0.95"/>
-                <circle fill="white" cx="40" cy="75" r="1.2" opacity="0.5"/>
+            <g id="eyes">
+                <!-- Olho esquerdo - aro externo dark -->
+                <circle fill="#080215" cx="36" cy="60" r="13"/>
+                <circle fill="none" stroke="rgba(138,43,226,0.5)" stroke-width="1.5" cx="36" cy="60" r="13"/>
+                <!-- Branco do olho -->
+                <circle fill="url(#eyeWhiteG)" cx="36" cy="60" r="9.5"/>
+                <!-- Íris -->
+                <circle fill="url(#irisG)" cx="36" cy="60" r="6"/>
+                <!-- Pupila -->
+                <circle id="pupil-l" fill="#05010e" cx="36" cy="60" r="3.5"/>
+                <!-- Brilhos -->
+                <circle fill="white" cx="38.5" cy="57.5" r="2" opacity="0.95"/>
+                <circle fill="white" cx="34.5" cy="63" r="1" opacity="0.5"/>
+                <!-- Glow íris -->
+                <circle fill="none" stroke="rgba(160,80,255,0.3)" stroke-width="1" cx="36" cy="60" r="7"/>
 
-                <!-- Olho direito -->
-                <circle fill="#0a0318" cx="78" cy="72" r="14"/>
-                <circle fill="none" stroke="#5a10b8" stroke-width="1.5" cx="78" cy="72" r="14"/>
-                <circle fill="url(#eyeG)" cx="78" cy="72" r="10"/>
-                <circle fill="url(#irisG)" cx="78" cy="72" r="6.5"/>
-                <circle class="pupil" id="pupil-r" fill="#05010f" cx="78" cy="72" r="4"/>
-                <circle fill="white" cx="81" cy="69" r="2.5" opacity="0.95"/>
-                <circle fill="white" cx="76" cy="75" r="1.2" opacity="0.5"/>
+                <!-- Olho direito - aro externo dark -->
+                <circle fill="#080215" cx="64" cy="60" r="13"/>
+                <circle fill="none" stroke="rgba(138,43,226,0.5)" stroke-width="1.5" cx="64" cy="60" r="13"/>
+                <!-- Branco do olho -->
+                <circle fill="url(#eyeWhiteG)" cx="64" cy="60" r="9.5"/>
+                <!-- Íris -->
+                <circle fill="url(#irisG)" cx="64" cy="60" r="6"/>
+                <!-- Pupila -->
+                <circle id="pupil-r" fill="#05010e" cx="64" cy="60" r="3.5"/>
+                <!-- Brilhos -->
+                <circle fill="white" cx="66.5" cy="57.5" r="2" opacity="0.95"/>
+                <circle fill="white" cx="62.5" cy="63" r="1" opacity="0.5"/>
+                <!-- Glow íris -->
+                <circle fill="none" stroke="rgba(160,80,255,0.3)" stroke-width="1" cx="64" cy="60" r="7"/>
             </g>
 
+            <!-- SOBRANCELHAS -->
+            <path id="brow-l" fill="none" stroke="#8a2be2" stroke-width="2.5" stroke-linecap="round" d="M 25 48 Q 32 43 41 47"/>
+            <path id="brow-r" fill="none" stroke="#8a2be2" stroke-width="2.5" stroke-linecap="round" d="M 59 47 Q 68 43 75 48"/>
+
             <!-- NARIZ -->
-            <ellipse fill="#5a10b8" cx="60" cy="84" rx="5" ry="3.5"/>
-            <ellipse fill="#8a2be2" cx="60" cy="83" rx="3" ry="2"/>
+            <ellipse fill="#4a10a0" cx="50" cy="72" rx="4.5" ry="3"/>
+            <ellipse fill="#7a30d0" cx="50" cy="71.5" rx="2.5" ry="1.8"/>
 
             <!-- BOCA -->
-            <path id="boca" fill="none" stroke="#8a2be2" stroke-width="2.5" stroke-linecap="round" d="M 48 93 Q 60 102 72 93"/>
+            <path id="boca" fill="none" stroke="#8a2be2" stroke-width="2.3" stroke-linecap="round" d="M 40 80 Q 50 88 60 80"/>
 
-            <!-- DENTINHOS -->
-            <path fill="#c084fc" opacity="0.6" d="M 55 96 L 57 100 L 60 96 L 63 100 L 65 96" stroke="none"/>
+            <!-- SOMBRA BASE -->
+            <ellipse fill="#1a0030" opacity="0.25" cx="50" cy="100" rx="36" ry="5"/>
 
-            <!-- BRAÇOS -->
-            <ellipse fill="#6a18c8" cx="14" cy="90" rx="10" ry="14" transform="rotate(20 14 90)"/>
-            <ellipse fill="#9535e8" cx="14" cy="90" rx="6" ry="10" transform="rotate(20 14 90)"/>
-            <ellipse fill="#6a18c8" cx="106" cy="90" rx="10" ry="14" transform="rotate(-20 106 90)"/>
-            <ellipse fill="#9535e8" cx="106" cy="90" rx="6" ry="10" transform="rotate(-20 106 90)"/>
-
-            <!-- BRILHO CORPO -->
-            <ellipse fill="white" opacity="0.06" cx="42" cy="55" rx="18" ry="10" transform="rotate(-15 42 55)"/>
-
-            <!-- SOMBRA EMBAIXO -->
-            <ellipse fill="#1a0030" opacity="0.3" cx="60" cy="126" rx="40" ry="6"/>
+            <!-- DETALHE LATERAL ESQUERDO -->
+            <circle fill="rgba(138,43,226,0.15)" cx="12" cy="60" r="6"/>
+            <circle fill="rgba(138,43,226,0.08)" cx="12" cy="60" r="3"/>
+            <!-- DETALHE LATERAL DIREITO -->
+            <circle fill="rgba(138,43,226,0.15)" cx="88" cy="60" r="6"/>
+            <circle fill="rgba(138,43,226,0.08)" cx="88" cy="60" r="3"/>
         </svg>
     </div>
 
@@ -245,14 +246,11 @@
     const browL = document.getElementById('brow-l');
     const browR = document.getElementById('brow-r');
 
-    // OLHOS SEGUEM TOQUE/MOUSE
     function moverOlhos(cx, cy) {
         if (!mascote || mascote.classList.contains('shame') || mascote.classList.contains('angry')) return;
         const rect = mascote.getBoundingClientRect();
-        const mx = rect.left + rect.width / 2;
-        const my = rect.top + rect.height / 2;
-        const dx = Math.max(-4, Math.min(4, (cx - mx) / window.innerWidth * 18));
-        const dy = Math.max(-4, Math.min(4, (cy - my) / window.innerHeight * 18));
+        const dx = Math.max(-3.5, Math.min(3.5, (cx - (rect.left + rect.width/2)) / window.innerWidth * 20));
+        const dy = Math.max(-3.5, Math.min(3.5, (cy - (rect.top + rect.height/2)) / window.innerHeight * 20));
         if (pupilL) pupilL.style.transform = `translate(${dx}px,${dy}px)`;
         if (pupilR) pupilR.style.transform = `translate(${dx}px,${dy}px)`;
     }
@@ -260,28 +258,23 @@
     document.addEventListener('mousemove', e => moverOlhos(e.clientX, e.clientY));
     document.addEventListener('touchmove', e => moverOlhos(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
 
-    // EMAIL FOCUS — olhos olham pra baixo
     inputEmail && inputEmail.addEventListener('focus', () => {
         mascote.classList.remove('shame','angry','happy');
-        if (pupilL) pupilL.style.transform = 'translate(0, 4px)';
-        if (pupilR) pupilR.style.transform = 'translate(0, 4px)';
-        if (boca) boca.setAttribute('d', 'M 48 93 Q 60 102 72 93');
+        if (pupilL) pupilL.style.transform = 'translate(0,3.5px)';
+        if (pupilR) pupilR.style.transform = 'translate(0,3.5px)';
+        if (boca) boca.setAttribute('d','M 40 80 Q 50 88 60 80');
     });
     inputEmail && inputEmail.addEventListener('blur', () => {
         if (pupilL) pupilL.style.transform = 'translate(0,0)';
         if (pupilR) pupilR.style.transform = 'translate(0,0)';
     });
 
-    // SENHA FOCUS — tampa os olhos
     inputPass && inputPass.addEventListener('focus', () => {
         mascote.classList.add('shame');
         mascote.classList.remove('angry','happy');
     });
-    inputPass && inputPass.addEventListener('blur', () => {
-        mascote.classList.remove('shame');
-    });
+    inputPass && inputPass.addEventListener('blur', () => mascote.classList.remove('shame'));
 
-    // TOGGLE SENHA
     window.toggleSenha = function() {
         const t = inputPass.type === 'password' ? 'text' : 'password';
         inputPass.type = t;
@@ -289,29 +282,28 @@
         lucide.createIcons();
     };
 
-    // REAÇÕES
     window.yetiErro = function() {
         mascote.classList.add('angry');
         mascote.classList.remove('shame','happy');
-        if (boca) boca.setAttribute('d', 'M 48 97 Q 60 90 72 97');
-        if (browL) browL.setAttribute('d', 'M 34 64 Q 42 59 50 63');
-        if (browR) browR.setAttribute('d', 'M 70 63 Q 78 59 86 64');
+        if (boca) boca.setAttribute('d','M 40 84 Q 50 77 60 84');
+        if (browL) browL.setAttribute('d','M 25 50 Q 32 45 41 49');
+        if (browR) browR.setAttribute('d','M 59 49 Q 68 45 75 50');
         if (card) card.classList.add('shake-error');
         setTimeout(() => {
             mascote.classList.remove('angry');
             if (card) card.classList.remove('shake-error');
-            if (boca) boca.setAttribute('d', 'M 48 93 Q 60 102 72 93');
-            if (browL) browL.setAttribute('d', 'M 34 62 Q 42 57 50 61');
-            if (browR) browR.setAttribute('d', 'M 70 61 Q 78 57 86 62');
-        }, 1500);
+            if (boca) boca.setAttribute('d','M 40 80 Q 50 88 60 80');
+            if (browL) browL.setAttribute('d','M 25 48 Q 32 43 41 47');
+            if (browR) browR.setAttribute('d','M 59 47 Q 68 43 75 48');
+        }, 1600);
     };
 
     window.yetiSucesso = function() {
         mascote.classList.add('happy');
         mascote.classList.remove('shame','angry');
-        if (boca) boca.setAttribute('d', 'M 44 92 Q 60 106 76 92');
-        if (browL) browL.setAttribute('d', 'M 34 60 Q 42 55 50 59');
-        if (browR) browR.setAttribute('d', 'M 70 59 Q 78 55 86 60');
+        if (boca) boca.setAttribute('d','M 36 79 Q 50 92 64 79');
+        if (browL) browL.setAttribute('d','M 25 46 Q 32 41 41 45');
+        if (browR) browR.setAttribute('d','M 59 45 Q 68 41 75 46');
     };
 
     window.recuperarSenha = function(e) {
