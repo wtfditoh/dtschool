@@ -1,11 +1,13 @@
 {
   "name": "Hub Brain",
   "short_name": "Hub Brain",
-  "start_url": "https://hubbrain.netlify.app/index.html", 
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#8a2be2",
+  "description": "Hub Brain é uma plataforma educacional interativa com materiais, progresso e ranking para estudantes.",
+  "id": "com.hubbrain.app",
   "icons": [
     {
       "src": "icon-514.png",
