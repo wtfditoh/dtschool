@@ -13,6 +13,7 @@ const criarMenuGlobal = () => {
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
                 <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
                 <a href="caderno.html" id="link-caderno"><i data-lucide="notebook-pen"></i> Caderno</a>
+                <a href="cronograma.html" id="link-cronograma"><i data-lucide="calendar-days"></i> Cronograma</a>
                 <a href="foco.html" id="link-foco" class="foco-highlight"><i data-lucide="timer"></i> 
                     <span>Modo Foco <small class="xp-badge">+XP</small></span></a>
                 <a href="estudos.html" id="link-estudos"><i data-lucide="brain-circuit"></i> Estudos & IA</a>
@@ -93,7 +94,7 @@ const criarMenuGlobal = () => {
         const linkHome = document.getElementById('link-home');
         if (linkHome) linkHome.classList.add('active');
     }
-    const paginas = ['notas', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco', 'admin', 'caderno'];
+    const paginas = ['notas', 'agenda', 'estudos', 'horario', 'perfil', 'ranking', 'foco', 'admin', 'caderno', 'cronograma'];
     paginas.forEach(pg => {
         if (pathAtivo.includes(pg)) {
             const link = document.getElementById(`link-${pg}`);
