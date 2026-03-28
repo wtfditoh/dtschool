@@ -21,6 +21,11 @@ let totalSegs = 0;
 let isPaused = false;
 let materiaSelecionada = "Geral";
 let sessionActive = false;
+let modoAtual = 'timer'; // 'timer' ou 'livre'
+
+// MODO LIVRE
+let livreSegs = 0;
+let livreTimer = null;
 
 // --- SOM ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -80,6 +85,22 @@ const setFlipStatic = (h, m, s) => {
     prevH = hStr; prevM = mStr; prevS = sStr;
 };
 
+// --- MODO SELECTOR ---
+window.selecionarModo = (modo) => {
+    if (sessionActive) return;
+    modoAtual = modo;
+    document.getElementById('modo-btn-timer').classList.toggle('active', modo === 'timer');
+    document.getElementById('modo-btn-livre').classList.toggle('active', modo === 'livre');
+    document.getElementById('setup-controls').style.display = modo === 'timer' ? 'block' : 'none';
+    document.getElementById('livre-info').style.display = modo === 'livre' ? 'block' : 'none';
+    document.getElementById('xp-tag').style.display = modo === 'timer' ? 'block' : 'none';
+    if (modo === 'livre') {
+        setFlipStatic(0, 0, 0);
+    } else {
+        atualizarSetup();
+    }
+};
+
 // --- TROCA DE VIEW ---
 window.trocarView = (view) => {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -135,13 +156,20 @@ document.getElementById('m-down').onclick  = () => { const v = getM(); if(v >= 5
 
 // --- INICIAR ---
 document.getElementById('btn-start').onclick = () => {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    if (modoAtual === 'livre') {
+        iniciarModoLivre();
+        return;
+    }
+    
     const h = getH(), m = getM();
     if (h === 0 && m === 0) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
     segsRestantes = h * 3600 + m * 60;
     totalSegs = segsRestantes;
     sessionActive = true;
     document.getElementById('setup-controls').style.display = 'none';
+    document.getElementById('modo-selector').style.display = 'none';
     document.getElementById('progress-wrap').style.display = 'flex';
     document.getElementById('btn-start').style.display = 'none';
     document.getElementById('btn-pause').style.display = 'block';
@@ -150,6 +178,50 @@ document.getElementById('btn-start').onclick = () => {
     document.getElementById('materia-ativa-label').innerText = materiaSelecionada.toUpperCase();
     document.querySelectorAll('.chip-materia').forEach(c => c.style.opacity = '0.3');
     timer = setInterval(tick, 1000);
+};
+
+// --- MODO LIVRE ---
+function iniciarModoLivre() {
+    livreSegs = 0;
+    sessionActive = true;
+    document.getElementById('livre-info').style.display = 'none';
+    document.getElementById('modo-selector').style.display = 'none';
+    document.getElementById('livre-progress-wrap').style.display = 'flex';
+    document.getElementById('btn-start').style.display = 'none';
+    document.getElementById('btn-pause').style.display = 'block';
+    document.getElementById('btn-parar-livre').style.display = 'block';
+    document.getElementById('btn-quit').style.display = 'block';
+    document.getElementById('livre-materia-label').innerText = materiaSelecionada.toUpperCase();
+    document.querySelectorAll('.chip-materia').forEach(c => c.style.opacity = '0.3');
+    
+    livreTimer = setInterval(tickLivre, 1000);
+}
+
+const tickLivre = () => {
+    if (isPaused) return;
+    livreSegs++;
+    playTick();
+    const h = Math.floor(livreSegs / 3600);
+    const m = Math.floor((livreSegs % 3600) / 60);
+    const s = livreSegs % 60;
+    atualizarFlip(h, m, s);
+    
+    // Atualiza XP acumulado a cada minuto
+    const minutos = Math.floor(livreSegs / 60);
+    const xpAcum = Math.floor(minutos / 25 * 10);
+    document.getElementById('livre-xp-badge').innerText = '+' + xpAcum + ' XP acumulado';
+};
+
+// FINALIZAR MODO LIVRE
+document.getElementById('btn-parar-livre').onclick = async () => {
+    clearInterval(livreTimer);
+    const minutos = Math.floor(livreSegs / 60);
+    if (minutos < 1) {
+        alert('Você precisa estudar pelo menos 1 minuto!');
+        livreTimer = setInterval(tickLivre, 1000);
+        return;
+    }
+    await finalizarSessao(true, minutos);
 };
 
 const tick = () => {
@@ -163,7 +235,7 @@ const tick = () => {
     const pct = Math.round(((totalSegs - segsRestantes) / totalSegs) * 100);
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progresso-pct').innerText = pct + '%';
-    if (segsRestantes <= 0) finalizarSessao(true);
+    if (segsRestantes <= 0) finalizarSessao(true, Math.floor(totalSegs / 60));
 };
 
 // --- PAUSAR ---
@@ -183,7 +255,9 @@ document.getElementById('btn-keep-going').onclick = () => {
 };
 document.getElementById('btn-really-quit').onclick = async () => {
     clearInterval(timer);
-    const xp = Math.floor(((totalSegs - segsRestantes) / 60 / 25) * 10 / 2);
+    clearInterval(livreTimer);
+    const segsFeitos = modoAtual === 'livre' ? livreSegs : (totalSegs - segsRestantes);
+    const xp = Math.floor((segsFeitos / 60) / 25 * 10 / 2);
     if (xp > 0 && userEmail) {
         try { await updateDoc(doc(db, "notas", userEmail), { xp: increment(xp) }); } catch(e) {}
     }
@@ -191,23 +265,24 @@ document.getElementById('btn-really-quit').onclick = async () => {
 };
 
 // --- FINALIZAR ---
-const finalizarSessao = async (completa) => {
+const finalizarSessao = async (completa, minutosParam) => {
     clearInterval(timer);
-    const minutos = Math.floor(totalSegs / 60);
+    clearInterval(livreTimer);
+    const minutos = minutosParam || Math.floor(totalSegs / 60);
     const xp = Math.floor(minutos / 25 * 10);
     let temNovas = false;
 
     if (userEmail && completa) {
         try {
             const hoje = getHojeStr();
-
             await setDoc(doc(db, "notas", userEmail), {
                 xp: increment(xp),
                 historico_foco: arrayUnion({
                     materia: materiaSelecionada,
                     minutos: minutos,
                     data: hoje,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    modo: modoAtual
                 })
             }, { merge: true });
 
@@ -275,10 +350,11 @@ async function carregarHistorico() {
             ? '<div class="empty-state"><p>Complete sua primeira sessão!</p></div>'
             : recentes.map(s => {
                 const d = new Date(s.timestamp);
+                const modoLabel = s.modo === 'livre' ? '∞' : '';
                 return `<div class="sessao-item">
                     <div class="sessao-dot"></div>
                     <div class="sessao-info">
-                        <div class="sessao-materia">${s.materia}</div>
+                        <div class="sessao-materia">${s.materia} ${modoLabel}</div>
                         <div class="sessao-data">${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
                     </div>
                     <div class="sessao-duracao">${formatarTempo(s.minutos)}</div>
