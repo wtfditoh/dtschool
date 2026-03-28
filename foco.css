@@ -257,3 +257,60 @@ body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; mi
         padding: 12px;
     }
 }
+
+/* MODO SELECTOR */
+.modo-selector {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.modo-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 18px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #1a1a1a;
+    border-radius: 20px;
+    color: #444;
+    font-size: 11px; font-weight: 800;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: inherit;
+}
+.modo-btn.active {
+    background: rgba(138,43,226,0.15);
+    border-color: #8a2be2;
+    color: #c084fc;
+    box-shadow: 0 0 12px rgba(138,43,226,0.2);
+}
+
+/* MODO LIVRE PROGRESS */
+.livre-progress-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+}
+.livre-xp-badge {
+    background: rgba(46,204,113,0.1);
+    border: 1px solid rgba(46,204,113,0.2);
+    color: #2ecc71;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    animation: xpPulse 2s ease-in-out infinite;
+}
+@keyframes xpPulse {
+    0%,100% { box-shadow: 0 0 0px rgba(46,204,113,0); }
+    50% { box-shadow: 0 0 15px rgba(46,204,113,0.2); }
+}
+.livre-materia-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #444;
+}
