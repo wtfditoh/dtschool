@@ -109,5 +109,5 @@ Feito com 🔥 por **[Ditoh](https://instagram.com/wtfditoh)**
 ---
 
 <div align="center">
-<sub>© 2025 Hub Brain · Found & Dev Ditoh</sub>
+<sub>© 2026 Hub Brain · Found & Dev Ditoh</sub>
 </div>
