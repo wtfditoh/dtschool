@@ -2,409 +2,430 @@ import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.
 import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, updateDoc, increment, getDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
-  authDomain: "dt-scho0l.firebaseapp.com",
-  projectId: "dt-scho0l",
-  storageBucket: "dt-scho0l.firebasestorage.app",
-  messagingSenderId: "78578509391",
-  appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a",
-  measurementId: "G-F7TG23TBTL"
+    apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+    authDomain: "dt-scho0l.firebaseapp.com",
+    projectId: "dt-scho0l",
+    storageBucket: "dt-scho0l.firebasestorage.app",
+    messagingSenderId: "78578509391",
+    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
-
-const userEmail = localStorage.getItem('dt_user_email'); 
+const userEmail = localStorage.getItem('dt_user_email');
 const userType = localStorage.getItem('dt_user_type');
 
 let mesExibido = new Date();
-let dataSelecionada = "";
-let imagemBase64 = "";
+let dataSelecionada = '';
+let imagemBase64 = '';
 let agendaGlobal = [];
+let filtroBimestre = 'todos';
+let filtroMateria = 'todas';
 
-// ==========================================
-// MOTOR DE XP
-// ==========================================
-function identificarXPTarefa(nome) {
-    const n = nome.toLowerCase().trim();
-    if (n.includes('prova') || n.includes('exame') || n.includes('(p)') || n.includes('(e)')) return 30;
-    if (n.includes('trabalho') || n.includes('teste') || n.includes('(t)')) return 20;
-    return 10;
-}
-
-async function atualizarXPRanking(valorXP) {
-    const emailAtual = localStorage.getItem('dt_user_email');
-    if (userType === 'local' || !emailAtual) return;
-    try {
-        await setDoc(doc(db, "notas", emailAtual), { xp: increment(valorXP) }, { merge: true });
-    } catch (e) { console.error("Erro ao atualizar XP:", e); }
-}
-
-// ==========================================
-// CONQUISTAS DE TAREFAS (inline, sem import)
-// ==========================================
-const CONQUISTAS_TAREFAS = [
-    { id: 'organizado',  min: 5   },
-    { id: 'produtivo',   min: 20  },
-    { id: 'maquina',     min: 50  },
-    { id: 'implacavel',  min: 100 },
-];
-
-const NOMES_CONQUISTAS = {
-    organizado:   { emoji: '📋', nome: 'Organizado',  desc: 'Concluiu 5 tarefas'   },
-    produtivo:    { emoji: '⚙️',  nome: 'Produtivo',   desc: 'Concluiu 20 tarefas'  },
-    maquina:      { emoji: '🤖', nome: 'Máquina',     desc: 'Concluiu 50 tarefas'  },
-    implacavel:   { emoji: '💣', nome: 'Implacável',  desc: 'Concluiu 100 tarefas' },
-    perfeccionista: { emoji: '⭐', nome: 'Perfeccionista', desc: 'Concluiu todas as tarefas do dia' },
+// BIMESTRES — datas aproximadas (editável)
+const BIMESTRES = {
+    '1': { inicio: '-02-01', fim: '-04-30', label: '1° Bimestre' },
+    '2': { inicio: '-05-01', fim: '-07-31', label: '2° Bimestre' },
+    '3': { inicio: '-08-01', fim: '-10-31', label: '3° Bimestre' },
+    '4': { inicio: '-11-01', fim: '-12-31', label: '4° Bimestre' },
 };
 
-function mostrarPopupLocal(id) {
-    const c = NOMES_CONQUISTAS[id];
-    if (!c) return;
-    const existente = document.getElementById('popup-conquista');
-    if (existente) existente.remove();
-    const popup = document.createElement('div');
-    popup.id = 'popup-conquista';
-    popup.style.cssText = `
-        position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px);
-        background:#111116; border:1px solid rgba(138,43,226,0.4); border-radius:20px;
-        padding:16px 24px; z-index:99999; display:flex; align-items:center; gap:14px;
-        box-shadow:0 10px 40px rgba(138,43,226,0.3); transition:transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
-        min-width:280px; max-width:340px;
-    `;
-    popup.innerHTML = `
-        <div style="font-size:36px; line-height:1;">${c.emoji}</div>
-        <div style="flex:1;">
-            <div style="font-size:9px; font-weight:800; letter-spacing:2px; color:#8a2be2; margin-bottom:3px;">CONQUISTA DESBLOQUEADA!</div>
-            <div style="font-size:15px; font-weight:900; color:white;">${c.nome}</div>
-            <div style="font-size:11px; color:#555; margin-top:2px;">${c.desc}</div>
-        </div>
-    `;
-    document.body.appendChild(popup);
-    setTimeout(() => { popup.style.transform = 'translateX(-50%) translateY(0)'; }, 50);
-    setTimeout(() => {
-        popup.style.transform = 'translateX(-50%) translateY(100px)';
-        popup.style.opacity = '0';
-        setTimeout(() => popup.remove(), 400);
-    }, 3500);
-}
+const TIPOS = {
+    'tarefa':   { emoji: '📝', label: 'Tarefa',   xp: 10 },
+    'prova':    { emoji: '🎯', label: 'Prova',    xp: 30 },
+    'trabalho': { emoji: '📋', label: 'Trabalho', xp: 20 },
+    'revisao':  { emoji: '🔄', label: 'Revisão',  xp: 10 },
+    'projeto':  { emoji: '💡', label: 'Projeto',  xp: 25 },
+};
 
-async function verificarConquistasTarefas() {
-    const emailAtual = localStorage.getItem('dt_user_email');
-    if (!emailAtual || userType === 'local') return;
-    try {
-        const snap = await getDoc(doc(db, "notas", emailAtual));
-        if (!snap.exists()) return;
-        const conquistasAtuais = snap.data().conquistas || [];
-
-        const q = query(collection(db, "agenda"), where("usuario", "==", emailAtual));
-        const agendaSnap = await getDocs(q);
-        const tarefasConcluidas = agendaSnap.docs.filter(d => d.data().concluida).length;
-
-        const hoje = new Date().toISOString().split('T')[0];
-        const tarefasHoje = agendaSnap.docs.map(d => d.data()).filter(t => t.dataFim === hoje);
-        const todasHoje = tarefasHoje.length > 0 && tarefasHoje.every(t => t.concluida);
-
-        const novas = [];
-
-        CONQUISTAS_TAREFAS.forEach(c => {
-            if (tarefasConcluidas >= c.min && !conquistasAtuais.includes(c.id)) {
-                novas.push(c.id);
-            }
-        });
-
-        if (todasHoje && !conquistasAtuais.includes('perfeccionista')) {
-            novas.push('perfeccionista');
-        }
-
-        if (novas.length > 0) {
-            await updateDoc(doc(db, "notas", emailAtual), { conquistas: arrayUnion(...novas) });
-            novas.forEach((id, i) => setTimeout(() => mostrarPopupLocal(id), i * 1000));
-        }
-    } catch(e) { console.error("Erro ao verificar conquistas:", e); }
-}
-
-// ==========================================
-// SALVAR PLAYER ID DO ONESIGNAL NO FIREBASE
-// ==========================================
-async function salvarPlayerIdNasAgendas() {
-    const emailAtual = localStorage.getItem('dt_user_email');
-    if (!emailAtual || userType === 'local') return;
-    try {
-        if (!window.OneSignalDeferred) return;
-        OneSignalDeferred.push(async function(OneSignal) {
-            const playerId = OneSignal.User.PushSubscription.token;
-            if (!playerId) return;
-            const q = query(collection(db, "agenda"), where("usuario", "==", emailAtual));
-            const snap = await getDocs(q);
-            await Promise.all(snap.docs.map(d => updateDoc(doc(db, "agenda", d.id), { onesignal_player_id: playerId })));
-        });
-    } catch (e) { console.error("Erro ao salvar Player ID:", e); }
-}
-
-// ==========================================
-// HELPERS
-// ==========================================
 const getHojeLocal = () => {
     const d = new Date();
-    return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    window.carregarMateriasNoSelect();
-    window.buscarDadosNuvem();
-    salvarPlayerIdNasAgendas();
-});
+const pad = n => String(n).padStart(2,'0');
+const formatData = d => d.split('-').reverse().join('/');
 
-window.buscarDadosNuvem = async function() {
-    const emailBusca = localStorage.getItem('dt_user_email');
+function toast(msg) {
+    const el = document.getElementById('toast');
+    if (!el) return;
+    el.innerText = msg; el.style.display = 'block'; el.style.opacity = '1';
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.style.display = 'none', 300); }, 2500);
+}
+
+// --- XP ---
+async function atualizarXP(val) {
+    if (userType === 'local' || !userEmail) return;
+    try { await setDoc(doc(db,'notas',userEmail), { xp: increment(val) }, { merge: true }); } catch(e){}
+}
+
+// --- CONQUISTAS ---
+const NOMES_CONQUISTAS = {
+    organizado:     { emoji:'📋', nome:'Organizado',    desc:'Concluiu 5 tarefas'   },
+    produtivo:      { emoji:'⚙️', nome:'Produtivo',     desc:'Concluiu 20 tarefas'  },
+    maquina:        { emoji:'🤖', nome:'Máquina',       desc:'Concluiu 50 tarefas'  },
+    implacavel:     { emoji:'💣', nome:'Implacável',    desc:'Concluiu 100 tarefas' },
+    perfeccionista: { emoji:'⭐', nome:'Perfeccionista',desc:'Todas as tarefas do dia' },
+};
+
+function popupConquista(id) {
+    const c = NOMES_CONQUISTAS[id]; if (!c) return;
+    const p = document.createElement('div');
+    p.style.cssText = `position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#111116;border:1px solid rgba(138,43,226,0.4);border-radius:20px;padding:16px 24px;z-index:99999;display:flex;align-items:center;gap:14px;box-shadow:0 10px 40px rgba(138,43,226,0.3);transition:transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);min-width:280px;`;
+    p.innerHTML = `<div style="font-size:36px;">${c.emoji}</div><div><div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#8a2be2;margin-bottom:3px;">CONQUISTA DESBLOQUEADA!</div><div style="font-size:15px;font-weight:900;color:white;">${c.nome}</div><div style="font-size:11px;color:#555;">${c.desc}</div></div>`;
+    document.body.appendChild(p);
+    setTimeout(() => p.style.transform='translateX(-50%) translateY(0)', 50);
+    setTimeout(() => { p.style.opacity='0'; setTimeout(()=>p.remove(),400); }, 3500);
+}
+
+async function verificarConquistas() {
+    if (!userEmail || userType==='local') return;
+    try {
+        const snap = await getDoc(doc(db,'notas',userEmail));
+        if (!snap.exists()) return;
+        const atuais = snap.data().conquistas || [];
+        const concl = agendaGlobal.filter(t=>t.concluida).length;
+        const hoje = getHojeLocal();
+        const hojeArr = agendaGlobal.filter(t => hoje >= t.dataInicio && hoje <= t.dataFim);
+        const todasHoje = hojeArr.length > 0 && hojeArr.every(t=>t.concluida);
+        const novas = [];
+        const marcos = [{id:'organizado',min:5},{id:'produtivo',min:20},{id:'maquina',min:50},{id:'implacavel',min:100}];
+        marcos.forEach(m => { if (concl >= m.min && !atuais.includes(m.id)) novas.push(m.id); });
+        if (todasHoje && !atuais.includes('perfeccionista')) novas.push('perfeccionista');
+        if (novas.length > 0) {
+            await updateDoc(doc(db,'notas',userEmail), { conquistas: arrayUnion(...novas) });
+            novas.forEach((id,i) => setTimeout(()=>popupConquista(id), i*1000));
+        }
+    } catch(e) {}
+}
+
+// --- CARREGAR DADOS ---
+async function buscarDados() {
     if (userType === 'local') {
         agendaGlobal = JSON.parse(localStorage.getItem('dt_agenda') || '[]');
     } else {
         try {
-            const q = query(collection(db, "agenda"), where("usuario", "==", emailBusca));
+            const q = query(collection(db,'agenda'), where('usuario','==',userEmail));
             const snap = await getDocs(q);
-            agendaGlobal = [];
-            snap.forEach(d => agendaGlobal.push({ id_firebase: d.id, ...d.data() }));
-        } catch (e) { console.error("Erro Firebase:", e); }
+            agendaGlobal = snap.docs.map(d => ({ id_firebase: d.id, ...d.data() }));
+        } catch(e) { console.error(e); }
     }
-    window.renderizarCalendario();
-    window.carregarTarefas(dataSelecionada);
+    renderTudo();
+}
+window.buscarDadosNuvem = buscarDados;
+
+function renderTudo() {
+    renderFiltrosMateria();
+    renderCalendario();
+    renderResumo();
+    renderLista();
+}
+
+// --- FILTROS MATÉRIA ---
+function renderFiltrosMateria() {
+    const materias = ['todas', ...new Set(agendaGlobal.map(t => t.materia).filter(Boolean))];
+    const wrap = document.getElementById('filtros-materia');
+    if (!wrap) return;
+    wrap.innerHTML = materias.map(m => `
+        <div class="filtro-pill ${m === filtroMateria ? 'active' : ''}" onclick="selecionarMateria('${m}')">
+            ${m === 'todas' ? 'TODAS' : m.toUpperCase()}
+        </div>
+    `).join('');
+}
+
+window.selecionarMateria = function(m) {
+    filtroMateria = m;
+    renderTudo();
 };
 
-window.carregarTarefas = (filtroData = null) => {
-    const lista = document.getElementById('lista-agenda');
-    const titulo = document.getElementById('titulo-lista');
-    if(!lista) return;
+window.selecionarBimestre = function(el, bim) {
+    filtroBimestre = bim;
+    document.querySelectorAll('.bim-tab').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderTudo();
+};
 
-    let tarefas = [...agendaGlobal];
-    const hojeStr = getHojeLocal();
-    
-    if (filtroData && filtroData !== "") {
-        tarefas = tarefas.filter(t => filtroData >= t.dataInicio && filtroData <= t.dataFim);
-        titulo.innerText = "Atividades em " + filtroData.split('-').reverse().join('/');
-    } else {
-        titulo.innerText = "Todas as Atividades";
+function getTarefasFiltradas() {
+    let arr = [...agendaGlobal];
+    if (filtroMateria !== 'todas') arr = arr.filter(t => t.materia === filtroMateria);
+    if (filtroBimestre !== 'todos') {
+        const ano = new Date().getFullYear();
+        const bim = BIMESTRES[filtroBimestre];
+        const ini = ano + bim.inicio;
+        const fim = ano + bim.fim;
+        arr = arr.filter(t => t.dataFim >= ini && t.dataInicio <= fim || t.bimestre === filtroBimestre);
     }
+    if (dataSelecionada) arr = arr.filter(t => dataSelecionada >= t.dataInicio && dataSelecionada <= t.dataFim);
+    return arr;
+}
 
-    if (tarefas.length === 0) {
-        lista.innerHTML = "<p style='color:#666; text-align:center; padding:30px;'>Sem atividades.</p>";
+// --- RESUMO ---
+function renderResumo() {
+    const arr = getTarefasFiltradas();
+    const hojeStr = getHojeLocal();
+    const urgentes = arr.filter(t => {
+        if (t.concluida) return false;
+        const diff = Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00')) / 86400000);
+        return diff <= 3 && diff >= 0;
+    }).length;
+    const concl = arr.filter(t=>t.concluida).length;
+    const pct = arr.length > 0 ? Math.round((concl/arr.length)*100) : 0;
+    document.getElementById('res-total').innerText = arr.length;
+    document.getElementById('res-urgente').innerText = urgentes;
+    document.getElementById('res-conc').innerText = concl;
+    document.getElementById('res-pct').innerText = pct + '%';
+}
+
+// --- CALENDÁRIO ---
+function renderCalendario() {
+    const grid = document.getElementById('calendar-grid');
+    const nomeEl = document.getElementById('cal-mes-nome');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const nomesDias = ['D','S','T','Q','Q','S','S'];
+    nomesDias.forEach(d => grid.innerHTML += `<div class="dia-semana">${d}</div>`);
+    const ano = mesExibido.getFullYear();
+    const mes = mesExibido.getMonth();
+    nomeEl.innerText = new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric'}).format(mesExibido);
+    const primeirodia = new Date(ano,mes,1).getDay();
+    const diasNoMes = new Date(ano,mes+1,0).getDate();
+    for (let i=0;i<primeirodia;i++) grid.innerHTML += '<div></div>';
+    const hojeStr = getHojeLocal();
+    for (let dia=1;dia<=diasNoMes;dia++) {
+        const ds = `${ano}-${pad(mes+1)}-${pad(dia)}`;
+        const tarefas = agendaGlobal.filter(t => ds >= t.dataInicio && ds <= t.dataFim);
+        let dot = '';
+        if (tarefas.length > 0) {
+            const ativas = tarefas.filter(t=>!t.concluida);
+            if (ativas.length === 0) { dot = '<div class="dot status-concluido"></div>'; }
+            else {
+                const diff = Math.ceil((new Date(ativas.sort((a,b)=>new Date(a.dataFim)-new Date(b.dataFim))[0].dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00'))/86400000);
+                const cl = diff<=3 ? 'status-urgente' : diff<=7 ? 'status-alerta' : 'status-tranquilo';
+                dot = `<div class="dot ${cl}"></div>`;
+            }
+        }
+        const hj = hojeStr===ds ? 'hoje' : '';
+        const sel = dataSelecionada===ds ? 'selecionado' : '';
+        grid.innerHTML += `<div class="dia-numero ${hj} ${sel}" onclick="selecionarDia('${ds}')">${dia}${dot}</div>`;
+    }
+    if (window.lucide) lucide.createIcons();
+}
+
+window.selecionarDia = function(d) {
+    dataSelecionada = dataSelecionada === d ? '' : d;
+    const titulo = document.getElementById('lista-titulo');
+    if (titulo) titulo.innerText = dataSelecionada ? `DIA ${formatData(dataSelecionada)}` : 'TODAS AS ATIVIDADES';
+    renderCalendario(); renderResumo(); renderLista();
+};
+window.mudarMes = function(v) { mesExibido.setMonth(mesExibido.getMonth()+v); renderCalendario(); };
+
+// --- LISTA POR MATÉRIA ---
+function renderLista() {
+    const lista = document.getElementById('lista-agenda');
+    if (!lista) return;
+    const arr = getTarefasFiltradas();
+    const hojeStr = getHojeLocal();
+
+    if (arr.length === 0) {
+        lista.innerHTML = '<div class="empty-state">Nenhuma atividade encontrada 📭</div>';
         return;
     }
 
-    tarefas.sort((a, b) => {
-        if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
-        if (!a.concluida && !b.concluida) return new Date(a.dataFim) - new Date(b.dataFim);
-        return 0;
+    // Agrupa por matéria
+    const grupos = {};
+    arr.forEach(t => {
+        const m = t.materia || 'Geral';
+        if (!grupos[m]) grupos[m] = [];
+        grupos[m].push(t);
     });
 
-    lista.innerHTML = tarefas.map(t => {
-        const fim = new Date(t.dataFim + "T00:00:00");
-        const hoje = new Date(hojeStr + "T00:00:00");
-        const diffDays = Math.ceil((fim - hoje) / (1000 * 60 * 60 * 24));
-        
-        let corStatus = "#00C851"; 
-        let textoStatus = `Faltam ${diffDays} dias`;
-
-        if (t.concluida) {
-            corStatus = "#00d2ff"; textoStatus = "CONCLUÍDO! 🎉";
-        } else if (diffDays < 0) {
-            corStatus = "#666"; textoStatus = "PRAZO ENCERRADO";
-        } else if (diffDays <= 3) {
-            corStatus = "#ff4444"; textoStatus = diffDays === 0 ? "ENTREGA HOJE!" : `URGENTE: Faltam ${diffDays} dias`;
-        } else if (diffDays <= 7) {
-            corStatus = "#ffbb33"; textoStatus = `ATENÇÃO: Faltam ${diffDays} dias`;
-        }
-
-        return `
-        <div class="tarefa-item" style="border-left:5px solid ${corStatus}; opacity:${t.concluida ? '0.6' : '1'}; margin-bottom:15px; background:rgba(255,255,255,0.05); padding:15px; border-radius:15px;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div style="flex:1;"> 
-                    <span style="background:#8a2be2; font-size:10px; padding:3px 8px; border-radius:5px; font-weight:bold; color:white;">${t.materia}</span>
-                    <b onclick="alternarConcluida('${t.id_firebase}', ${t.criadoEm})" style="display:block; margin-top:8px; font-size:18px; color:white; text-decoration:${t.concluida ? 'line-through' : 'none'}; cursor:pointer;">${t.nome}</b>
-                    ${t.descricao ? `<p style="color:#aaa; font-size:13px; margin:8px 0;">${t.descricao}</p>` : ''}
-                    <div style="font-size:11px; color:#888;">Prazo: ${t.dataFim.split('-').reverse().join('/')}</div>
-                    <div style="margin-top:5px; color:${corStatus}; font-weight:bold; font-size:12px;">${textoStatus}</div>
-                </div>
-                <div style="display:flex; gap:8px;">
-                    <button onclick="alternarConcluida('${t.id_firebase}', ${t.criadoEm})" style="background:rgba(138,43,226,0.1); border:none; color:#8a2be2; padding:8px; border-radius:10px; cursor:pointer;">
-                        <i data-lucide="${t.concluida ? 'rotate-ccw' : 'check-circle'}" style="width:18px;"></i>
-                    </button>
-                    <button onclick="removerTarefa('${t.id_firebase}', ${t.criadoEm})" style="background:rgba(255,68,68,0.1); border:none; color:#ff4444; padding:8px; border-radius:10px; cursor:pointer;">
-                        <i data-lucide="trash-2" style="width:18px;"></i>
-                    </button>
-                </div>
+    let html = '';
+    Object.entries(grupos).forEach(([materia, tarefas]) => {
+        tarefas.sort((a,b) => {
+            if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
+            return new Date(a.dataFim) - new Date(b.dataFim);
+        });
+        const pendentes = tarefas.filter(t=>!t.concluida).length;
+        html += `<div class="materia-group">
+            <div class="materia-group-header" onclick="toggleGrupo('${materia}')">
+                <div class="materia-group-nome">${materia.toUpperCase()}</div>
+                <div class="materia-group-count">${pendentes} pendente${pendentes!==1?'s':''}</div>
+                <div class="materia-group-arrow" id="arrow-${materia}">↓</div>
             </div>
-            ${t.imagem ? `<img src="${t.imagem}" style="width:100%; border-radius:12px; margin-top:15px;">` : ''}
-        </div>`;
-    }).join('');
-    lucide.createIcons();
-};
+            <div id="grupo-${materia}">`;
 
-window.renderizarCalendario = function() {
-    const grid = document.getElementById('calendar-grid');
-    const topoMes = document.getElementById('mes-topo');
-    if(!grid || !topoMes) return;
-    grid.innerHTML = "";
-    
-    const nomesDias = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
-    nomesDias.forEach(d => grid.innerHTML += `<div class="dia-semana">${d}</div>`);
+        tarefas.forEach(t => {
+            const fim = new Date(t.dataFim+'T00:00:00');
+            const hoje = new Date(hojeStr+'T00:00:00');
+            const diff = Math.ceil((fim - hoje) / 86400000);
+            const tipo = TIPOS[t.tipo] || TIPOS['tarefa'];
 
-    const ano = mesExibido.getFullYear();
-    const mes = mesExibido.getMonth();
-    topoMes.innerText = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(mesExibido);
-
-    const primeiroDiaMes = new Date(ano, mes, 1).getDay();
-    const diasNoMes = new Date(ano, mes + 1, 0).getDate();
-
-    for (let i = 0; i < primeiroDiaMes; i++) grid.innerHTML += `<div></div>`;
-
-    const hojeLocal = getHojeLocal();
-
-    for (let dia = 1; dia <= diasNoMes; dia++) {
-        const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-        const tarefasDoDia = agendaGlobal.filter(t => dataStr >= t.dataInicio && dataStr <= t.dataFim);
-        
-        let htmlDot = "";
-        if (tarefasDoDia.length > 0) {
-            const tarefasAtivas = tarefasDoDia.filter(t => !t.concluida);
-            if (tarefasAtivas.length === 0) {
-                htmlDot = '<div class="dot status-concluido"></div>';
+            let statusClass = 'tranquilo', statusHtml = '';
+            if (t.concluida) {
+                statusClass = 'concluida-card';
+                statusHtml = `<span class="status-tag st-concluido">✓ CONCLUÍDO</span>`;
+            } else if (diff < 0) {
+                statusClass = '';
+                statusHtml = `<span class="status-tag st-expirado">EXPIRADO</span>`;
+            } else if (diff === 0) {
+                statusClass = 'urgente';
+                statusHtml = `<span class="status-tag st-urgente">🔥 HOJE!</span>`;
+            } else if (diff <= 3) {
+                statusClass = 'urgente';
+                statusHtml = `<span class="status-tag st-urgente">⚡ ${diff}d restante${diff!==1?'s':''}</span>`;
+            } else if (diff <= 7) {
+                statusClass = 'alerta';
+                statusHtml = `<span class="status-tag st-alerta">⏰ ${diff} dias</span>`;
             } else {
-                const pesos = tarefasAtivas.map(t => {
-                    const fim = new Date(t.dataFim + "T00:00:00");
-                    const hoje = new Date(hojeLocal + "T00:00:00");
-                    const diff = Math.ceil((fim - hoje) / (1000 * 60 * 60 * 24));
-                    if (diff <= 3) return { classe: 'status-urgente', peso: 3 }; 
-                    if (diff <= 7) return { classe: 'status-alerta', peso: 2 };  
-                    return { classe: 'status-tranquilo', peso: 1 };             
-                });
-                const maiorUrgencia = pesos.sort((a, b) => b.peso - a.peso)[0];
-                htmlDot = `<div class="dot ${maiorUrgencia.classe}"></div>`;
+                statusHtml = `<span class="status-tag st-tranquilo">${diff} dias</span>`;
             }
-        }
-        
-        const hojeClass = hojeLocal === dataStr ? 'hoje' : '';
-        const selClass = dataSelecionada === dataStr ? 'selecionado' : '';
-        grid.innerHTML += `<div class="dia-numero ${hojeClass} ${selClass}" onclick="selecionarDia('${dataStr}')">${dia}${htmlDot}</div>`;
-    }
-    lucide.createIcons();
+
+            const bimLabel = t.bimestre ? `<span style="font-size:9px;color:#444;margin-left:6px;">${t.bimestre}° BIM</span>` : '';
+
+            html += `<div class="tarefa-card ${statusClass}${t.concluida?' concluida-card':''}">
+                <div class="tarefa-top">
+                    <div style="flex:1;">
+                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                            <span class="tarefa-materia-badge">${tipo.emoji} ${tipo.label}</span>
+                            ${bimLabel}
+                        </div>
+                        <div class="tarefa-titulo ${t.concluida?'riscado':''}" onclick="alternarConcluida('${t.id_firebase||''}',${t.criadoEm||0})">${t.nome}</div>
+                        ${t.descricao ? `<div class="tarefa-desc-text">${t.descricao}</div>` : ''}
+                        <div class="tarefa-footer">
+                            ${statusHtml}
+                            <div class="tarefa-prazo" style="color:#333;font-size:11px;">Prazo: ${formatData(t.dataFim)}</div>
+                        </div>
+                    </div>
+                    <div class="tarefa-actions" style="flex-shrink:0;margin-left:8px;">
+                        <button class="btn-acao ok" onclick="alternarConcluida('${t.id_firebase||''}',${t.criadoEm||0})">
+                            <i data-lucide="${t.concluida?'rotate-ccw':'check-circle'}" style="width:16px;height:16px;"></i>
+                        </button>
+                        <button class="btn-acao del" onclick="removerTarefa('${t.id_firebase||''}',${t.criadoEm||0})">
+                            <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
+                        </button>
+                    </div>
+                </div>
+                ${t.imagem ? `<img src="${t.imagem}" class="tarefa-img">` : ''}
+            </div>`;
+        });
+        html += '</div></div>';
+    });
+
+    lista.innerHTML = html;
+    if (window.lucide) lucide.createIcons();
+}
+
+window.toggleGrupo = function(materia) {
+    const el = document.getElementById('grupo-' + materia);
+    const arrow = document.getElementById('arrow-' + materia);
+    if (!el) return;
+    const aberto = el.style.display !== 'none';
+    el.style.display = aberto ? 'none' : 'block';
+    if (arrow) arrow.innerText = aberto ? '→' : '↓';
 };
 
+// --- CRUD ---
 window.adicionarTarefa = async function() {
     const nome = document.getElementById('tarefa-nome').value.trim();
     const desc = document.getElementById('tarefa-desc').value.trim();
     const dataInicio = document.getElementById('tarefa-data-inicio').value;
     const dataFim = document.getElementById('tarefa-data-fim').value;
     const materia = document.getElementById('tarefa-materia').value;
-    const emailDono = localStorage.getItem('dt_user_email');
-
-    if (!nome || !dataInicio || !dataFim || !emailDono) return;
+    const tipo = document.getElementById('tarefa-tipo').value;
+    const bimestre = document.getElementById('tarefa-bimestre').value;
+    if (!nome || !dataInicio || !dataFim || !userEmail) return;
 
     let playerId = null;
     if (window.OneSignalDeferred) {
-        await new Promise(resolve => {
-            OneSignalDeferred.push(async function(OneSignal) {
-                playerId = OneSignal.User.PushSubscription.token;
-                resolve();
-            });
-        });
+        await new Promise(res => { OneSignalDeferred.push(async (OS) => { playerId = OS.User.PushSubscription.token; res(); }); });
     }
 
-    const nova = { 
-        nome, descricao: desc, dataInicio, dataFim, materia, 
-        imagem: imagemBase64, concluida: false,
-        usuario: emailDono,
-        onesignal_player_id: playerId || null,
-        criadoEm: Date.now()
-    };
+    const nova = { nome, descricao:desc, dataInicio, dataFim, materia, tipo, bimestre, imagem:imagemBase64, concluida:false, usuario:userEmail, onesignal_player_id:playerId||null, criadoEm:Date.now() };
 
     if (userType === 'local') {
-        agendaGlobal.push(nova);
-        localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
+        agendaGlobal.push(nova); localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
     } else {
-        await addDoc(collection(db, "agenda"), nova);
+        await addDoc(collection(db,'agenda'), nova);
     }
-    window.fecharModalAgenda();
-    window.buscarDadosNuvem();
+    fecharModal();
+    await buscarDados();
+    toast('✓ Atividade agendada!');
 };
 
-window.removerTarefa = async function(idFirebase, idLocal) {
-    const tarefa = agendaGlobal.find(t => userType === 'local' ? t.criadoEm === idLocal : t.id_firebase === idFirebase);
-    if (tarefa && tarefa.concluida) {
-        await atualizarXPRanking(identificarXPTarefa(tarefa.nome) * -1);
-    }
+window.removerTarefa = async function(idFb, idLocal) {
+    if (!confirm('Deletar esta atividade?')) return;
+    const t = agendaGlobal.find(x => userType==='local' ? x.criadoEm===idLocal : x.id_firebase===idFb);
+    if (t?.concluida) await atualizarXP(-(TIPOS[t.tipo]||TIPOS.tarefa).xp);
     if (userType === 'local') {
-        agendaGlobal = agendaGlobal.filter(t => t.criadoEm !== idLocal);
-        localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
-    } else {
-        await deleteDoc(doc(db, "agenda", idFirebase));
-    }
-    window.buscarDadosNuvem();
+        agendaGlobal = agendaGlobal.filter(x=>x.criadoEm!==idLocal); localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
+    } else { await deleteDoc(doc(db,'agenda',idFb)); }
+    await buscarDados();
 };
 
-window.alternarConcluida = async function(idFirebase, idLocal) {
-    let tarefa;
+window.alternarConcluida = async function(idFb, idLocal) {
+    let t;
     if (userType === 'local') {
-        const index = agendaGlobal.findIndex(t => t.criadoEm === idLocal);
-        if (index !== -1) {
-            tarefa = agendaGlobal[index];
-            tarefa.concluida = !tarefa.concluida;
-            localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
-        }
+        const idx = agendaGlobal.findIndex(x=>x.criadoEm===idLocal);
+        if (idx!==-1) { t=agendaGlobal[idx]; t.concluida=!t.concluida; localStorage.setItem('dt_agenda',JSON.stringify(agendaGlobal)); }
     } else {
-        tarefa = agendaGlobal.find(t => t.id_firebase === idFirebase);
-        const novoStatus = !tarefa.concluida;
-        await updateDoc(doc(db, "agenda", idFirebase), { concluida: novoStatus });
-        tarefa.concluida = novoStatus; 
+        t = agendaGlobal.find(x=>x.id_firebase===idFb);
+        if (!t) return;
+        const novoStatus = !t.concluida;
+        await updateDoc(doc(db,'agenda',idFb), {concluida:novoStatus});
+        t.concluida = novoStatus;
     }
-    if (tarefa) {
-        const baseXP = identificarXPTarefa(tarefa.nome);
-        await atualizarXPRanking(tarefa.concluida ? baseXP : baseXP * -1);
-        if (tarefa.concluida) await verificarConquistasTarefas();
+    if (t) {
+        const xp = (TIPOS[t.tipo]||TIPOS.tarefa).xp;
+        await atualizarXP(t.concluida ? xp : -xp);
+        if (t.concluida) await verificarConquistas();
     }
-    window.buscarDadosNuvem();
+    renderTudo();
 };
 
-window.previewImg = (input) => {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            imagemBase64 = e.target.result;
-            document.getElementById('preview-container').innerHTML = `<img src="${imagemBase64}" style="width:100%; border-radius:15px; margin-top:15px;">`;
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-};
-
-window.carregarMateriasNoSelect = function() {
-    const select = document.getElementById('tarefa-materia');
-    if(!select) return;
-    const materiasDB = JSON.parse(localStorage.getItem('materias_db') || localStorage.getItem('materias') || '[]');
-    select.innerHTML = '<option value="Geral">Geral / Outros</option>';
-    materiasDB.forEach(m => {
-        if(m.nome) {
-            const opt = document.createElement('option');
-            opt.value = m.nome; opt.textContent = m.nome;
-            select.appendChild(opt);
-        }
-    });
-};
-
-window.selecionarDia = (d) => { dataSelecionada = (dataSelecionada === d) ? "" : d; window.renderizarCalendario(); window.carregarTarefas(dataSelecionada); };
-window.mudarMes = (v) => { mesExibido.setMonth(mesExibido.getMonth() + v); window.renderizarCalendario(); };
-window.abrirModalAgendaHoje = () => { 
+// --- MODAL ---
+window.abrirModal = function() {
     const hoje = getHojeLocal();
     document.getElementById('tarefa-data-inicio').value = dataSelecionada || hoje;
     document.getElementById('tarefa-data-fim').value = dataSelecionada || hoje;
-    document.getElementById('modal-agenda').style.display = 'flex'; 
+    carregarMateriasNoSelect();
+    document.getElementById('modal-agenda').style.display = 'flex';
 };
-window.fecharModalAgenda = () => { 
-    document.getElementById('modal-agenda').style.display = 'none'; 
-    document.getElementById('tarefa-nome').value = ""; 
-    document.getElementById('tarefa-desc').value = ""; 
-    document.getElementById('tarefa-materia').value = "Geral";
-    document.getElementById('preview-container').innerHTML = "";
-    imagemBase64 = ""; 
+window.fecharModal = function() {
+    document.getElementById('modal-agenda').style.display='none';
+    ['tarefa-nome','tarefa-desc'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('tarefa-materia').value='Geral';
+    document.getElementById('tarefa-tipo').value='tarefa';
+    document.getElementById('tarefa-bimestre').value='';
+    document.getElementById('preview-container').innerHTML='';
+    imagemBase64='';
 };
-              
+
+function carregarMateriasNoSelect() {
+    const sel = document.getElementById('tarefa-materia'); if(!sel) return;
+    const mats = JSON.parse(localStorage.getItem('materias_db')||localStorage.getItem('materias')||'[]');
+    sel.innerHTML = '<option value="Geral">Geral / Outros</option>';
+    mats.forEach(m => { if(m.nome) { const o=document.createElement('option'); o.value=m.nome; o.textContent=m.nome; sel.appendChild(o); } });
+}
+window.carregarMateriasNoSelect = carregarMateriasNoSelect;
+
+window.previewImg = function(input) {
+    if (input.files?.[0]) {
+        const r = new FileReader();
+        r.onload = e => { imagemBase64=e.target.result; document.getElementById('preview-container').innerHTML=`<img src="${imagemBase64}" style="width:100%;border-radius:12px;margin-top:12px;">`; };
+        r.readAsDataURL(input.files[0]);
+    }
+};
+
+// --- COMPARTILHAR ---
+window.abrirCompartilhar = function() {
+    const arr = getTarefasFiltradas().filter(t=>!t.concluida).sort((a,b)=>new Date(a.dataFim)-new Date(b.dataFim)).slice(0,8);
+    const hojeStr = getHojeLocal();
+    const bimLabel = filtroBimestre !== 'todos' ? BIMESTRES[filtroBimestre]?.label : 'Todas as atividades';
+    const mLabel = filtroMateria !== 'todas' ? filtroMateria : '';
+
+    let itemsHtml = arr.map(t => {
+        const diff = Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00'))/86400000);
+        const cor = diff<=3 ? '#ff4444' : diff<=7 ? '#ffbb33' : '#00c851';
+        const tipo = TIPOS[t.tipo]||TIPOS.tarefa;
+        return `<div class="share-item">
+            <div class="share-item-dot" style="background:${cor};box-sha
