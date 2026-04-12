@@ -7,17 +7,21 @@ const criarMenuGlobal = () => {
                 <button id="close-menu"><i data-lucide="x"></i></button>
             </div>
             <nav class="menu-links" id="nav-links-container">
+                <div class="menu-section-label">GERAL</div>
                 <a href="index.html" id="link-home"><i data-lucide="home"></i> Início</a>
                 <a href="perfil.html" id="link-perfil"><i data-lucide="user"></i> Perfil</a>
+                <a href="ranking.html" id="link-ranking"><i data-lucide="trophy"></i> Ranking</a>
+
+                <div class="menu-section-label">ESTUDOS</div>
                 <a href="notas.html" id="link-notas"><i data-lucide="layout-dashboard"></i> Notas</a>
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
                 <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
                 <a href="caderno.html" id="link-caderno"><i data-lucide="notebook-pen"></i> Caderno</a>
                 <a href="cronograma.html" id="link-cronograma"><i data-lucide="calendar-days"></i> Cronograma</a>
-                <a href="foco.html" id="link-foco" class="foco-highlight"><i data-lucide="timer"></i> 
-                    <span>Modo Foco <small class="xp-badge">+XP</small></span></a>
+
+                <div class="menu-section-label">PRODUTIVIDADE</div>
+                <a href="foco.html" id="link-foco"><i data-lucide="timer"></i> Modo Foco <small class="xp-badge">+XP</small></a>
                 <a href="estudos.html" id="link-estudos"><i data-lucide="brain-circuit"></i> Estudos & IA</a>
-                <a href="ranking.html" id="link-ranking"><i data-lucide="trophy"></i> Ranking</a>
             </nav>
             <div class="menu-footer">
                 <button id="install-app-btn" class="btn-install-menu" style="display: none;">
@@ -141,4 +145,4 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', criarMenuGlobal);
 } else {
     criarMenuGlobal();
-}
+                              }
