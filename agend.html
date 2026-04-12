@@ -11,228 +11,163 @@
     <style>
         * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-        .glass-header { display:flex; align-items:center; justify-content:space-between; padding:0 15px; height:60px; background:rgba(10,10,10,0.95); backdrop-filter:blur(15px); border-bottom:1px solid rgba(138,43,226,0.2); position:sticky; top:0; z-index:1000; }
-        .hub-logo-container { display:flex; align-items:center; gap:8px; cursor:pointer; }
-        .hub-logo-text { font-weight:900; font-size:18px; letter-spacing:1px; color:white; }
+        .glass-header { display:flex; align-items:center; justify-content:space-between; padding:0 15px; height:70px; background:rgba(10,10,10,0.9)!important; backdrop-filter:blur(15px); border-bottom:1px solid rgba(138,43,226,0.2); position:sticky; top:0; z-index:1000; }
+        .hub-logo-container { display:flex; align-items:center; gap:10px; cursor:pointer; }
+        .hub-logo-text { font-weight:900; font-size:19px; letter-spacing:1px; color:white; }
         .hub-logo-text.purple { color:#8a2be2; }
         .hub-symbol { background:rgba(138,43,226,0.1); padding:6px; border-radius:10px; border:1px solid rgba(138,43,226,0.3); display:flex; align-items:center; justify-content:center; }
 
-        .container-agenda { padding:16px 15px 100px; max-width:480px; margin:0 auto; }
-
-        /* FILTROS TOPO */
-        .filtros-wrap { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
-        .filtros-wrap::-webkit-scrollbar { display:none; }
-        .filtro-pill { padding:8px 16px; border-radius:20px; border:1px solid #1a1a1a; background:rgba(0,0,0,0.4); color:#444; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap; transition:0.2s; letter-spacing:1px; flex-shrink:0; }
-        .filtro-pill.active { background:rgba(138,43,226,0.15); border-color:#8a2be2; color:#c084fc; }
-
         /* BIMESTRE TABS */
-        .bimestre-tabs { display:flex; gap:6px; margin-bottom:16px; }
-        .bim-tab { flex:1; padding:10px 6px; border:1px solid #111; background:rgba(0,0,0,0.3); border-radius:12px; color:#333; font-size:10px; font-weight:800; cursor:pointer; text-align:center; transition:0.2s; letter-spacing:1px; }
+        .bimestre-tabs { display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
+        .bimestre-tabs::-webkit-scrollbar { display:none; }
+        .bim-tab { padding:8px 14px; border:1px solid #1a1a1a; background:rgba(0,0,0,0.3); border-radius:20px; color:#333; font-size:10px; font-weight:800; cursor:pointer; white-space:nowrap; transition:0.2s; letter-spacing:1px; flex-shrink:0; font-family:inherit; }
         .bim-tab.active { background:rgba(138,43,226,0.12); border-color:#8a2be2; color:#c084fc; }
 
-        /* CALENDÁRIO */
-        .calendar-card { background:rgba(255,255,255,0.02); border-radius:20px; padding:16px; border:1px solid rgba(255,255,255,0.06); margin-bottom:16px; }
-        .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-        .cal-mes-nome { font-size:14px; font-weight:800; letter-spacing:1px; color:white; }
-        .btn-nav { background:rgba(138,43,226,0.1); border:1px solid rgba(138,43,226,0.2); color:#8a2be2; border-radius:10px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-        .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-        .dia-semana { color:#8a2be2; font-size:10px; font-weight:800; text-align:center; padding-bottom:8px; opacity:0.6; }
-        .dia-numero { aspect-ratio:1/1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:10px; font-size:13px; cursor:pointer; position:relative; transition:0.15s; color:#555; }
-        .dia-numero:hover { background:rgba(138,43,226,0.08); color:white; }
-        .dia-numero.hoje { background:#8a2be2; color:white; font-weight:800; box-shadow:0 4px 12px rgba(138,43,226,0.3); }
-        .dia-numero.selecionado { border:2px solid #8a2be2; color:white; }
-        .dot { width:5px; height:5px; border-radius:50%; position:absolute; bottom:4px; }
-        .status-urgente { background:#ff4444; box-shadow:0 0 6px rgba(255,68,68,0.7); }
-        .status-alerta { background:#ffbb33; box-shadow:0 0 6px rgba(255,187,51,0.7); }
-        .status-tranquilo { background:#00c851; box-shadow:0 0 6px rgba(0,200,81,0.7); }
-        .status-concluido { background:#00d2ff; box-shadow:0 0 6px rgba(0,210,255,0.7); }
+        /* FILTROS MATÉRIA */
+        .filtros-materias { display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
+        .filtros-materias::-webkit-scrollbar { display:none; }
+        .filtro-mat { padding:6px 12px; border:1px solid #111; background:rgba(0,0,0,0.3); border-radius:20px; color:#333; font-size:10px; font-weight:800; cursor:pointer; white-space:nowrap; transition:0.2s; flex-shrink:0; font-family:inherit; }
+        .filtro-mat.active { background:rgba(138,43,226,0.1); border-color:#8a2be2; color:#c084fc; }
 
-        /* RESUMO RÁPIDO */
+        /* RESUMO */
         .resumo-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px; }
-        .resumo-item { background:rgba(0,0,0,0.3); border:1px solid #111; border-radius:14px; padding:12px 8px; text-align:center; }
-        .resumo-num { font-size:22px; font-weight:900; color:#8a2be2; display:block; }
-        .resumo-label { font-size:9px; font-weight:700; color:#333; letter-spacing:1px; }
+        .resumo-item { background:rgba(0,0,0,0.3); border:1px solid #111; border-radius:14px; padding:12px 6px; text-align:center; }
+        .resumo-num { font-size:20px; font-weight:900; color:#8a2be2; display:block; }
+        .resumo-label { font-size:8px; font-weight:700; color:#333; letter-spacing:1px; text-transform:uppercase; }
 
         /* SECTION HEADER */
-        .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-        .section-title-text { font-size:12px; font-weight:800; letter-spacing:2px; color:#555; }
-        .btn-compartilhar { display:flex; align-items:center; gap:6px; background:rgba(138,43,226,0.1); border:1px solid rgba(138,43,226,0.2); color:#8a2be2; padding:7px 12px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; }
+        .section-header-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; margin-top:4px; }
+        .section-title-label { font-size:11px; font-weight:800; letter-spacing:2px; color:#444; }
+        .btn-share { display:flex; align-items:center; gap:6px; background:rgba(138,43,226,0.08); border:1px solid rgba(138,43,226,0.2); color:#8a2be2; padding:7px 12px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; transition:0.2s; }
+        .btn-share:active { transform:scale(0.95); }
 
-        /* MATÉRIA GROUP */
-        .materia-group { margin-bottom:20px; }
-        .materia-group-header { display:flex; align-items:center; gap:8px; padding:8px 12px; background:rgba(138,43,226,0.06); border:1px solid rgba(138,43,226,0.1); border-radius:12px; margin-bottom:8px; cursor:pointer; }
-        .materia-group-nome { font-size:12px; font-weight:800; color:#8a2be2; letter-spacing:1px; flex:1; }
-        .materia-group-count { font-size:10px; color:#444; font-weight:700; }
-        .materia-group-arrow { color:#444; font-size:14px; transition:transform 0.2s; }
+        /* GRUPO MATÉRIA */
+        .grupo-materia { margin-bottom:16px; }
+        .grupo-header { display:flex; align-items:center; gap:8px; padding:10px 14px; background:rgba(138,43,226,0.06); border:1px solid rgba(138,43,226,0.1); border-radius:14px; margin-bottom:8px; cursor:pointer; }
+        .grupo-nome { font-size:12px; font-weight:800; color:#8a2be2; letter-spacing:1px; flex:1; }
+        .grupo-count { font-size:10px; color:#333; font-weight:700; }
+        .grupo-arrow { color:#333; font-size:12px; transition:transform 0.2s; }
 
-        /* CARD TAREFA */
-        .tarefa-card { background:#0c0c10; border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; margin-bottom:8px; position:relative; overflow:hidden; transition:0.2s; }
-        .tarefa-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:3px 0 0 3px; }
-        .tarefa-card.urgente::before { background:#ff4444; box-shadow:0 0 8px rgba(255,68,68,0.4); }
-        .tarefa-card.alerta::before { background:#ffbb33; box-shadow:0 0 8px rgba(255,187,51,0.4); }
-        .tarefa-card.tranquilo::before { background:#00c851; box-shadow:0 0 8px rgba(0,200,81,0.4); }
-        .tarefa-card.concluida-card::before { background:#00d2ff; }
-        .tarefa-card.concluida-card { opacity:0.55; }
+        /* TIPO BADGE */
+        .tipo-badge { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:800; letter-spacing:1px; padding:3px 8px; border-radius:20px; background:rgba(138,43,226,0.1); border:1px solid rgba(138,43,226,0.2); color:#c084fc; }
+        .bim-badge { font-size:9px; color:#333; font-weight:700; margin-left:4px; }
 
-        .tarefa-top { display:flex; align-items:flex-start; gap:10px; }
-        .tarefa-materia-badge { font-size:9px; font-weight:800; letter-spacing:1px; color:#8a2be2; background:rgba(138,43,226,0.1); border:1px solid rgba(138,43,226,0.2); padding:3px 8px; border-radius:20px; white-space:nowrap; }
-        .tarefa-titulo { font-size:15px; font-weight:800; color:white; margin:8px 0 4px; cursor:pointer; }
-        .tarefa-titulo.riscado { text-decoration:line-through; color:#333; }
-        .tarefa-desc-text { font-size:12px; color:#555; line-height:1.5; margin-bottom:8px; }
-        .tarefa-footer { display:flex; align-items:center; justify-content:space-between; margin-top:10px; }
-        .tarefa-prazo { font-size:11px; font-weight:600; }
-        .tarefa-actions { display:flex; gap:8px; }
-        .btn-acao { background:none; border:1px solid #111; border-radius:10px; padding:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.15s; }
-        .btn-acao.ok { color:#8a2be2; border-color:rgba(138,43,226,0.2); }
-        .btn-acao.del { color:#ff4444; border-color:rgba(255,68,68,0.15); }
-        .btn-acao:active { transform:scale(0.92); }
-        .tarefa-img { width:100%; border-radius:12px; margin-top:12px; }
-
-        .status-tag { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:800; letter-spacing:1px; padding:3px 10px; border-radius:20px; }
+        /* STATUS TAGS */
+        .status-tag { display:inline-flex; align-items:center; font-size:9px; font-weight:800; letter-spacing:0.5px; padding:3px 8px; border-radius:20px; }
+        .st-hoje { background:rgba(255,68,68,0.1); color:#ff4444; border:1px solid rgba(255,68,68,0.2); }
         .st-urgente { background:rgba(255,68,68,0.1); color:#ff4444; border:1px solid rgba(255,68,68,0.2); }
         .st-alerta { background:rgba(255,187,51,0.1); color:#ffbb33; border:1px solid rgba(255,187,51,0.2); }
-        .st-tranquilo { background:rgba(0,200,81,0.1); color:#00c851; border:1px solid rgba(0,200,81,0.2); }
+        .st-ok { background:rgba(0,200,81,0.1); color:#00c851; border:1px solid rgba(0,200,81,0.2); }
         .st-concluido { background:rgba(0,210,255,0.1); color:#00d2ff; border:1px solid rgba(0,210,255,0.2); }
-        .st-expirado { background:rgba(100,100,100,0.1); color:#444; border:1px solid #1a1a1a; }
-
-        /* FAB */
-        .fab-button { position:fixed; bottom:28px; right:22px; width:60px; height:60px; background:#8a2be2; border:none; border-radius:50%; color:white; box-shadow:0 6px 24px rgba(138,43,226,0.45); display:flex; align-items:center; justify-content:center; z-index:999; cursor:pointer; transition:0.2s; }
-        .fab-button:active { transform:scale(0.93); }
-
-        /* MODAL */
-        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.92); display:none; align-items:flex-end; justify-content:center; z-index:2000; backdrop-filter:blur(12px); }
-        .modal-sheet { background:#0d0d10; border-radius:28px 28px 0 0; width:100%; max-width:480px; padding:20px 20px 40px; border-top:1px solid rgba(138,43,226,0.2); max-height:90vh; overflow-y:auto; }
-        .modal-handle { width:40px; height:4px; background:#1a1a1a; border-radius:10px; margin:0 auto 18px; }
-        .modal-title { font-size:17px; font-weight:900; margin-bottom:18px; }
-        .input-ia { width:100%; background:rgba(0,0,0,0.5); border:1px solid #1a1a1a; color:white; padding:13px 15px; border-radius:14px; margin-bottom:12px; font-size:14px; font-family:inherit; outline:none; transition:0.2s; appearance:none; }
-        .input-ia:focus { border-color:#8a2be2; box-shadow:0 0 0 3px rgba(138,43,226,0.08); }
-        .input-ia::placeholder { color:#333; }
-        .input-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-        .input-label { font-size:9px; font-weight:800; letter-spacing:2px; color:#444; margin-bottom:5px; display:block; }
-        .btn-anexo { display:flex; align-items:center; gap:8px; border:1px dashed #1a1a1a; border-radius:14px; padding:12px; color:#444; font-size:13px; cursor:pointer; margin-bottom:12px; }
-        .btn-salvar-modal { width:100%; background:#8a2be2; border:none; color:white; padding:15px; border-radius:14px; font-size:13px; font-weight:900; cursor:pointer; letter-spacing:1px; box-shadow:0 4px 20px rgba(138,43,226,0.3); transition:0.2s; }
-        .btn-cancelar-modal { width:100%; background:none; border:1px solid #111; color:#333; padding:13px; border-radius:14px; font-size:13px; font-weight:700; cursor:pointer; margin-top:8px; }
-
-        /* MODAL COMPARTILHAR */
-        .share-preview { background:#0a0a0e; border:1px solid rgba(138,43,226,0.2); border-radius:20px; padding:20px; margin-bottom:16px; }
-        .share-title { font-size:16px; font-weight:900; color:white; margin-bottom:4px; }
-        .share-sub { font-size:10px; color:#444; letter-spacing:2px; margin-bottom:16px; }
-        .share-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
-        .share-item:last-child { border-bottom:none; }
-        .share-item-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-        .share-item-nome { font-size:13px; font-weight:700; flex:1; }
-        .share-item-prazo { font-size:11px; color:#444; }
-        .share-footer { text-align:center; margin-top:12px; font-size:10px; color:#333; letter-spacing:2px; }
-        .btn-share-action { width:100%; padding:14px; border:none; border-radius:14px; font-size:13px; font-weight:800; cursor:pointer; margin-bottom:8px; display:flex; align-items:center; justify-content:center; gap:8px; }
-        .btn-share-img { background:#8a2be2; color:white; box-shadow:0 4px 16px rgba(138,43,226,0.3); }
-        .btn-share-wpp { background:rgba(37,211,102,0.1); border:1px solid rgba(37,211,102,0.2); color:#25d366; }
-
-        .empty-state { text-align:center; padding:40px 20px; color:#333; font-size:13px; font-weight:600; }
+        .st-expirado { background:rgba(80,80,80,0.1); color:#333; border:1px solid #1a1a1a; }
 
         /* TOAST */
-        .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#111116; border:1px solid rgba(138,43,226,0.4); color:white; padding:10px 20px; border-radius:12px; font-size:12px; font-weight:700; z-index:99999; display:none; }
+        #toast-agenda { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#111116; border:1px solid rgba(138,43,226,0.4); color:white; padding:10px 20px; border-radius:12px; font-size:12px; font-weight:700; z-index:99999; display:none; white-space:nowrap; }
 
         /* MODAL DITOH */
         .modal-dono-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; backdrop-filter:blur(25px); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
-        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5); }
+        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; }
         .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
         .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
         .ring-1 { width:100%; height:100%; animation:spin-orb 2s linear infinite; opacity:0.6; }
-        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; opacity:0.8; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
+        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
         @keyframes spin-orb { to{transform:rotate(360deg);} }
         @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
         .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
+
+        /* MODAL COMPARTILHAR */
+        .share-card { background:#0a0a0e; border:1px solid rgba(138,43,226,0.2); border-radius:16px; padding:18px; margin-bottom:14px; }
+        .share-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+        .share-item:last-child { border-bottom:none; }
+        .share-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+        .share-nome { font-size:13px; font-weight:700; flex:1; color:white; }
+        .share-prazo { font-size:10px; color:#444; }
+        .share-rodape { text-align:center; margin-top:10px; font-size:9px; color:#222; letter-spacing:2px; }
+        .btn-share-wpp { width:100%; padding:14px; border:1px solid rgba(37,211,102,0.25); background:rgba(37,211,102,0.08); color:#25d366; border-radius:14px; font-size:13px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px; font-family:inherit; }
+        .btn-share-img { width:100%; padding:14px; background:#8a2be2; border:none; color:white; border-radius:14px; font-size:13px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px; box-shadow:0 4px 16px rgba(138,43,226,0.3); font-family:inherit; }
+        .btn-fechar-share { width:100%; padding:13px; background:none; border:1px solid #111; color:#333; border-radius:14px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+
+        /* INPUT ERRO */
+        .input-erro { border:1px solid #ff4444 !important; animation:shake 0.3s; }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
     </style>
 </head>
 <body class="bg-dark">
 
-<div class="toast" id="toast"></div>
+<div id="toast-agenda"></div>
 
 <header class="glass-header">
     <button id="open-menu" class="btn-menu"><i data-lucide="menu"></i></button>
     <div class="hub-logo-container" onclick="abrirSobreDono()">
         <span class="hub-logo-text">Hub</span>
-        <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2;width:20px;height:20px;"></i></div>
+        <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2;width:22px;height:22px;"></i></div>
         <span class="hub-logo-text purple">Brain</span>
     </div>
-    <div style="width:40px;"></div>
+    <div style="width:44px;"></div>
 </header>
 
 <main class="container-agenda">
 
-    <!-- FILTROS -->
-    <div class="filtros-wrap" id="filtros-materia"></div>
-
     <!-- BIMESTRE -->
     <div class="bimestre-tabs">
-        <div class="bim-tab active" data-bim="todos" onclick="selecionarBimestre(this,'todos')">TODOS</div>
-        <div class="bim-tab" data-bim="1" onclick="selecionarBimestre(this,'1')">1° BIM</div>
-        <div class="bim-tab" data-bim="2" onclick="selecionarBimestre(this,'2')">2° BIM</div>
-        <div class="bim-tab" data-bim="3" onclick="selecionarBimestre(this,'3')">3° BIM</div>
-        <div class="bim-tab" data-bim="4" onclick="selecionarBimestre(this,'4')">4° BIM</div>
+        <button class="bim-tab active" data-bim="todos" onclick="selecionarBimestre(this,'todos')">TODOS</button>
+        <button class="bim-tab" data-bim="1" onclick="selecionarBimestre(this,'1')">1° BIM</button>
+        <button class="bim-tab" data-bim="2" onclick="selecionarBimestre(this,'2')">2° BIM</button>
+        <button class="bim-tab" data-bim="3" onclick="selecionarBimestre(this,'3')">3° BIM</button>
+        <button class="bim-tab" data-bim="4" onclick="selecionarBimestre(this,'4')">4° BIM</button>
     </div>
 
-    <!-- CALENDÁRIO -->
+    <!-- FILTROS MATÉRIA -->
+    <div class="filtros-materias" id="filtros-materias"></div>
+
+    <!-- CALENDÁRIO ORIGINAL -->
+    <div class="mes-indicador" id="mes-topo">CARREGANDO...</div>
     <div class="calendar-card">
-        <div class="cal-header">
-            <button class="btn-nav" onclick="mudarMes(-1)"><i data-lucide="chevron-left" style="width:16px;"></i></button>
-            <span class="cal-mes-nome" id="cal-mes-nome">—</span>
-            <button class="btn-nav" onclick="mudarMes(1)"><i data-lucide="chevron-right" style="width:16px;"></i></button>
+        <div class="calendar-nav">
+            <button onclick="mudarMes(-1)" class="btn-nav-clean"><i data-lucide="chevron-left"></i></button>
+            <div id="calendar-grid" class="calendar-grid"></div>
+            <button onclick="mudarMes(1)" class="btn-nav-clean"><i data-lucide="chevron-right"></i></button>
         </div>
-        <div class="calendar-grid" id="calendar-grid"></div>
     </div>
 
     <!-- RESUMO -->
-    <div class="resumo-strip" id="resumo-strip">
-        <div class="resumo-item">
-            <span class="resumo-num" id="res-total">0</span>
-            <span class="resumo-label">TOTAL</span>
-        </div>
-        <div class="resumo-item">
-            <span class="resumo-num" style="color:#ff4444;" id="res-urgente">0</span>
-            <span class="resumo-label">URGENTE</span>
-        </div>
-        <div class="resumo-item">
-            <span class="resumo-num" style="color:#00d2ff;" id="res-conc">0</span>
-            <span class="resumo-label">FEITAS</span>
-        </div>
-        <div class="resumo-item">
-            <span class="resumo-num" style="color:#00c851;" id="res-pct">0%</span>
-            <span class="resumo-label">PROGRESSO</span>
-        </div>
+    <div class="resumo-strip">
+        <div class="resumo-item"><span class="resumo-num" id="res-total">0</span><span class="resumo-label">TOTAL</span></div>
+        <div class="resumo-item"><span class="resumo-num" style="color:#ff4444;" id="res-urgente">0</span><span class="resumo-label">URGENTE</span></div>
+        <div class="resumo-item"><span class="resumo-num" style="color:#00d2ff;" id="res-conc">0</span><span class="resumo-label">FEITAS</span></div>
+        <div class="resumo-item"><span class="resumo-num" style="color:#00c851;" id="res-pct">0%</span><span class="resumo-label">PROGRESSO</span></div>
     </div>
 
     <!-- LISTA -->
-    <div class="section-header">
-        <span class="section-title-text" id="lista-titulo">TODAS AS ATIVIDADES</span>
-        <button class="btn-compartilhar" onclick="abrirCompartilhar()">
-            <i data-lucide="share-2" style="width:14px;height:14px;"></i>
-            COMPARTILHAR
-        </button>
+    <div class="agenda-section">
+        <div class="section-header-row">
+            <h3 class="section-title-label" id="titulo-lista">ATIVIDADES</h3>
+            <button class="btn-share" onclick="abrirCompartilhar()">
+                <i data-lucide="share-2" style="width:13px;height:13px;"></i> COMPARTILHAR
+            </button>
+        </div>
+        <div id="lista-agenda"></div>
     </div>
-    <div id="lista-agenda"></div>
-
 </main>
 
-<button class="fab-button" onclick="abrirModal()">
-    <i data-lucide="plus" style="width:26px;height:26px;"></i>
+<!-- FAB -->
+<button class="fab-button" onclick="abrirModalAgendaHoje()">
+    <i data-lucide="plus"></i>
 </button>
 
-<!-- MODAL NOVA ATIVIDADE -->
-<div class="modal-overlay" id="modal-agenda">
-    <div class="modal-sheet">
-        <div class="modal-handle"></div>
-        <div class="modal-title">Nova Atividade</div>
+<!-- MODAL NOVA ATIVIDADE (igual ao original + novos campos) -->
+<div id="modal-agenda" class="modal">
+    <div class="modal-content glass">
+        <h3 style="color:#8a2be2;margin-bottom:18px;font-size:16px;">Nova Atividade</h3>
 
-        <input type="text" id="tarefa-nome" class="input-ia" placeholder="Título da atividade">
+        <input type="text" id="tarefa-nome" placeholder="Título" class="input-ia">
+        <textarea id="tarefa-desc" placeholder="Detalhes (opcional)" class="input-ia" style="height:70px;resize:none;"></textarea>
 
-        <textarea id="tarefa-desc" class="input-ia" style="height:70px;resize:none;" placeholder="Detalhes (opcional)"></textarea>
-
-        <select id="tarefa-materia" class="input-ia">
+        <select id="tarefa-materia" class="input-ia" style="background-color:#1a1a2e!important;color:white!important;">
             <option value="Geral">Geral / Outros</option>
         </select>
 
-        <select id="tarefa-tipo" class="input-ia">
+        <select id="tarefa-tipo" class="input-ia" style="background-color:#1a1a2e!important;color:white!important;">
             <option value="tarefa">📝 Tarefa</option>
             <option value="prova">🎯 Prova / Exame</option>
             <option value="trabalho">📋 Trabalho</option>
@@ -240,7 +175,7 @@
             <option value="projeto">💡 Projeto</option>
         </select>
 
-        <select id="tarefa-bimestre" class="input-ia">
+        <select id="tarefa-bimestre" class="input-ia" style="background-color:#1a1a2e!important;color:white!important;">
             <option value="">Bimestre (opcional)</option>
             <option value="1">1° Bimestre</option>
             <option value="2">2° Bimestre</option>
@@ -248,45 +183,43 @@
             <option value="4">4° Bimestre</option>
         </select>
 
-        <div class="input-grid">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div>
-                <label class="input-label" style="color:#8a2be2;">INÍCIO</label>
+                <label style="font-size:10px;color:#8a2be2;display:block;margin-bottom:4px;">INÍCIO</label>
                 <input type="date" id="tarefa-data-inicio" class="input-ia" style="margin-bottom:0;">
             </div>
             <div>
-                <label class="input-label" style="color:#ff4444;">PRAZO FINAL</label>
+                <label style="font-size:10px;color:#ff4444;display:block;margin-bottom:4px;">PRAZO</label>
                 <input type="date" id="tarefa-data-fim" class="input-ia" style="margin-bottom:0;">
             </div>
         </div>
         <div style="height:12px;"></div>
 
         <label class="btn-anexo" for="tarefa-img">
-            <i data-lucide="image" style="width:16px;height:16px;"></i>
-            Anexar Foto
+            <i data-lucide="image"></i> Anexar Foto
             <input type="file" id="tarefa-img" accept="image/*" style="display:none;" onchange="previewImg(this)">
         </label>
         <div id="preview-container"></div>
 
-        <button class="btn-salvar-modal" id="btn-salvar" onclick="validarESalvar()">AGENDAR</button>
-        <button class="btn-cancelar-modal" onclick="fecharModal()">CANCELAR</button>
+        <div class="area-botoes-modal">
+            <button onclick="fecharModalAgenda()" class="btn-modal-voltar">Cancelar</button>
+            <button id="btn-salvar-agenda" onclick="validarEAdicionar()" class="btn-modal-acao" style="background:#8a2be2;">Agendar</button>
+        </div>
     </div>
 </div>
 
 <!-- MODAL COMPARTILHAR -->
-<div class="modal-overlay" id="modal-compartilhar">
-    <div class="modal-sheet">
-        <div class="modal-handle"></div>
-        <div class="modal-title">Compartilhar Agenda</div>
-        <div class="share-preview" id="share-preview-content"></div>
-        <button class="btn-share-action btn-share-img" onclick="gerarImagemCompartilhar()">
-            <i data-lucide="image" style="width:16px;height:16px;"></i>
-            SALVAR COMO IMAGEM
+<div id="modal-compartilhar" class="modal">
+    <div class="modal-content glass" style="padding:20px;">
+        <h3 style="color:#8a2be2;margin-bottom:14px;font-size:15px;">Compartilhar Agenda</h3>
+        <div class="share-card" id="share-preview"></div>
+        <button class="btn-share-img" onclick="gerarImagem()">
+            <i data-lucide="image" style="width:16px;height:16px;"></i> SALVAR IMAGEM
         </button>
-        <button class="btn-share-action btn-share-wpp" onclick="compartilharWhatsapp()">
-            <span style="font-size:16px;">📱</span>
-            COMPARTILHAR NO WHATSAPP
+        <button class="btn-share-wpp" onclick="compartilharWpp()">
+            📱 WHATSAPP
         </button>
-        <button class="btn-cancelar-modal" onclick="fecharCompartilhar()">FECHAR</button>
+        <button class="btn-fechar-share" onclick="fecharCompartilhar()">FECHAR</button>
     </div>
 </div>
 
@@ -295,4 +228,42 @@
     <div class="modal-dono-card">
         <div class="ditoh-core-orbital">
             <div class="orbital-ring ring-1"></div>
-            <div class="orbital-ring ring-2">
+            <div class="orbital-ring ring-2"></div>
+            <div class="core-glow"><i data-lucide="zap" style="color:white;width:28px;height:28px;filter:drop-shadow(0 0 8px #8a2be2);"></i></div>
+        </div>
+        <h3 style="color:white;margin:0;font-size:26px;font-weight:900;letter-spacing:2px;">DITOH</h3>
+        <p style="color:#8a2be2;font-weight:bold;margin:5px 0 20px;font-size:12px;letter-spacing:4px;">Founder & Dev</p>
+        <div style="background:rgba(138,43,226,0.1);padding:20px;border-radius:20px;margin-bottom:25px;border-left:4px solid #8a2be2;text-align:left;">
+            <p style="color:#eee;font-size:13px;font-style:italic;line-height:1.6;margin:0;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria."</p>
+        </div>
+        <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:10px;color:white;font-size:15px;margin-bottom:25px;background:rgba(255,255,255,0.05);padding:14px;border-radius:15px;border:1px solid rgba(138,43,226,0.2);">
+            <i data-lucide="instagram" style="width:18px;color:#8a2be2;"></i>
+            <span style="font-weight:600;">@wtfditoh</span>
+        </a>
+        <button onclick="fecharSobreDono()" style="width:100%;background:#8a2be2;color:white;border:none;padding:15px;border-radius:12px;font-weight:900;cursor:pointer;">VOLTAR</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="menu.js"></script>
+<script type="module" src="agenda-logica.js"></script>
+<script>
+    function abrirSobreDono() { document.getElementById('modal-dono').style.display='flex'; if(window.lucide) lucide.createIcons(); }
+    function fecharSobreDono() { document.getElementById('modal-dono').style.display='none'; }
+
+    function validarEAdicionar() {
+        const nomeInput = document.getElementById('tarefa-nome');
+        const btn = document.getElementById('btn-salvar-agenda');
+        if (!nomeInput.value.trim()) {
+            btn.style.background='#ff4444'; btn.innerText='Preencha o título!';
+            nomeInput.classList.add('input-erro');
+            setTimeout(() => { btn.style.background='#8a2be2'; btn.innerText='Agendar'; nomeInput.classList.remove('input-erro'); }, 2000);
+            return;
+        }
+        if (typeof adicionarTarefa === 'function') adicionarTarefa();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
+</script>
+</body>
+</html>
