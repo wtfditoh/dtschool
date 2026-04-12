@@ -7,7 +7,8 @@ const firebaseConfig = {
     projectId: "dt-scho0l",
     storageBucket: "dt-scho0l.firebasestorage.app",
     messagingSenderId: "78578509391",
-    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a",
+    measurementId: "G-F7TG23TBTL"
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
@@ -22,85 +23,112 @@ let agendaGlobal = [];
 let filtroBimestre = 'todos';
 let filtroMateria = 'todas';
 
-// BIMESTRES — datas aproximadas (editável)
-const BIMESTRES = {
-    '1': { inicio: '-02-01', fim: '-04-30', label: '1° Bimestre' },
-    '2': { inicio: '-05-01', fim: '-07-31', label: '2° Bimestre' },
-    '3': { inicio: '-08-01', fim: '-10-31', label: '3° Bimestre' },
-    '4': { inicio: '-11-01', fim: '-12-31', label: '4° Bimestre' },
+const TIPOS = {
+    tarefa:   { emoji:'📝', label:'Tarefa',   xp:10 },
+    prova:    { emoji:'🎯', label:'Prova',    xp:30 },
+    trabalho: { emoji:'📋', label:'Trabalho', xp:20 },
+    revisao:  { emoji:'🔄', label:'Revisão',  xp:10 },
+    projeto:  { emoji:'💡', label:'Projeto',  xp:25 },
 };
 
-const TIPOS = {
-    'tarefa':   { emoji: '📝', label: 'Tarefa',   xp: 10 },
-    'prova':    { emoji: '🎯', label: 'Prova',    xp: 30 },
-    'trabalho': { emoji: '📋', label: 'Trabalho', xp: 20 },
-    'revisao':  { emoji: '🔄', label: 'Revisão',  xp: 10 },
-    'projeto':  { emoji: '💡', label: 'Projeto',  xp: 25 },
+const BIMESTRES = {
+    '1': { inicio:'-02-01', fim:'-04-30', label:'1° Bimestre' },
+    '2': { inicio:'-05-01', fim:'-07-31', label:'2° Bimestre' },
+    '3': { inicio:'-08-01', fim:'-10-31', label:'3° Bimestre' },
+    '4': { inicio:'-11-01', fim:'-12-31', label:'4° Bimestre' },
 };
 
 const getHojeLocal = () => {
     const d = new Date();
     return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
 };
-
 const pad = n => String(n).padStart(2,'0');
-const formatData = d => d.split('-').reverse().join('/');
+const formatData = d => d ? d.split('-').reverse().join('/') : '';
 
 function toast(msg) {
-    const el = document.getElementById('toast');
+    const el = document.getElementById('toast-agenda');
     if (!el) return;
     el.innerText = msg; el.style.display = 'block'; el.style.opacity = '1';
     setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.style.display = 'none', 300); }, 2500);
 }
 
-// --- XP ---
-async function atualizarXP(val) {
+// XP
+async function atualizarXPRanking(val) {
     if (userType === 'local' || !userEmail) return;
-    try { await setDoc(doc(db,'notas',userEmail), { xp: increment(val) }, { merge: true }); } catch(e){}
+    try { await setDoc(doc(db,'notas',userEmail), { xp: increment(val) }, { merge:true }); } catch(e){}
 }
 
-// --- CONQUISTAS ---
+function identificarXPTarefa(t) {
+    return (TIPOS[t.tipo] || TIPOS.tarefa).xp;
+}
+
+// CONQUISTAS
 const NOMES_CONQUISTAS = {
-    organizado:     { emoji:'📋', nome:'Organizado',    desc:'Concluiu 5 tarefas'   },
-    produtivo:      { emoji:'⚙️', nome:'Produtivo',     desc:'Concluiu 20 tarefas'  },
-    maquina:        { emoji:'🤖', nome:'Máquina',       desc:'Concluiu 50 tarefas'  },
+    organizado:     { emoji:'📋', nome:'Organizado',    desc:'Concluiu 5 tarefas' },
+    produtivo:      { emoji:'⚙️', nome:'Produtivo',     desc:'Concluiu 20 tarefas' },
+    maquina:        { emoji:'🤖', nome:'Máquina',       desc:'Concluiu 50 tarefas' },
     implacavel:     { emoji:'💣', nome:'Implacável',    desc:'Concluiu 100 tarefas' },
     perfeccionista: { emoji:'⭐', nome:'Perfeccionista',desc:'Todas as tarefas do dia' },
 };
 
-function popupConquista(id) {
+function mostrarPopupLocal(id) {
     const c = NOMES_CONQUISTAS[id]; if (!c) return;
     const p = document.createElement('div');
-    p.style.cssText = `position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#111116;border:1px solid rgba(138,43,226,0.4);border-radius:20px;padding:16px 24px;z-index:99999;display:flex;align-items:center;gap:14px;box-shadow:0 10px 40px rgba(138,43,226,0.3);transition:transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);min-width:280px;`;
-    p.innerHTML = `<div style="font-size:36px;">${c.emoji}</div><div><div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#8a2be2;margin-bottom:3px;">CONQUISTA DESBLOQUEADA!</div><div style="font-size:15px;font-weight:900;color:white;">${c.nome}</div><div style="font-size:11px;color:#555;">${c.desc}</div></div>`;
+    p.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#111116;border:1px solid rgba(138,43,226,0.4);border-radius:20px;padding:16px 24px;z-index:99999;display:flex;align-items:center;gap:14px;box-shadow:0 10px 40px rgba(138,43,226,0.3);transition:transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);min-width:280px;';
+    p.innerHTML = `<div style="font-size:36px;">${c.emoji}</div><div><div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#8a2be2;margin-bottom:3px;">CONQUISTA!</div><div style="font-size:15px;font-weight:900;color:white;">${c.nome}</div><div style="font-size:11px;color:#555;">${c.desc}</div></div>`;
     document.body.appendChild(p);
-    setTimeout(() => p.style.transform='translateX(-50%) translateY(0)', 50);
+    setTimeout(() => p.style.transform = 'translateX(-50%) translateY(0)', 50);
     setTimeout(() => { p.style.opacity='0'; setTimeout(()=>p.remove(),400); }, 3500);
 }
 
-async function verificarConquistas() {
+async function verificarConquistasTarefas() {
     if (!userEmail || userType==='local') return;
     try {
         const snap = await getDoc(doc(db,'notas',userEmail));
         if (!snap.exists()) return;
         const atuais = snap.data().conquistas || [];
-        const concl = agendaGlobal.filter(t=>t.concluida).length;
+        const q = query(collection(db,'agenda'), where('usuario','==',userEmail));
+        const aSnap = await getDocs(q);
+        const concl = aSnap.docs.filter(d=>d.data().concluida).length;
         const hoje = getHojeLocal();
-        const hojeArr = agendaGlobal.filter(t => hoje >= t.dataInicio && hoje <= t.dataFim);
+        const hojeArr = aSnap.docs.map(d=>d.data()).filter(t => hoje >= t.dataInicio && hoje <= t.dataFim);
         const todasHoje = hojeArr.length > 0 && hojeArr.every(t=>t.concluida);
         const novas = [];
-        const marcos = [{id:'organizado',min:5},{id:'produtivo',min:20},{id:'maquina',min:50},{id:'implacavel',min:100}];
-        marcos.forEach(m => { if (concl >= m.min && !atuais.includes(m.id)) novas.push(m.id); });
+        [{id:'organizado',min:5},{id:'produtivo',min:20},{id:'maquina',min:50},{id:'implacavel',min:100}].forEach(c => {
+            if (concl >= c.min && !atuais.includes(c.id)) novas.push(c.id);
+        });
         if (todasHoje && !atuais.includes('perfeccionista')) novas.push('perfeccionista');
         if (novas.length > 0) {
             await updateDoc(doc(db,'notas',userEmail), { conquistas: arrayUnion(...novas) });
-            novas.forEach((id,i) => setTimeout(()=>popupConquista(id), i*1000));
+            novas.forEach((id,i) => setTimeout(()=>mostrarPopupLocal(id), i*1000));
         }
     } catch(e) {}
 }
 
-// --- CARREGAR DADOS ---
-async function buscarDados() {
+// PLAYER ID
+async function salvarPlayerIdNasAgendas() {
+    if (!userEmail || userType==='local') return;
+    try {
+        if (!window.OneSignalDeferred) return;
+        OneSignalDeferred.push(async function(OS) {
+            const pid = OS.User.PushSubscription.token;
+            if (!pid) return;
+            const q = query(collection(db,'agenda'), where('usuario','==',userEmail));
+            const snap = await getDocs(q);
+            await Promise.all(snap.docs.map(d => updateDoc(doc(db,'agenda',d.id), { onesignal_player_id: pid })));
+        });
+    } catch(e) {}
+}
+
+// INIT
+document.addEventListener('DOMContentLoaded', () => {
+    window.carregarMateriasNoSelect();
+    window.buscarDadosNuvem();
+    salvarPlayerIdNasAgendas();
+});
+
+// BUSCAR DADOS
+window.buscarDadosNuvem = async function() {
     if (userType === 'local') {
         agendaGlobal = JSON.parse(localStorage.getItem('dt_agenda') || '[]');
     } else {
@@ -110,39 +138,37 @@ async function buscarDados() {
             agendaGlobal = snap.docs.map(d => ({ id_firebase: d.id, ...d.data() }));
         } catch(e) { console.error(e); }
     }
-    renderTudo();
-}
-window.buscarDadosNuvem = buscarDados;
-
-function renderTudo() {
     renderFiltrosMateria();
-    renderCalendario();
+    window.renderizarCalendario();
     renderResumo();
-    renderLista();
-}
-
-// --- FILTROS MATÉRIA ---
-function renderFiltrosMateria() {
-    const materias = ['todas', ...new Set(agendaGlobal.map(t => t.materia).filter(Boolean))];
-    const wrap = document.getElementById('filtros-materia');
-    if (!wrap) return;
-    wrap.innerHTML = materias.map(m => `
-        <div class="filtro-pill ${m === filtroMateria ? 'active' : ''}" onclick="selecionarMateria('${m}')">
-            ${m === 'todas' ? 'TODAS' : m.toUpperCase()}
-        </div>
-    `).join('');
-}
-
-window.selecionarMateria = function(m) {
-    filtroMateria = m;
-    renderTudo();
+    window.carregarTarefas(dataSelecionada);
 };
 
+// FILTRO BIMESTRE
 window.selecionarBimestre = function(el, bim) {
     filtroBimestre = bim;
     document.querySelectorAll('.bim-tab').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
-    renderTudo();
+    renderResumo();
+    window.carregarTarefas(dataSelecionada);
+};
+
+// FILTRO MATÉRIA
+function renderFiltrosMateria() {
+    const wrap = document.getElementById('filtros-materias');
+    if (!wrap) return;
+    const materias = [...new Set(agendaGlobal.map(t=>t.materia).filter(Boolean))];
+    if (materias.length === 0) { wrap.innerHTML=''; return; }
+    wrap.innerHTML = ['todas',...materias].map(m =>
+        `<button class="filtro-mat ${m===filtroMateria?'active':''}" onclick="window.selecionarFiltroMateria('${m}')">${m==='todas'?'TODAS':m.toUpperCase()}</button>`
+    ).join('');
+}
+
+window.selecionarFiltroMateria = function(m) {
+    filtroMateria = m;
+    renderFiltrosMateria();
+    renderResumo();
+    window.carregarTarefas(dataSelecionada);
 };
 
 function getTarefasFiltradas() {
@@ -153,13 +179,12 @@ function getTarefasFiltradas() {
         const bim = BIMESTRES[filtroBimestre];
         const ini = ano + bim.inicio;
         const fim = ano + bim.fim;
-        arr = arr.filter(t => t.dataFim >= ini && t.dataInicio <= fim || t.bimestre === filtroBimestre);
+        arr = arr.filter(t => (t.bimestre === filtroBimestre) || (t.dataFim >= ini && t.dataInicio <= fim));
     }
-    if (dataSelecionada) arr = arr.filter(t => dataSelecionada >= t.dataInicio && dataSelecionada <= t.dataFim);
     return arr;
 }
 
-// --- RESUMO ---
+// RESUMO
 function renderResumo() {
     const arr = getTarefasFiltradas();
     const hojeStr = getHojeLocal();
@@ -170,64 +195,77 @@ function renderResumo() {
     }).length;
     const concl = arr.filter(t=>t.concluida).length;
     const pct = arr.length > 0 ? Math.round((concl/arr.length)*100) : 0;
-    document.getElementById('res-total').innerText = arr.length;
-    document.getElementById('res-urgente').innerText = urgentes;
-    document.getElementById('res-conc').innerText = concl;
-    document.getElementById('res-pct').innerText = pct + '%';
+    const rTotal = document.getElementById('res-total');
+    const rUrg = document.getElementById('res-urgente');
+    const rConc = document.getElementById('res-conc');
+    const rPct = document.getElementById('res-pct');
+    if(rTotal) rTotal.innerText = arr.length;
+    if(rUrg) rUrg.innerText = urgentes;
+    if(rConc) rConc.innerText = concl;
+    if(rPct) rPct.innerText = pct + '%';
 }
 
-// --- CALENDÁRIO ---
-function renderCalendario() {
+// CALENDÁRIO — igual ao original
+window.renderizarCalendario = function() {
     const grid = document.getElementById('calendar-grid');
-    const nomeEl = document.getElementById('cal-mes-nome');
-    if (!grid) return;
+    const topoMes = document.getElementById('mes-topo');
+    if (!grid || !topoMes) return;
     grid.innerHTML = '';
-    const nomesDias = ['D','S','T','Q','Q','S','S'];
-    nomesDias.forEach(d => grid.innerHTML += `<div class="dia-semana">${d}</div>`);
+    ['D','S','T','Q','Q','S','S'].forEach(d => grid.innerHTML += `<div class="dia-semana">${d}</div>`);
     const ano = mesExibido.getFullYear();
     const mes = mesExibido.getMonth();
-    nomeEl.innerText = new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric'}).format(mesExibido);
-    const primeirodia = new Date(ano,mes,1).getDay();
+    topoMes.innerText = new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric'}).format(mesExibido);
+    const primeiroDia = new Date(ano,mes,1).getDay();
     const diasNoMes = new Date(ano,mes+1,0).getDate();
-    for (let i=0;i<primeirodia;i++) grid.innerHTML += '<div></div>';
-    const hojeStr = getHojeLocal();
-    for (let dia=1;dia<=diasNoMes;dia++) {
+    for(let i=0;i<primeiroDia;i++) grid.innerHTML += '<div></div>';
+    const hojeLocal = getHojeLocal();
+    for(let dia=1;dia<=diasNoMes;dia++) {
         const ds = `${ano}-${pad(mes+1)}-${pad(dia)}`;
-        const tarefas = agendaGlobal.filter(t => ds >= t.dataInicio && ds <= t.dataFim);
-        let dot = '';
-        if (tarefas.length > 0) {
-            const ativas = tarefas.filter(t=>!t.concluida);
-            if (ativas.length === 0) { dot = '<div class="dot status-concluido"></div>'; }
-            else {
-                const diff = Math.ceil((new Date(ativas.sort((a,b)=>new Date(a.dataFim)-new Date(b.dataFim))[0].dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00'))/86400000);
-                const cl = diff<=3 ? 'status-urgente' : diff<=7 ? 'status-alerta' : 'status-tranquilo';
-                dot = `<div class="dot ${cl}"></div>`;
+        const tarefasDoDia = agendaGlobal.filter(t => ds >= t.dataInicio && ds <= t.dataFim);
+        let htmlDot = '';
+        if (tarefasDoDia.length > 0) {
+            const ativas = tarefasDoDia.filter(t=>!t.concluida);
+            if (ativas.length === 0) {
+                htmlDot = '<div class="dot status-concluido"></div>';
+            } else {
+                const diffs = ativas.map(t => Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeLocal+'T00:00:00'))/86400000));
+                const minDiff = Math.min(...diffs);
+                const cl = minDiff<=3 ? 'status-urgente' : minDiff<=7 ? 'status-alerta' : 'status-tranquilo';
+                htmlDot = `<div class="dot ${cl}"></div>`;
             }
         }
-        const hj = hojeStr===ds ? 'hoje' : '';
-        const sel = dataSelecionada===ds ? 'selecionado' : '';
-        grid.innerHTML += `<div class="dia-numero ${hj} ${sel}" onclick="selecionarDia('${ds}')">${dia}${dot}</div>`;
+        const hjCl = hojeLocal===ds ? 'hoje' : '';
+        const selCl = dataSelecionada===ds ? 'selecionado' : '';
+        grid.innerHTML += `<div class="dia-numero ${hjCl} ${selCl}" onclick="selecionarDia('${ds}')">${dia}${htmlDot}</div>`;
     }
     if (window.lucide) lucide.createIcons();
-}
+};
 
 window.selecionarDia = function(d) {
     dataSelecionada = dataSelecionada === d ? '' : d;
-    const titulo = document.getElementById('lista-titulo');
-    if (titulo) titulo.innerText = dataSelecionada ? `DIA ${formatData(dataSelecionada)}` : 'TODAS AS ATIVIDADES';
-    renderCalendario(); renderResumo(); renderLista();
+    const titulo = document.getElementById('titulo-lista');
+    if (titulo) titulo.innerText = dataSelecionada ? 'DIA ' + formatData(dataSelecionada) : 'ATIVIDADES';
+    window.renderizarCalendario();
+    renderResumo();
+    window.carregarTarefas(dataSelecionada);
 };
-window.mudarMes = function(v) { mesExibido.setMonth(mesExibido.getMonth()+v); renderCalendario(); };
 
-// --- LISTA POR MATÉRIA ---
-function renderLista() {
+window.mudarMes = function(v) {
+    mesExibido.setMonth(mesExibido.getMonth()+v);
+    window.renderizarCalendario();
+};
+
+// LISTA COM GRUPOS POR MATÉRIA
+window.carregarTarefas = function(filtroData) {
     const lista = document.getElementById('lista-agenda');
     if (!lista) return;
-    const arr = getTarefasFiltradas();
     const hojeStr = getHojeLocal();
 
+    let arr = getTarefasFiltradas();
+    if (filtroData) arr = arr.filter(t => filtroData >= t.dataInicio && filtroData <= t.dataFim);
+
     if (arr.length === 0) {
-        lista.innerHTML = '<div class="empty-state">Nenhuma atividade encontrada 📭</div>';
+        lista.innerHTML = '<p style="color:#333;text-align:center;padding:30px;font-size:13px;font-weight:600;">Sem atividades aqui 📭</p>';
         return;
     }
 
@@ -240,72 +278,82 @@ function renderLista() {
     });
 
     let html = '';
-    Object.entries(grupos).forEach(([materia, tarefas]) => {
+    Object.entries(grupos).sort((a,b) => {
+        const pendA = a[1].filter(t=>!t.concluida).length;
+        const pendB = b[1].filter(t=>!t.concluida).length;
+        return pendB - pendA;
+    }).forEach(([materia, tarefas]) => {
         tarefas.sort((a,b) => {
             if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
             return new Date(a.dataFim) - new Date(b.dataFim);
         });
         const pendentes = tarefas.filter(t=>!t.concluida).length;
-        html += `<div class="materia-group">
-            <div class="materia-group-header" onclick="toggleGrupo('${materia}')">
-                <div class="materia-group-nome">${materia.toUpperCase()}</div>
-                <div class="materia-group-count">${pendentes} pendente${pendentes!==1?'s':''}</div>
-                <div class="materia-group-arrow" id="arrow-${materia}">↓</div>
+        const gId = 'grp_' + materia.replace(/\s/g,'_');
+
+        html += `<div class="grupo-materia">
+            <div class="grupo-header" onclick="toggleGrupo('${gId}')">
+                <span class="grupo-nome">${materia.toUpperCase()}</span>
+                <span class="grupo-count">${pendentes} pendente${pendentes!==1?'s':''}</span>
+                <span class="grupo-arrow" id="arrow_${gId}">↓</span>
             </div>
-            <div id="grupo-${materia}">`;
+            <div id="${gId}">`;
 
         tarefas.forEach(t => {
             const fim = new Date(t.dataFim+'T00:00:00');
             const hoje = new Date(hojeStr+'T00:00:00');
             const diff = Math.ceil((fim - hoje) / 86400000);
-            const tipo = TIPOS[t.tipo] || TIPOS['tarefa'];
+            const tipo = TIPOS[t.tipo] || TIPOS.tarefa;
 
-            let statusClass = 'tranquilo', statusHtml = '';
+            let statusTag = '';
+            let borderColor = '#00c851';
             if (t.concluida) {
-                statusClass = 'concluida-card';
-                statusHtml = `<span class="status-tag st-concluido">✓ CONCLUÍDO</span>`;
+                statusTag = '<span class="status-tag st-concluido">✓ CONCLUÍDO</span>';
+                borderColor = '#00d2ff';
             } else if (diff < 0) {
-                statusClass = '';
-                statusHtml = `<span class="status-tag st-expirado">EXPIRADO</span>`;
+                statusTag = '<span class="status-tag st-expirado">EXPIRADO</span>';
+                borderColor = '#333';
             } else if (diff === 0) {
-                statusClass = 'urgente';
-                statusHtml = `<span class="status-tag st-urgente">🔥 HOJE!</span>`;
+                statusTag = '<span class="status-tag st-hoje">🔥 HOJE!</span>';
+                borderColor = '#ff4444';
             } else if (diff <= 3) {
-                statusClass = 'urgente';
-                statusHtml = `<span class="status-tag st-urgente">⚡ ${diff}d restante${diff!==1?'s':''}</span>`;
+                statusTag = `<span class="status-tag st-urgente">⚡ ${diff}d</span>`;
+                borderColor = '#ff4444';
             } else if (diff <= 7) {
-                statusClass = 'alerta';
-                statusHtml = `<span class="status-tag st-alerta">⏰ ${diff} dias</span>`;
+                statusTag = `<span class="status-tag st-alerta">⏰ ${diff} dias</span>`;
+                borderColor = '#ffbb33';
             } else {
-                statusHtml = `<span class="status-tag st-tranquilo">${diff} dias</span>`;
+                statusTag = `<span class="status-tag st-ok">${diff} dias</span>`;
             }
 
-            const bimLabel = t.bimestre ? `<span style="font-size:9px;color:#444;margin-left:6px;">${t.bimestre}° BIM</span>` : '';
+            const bimLabel = t.bimestre ? `<span class="bim-badge">${t.bimestre}° BIM</span>` : '';
+            const idFb = t.id_firebase || '';
+            const idLc = t.criadoEm || 0;
 
-            html += `<div class="tarefa-card ${statusClass}${t.concluida?' concluida-card':''}">
-                <div class="tarefa-top">
+            html += `
+            <div class="tarefa-item" style="border-left:4px solid ${borderColor};opacity:${t.concluida?'0.55':'1'};">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
                     <div style="flex:1;">
-                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                            <span class="tarefa-materia-badge">${tipo.emoji} ${tipo.label}</span>
+                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+                            <span class="tipo-badge">${tipo.emoji} ${tipo.label}</span>
                             ${bimLabel}
                         </div>
-                        <div class="tarefa-titulo ${t.concluida?'riscado':''}" onclick="alternarConcluida('${t.id_firebase||''}',${t.criadoEm||0})">${t.nome}</div>
-                        ${t.descricao ? `<div class="tarefa-desc-text">${t.descricao}</div>` : ''}
-                        <div class="tarefa-footer">
-                            ${statusHtml}
-                            <div class="tarefa-prazo" style="color:#333;font-size:11px;">Prazo: ${formatData(t.dataFim)}</div>
+                        <b style="display:block;font-size:16px;color:white;text-decoration:${t.concluida?'line-through':'none'};cursor:pointer;margin-bottom:4px;" onclick="alternarConcluida('${idFb}',${idLc})">${t.nome}</b>
+                        ${t.descricao ? `<p style="color:#666;font-size:12px;margin:0 0 8px;line-height:1.4;">${t.descricao}</p>` : ''}
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            ${statusTag}
+                            <span style="font-size:10px;color:#333;">Prazo: ${formatData(t.dataFim)}</span>
                         </div>
                     </div>
-                    <div class="tarefa-actions" style="flex-shrink:0;margin-left:8px;">
-                        <button class="btn-acao ok" onclick="alternarConcluida('${t.id_firebase||''}',${t.criadoEm||0})">
+                    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+                        <button onclick="alternarConcluida('${idFb}',${idLc})" style="background:rgba(138,43,226,0.1);border:1px solid rgba(138,43,226,0.2);color:#8a2be2;padding:8px;border-radius:10px;cursor:pointer;display:flex;align-items:center;">
                             <i data-lucide="${t.concluida?'rotate-ccw':'check-circle'}" style="width:16px;height:16px;"></i>
                         </button>
-                        <button class="btn-acao del" onclick="removerTarefa('${t.id_firebase||''}',${t.criadoEm||0})">
+                        <button onclick="removerTarefa('${idFb}',${idLc})" style="background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.15);color:#ff4444;padding:8px;border-radius:10px;cursor:pointer;display:flex;align-items:center;">
                             <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
                         </button>
                     </div>
                 </div>
-                ${t.imagem ? `<img src="${t.imagem}" class="tarefa-img">` : ''}
+                ${t.imagem ? `<img src="${t.imagem}" style="width:100%;border-radius:12px;margin-top:12px;">` : ''}
             </div>`;
         });
         html += '</div></div>';
@@ -313,18 +361,18 @@ function renderLista() {
 
     lista.innerHTML = html;
     if (window.lucide) lucide.createIcons();
-}
+};
 
-window.toggleGrupo = function(materia) {
-    const el = document.getElementById('grupo-' + materia);
-    const arrow = document.getElementById('arrow-' + materia);
+window.toggleGrupo = function(gId) {
+    const el = document.getElementById(gId);
+    const arrow = document.getElementById('arrow_' + gId);
     if (!el) return;
     const aberto = el.style.display !== 'none';
     el.style.display = aberto ? 'none' : 'block';
     if (arrow) arrow.innerText = aberto ? '→' : '↓';
 };
 
-// --- CRUD ---
+// ADICIONAR
 window.adicionarTarefa = async function() {
     const nome = document.getElementById('tarefa-nome').value.trim();
     const desc = document.getElementById('tarefa-desc').value.trim();
@@ -337,7 +385,7 @@ window.adicionarTarefa = async function() {
 
     let playerId = null;
     if (window.OneSignalDeferred) {
-        await new Promise(res => { OneSignalDeferred.push(async (OS) => { playerId = OS.User.PushSubscription.token; res(); }); });
+        await new Promise(res => { OneSignalDeferred.push(async OS => { playerId = OS.User.PushSubscription.token; res(); }); });
     }
 
     const nova = { nome, descricao:desc, dataInicio, dataFim, materia, tipo, bimestre, imagem:imagemBase64, concluida:false, usuario:userEmail, onesignal_player_id:playerId||null, criadoEm:Date.now() };
@@ -347,52 +395,53 @@ window.adicionarTarefa = async function() {
     } else {
         await addDoc(collection(db,'agenda'), nova);
     }
-    fecharModal();
-    await buscarDados();
+    window.fecharModalAgenda();
+    await window.buscarDadosNuvem();
     toast('✓ Atividade agendada!');
 };
 
-window.removerTarefa = async function(idFb, idLocal) {
+// REMOVER
+window.removerTarefa = async function(idFb, idLc) {
     if (!confirm('Deletar esta atividade?')) return;
-    const t = agendaGlobal.find(x => userType==='local' ? x.criadoEm===idLocal : x.id_firebase===idFb);
-    if (t?.concluida) await atualizarXP(-(TIPOS[t.tipo]||TIPOS.tarefa).xp);
+    const t = agendaGlobal.find(x => userType==='local' ? x.criadoEm===idLc : x.id_firebase===idFb);
+    if (t?.concluida) await atualizarXPRanking(-identificarXPTarefa(t));
     if (userType === 'local') {
-        agendaGlobal = agendaGlobal.filter(x=>x.criadoEm!==idLocal); localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
+        agendaGlobal = agendaGlobal.filter(x=>x.criadoEm!==idLc); localStorage.setItem('dt_agenda',JSON.stringify(agendaGlobal));
     } else { await deleteDoc(doc(db,'agenda',idFb)); }
-    await buscarDados();
+    await window.buscarDadosNuvem();
 };
 
-window.alternarConcluida = async function(idFb, idLocal) {
+// ALTERNAR CONCLUÍDA
+window.alternarConcluida = async function(idFb, idLc) {
     let t;
     if (userType === 'local') {
-        const idx = agendaGlobal.findIndex(x=>x.criadoEm===idLocal);
-        if (idx!==-1) { t=agendaGlobal[idx]; t.concluida=!t.concluida; localStorage.setItem('dt_agenda',JSON.stringify(agendaGlobal)); }
+        const idx = agendaGlobal.findIndex(x=>x.criadoEm===idLc);
+        if(idx!==-1){t=agendaGlobal[idx];t.concluida=!t.concluida;localStorage.setItem('dt_agenda',JSON.stringify(agendaGlobal));}
     } else {
         t = agendaGlobal.find(x=>x.id_firebase===idFb);
-        if (!t) return;
-        const novoStatus = !t.concluida;
-        await updateDoc(doc(db,'agenda',idFb), {concluida:novoStatus});
-        t.concluida = novoStatus;
+        if(!t) return;
+        await updateDoc(doc(db,'agenda',idFb),{concluida:!t.concluida});
+        t.concluida=!t.concluida;
     }
-    if (t) {
-        const xp = (TIPOS[t.tipo]||TIPOS.tarefa).xp;
-        await atualizarXP(t.concluida ? xp : -xp);
-        if (t.concluida) await verificarConquistas();
+    if(t){
+        await atualizarXPRanking(t.concluida ? identificarXPTarefa(t) : -identificarXPTarefa(t));
+        if(t.concluida) await verificarConquistasTarefas();
     }
-    renderTudo();
+    renderResumo();
+    window.carregarTarefas(dataSelecionada);
 };
 
-// --- MODAL ---
-window.abrirModal = function() {
+// MODAL
+window.abrirModalAgendaHoje = function() {
     const hoje = getHojeLocal();
     document.getElementById('tarefa-data-inicio').value = dataSelecionada || hoje;
     document.getElementById('tarefa-data-fim').value = dataSelecionada || hoje;
-    carregarMateriasNoSelect();
     document.getElementById('modal-agenda').style.display = 'flex';
 };
-window.fecharModal = function() {
+window.fecharModalAgenda = function() {
     document.getElementById('modal-agenda').style.display='none';
-    ['tarefa-nome','tarefa-desc'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('tarefa-nome').value='';
+    document.getElementById('tarefa-desc').value='';
     document.getElementById('tarefa-materia').value='Geral';
     document.getElementById('tarefa-tipo').value='tarefa';
     document.getElementById('tarefa-bimestre').value='';
@@ -400,32 +449,70 @@ window.fecharModal = function() {
     imagemBase64='';
 };
 
-function carregarMateriasNoSelect() {
+window.carregarMateriasNoSelect = function() {
     const sel = document.getElementById('tarefa-materia'); if(!sel) return;
     const mats = JSON.parse(localStorage.getItem('materias_db')||localStorage.getItem('materias')||'[]');
     sel.innerHTML = '<option value="Geral">Geral / Outros</option>';
-    mats.forEach(m => { if(m.nome) { const o=document.createElement('option'); o.value=m.nome; o.textContent=m.nome; sel.appendChild(o); } });
-}
-window.carregarMateriasNoSelect = carregarMateriasNoSelect;
+    mats.forEach(m => { if(m.nome){const o=document.createElement('option');o.value=m.nome;o.textContent=m.nome;sel.appendChild(o);} });
+};
 
 window.previewImg = function(input) {
-    if (input.files?.[0]) {
-        const r = new FileReader();
-        r.onload = e => { imagemBase64=e.target.result; document.getElementById('preview-container').innerHTML=`<img src="${imagemBase64}" style="width:100%;border-radius:12px;margin-top:12px;">`; };
+    if(input.files?.[0]){
+        const r=new FileReader();
+        r.onload=e=>{imagemBase64=e.target.result;document.getElementById('preview-container').innerHTML=`<img src="${imagemBase64}" style="width:100%;border-radius:12px;margin-top:12px;">`;};
         r.readAsDataURL(input.files[0]);
     }
 };
 
-// --- COMPARTILHAR ---
+// COMPARTILHAR
 window.abrirCompartilhar = function() {
     const arr = getTarefasFiltradas().filter(t=>!t.concluida).sort((a,b)=>new Date(a.dataFim)-new Date(b.dataFim)).slice(0,8);
     const hojeStr = getHojeLocal();
-    const bimLabel = filtroBimestre !== 'todos' ? BIMESTRES[filtroBimestre]?.label : 'Todas as atividades';
+    const bimLabel = filtroBimestre !== 'todos' ? BIMESTRES[filtroBimestre]?.label : 'Todas';
     const mLabel = filtroMateria !== 'todas' ? filtroMateria : '';
 
-    let itemsHtml = arr.map(t => {
+    let items = arr.map(t => {
         const diff = Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00'))/86400000);
-        const cor = diff<=3 ? '#ff4444' : diff<=7 ? '#ffbb33' : '#00c851';
+        const cor = diff<=0 ? '#ff4444' : diff<=3 ? '#ff4444' : diff<=7 ? '#ffbb33' : '#00c851';
         const tipo = TIPOS[t.tipo]||TIPOS.tarefa;
-        return `<div class="share-item">
-            <div class="share-item-dot" style="background:${cor};box-sha
+        return `<div class="share-item"><div class="share-dot" style="background:${cor};box-shadow:0 0 5px ${cor};"></div><div class="share-nome">${tipo.emoji} ${t.nome}</div><div class="share-prazo">${formatData(t.dataFim)}</div></div>`;
+    }).join('');
+
+    if (!items) items = '<p style="color:#333;text-align:center;padding:16px;font-size:12px;">Nenhuma atividade pendente 🎉</p>';
+
+    const titulo = [mLabel, bimLabel].filter(Boolean).join(' • ') || 'Agenda';
+    document.getElementById('share-preview').innerHTML = `
+        <div style="font-size:15px;font-weight:900;color:white;margin-bottom:3px;">📚 Hub Brain</div>
+        <div style="font-size:9px;color:#444;letter-spacing:2px;margin-bottom:14px;">${titulo.toUpperCase()}</div>
+        ${items}
+        <div style="text-align:center;margin-top:12px;font-size:9px;color:#222;letter-spacing:2px;">hubbrain.netlify.app</div>
+    `;
+    document.getElementById('modal-compartilhar').style.display='flex';
+    if(window.lucide) lucide.createIcons();
+};
+
+window.fecharCompartilhar = function() { document.getElementById('modal-compartilhar').style.display='none'; };
+
+window.gerarImagem = async function() {
+    const el = document.getElementById('share-preview');
+    try {
+        const canvas = await html2canvas(el, { backgroundColor:'#0a0a0e', scale:2 });
+        const a = document.createElement('a');
+        a.download='agenda-hubbrain.png'; a.href=canvas.toDataURL(); a.click();
+        toast('✓ Imagem salva!');
+    } catch(e) { toast('Erro ao gerar imagem'); }
+};
+
+window.compartilharWpp = function() {
+    const arr = getTarefasFiltradas().filter(t=>!t.concluida).sort((a,b)=>new Date(a.dataFim)-new Date(b.dataFim));
+    const hojeStr = getHojeLocal();
+    let txt = '📚 *Minha Agenda - Hub Brain*\n\n';
+    arr.slice(0,10).forEach(t => {
+        const diff = Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00'))/86400000);
+        const emoji = diff<=0 ? '🔴' : diff<=3 ? '🟠' : diff<=7 ? '🟡' : '🟢';
+        const tipo = TIPOS[t.tipo]||TIPOS.tarefa;
+        txt += `${emoji} ${tipo.emoji} *${t.nome}*\n   📅 ${formatData(t.dataFim)} • ${t.materia}${t.bimestre?' • '+t.bimestre+'° BIM':''}\n\n`;
+    });
+    txt += '_Criado no Hub Brain — hubbrain.netlify.app_';
+    window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+};
