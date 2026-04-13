@@ -466,25 +466,59 @@ window.previewImg = function(input) {
 
 // COMPARTILHAR
 window.abrirCompartilhar = function() {
-    const arr = getTarefasFiltradas().filter(t=>!t.concluida).sort((a,b)=>new Date(a.dataFim)-new Date(b.dataFim)).slice(0,8);
+    // Inclui TODAS (pendentes + concluídas) respeitando filtros ativos
+    const arr = getTarefasFiltradas().sort((a,b) => {
+        if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
+        return new Date(a.dataFim) - new Date(b.dataFim);
+    }).slice(0,12);
+
     const hojeStr = getHojeLocal();
-    const bimLabel = filtroBimestre !== 'todos' ? BIMESTRES[filtroBimestre]?.label : 'Todas';
+    const bimLabel = filtroBimestre !== 'todos' ? BIMESTRES[filtroBimestre]?.label : '';
     const mLabel = filtroMateria !== 'todas' ? filtroMateria : '';
+    const titulo = [mLabel, bimLabel].filter(Boolean).join(' • ') || 'Agenda Completa';
 
-    let items = arr.map(t => {
-        const diff = Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00'))/86400000);
-        const cor = diff<=0 ? '#ff4444' : diff<=3 ? '#ff4444' : diff<=7 ? '#ffbb33' : '#00c851';
-        const tipo = TIPOS[t.tipo]||TIPOS.tarefa;
-        return `<div class="share-item"><div class="share-dot" style="background:${cor};box-shadow:0 0 5px ${cor};"></div><div class="share-nome">${tipo.emoji} ${t.nome}</div><div class="share-prazo">${formatData(t.dataFim)}</div></div>`;
-    }).join('');
+    const pendentes = arr.filter(t=>!t.concluida);
+    const concluidas = arr.filter(t=>t.concluida);
 
-    if (!items) items = '<p style="color:#333;text-align:center;padding:16px;font-size:12px;">Nenhuma atividade pendente 🎉</p>';
+    function buildItems(lista) {
+        return lista.map(t => {
+            const diff = Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00'))/86400000);
+            const cor = t.concluida ? '#00d2ff' : diff<=0 ? '#ff4444' : diff<=3 ? '#ff4444' : diff<=7 ? '#ffbb33' : '#00c851';
+            const tipo = TIPOS[t.tipo]||TIPOS.tarefa;
+            const bimStr = t.bimestre ? `<span style="font-size:9px;color:#333;margin-left:4px;">${t.bimestre}° BIM</span>` : '';
+            const prazoStr = t.concluida
+                ? `<span style="font-size:9px;color:#00d2ff;">✓ Concluída</span>`
+                : `<span style="font-size:9px;color:${cor};">📅 ${formatData(t.dataFim)}</span>`;
+            return `
+                <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <div style="width:7px;height:7px;border-radius:50%;background:${cor};box-shadow:0 0 5px ${cor};flex-shrink:0;margin-top:5px;"></div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:13px;font-weight:700;color:${t.concluida?'#555':'white'};text-decoration:${t.concluida?'line-through':'none'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tipo.emoji} ${t.nome}</div>
+                        <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">
+                            <span style="font-size:9px;color:#8a2be2;background:rgba(138,43,226,0.1);border:1px solid rgba(138,43,226,0.15);padding:1px 7px;border-radius:20px;">${t.materia||'Geral'}</span>
+                            ${bimStr}
+                            ${prazoStr}
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+    }
 
-    const titulo = [mLabel, bimLabel].filter(Boolean).join(' • ') || 'Agenda';
+    let html = '';
+    if (pendentes.length > 0) {
+        html += `<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#444;margin-bottom:6px;">PENDENTES (${pendentes.length})</div>`;
+        html += buildItems(pendentes);
+    }
+    if (concluidas.length > 0) {
+        html += `<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#444;margin:12px 0 6px;">CONCLUÍDAS (${concluidas.length})</div>`;
+        html += buildItems(concluidas);
+    }
+    if (!html) html = '<p style="color:#333;text-align:center;padding:16px;font-size:12px;">Nenhuma atividade 🎉</p>';
+
     document.getElementById('share-preview').innerHTML = `
-        <div style="font-size:15px;font-weight:900;color:white;margin-bottom:3px;">📚 Hub Brain</div>
+        <div style="font-size:15px;font-weight:900;color:white;margin-bottom:2px;">📚 Hub Brain</div>
         <div style="font-size:9px;color:#444;letter-spacing:2px;margin-bottom:14px;">${titulo.toUpperCase()}</div>
-        ${items}
+        ${html}
         <div style="text-align:center;margin-top:12px;font-size:9px;color:#222;letter-spacing:2px;">hubbrain.netlify.app</div>
     `;
     document.getElementById('modal-compartilhar').style.display='flex';
@@ -504,15 +538,45 @@ window.gerarImagem = async function() {
 };
 
 window.compartilharWpp = function() {
-    const arr = getTarefasFiltradas().filter(t=>!t.concluida).sort((a,b)=>new Date(a.dataFim)-new Date(b.dataFim));
-    const hojeStr = getHojeLocal();
-    let txt = '📚 *Minha Agenda - Hub Brain*\n\n';
-    arr.slice(0,10).forEach(t => {
-        const diff = Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00'))/86400000);
-        const emoji = diff<=0 ? '🔴' : diff<=3 ? '🟠' : diff<=7 ? '🟡' : '🟢';
-        const tipo = TIPOS[t.tipo]||TIPOS.tarefa;
-        txt += `${emoji} ${tipo.emoji} *${t.nome}*\n   📅 ${formatData(t.dataFim)} • ${t.materia}${t.bimestre?' • '+t.bimestre+'° BIM':''}\n\n`;
+    const arr = getTarefasFiltradas().sort((a,b) => {
+        if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
+        return new Date(a.dataFim) - new Date(b.dataFim);
     });
-    txt += '_Criado no Hub Brain — hubbrain.netlify.app_';
+    const hojeStr = getHojeLocal();
+    const bimLabel = filtroBimestre !== 'todos' ? BIMESTRES[filtroBimestre]?.label : '';
+    const mLabel = filtroMateria !== 'todas' ? filtroMateria : '';
+    const titulo = [mLabel, bimLabel].filter(Boolean).join(' • ') || 'Agenda';
+
+    let txt = `📚 *Hub Brain — ${titulo}*\n`;
+    txt += `━━━━━━━━━━━━━━━\n\n`;
+
+    const pendentes = arr.filter(t=>!t.concluida);
+    const concluidas = arr.filter(t=>t.concluida);
+
+    if (pendentes.length > 0) {
+        txt += `*📌 PENDENTES (${pendentes.length})*\n`;
+        pendentes.slice(0,10).forEach(t => {
+            const diff = Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00'))/86400000);
+            const urgEmoji = diff<=0 ? '🔴' : diff<=3 ? '🟠' : diff<=7 ? '🟡' : '🟢';
+            const tipo = TIPOS[t.tipo]||TIPOS.tarefa;
+            txt += `\n${urgEmoji} ${tipo.emoji} *${t.nome}*\n`;
+            txt += `   📚 ${t.materia||'Geral'}`;
+            if (t.bimestre) txt += ` • ${t.bimestre}° BIM`;
+            txt += `\n   📅 Prazo: ${formatData(t.dataFim)}\n`;
+        });
+    }
+
+    if (concluidas.length > 0) {
+        txt += `\n*✅ CONCLUÍDAS (${concluidas.length})*\n`;
+        concluidas.slice(0,6).forEach(t => {
+            const tipo = TIPOS[t.tipo]||TIPOS.tarefa;
+            txt += `\n✓ ~${tipo.emoji} ${t.nome}~\n`;
+            txt += `   📚 ${t.materia||'Geral'}`;
+            if (t.bimestre) txt += ` • ${t.bimestre}° BIM`;
+            txt += `\n`;
+        });
+    }
+
+    txt += `\n━━━━━━━━━━━━━━━\n_Hub Brain — hubbrain.netlify.app_`;
     window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 };
