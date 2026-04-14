@@ -344,12 +344,16 @@ window.carregarTarefas = function(filtroData) {
                             <span style="font-size:10px;color:#333;">Prazo: ${formatData(t.dataFim)}</span>
                         </div>
                     </div>
-                    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-                        <button onclick="alternarConcluida('${idFb}',${idLc})" style="background:rgba(138,43,226,0.1);border:1px solid rgba(138,43,226,0.2);color:#8a2be2;padding:8px;border-radius:10px;cursor:pointer;display:flex;align-items:center;">
-                            <i data-lucide="${t.concluida?'rotate-ccw':'check-circle'}" style="width:16px;height:16px;"></i>
+                    <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+                        ${!t.concluida ? `
+                        <button onclick="moverTarefa('${idFb}',${idLc},-1)" style="background:rgba(255,255,255,0.03);border:1px solid #111;color:#333;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12px;line-height:1;" title="Mover para cima">↑</button>
+                        <button onclick="moverTarefa('${idFb}',${idLc},1)" style="background:rgba(255,255,255,0.03);border:1px solid #111;color:#333;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12px;line-height:1;" title="Mover para baixo">↓</button>
+                        ` : ''}
+                        <button onclick="alternarConcluida('${idFb}',${idLc})" style="background:rgba(138,43,226,0.1);border:1px solid rgba(138,43,226,0.2);color:#8a2be2;padding:7px;border-radius:10px;cursor:pointer;display:flex;align-items:center;">
+                            <i data-lucide="${t.concluida?'rotate-ccw':'check-circle'}" style="width:15px;height:15px;"></i>
                         </button>
-                        <button onclick="removerTarefa('${idFb}',${idLc})" style="background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.15);color:#ff4444;padding:8px;border-radius:10px;cursor:pointer;display:flex;align-items:center;">
-                            <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
+                        <button onclick="removerTarefa('${idFb}',${idLc})" style="background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.15);color:#ff4444;padding:7px;border-radius:10px;cursor:pointer;display:flex;align-items:center;">
+                            <i data-lucide="trash-2" style="width:15px;height:15px;"></i>
                         </button>
                     </div>
                 </div>
@@ -401,14 +405,24 @@ window.adicionarTarefa = async function() {
 };
 
 // REMOVER
-window.removerTarefa = async function(idFb, idLc) {
-    if (!confirm('Deletar esta atividade?')) return;
+let _pendingDeleteFb = null, _pendingDeleteLc = null;
+window.removerTarefa = function(idFb, idLc) {
+    _pendingDeleteFb = idFb; _pendingDeleteLc = idLc;
+    document.getElementById('modal-confirm-del').style.display = 'flex';
+};
+window.confirmarDelete = async function() {
+    document.getElementById('modal-confirm-del').style.display = 'none';
+    const idFb = _pendingDeleteFb, idLc = _pendingDeleteLc;
     const t = agendaGlobal.find(x => userType==='local' ? x.criadoEm===idLc : x.id_firebase===idFb);
     if (t?.concluida) await atualizarXPRanking(-identificarXPTarefa(t));
     if (userType === 'local') {
         agendaGlobal = agendaGlobal.filter(x=>x.criadoEm!==idLc); localStorage.setItem('dt_agenda',JSON.stringify(agendaGlobal));
     } else { await deleteDoc(doc(db,'agenda',idFb)); }
     await window.buscarDadosNuvem();
+};
+window.cancelarDelete = function() {
+    document.getElementById('modal-confirm-del').style.display = 'none';
+    _pendingDeleteFb = null; _pendingDeleteLc = null;
 };
 
 // ALTERNAR CONCLUÍDA
@@ -465,17 +479,35 @@ window.previewImg = function(input) {
 };
 
 // COMPARTILHAR
-window.abrirCompartilhar = function() {
-    // Inclui TODAS (pendentes + concluídas) respeitando filtros ativos
-    const arr = getTarefasFiltradas().sort((a,b) => {
-        if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
-        return new Date(a.dataFim) - new Date(b.dataFim);
-    }).slice(0,12);
+let _shareShowConcluidas = false;
 
+window.abrirCompartilhar = function() {
+    _shareShowConcluidas = false;
+    _renderSharePreview();
+    document.getElementById('modal-compartilhar').style.display='flex';
+    if(window.lucide) lucide.createIcons();
+};
+
+window.toggleShareConcluidas = function() {
+    _shareShowConcluidas = !_shareShowConcluidas;
+    const btn = document.getElementById('btn-toggle-concluidas');
+    if (btn) btn.innerText = _shareShowConcluidas ? '👁 Ocultar concluídas' : '👁 Mostrar concluídas';
+    _renderSharePreview();
+};
+
+function _renderSharePreview() {
     const hojeStr = getHojeLocal();
     const bimLabel = filtroBimestre !== 'todos' ? BIMESTRES[filtroBimestre]?.label : '';
     const mLabel = filtroMateria !== 'todas' ? filtroMateria : '';
     const titulo = [mLabel, bimLabel].filter(Boolean).join(' • ') || 'Agenda Completa';
+
+    // Ordena por prioridade (campo ordem se tiver, senão por dataFim)
+    let arr = getTarefasFiltradas().sort((a,b) => {
+        const oA = a.ordem !== undefined ? a.ordem : 9999;
+        const oB = b.ordem !== undefined ? b.ordem : 9999;
+        if (oA !== oB) return oA - oB;
+        return new Date(a.dataFim) - new Date(b.dataFim);
+    });
 
     const pendentes = arr.filter(t=>!t.concluida);
     const concluidas = arr.filter(t=>t.concluida);
@@ -493,8 +525,9 @@ window.abrirCompartilhar = function() {
                 <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
                     <div style="width:7px;height:7px;border-radius:50%;background:${cor};box-shadow:0 0 5px ${cor};flex-shrink:0;margin-top:5px;"></div>
                     <div style="flex:1;min-width:0;">
-                        <div style="font-size:13px;font-weight:700;color:${t.concluida?'#555':'white'};text-decoration:${t.concluida?'line-through':'none'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tipo.emoji} ${t.nome}</div>
-                        <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">
+                        <div style="font-size:13px;font-weight:700;color:${t.concluida?'#555':'white'};text-decoration:${t.concluida?'line-through':'none'};">${tipo.emoji} ${t.nome}</div>
+                        ${t.descricao ? `<div style="font-size:11px;color:#555;margin-top:2px;line-height:1.4;">${t.descricao}</div>` : ''}
+                        <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
                             <span style="font-size:9px;color:#8a2be2;background:rgba(138,43,226,0.1);border:1px solid rgba(138,43,226,0.15);padding:1px 7px;border-radius:20px;">${t.materia||'Geral'}</span>
                             ${bimStr}
                             ${prazoStr}
@@ -509,9 +542,12 @@ window.abrirCompartilhar = function() {
         html += `<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#444;margin-bottom:6px;">PENDENTES (${pendentes.length})</div>`;
         html += buildItems(pendentes);
     }
-    if (concluidas.length > 0) {
+    if (_shareShowConcluidas && concluidas.length > 0) {
         html += `<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#444;margin:12px 0 6px;">CONCLUÍDAS (${concluidas.length})</div>`;
         html += buildItems(concluidas);
+    }
+    if (!html && !_shareShowConcluidas && concluidas.length > 0) {
+        html = '<p style="color:#555;text-align:center;padding:8px;font-size:12px;">Todas concluídas! 🎉</p>';
     }
     if (!html) html = '<p style="color:#333;text-align:center;padding:16px;font-size:12px;">Nenhuma atividade 🎉</p>';
 
@@ -521,9 +557,7 @@ window.abrirCompartilhar = function() {
         ${html}
         <div style="text-align:center;margin-top:12px;font-size:9px;color:#222;letter-spacing:2px;">hubbrain.netlify.app</div>
     `;
-    document.getElementById('modal-compartilhar').style.display='flex';
-    if(window.lucide) lucide.createIcons();
-};
+}
 
 window.fecharCompartilhar = function() { document.getElementById('modal-compartilhar').style.display='none'; };
 
@@ -540,6 +574,9 @@ window.gerarImagem = async function() {
 window.compartilharWpp = function() {
     const arr = getTarefasFiltradas().sort((a,b) => {
         if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
+        const oA = a.ordem !== undefined ? a.ordem : 9999;
+        const oB = b.ordem !== undefined ? b.ordem : 9999;
+        if (oA !== oB) return oA - oB;
         return new Date(a.dataFim) - new Date(b.dataFim);
     });
     const hojeStr = getHojeLocal();
@@ -579,4 +616,36 @@ window.compartilharWpp = function() {
 
     txt += `\n━━━━━━━━━━━━━━━\n_Hub Brain — hubbrain.netlify.app_`;
     window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+};
+
+// REORDENAÇÃO MANUAL
+window.moverTarefa = async function(idFb, idLc, direcao) {
+    // Pega lista filtrada atual (só pendentes, na ordem atual)
+    const lista = getTarefasFiltradas().filter(t=>!t.concluida).sort((a,b) => {
+        const oA = a.ordem !== undefined ? a.ordem : 9999;
+        const oB = b.ordem !== undefined ? b.ordem : 9999;
+        if (oA !== oB) return oA - oB;
+        return new Date(a.dataFim) - new Date(b.dataFim);
+    });
+    const idx = lista.findIndex(t => userType==='local' ? t.criadoEm===idLc : t.id_firebase===idFb);
+    if (idx === -1) return;
+    const newIdx = idx + direcao;
+    if (newIdx < 0 || newIdx >= lista.length) return;
+
+    // Troca as ordens
+    const a = lista[idx], b = lista[newIdx];
+    const oA = a.ordem !== undefined ? a.ordem : idx;
+    const oB = b.ordem !== undefined ? b.ordem : newIdx;
+    a.ordem = oB; b.ordem = oA;
+
+    if (userType !== 'local') {
+        try {
+            if (a.id_firebase) await updateDoc(doc(db,'agenda',a.id_firebase), { ordem: a.ordem });
+            if (b.id_firebase) await updateDoc(doc(db,'agenda',b.id_firebase), { ordem: b.ordem });
+        } catch(e) {}
+    } else {
+        localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
+    }
+    renderResumo();
+    window.carregarTarefas(dataSelecionada);
 };
