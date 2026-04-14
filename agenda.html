@@ -210,16 +210,34 @@
 
 <!-- MODAL COMPARTILHAR -->
 <div id="modal-compartilhar" class="modal">
-    <div class="modal-content glass" style="padding:20px;">
-        <h3 style="color:#8a2be2;margin-bottom:14px;font-size:15px;">Compartilhar Agenda</h3>
-        <div class="share-card" id="share-preview"></div>
-        <button class="btn-share-img" onclick="gerarImagem()">
-            <i data-lucide="image" style="width:16px;height:16px;"></i> SALVAR IMAGEM
-        </button>
-        <button class="btn-share-wpp" onclick="compartilharWpp()">
-            📱 WHATSAPP
-        </button>
-        <button class="btn-fechar-share" onclick="fecharCompartilhar()">FECHAR</button>
+    <div class="modal-content glass" style="padding:20px;max-height:90vh;display:flex;flex-direction:column;">
+        <h3 style="color:#8a2be2;margin-bottom:14px;font-size:15px;flex-shrink:0;">Compartilhar Agenda</h3>
+        <!-- PREVIEW COM SCROLL -->
+        <div class="share-card" id="share-preview" style="overflow-y:auto;max-height:45vh;flex-shrink:1;"></div>
+        <!-- BOTÕES FIXOS ABAIXO -->
+        <div style="flex-shrink:0;margin-top:12px;">
+            <button id="btn-toggle-concluidas" onclick="toggleShareConcluidas()" style="width:100%;padding:11px;background:rgba(0,210,255,0.08);border:1px solid rgba(0,210,255,0.2);color:#00d2ff;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:8px;font-family:inherit;">👁 Mostrar concluídas</button>
+            <button class="btn-share-img" onclick="gerarImagem()">
+                <i data-lucide="image" style="width:16px;height:16px;"></i> SALVAR IMAGEM
+            </button>
+            <button class="btn-share-wpp" onclick="compartilharWpp()">
+                📱 WHATSAPP
+            </button>
+            <button class="btn-fechar-share" onclick="fecharCompartilhar()">FECHAR</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMAR DELETE -->
+<div id="modal-confirm-del" class="modal" style="display:none;">
+    <div class="modal-content glass" style="max-width:300px;text-align:center;padding:28px 22px;">
+        <div style="font-size:36px;margin-bottom:12px;">🗑️</div>
+        <h3 style="color:white;font-size:16px;font-weight:900;margin-bottom:8px;">Deletar atividade?</h3>
+        <p style="color:#555;font-size:13px;margin-bottom:22px;line-height:1.5;">Essa ação não pode ser desfeita.</p>
+        <div style="display:flex;gap:10px;">
+            <button onclick="cancelarDelete()" style="flex:1;padding:13px;background:none;border:1px solid #222;color:#555;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;">CANCELAR</button>
+            <button onclick="confirmarDelete()" style="flex:1;padding:13px;background:rgba(255,68,68,0.15);border:1px solid rgba(255,68,68,0.3);color:#ff4444;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;">DELETAR</button>
+        </div>
     </div>
 </div>
 
