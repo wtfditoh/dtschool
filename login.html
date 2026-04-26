@@ -6,228 +6,117 @@
     <title>Hub Brain - Login</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="login.css">
-    <style>
-        /* MASCOTE */
-        .monster-wrap {
-            position: relative;
-            width: 100px;
-            height: 105px;
-            margin-bottom: -18px;
-            z-index: 10;
-            animation: monFloat 3s ease-in-out infinite;
-            filter: drop-shadow(0 6px 20px rgba(138,43,226,0.55));
-        }
-        .monster-wrap.shame { animation: none !important; }
-        .monster-wrap.angry {
-            animation: monShake 0.15s infinite !important;
-            filter: drop-shadow(0 6px 24px rgba(255,50,50,0.7)) !important;
-        }
-        .monster-wrap.happy {
-            animation: monJump 0.55s ease !important;
-            filter: drop-shadow(0 6px 24px rgba(0,229,160,0.5)) !important;
-        }
-        @keyframes monFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-7px);} }
-        @keyframes monShake { 0%,100%{transform:translateX(0) rotate(0);} 25%{transform:translateX(-7px) rotate(-4deg);} 75%{transform:translateX(7px) rotate(4deg);} }
-        @keyframes monJump { 0%{transform:translateY(0) scale(1);} 35%{transform:translateY(-18px) scale(1.06);} 65%{transform:translateY(-8px) scale(1.02);} 100%{transform:translateY(0) scale(1);} }
-
-        /* MÃOS */
-        .mon-hand {
-            position: absolute;
-            width: 34px; height: 34px;
-            top: 48px;
-            opacity: 0;
-            transform: translateY(28px);
-            transition: all 0.45s cubic-bezier(0.34,1.56,0.64,1);
-            z-index: 20;
-        }
-        .mon-hand.left { left: -10px; }
-        .mon-hand.right { right: -10px; }
-        .monster-wrap.shame .mon-hand { opacity: 1; transform: translateY(-14px); }
-
-        /* OLHOS SOMEM NO SHAME */
-        .monster-wrap svg #eyes { transition: opacity 0.25s; }
-        .monster-wrap.shame svg #eyes { opacity: 0; }
-    </style>
 </head>
 <body>
-<div class="wrapper">
-
-    <!-- MASCOTE MELHORADO -->
-    <div class="monster-wrap" id="mascote">
-        <!-- MÃOS SVG -->
-        <svg class="mon-hand left" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
-            <defs><radialGradient id="hg1" cx="40%" cy="35%" r="65%"><stop offset="0%" stop-color="#b060ff"/><stop offset="100%" stop-color="#6010c0"/></radialGradient></defs>
-            <circle fill="url(#hg1)" cx="17" cy="17" r="15" stroke="#3a0880" stroke-width="2"/>
-            <circle fill="rgba(255,255,255,0.12)" cx="11" cy="11" r="5"/>
-            <circle fill="rgba(255,255,255,0.06)" cx="22" cy="9" r="3"/>
-        </svg>
-        <svg class="mon-hand right" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
-            <defs><radialGradient id="hg2" cx="40%" cy="35%" r="65%"><stop offset="0%" stop-color="#b060ff"/><stop offset="100%" stop-color="#6010c0"/></radialGradient></defs>
-            <circle fill="url(#hg2)" cx="17" cy="17" r="15" stroke="#3a0880" stroke-width="2"/>
-            <circle fill="rgba(255,255,255,0.12)" cx="11" cy="11" r="5"/>
-            <circle fill="rgba(255,255,255,0.06)" cx="22" cy="9" r="3"/>
-        </svg>
-
-        <!-- CORPO PRINCIPAL -->
-        <svg viewBox="0 0 100 105" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
-            <defs>
-                <radialGradient id="bodyG" cx="40%" cy="30%" r="70%">
-                    <stop offset="0%" stop-color="#a040f8"/>
-                    <stop offset="60%" stop-color="#7a20d8"/>
-                    <stop offset="100%" stop-color="#3d0880"/>
-                </radialGradient>
-                <radialGradient id="hornG" cx="40%" cy="30%" r="70%">
-                    <stop offset="0%" stop-color="#b858ff"/>
-                    <stop offset="100%" stop-color="#5a10b0"/>
-                </radialGradient>
-                <radialGradient id="eyeWhiteG" cx="38%" cy="32%" r="65%">
-                    <stop offset="0%" stop-color="#ffffff"/>
-                    <stop offset="100%" stop-color="#ddd0ff"/>
-                </radialGradient>
-                <radialGradient id="irisG" cx="38%" cy="32%" r="65%">
-                    <stop offset="0%" stop-color="#8030e0"/>
-                    <stop offset="100%" stop-color="#3a0890"/>
-                </radialGradient>
-                <filter id="bodyShadow">
-                    <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.45"/>
-                </filter>
-                <filter id="glowF">
-                    <feGaussianBlur stdDeviation="3" result="b"/>
-                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-            </defs>
-
-            <!-- CHIFRE ESQUERDO -->
-            <ellipse fill="url(#hornG)" cx="28" cy="16" rx="9" ry="16" transform="rotate(-22 28 16)"/>
-            <ellipse fill="rgba(255,255,255,0.15)" cx="25" cy="10" rx="3.5" ry="7" transform="rotate(-22 25 10)"/>
-            <ellipse fill="#2a0858" cx="28" cy="16" rx="5" ry="10" transform="rotate(-22 28 16)"/>
-            <ellipse fill="rgba(138,43,226,0.3)" cx="26" cy="12" rx="2" ry="5" transform="rotate(-22 26 12)"/>
-
-            <!-- CHIFRE DIREITO -->
-            <ellipse fill="url(#hornG)" cx="72" cy="16" rx="9" ry="16" transform="rotate(22 72 16)"/>
-            <ellipse fill="rgba(255,255,255,0.15)" cx="75" cy="10" rx="3.5" ry="7" transform="rotate(22 75 10)"/>
-            <ellipse fill="#2a0858" cx="72" cy="16" rx="5" ry="10" transform="rotate(22 72 16)"/>
-            <ellipse fill="rgba(138,43,226,0.3)" cx="74" cy="12" rx="2" ry="5" transform="rotate(22 74 12)"/>
-
-            <!-- CORPO -->
-            <rect fill="url(#bodyG)" x="8" y="20" width="84" height="78" rx="24" filter="url(#bodyShadow)"/>
-
-            <!-- BORDA BRILHANTE TOPO -->
-            <rect fill="none" stroke="rgba(200,150,255,0.25)" stroke-width="1.5" x="8" y="20" width="84" height="78" rx="24"/>
-
-            <!-- BRILHO CANTO SUPERIOR -->
-            <ellipse fill="white" opacity="0.09" cx="30" cy="33" rx="20" ry="10" transform="rotate(-10 30 33)"/>
-
-            <!-- PAINEL ESCURO INTERNO -->
-            <rect fill="#0e0520" x="18" y="30" width="64" height="58" rx="18" opacity="0.85"/>
-            <rect fill="none" stroke="rgba(100,30,200,0.3)" stroke-width="1" x="18" y="30" width="64" height="58" rx="18"/>
-
-            <!-- DETALHE CIRCUITO TOPO DO PAINEL -->
-            <path fill="none" stroke="rgba(138,43,226,0.25)" stroke-width="1" stroke-linecap="round"
-                  d="M 28 38 L 34 38 M 38 38 L 44 38 M 56 38 L 62 38 M 66 38 L 72 38"/>
-            <circle fill="rgba(138,43,226,0.4)" cx="36" cy="38" r="1.5"/>
-            <circle fill="rgba(138,43,226,0.4)" cx="64" cy="38" r="1.5"/>
-
+<div class="login-wrapper">
+    
+    <!-- MASCOTE 3D BRAIN -->
+    <div class="brain-mascot" id="mascote">
+        <div class="brain-orb">
+            <div class="orb-inner">
+                <div class="orb-glow"></div>
+                <div class="orb-core">
+                    <i data-lucide="brain-circuit" class="brain-icon"></i>
+                </div>
+                <div class="orb-ring ring-1"></div>
+                <div class="orb-ring ring-2"></div>
+                <div class="orb-ring ring-3"></div>
+            </div>
+            
             <!-- OLHOS -->
-            <g id="eyes">
-                <!-- Olho esquerdo - aro externo dark -->
-                <circle fill="#080215" cx="36" cy="60" r="13"/>
-                <circle fill="none" stroke="rgba(138,43,226,0.5)" stroke-width="1.5" cx="36" cy="60" r="13"/>
-                <!-- Branco do olho -->
-                <circle fill="url(#eyeWhiteG)" cx="36" cy="60" r="9.5"/>
-                <!-- Íris -->
-                <circle fill="url(#irisG)" cx="36" cy="60" r="6"/>
-                <!-- Pupila -->
-                <circle id="pupil-l" fill="#05010e" cx="36" cy="60" r="3.5"/>
-                <!-- Brilhos -->
-                <circle fill="white" cx="38.5" cy="57.5" r="2" opacity="0.95"/>
-                <circle fill="white" cx="34.5" cy="63" r="1" opacity="0.5"/>
-                <!-- Glow íris -->
-                <circle fill="none" stroke="rgba(160,80,255,0.3)" stroke-width="1" cx="36" cy="60" r="7"/>
-
-                <!-- Olho direito - aro externo dark -->
-                <circle fill="#080215" cx="64" cy="60" r="13"/>
-                <circle fill="none" stroke="rgba(138,43,226,0.5)" stroke-width="1.5" cx="64" cy="60" r="13"/>
-                <!-- Branco do olho -->
-                <circle fill="url(#eyeWhiteG)" cx="64" cy="60" r="9.5"/>
-                <!-- Íris -->
-                <circle fill="url(#irisG)" cx="64" cy="60" r="6"/>
-                <!-- Pupila -->
-                <circle id="pupil-r" fill="#05010e" cx="64" cy="60" r="3.5"/>
-                <!-- Brilhos -->
-                <circle fill="white" cx="66.5" cy="57.5" r="2" opacity="0.95"/>
-                <circle fill="white" cx="62.5" cy="63" r="1" opacity="0.5"/>
-                <!-- Glow íris -->
-                <circle fill="none" stroke="rgba(160,80,255,0.3)" stroke-width="1" cx="64" cy="60" r="7"/>
-            </g>
-
-            <!-- SOBRANCELHAS -->
-            <path id="brow-l" fill="none" stroke="#8a2be2" stroke-width="2.5" stroke-linecap="round" d="M 25 48 Q 32 43 41 47"/>
-            <path id="brow-r" fill="none" stroke="#8a2be2" stroke-width="2.5" stroke-linecap="round" d="M 59 47 Q 68 43 75 48"/>
-
-            <!-- NARIZ -->
-            <ellipse fill="#4a10a0" cx="50" cy="72" rx="4.5" ry="3"/>
-            <ellipse fill="#7a30d0" cx="50" cy="71.5" rx="2.5" ry="1.8"/>
-
-            <!-- BOCA -->
-            <path id="boca" fill="none" stroke="#8a2be2" stroke-width="2.3" stroke-linecap="round" d="M 40 80 Q 50 88 60 80"/>
-
-            <!-- SOMBRA BASE -->
-            <ellipse fill="#1a0030" opacity="0.25" cx="50" cy="100" rx="36" ry="5"/>
-
-            <!-- DETALHE LATERAL ESQUERDO -->
-            <circle fill="rgba(138,43,226,0.15)" cx="12" cy="60" r="6"/>
-            <circle fill="rgba(138,43,226,0.08)" cx="12" cy="60" r="3"/>
-            <!-- DETALHE LATERAL DIREITO -->
-            <circle fill="rgba(138,43,226,0.15)" cx="88" cy="60" r="6"/>
-            <circle fill="rgba(138,43,226,0.08)" cx="88" cy="60" r="3"/>
-        </svg>
+            <div class="eyes-container">
+                <div class="eye left-eye">
+                    <div class="pupil" id="pupil-left"></div>
+                    <div class="shine"></div>
+                </div>
+                <div class="eye right-eye">
+                    <div class="pupil" id="pupil-right"></div>
+                    <div class="shine"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PARTÍCULAS FLUTUANTES -->
+        <div class="particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
     </div>
 
-    <!-- CARD -->
+    <!-- CARD LOGIN -->
     <div class="login-card" id="login-card">
-        <div class="logo-area">
-            <i data-lucide="brain-circuit" class="logo-icon"></i>
-            <h2>HUB <span>BRAIN</span></h2>
-            <p>DOMINE SUA ROTINA</p>
+        <div class="card-glow"></div>
+        
+        <div class="logo-section">
+            <h1>HUB <span>BRAIN</span></h1>
+            <p>Domine sua rotina de estudos</p>
         </div>
 
-        <div class="input-group">
-            <input type="email" id="user-email" placeholder="E-mail de estudante" class="input-ia" autocomplete="email">
-            <i data-lucide="mail" class="input-icon"></i>
+        <div class="input-field">
+            <div class="input-icon">
+                <i data-lucide="mail"></i>
+            </div>
+            <input 
+                type="email" 
+                id="user-email" 
+                placeholder="Seu e-mail" 
+                autocomplete="email"
+                spellcheck="false"
+            >
         </div>
 
-        <div class="input-group">
-            <input type="password" id="user-pass" placeholder="Sua senha" class="input-ia" autocomplete="current-password">
-            <i data-lucide="lock" class="input-icon"></i>
-            <button type="button" class="toggle-pass" onclick="toggleSenha()">
+        <div class="input-field">
+            <div class="input-icon">
+                <i data-lucide="lock"></i>
+            </div>
+            <input 
+                type="password" 
+                id="user-pass" 
+                placeholder="Sua senha" 
+                autocomplete="current-password"
+            >
+            <button type="button" class="toggle-password" onclick="toggleSenha()">
                 <i data-lucide="eye" id="eye-icon"></i>
             </button>
         </div>
 
-        <div class="extras-row">
-            <div class="keep-row">
+        <div class="options-row">
+            <label class="checkbox-wrapper">
                 <input type="checkbox" id="manter-conectado" checked>
-                <label for="manter-conectado">Manter conectado</label>
-            </div>
-            <a href="#" class="esqueci-link" onclick="window.recuperarSenha(event)">Esqueci a senha</a>
+                <span class="checkmark"></span>
+                <span class="label-text">Manter conectado</span>
+            </label>
+            <a href="#" class="forgot-link" onclick="window.recuperarSenha(event)">Esqueci a senha</a>
         </div>
 
-        <div id="login-status" class="status-msg"></div>
+        <div id="login-status" class="status-message"></div>
 
-        <button onclick="tentarLogar(event)" class="btn-acessar">
-            <span>Acessar minha conta</span>
+        <button class="btn-primary" onclick="tentarLogar(event)">
+            <span>Entrar</span>
             <i data-lucide="arrow-right"></i>
         </button>
 
-        <div class="footer-links">
-            <a href="cadastro.html" class="create-acc">Não tem conta? Criar agora</a>
-            <button type="button" onclick="entrarComoVisitante()" class="btn-visitante">Continuar como Visitante</button>
-            <div class="policy-footer">
-                <a href="privacidade.html">Política de Privacidade & Termos de Uso</a>
-            </div>
+        <div class="divider">
+            <span>ou</span>
+        </div>
+
+        <div class="footer-actions">
+            <a href="cadastro.html" class="link-secondary">Não tem conta? <strong>Criar agora</strong></a>
+            <button class="btn-ghost" onclick="entrarComoVisitante()">
+                <i data-lucide="eye"></i>
+                <span>Continuar como Visitante</span>
+            </button>
+        </div>
+
+        <div class="policy-links">
+            <a href="privacidade.html">Privacidade</a>
+            <span>·</span>
+            <a href="termos.html">Termos</a>
         </div>
     </div>
 </div>
@@ -240,70 +129,77 @@
     const inputEmail = document.getElementById('user-email');
     const inputPass = document.getElementById('user-pass');
     const card = document.getElementById('login-card');
-    const pupilL = document.getElementById('pupil-l');
-    const pupilR = document.getElementById('pupil-r');
-    const boca = document.getElementById('boca');
-    const browL = document.getElementById('brow-l');
-    const browR = document.getElementById('brow-r');
+    const pupilL = document.getElementById('pupil-left');
+    const pupilR = document.getElementById('pupil-right');
 
-    function moverOlhos(cx, cy) {
-        if (!mascote || mascote.classList.contains('shame') || mascote.classList.contains('angry')) return;
+    // ── MOVIMENTO DOS OLHOS ─────────────────────────────────────────
+    function moverOlhos(x, y) {
+        if (!mascote || mascote.classList.contains('hide-eyes')) return;
         const rect = mascote.getBoundingClientRect();
-        const dx = Math.max(-3.5, Math.min(3.5, (cx - (rect.left + rect.width/2)) / window.innerWidth * 20));
-        const dy = Math.max(-3.5, Math.min(3.5, (cy - (rect.top + rect.height/2)) / window.innerHeight * 20));
-        if (pupilL) pupilL.style.transform = `translate(${dx}px,${dy}px)`;
-        if (pupilR) pupilR.style.transform = `translate(${dx}px,${dy}px)`;
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        const deltaX = x - centerX;
+        const deltaY = y - centerY;
+        const angle = Math.atan2(deltaY, deltaX);
+        const distance = Math.min(3, Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 30);
+        
+        const moveX = Math.cos(angle) * distance;
+        const moveY = Math.sin(angle) * distance;
+        
+        if (pupilL) pupilL.style.transform = `translate(${moveX}px, ${moveY}px)`;
+        if (pupilR) pupilR.style.transform = `translate(${moveX}px, ${moveY}px)`;
     }
 
     document.addEventListener('mousemove', e => moverOlhos(e.clientX, e.clientY));
-    document.addEventListener('touchmove', e => moverOlhos(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    document.addEventListener('touchmove', e => {
+        if (e.touches[0]) moverOlhos(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
 
+    // ── ESTADOS DO MASCOTE ─────────────────────────────────────────
     inputEmail && inputEmail.addEventListener('focus', () => {
-        mascote.classList.remove('shame','angry','happy');
-        if (pupilL) pupilL.style.transform = 'translate(0,3.5px)';
-        if (pupilR) pupilR.style.transform = 'translate(0,3.5px)';
-        if (boca) boca.setAttribute('d','M 40 80 Q 50 88 60 80');
+        mascote.classList.remove('hide-eyes', 'error', 'success');
+        if (pupilL) pupilL.style.transform = 'translate(0, 4px)';
+        if (pupilR) pupilR.style.transform = 'translate(0, 4px)';
     });
+
     inputEmail && inputEmail.addEventListener('blur', () => {
-        if (pupilL) pupilL.style.transform = 'translate(0,0)';
-        if (pupilR) pupilR.style.transform = 'translate(0,0)';
+        if (pupilL) pupilL.style.transform = 'translate(0, 0)';
+        if (pupilR) pupilR.style.transform = 'translate(0, 0)';
     });
 
     inputPass && inputPass.addEventListener('focus', () => {
-        mascote.classList.add('shame');
-        mascote.classList.remove('angry','happy');
+        mascote.classList.add('hide-eyes');
+        mascote.classList.remove('error', 'success');
     });
-    inputPass && inputPass.addEventListener('blur', () => mascote.classList.remove('shame'));
 
+    inputPass && inputPass.addEventListener('blur', () => {
+        mascote.classList.remove('hide-eyes');
+    });
+
+    // ── TOGGLE SENHA ────────────────────────────────────────────────
     window.toggleSenha = function() {
-        const t = inputPass.type === 'password' ? 'text' : 'password';
-        inputPass.type = t;
-        document.getElementById('eye-icon').setAttribute('data-lucide', t === 'password' ? 'eye' : 'eye-off');
+        const type = inputPass.type === 'password' ? 'text' : 'password';
+        inputPass.type = type;
+        const icon = document.getElementById('eye-icon');
+        icon.setAttribute('data-lucide', type === 'password' ? 'eye' : 'eye-off');
         lucide.createIcons();
     };
 
+    // ── ANIMAÇÕES DE FEEDBACK ───────────────────────────────────────
     window.yetiErro = function() {
-        mascote.classList.add('angry');
-        mascote.classList.remove('shame','happy');
-        if (boca) boca.setAttribute('d','M 40 84 Q 50 77 60 84');
-        if (browL) browL.setAttribute('d','M 25 50 Q 32 45 41 49');
-        if (browR) browR.setAttribute('d','M 59 49 Q 68 45 75 50');
-        if (card) card.classList.add('shake-error');
+        mascote.classList.add('error');
+        mascote.classList.remove('success', 'hide-eyes');
+        card.classList.add('shake-error');
         setTimeout(() => {
-            mascote.classList.remove('angry');
-            if (card) card.classList.remove('shake-error');
-            if (boca) boca.setAttribute('d','M 40 80 Q 50 88 60 80');
-            if (browL) browL.setAttribute('d','M 25 48 Q 32 43 41 47');
-            if (browR) browR.setAttribute('d','M 59 47 Q 68 43 75 48');
-        }, 1600);
+            mascote.classList.remove('error');
+            card.classList.remove('shake-error');
+        }, 1500);
     };
 
     window.yetiSucesso = function() {
-        mascote.classList.add('happy');
-        mascote.classList.remove('shame','angry');
-        if (boca) boca.setAttribute('d','M 36 79 Q 50 92 64 79');
-        if (browL) browL.setAttribute('d','M 25 46 Q 32 41 41 45');
-        if (browR) browR.setAttribute('d','M 59 45 Q 68 41 75 46');
+        mascote.classList.add('success');
+        mascote.classList.remove('error', 'hide-eyes');
     };
 
     window.recuperarSenha = function(e) {
