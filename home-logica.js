@@ -1,12 +1,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, onSnapshot, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
     authDomain: "dt-scho0l.firebaseapp.com",
     projectId: "dt-scho0l",
     storageBucket: "dt-scho0l.firebasestorage.app",
-    messagingSenderId: "78578509391",
+    messagingSenderId: "78578509371",
     appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
 };
 
@@ -15,6 +15,7 @@ const db = getFirestore(app);
 
 const emailMestre = "ditoh2008@gmail.com";
 const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
+const userType    = localStorage.getItem('dt_user_type');
 
 // ==========================================
 // WIDGET DE MOTIVAÇÃO INTELIGENTE
@@ -26,15 +27,12 @@ function gerarFraseInteligente(ctx) {
     const metaBatida = ctx.pctMeta >= 100;
     const quaseNaMeta = ctx.pctMeta >= 70 && ctx.pctMeta < 100;
     const semEstudo = ctx.estudadoHoje === 0;
-    const temTarefas = ctx.tarefasPendentes > 0;
     const streak = ctx.streak;
     const rank = ctx.rankPos;
     const xp = ctx.xp;
 
-    // Banco de frases por contexto — curtas e sem caps
     const frases = [];
 
-    // META BATIDA
     if (metaBatida) {
         frases.push(...[
             `🎯 Meta batida, ${nome}!`,
@@ -42,20 +40,14 @@ function gerarFraseInteligente(ctx) {
             `🏆 Missão cumprida, ${nome}!`,
             `⚡ Meta no bolso, ${nome}!`,
         ]);
-    }
-
-    // QUASE NA META
-    else if (quaseNaMeta && temMeta) {
+    } else if (quaseNaMeta && temMeta) {
         const faltaStr = formatarTempo(ctx.metaMin - ctx.estudadoHoje);
         frases.push(...[
             `💪 Faltam ${faltaStr} pra meta, ${nome}!`,
             `⚡ Reta final, ${nome}! Só ${faltaStr}.`,
             `🎯 Quase lá, ${nome}!`,
         ]);
-    }
-
-    // SEM ESTUDO + TEM META
-    else if (semEstudo && temMeta && hora >= 12) {
+    } else if (semEstudo && temMeta && hora >= 12) {
         frases.push(...[
             `😴 Meta zerada ainda, ${nome}.`,
             `⏰ Bora começar, ${nome}?`,
@@ -63,62 +55,33 @@ function gerarFraseInteligente(ctx) {
         ]);
     }
 
-    // STREAK
     if (streak >= 7) {
-        frases.push(...[
-            `🔥 ${streak} dias seguidos, ${nome}!`,
-            `⚡ ${nome}, você tá em chamas!`,
-        ]);
+        frases.push(...[`🔥 ${streak} dias seguidos, ${nome}!`, `⚡ ${nome}, você tá em chamas!`]);
     } else if (streak >= 3) {
         frases.push(`🔥 ${streak} dias seguidos, ${nome}!`);
     }
 
-    // RANKING
     if (rank === 1) {
-        frases.push(...[
-            `👑 Líder do ranking, ${nome}!`,
-            `🏆 ${nome}, defende o trono!`,
-        ]);
+        frases.push(...[`👑 Líder do ranking, ${nome}!`, `🏆 ${nome}, defende o trono!`]);
     } else if (rank <= 3) {
         frases.push(`🥇 Top 3, ${nome}! Bora pro 1º!`);
     } else if (rank <= 10) {
         frases.push(`📈 Top 10, ${nome}!`);
     }
 
-    // XP MILESTONES
-    if (xp >= 1000 && xp < 1100) {
-        frases.push(`🎉 Passou de 1000 XP, ${nome}!`);
-    } else if (xp >= 500 && xp < 600) {
-        frases.push(`⚡ Quase Veterano, ${nome}!`);
-    }
+    if (xp >= 1000 && xp < 1100) frases.push(`🎉 Passou de 1000 XP, ${nome}!`);
+    else if (xp >= 500 && xp < 600) frases.push(`⚡ Quase Veterano, ${nome}!`);
 
-    // HORÁRIO DO DIA (fallback)
     if (hora >= 5 && hora < 12) {
-        frases.push(...[
-            `🌅 Bom dia, ${nome}!`,
-            `☀️ Manhã sua, ${nome}. Aproveita!`,
-            `🧠 Cérebro fresco, ${nome}. Bora!`,
-        ]);
+        frases.push(...[`🌅 Bom dia, ${nome}!`, `☀️ Manhã sua, ${nome}. Aproveita!`, `🧠 Cérebro fresco, ${nome}. Bora!`]);
     } else if (hora >= 12 && hora < 18) {
-        frases.push(...[
-            `⚡ Boa tarde, ${nome}!`,
-            `📚 Foco total, ${nome}!`,
-            `🎯 A tarde é sua, ${nome}!`,
-        ]);
+        frases.push(...[`⚡ Boa tarde, ${nome}!`, `📚 Foco total, ${nome}!`, `🎯 A tarde é sua, ${nome}!`]);
     } else if (hora >= 18 && hora < 23) {
-        frases.push(...[
-            `🌙 Boa noite, ${nome}!`,
-            `🔥 Fecha o dia forte, ${nome}!`,
-            `⭐ Ainda dá tempo, ${nome}!`,
-        ]);
+        frases.push(...[`🌙 Boa noite, ${nome}!`, `🔥 Fecha o dia forte, ${nome}!`, `⭐ Ainda dá tempo, ${nome}!`]);
     } else {
-        frases.push(...[
-            `🦉 Madrugada, ${nome}? Nível elite!`,
-            `🌙 ${nome}, dedicação total!`,
-        ]);
+        frases.push(...[`🦉 Madrugada, ${nome}? Nível elite!`, `🌙 ${nome}, dedicação total!`]);
     }
 
-    // Escolhe uma frase aleatória do banco gerado
     return frases[Math.floor(Math.random() * frases.length)];
 }
 
@@ -129,20 +92,116 @@ const formatarTempo = (min) => {
     return m > 0 ? h + 'h ' + m + 'min' : h + 'h';
 };
 
+// ==========================================
+// PERÍODO DO DIA
+// ==========================================
+function getPeriodoDia() {
+    const h = new Date().getHours();
+    if (h < 12) return '☀️ BOM DIA';
+    if (h < 18) return '🌤️ BOA TARDE';
+    return '🌙 BOA NOITE';
+}
+
+// ==========================================
+// STATS DOS CARDS NOVOS
+// Recebe xp e estudadoHoje já buscados do Firebase
+// e busca tarefas e notas separadamente
+// ==========================================
+async function carregarStatsCards(xp, estudadoHoje) {
+    // Card foco
+    const statFoco = document.getElementById('stat-foco');
+    if (statFoco) {
+        const min = estudadoHoje || 0;
+        if (min === 0) statFoco.textContent = '0m';
+        else if (min < 60) statFoco.textContent = min + 'm';
+        else {
+            const h = Math.floor(min / 60), m = min % 60;
+            statFoco.textContent = m > 0 ? h + 'h' + m + 'm' : h + 'h';
+        }
+    }
+
+    // Card XP
+    const statXp = document.getElementById('stat-xp');
+    if (statXp) statXp.textContent = xp || 0;
+
+    // Card tarefas pendentes — busca no Firebase igual ao agenda-logica.js
+    const statTarefas = document.getElementById('stat-tarefas');
+    if (statTarefas) {
+        let pendentes = 0;
+        if (userType === 'local') {
+            const local = JSON.parse(localStorage.getItem('dt_agenda') || '[]');
+            pendentes = local.filter(t => !t.concluida).length;
+        } else if (emailLogado) {
+            try {
+                const q = query(
+                    collection(db, 'agenda'),
+                    where('usuario', '==', emailLogado),
+                    where('concluida', '==', false)
+                );
+                pendentes = (await getDocs(q)).size;
+            } catch {
+                // Firestore pode não ter índice composto ainda — fallback
+                try {
+                    const q2 = query(collection(db, 'agenda'), where('usuario', '==', emailLogado));
+                    const snap2 = await getDocs(q2);
+                    pendentes = snap2.docs.filter(d => !d.data().concluida).length;
+                } catch (e2) { console.error('Tarefas fallback:', e2); }
+            }
+        }
+        statTarefas.textContent = pendentes;
+    }
+
+    // Card notas — usa a mesma chave do localStorage que o notas-logica.js usa
+    // Se sua chave for diferente, troca aqui
+    const statNotas = document.getElementById('stat-notas');
+    if (statNotas) {
+        const notas = JSON.parse(
+            localStorage.getItem('dt_notas') ||
+            localStorage.getItem('dt_caderno') ||
+            '[]'
+        );
+        statNotas.textContent = notas.length;
+    }
+}
+
+// ==========================================
+// MAIN
+// ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Interface básica
     const nome = localStorage.getItem('dt_user_name') || "ESTUDANTE";
+
     const nomeDisplay = document.getElementById('user-display-name');
     if (nomeDisplay) nomeDisplay.innerText = nome.split(' ')[0].toUpperCase();
 
-    const dataEl = document.getElementById('current-date');
-    if (dataEl) dataEl.innerText = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
+    // Período do dia (novo card de saudação)
+    const periodoEl = document.getElementById('periodo-dia');
+    if (periodoEl) periodoEl.innerText = getPeriodoDia();
 
-    // Frase simples enquanto carrega os dados
+    const dataEl = document.getElementById('current-date');
+    if (dataEl) dataEl.innerText = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
     const fraseEl = document.getElementById('frase-ia');
     if (fraseEl) fraseEl.innerText = '...';
 
-    // 2. Status de Manutenção
+    // Dica do dia (novo card)
+    const dicas = [
+        "Use a técnica Pomodoro: 25min de foco, 5min de pausa.",
+        "Revise suas anotações antes de dormir.",
+        "Divida tarefas grandes em etapas menores.",
+        "Hidratação melhora concentração.",
+        "Música instrumental pode aumentar o foco.",
+        "Ensinar algo é a forma mais rápida de fixar conteúdo.",
+        "Defina sua meta antes de abrir redes sociais.",
+        "Pausas ativas de 5min recarregam o cérebro.",
+        "Comece sempre pela tarefa mais difícil.",
+        "Anote tudo na Agenda para não perder prazos.",
+        "Use o Modo Foco para sessões sem distrações.",
+        "Revise o horário semanal toda segunda de manhã.",
+    ];
+    const tipEl = document.getElementById('tip-text');
+    if (tipEl) tipEl.textContent = dicas[new Date().getDate() % dicas.length];
+
+    // ── Status de Manutenção ─────────────────────────────────────────────────
     onSnapshot(doc(db, "config", "status_sistema"), (s) => {
         if (s.exists()) {
             const d = s.data();
@@ -151,22 +210,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 3. Busca de dados do usuário
+    // ── Dados do usuário no Firebase ─────────────────────────────────────────
+    let xpUsuario    = 0;
+    let estudadoHoje = 0;
+
     if (emailLogado) {
         try {
             const userSnap = await getDoc(doc(db, "notas", emailLogado));
             if (userSnap.exists()) {
                 const dados = userSnap.data();
-                const xp = dados.xp || 0;
+                xpUsuario = dados.xp || 0;
 
-                // XP display
                 const xpDisplay = document.getElementById('xp-display');
-                if (xpDisplay) xpDisplay.innerText = `+${xp} XP`;
+                if (xpDisplay) xpDisplay.innerText = `+${xpUsuario} XP`;
 
-                // Dados pra frase inteligente
                 const historico = dados.historico_foco || [];
                 const hoje = new Date().toISOString().split('T')[0];
-                const estudadoHoje = historico.filter(s => s.data === hoje).reduce((a, s) => a + s.minutos, 0);
+                estudadoHoje = historico.filter(s => s.data === hoje).reduce((a, s) => a + s.minutos, 0);
+
                 const metaMin = dados.meta_minutos || 0;
                 const pctMeta = metaMin > 0 ? Math.min(Math.round((estudadoHoje / metaMin) * 100), 100) : 0;
 
@@ -179,7 +240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     else break;
                 }
 
-                // Rank (busca posição no ranking)
+                // Rank
                 let rankPos = 999;
                 try {
                     const rankSnap = await getDocs(collection(db, "notas"));
@@ -188,16 +249,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     todos.sort((a, b) => b.xp - a.xp);
                     const pos = todos.findIndex(u => u.id === emailLogado);
                     if (pos !== -1) rankPos = pos + 1;
-                } catch(e) {}
+                } catch (e) {}
 
-                // Tarefas pendentes hoje (aproximação local)
-                const tarefasPendentes = 0; // sem busca extra pro Firestore
-
-                // Gera frase inteligente com contexto completo
                 if (fraseEl) {
                     fraseEl.innerText = gerarFraseInteligente({
                         nome, metaMin, estudadoHoje, pctMeta,
-                        streak, rankPos, xp, tarefasPendentes
+                        streak, rankPos, xp: xpUsuario, tarefasPendentes: 0
                     });
                 }
 
@@ -228,8 +285,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (shareBtn) shareBtn.style.display = 'none';
                     }
                 }
+
             } else {
-                // Sem dados — frase genérica por horário
                 if (fraseEl) fraseEl.innerText = gerarFraseInteligente({ nome, metaMin: 0, estudadoHoje: 0, pctMeta: 0, streak: 0, rankPos: 999, xp: 0, tarefasPendentes: 0 });
             }
         } catch (e) {
@@ -237,15 +294,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (fraseEl) fraseEl.innerText = gerarFraseInteligente({ nome, metaMin: 0, estudadoHoje: 0, pctMeta: 0, streak: 0, rankPos: 999, xp: 0, tarefasPendentes: 0 });
         }
     } else {
-        // Sem login — frase genérica
         if (fraseEl) fraseEl.innerText = gerarFraseInteligente({ nome, metaMin: 0, estudadoHoje: 0, pctMeta: 0, streak: 0, rankPos: 999, xp: 0, tarefasPendentes: 0 });
     }
 
-    // 4. MURAL DINÂMICO
+    // ── Stats dos novos cards (roda depois dos dados principais) ─────────────
+    await carregarStatsCards(xpUsuario, estudadoHoje);
+
+    // ── MURAL DINÂMICO ───────────────────────────────────────────────────────
     onSnapshot(doc(db, "config", "mural"), (snap) => {
         if (snap.exists()) {
             const d = snap.data();
-            const preview = document.getElementById('mural-preview');
+            const preview   = document.getElementById('mural-preview');
             const cardMural = document.getElementById('btn-mural-main');
             const iconMural = cardMural?.querySelector('i[data-lucide="megaphone"]');
             const strongMural = cardMural?.querySelector('strong');
@@ -275,7 +334,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (cardMural) {
                 cardMural.onclick = () => {
                     const modal = document.getElementById('modal-mural');
-                    const msg = document.getElementById('mural-msg');
+                    const msg   = document.getElementById('mural-msg');
                     if (modal && msg) {
                         msg.innerHTML = `
                             <p style="white-space:pre-wrap; word-break:break-word; color:#eee; line-height:1.6; text-align:left;">${d.texto}</p>
@@ -370,4 +429,3 @@ window.compartilharMeta = async function(estudadoHoje, metaMin) {
         } catch(e) { console.error(e); }
     }, 300);
 };
-                    
