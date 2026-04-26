@@ -12,58 +12,330 @@
     <link rel="stylesheet" href="home.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        #custom-splash { position:fixed; inset:0; background:#000; z-index:9999999; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:1; visibility:visible; transition:opacity 0.8s ease, visibility 0.8s; }
-        .splash-content { text-align:center; }
-        .brain-logo-wrapper { position:relative; margin-bottom:25px; }
-        #custom-splash i[data-lucide="brain-circuit"] { width:80px; height:80px; color:#8a2be2; filter:drop-shadow(0 0 10px #8a2be2); animation:pulseLogoGlow 2s infinite ease-in-out; }
-        .splash-title { color:#fff; font-size:24px; font-weight:900; text-transform:uppercase; margin-bottom:25px; letter-spacing:-2px; opacity:0; animation:textTrackingIn 1.5s cubic-bezier(0.215,0.610,0.355,1.000) 0.3s forwards; }
-        .splash-title span { color:#8a2be2; }
-        .loading-bar-container { width:160px; height:3px; background:rgba(255,255,255,0.05); border-radius:10px; overflow:hidden; margin:0 auto; }
-        #splash-bar { height:100%; width:0%; background:#8a2be2; box-shadow:0 0 15px #8a2be2; border-radius:10px; transition:width 0.3s ease-out; }
+        /* ============================
+           SPLASH SCREEN
+        ============================ */
+        #custom-splash {
+            position: fixed; inset: 0; background: #000; z-index: 9999999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 1; visibility: visible; transition: opacity 0.8s ease, visibility 0.8s;
+        }
+        .splash-content { text-align: center; }
+        .brain-logo-wrapper { position: relative; margin-bottom: 25px; }
+        #custom-splash i[data-lucide="brain-circuit"] {
+            width: 80px; height: 80px; color: #8a2be2;
+            filter: drop-shadow(0 0 10px #8a2be2);
+            animation: pulseLogoGlow 2s infinite ease-in-out;
+        }
+        .splash-title {
+            color: #fff; font-size: 24px; font-weight: 900; text-transform: uppercase;
+            margin-bottom: 25px; letter-spacing: -2px; opacity: 0;
+            animation: textTrackingIn 1.5s cubic-bezier(0.215,0.610,0.355,1.000) 0.3s forwards;
+        }
+        .splash-title span { color: #8a2be2; }
+        .loading-bar-container { width: 160px; height: 3px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; margin: 0 auto; }
+        #splash-bar { height: 100%; width: 0%; background: #8a2be2; box-shadow: 0 0 15px #8a2be2; border-radius: 10px; transition: width 0.3s ease-out; }
         @keyframes pulseLogoGlow { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.1);opacity:0.7;} }
         @keyframes textTrackingIn { 0%{letter-spacing:-5px;opacity:0;} 100%{letter-spacing:10px;opacity:1;} }
-        .splash-hidden { opacity:0!important; visibility:hidden!important; pointer-events:none; }
-        #global-alert { background:linear-gradient(90deg,#8a2be2,#4b0082); color:white; padding:12px; text-align:center; font-size:13px; font-weight:600; display:none; align-items:center; justify-content:center; gap:10px; z-index:2000; position:relative; }
-        #manutencao-screen { display:none; position:fixed; inset:0; background:#080808; z-index:20000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px; }
+        .splash-hidden { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
+
+        /* ============================
+           ALERTS & SCREENS
+        ============================ */
+        #global-alert {
+            background: linear-gradient(90deg,#8a2be2,#4b0082); color: white;
+            padding: 12px; text-align: center; font-size: 13px; font-weight: 600;
+            display: none; align-items: center; justify-content: center; gap: 10px;
+            z-index: 2000; position: relative;
+        }
+        #manutencao-screen {
+            display: none; position: fixed; inset: 0; background: #080808; z-index: 20000;
+            flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px;
+        }
         @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
         @keyframes progress-run { 0%{transform:translateX(-100%);} 100%{transform:translateX(250%);} }
-        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:30000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); }
-        .modal-card-mural { background:#16161a; padding:25px; border-radius:25px; width:100%; max-width:400px; text-align:center; border:1px solid rgba(138,43,226,0.3); }
-        .modal-dono-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; backdrop-filter:blur(25px) saturate(180%); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
-        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+        /* ============================
+           MODAIS
+        ============================ */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            z-index: 30000; align-items: center; justify-content: center; padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        .modal-card-mural {
+            background: #16161a; padding: 25px; border-radius: 25px;
+            width: 100%; max-width: 400px; text-align: center;
+            border: 1px solid rgba(138,43,226,0.3);
+        }
+        .modal-dono-overlay {
+            position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(25px) saturate(180%); background: rgba(10,10,10,0.75);
+            z-index: 99999; padding: 20px;
+        }
+        .modal-dono-card {
+            border: 1px solid rgba(138,43,226,0.3); background: rgba(15,15,15,0.95);
+            border-radius: 30px; width: 100%; max-width: 320px; padding: 40px 25px;
+            text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            animation: brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
         @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
-        .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
-        .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
-        .ring-1 { width:100%; height:100%; animation:spin-orb 2s linear infinite; opacity:0.6; }
-        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; opacity:0.8; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
+        .ditoh-core-orbital { width: 100px; height: 100px; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .orbital-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; border-top-color: #8a2be2; border-bottom-color: #8a2be2; }
+        .ring-1 { width: 100%; height: 100%; animation: spin-orb 2s linear infinite; opacity: 0.6; }
+        .ring-2 { width: 80%; height: 80%; animation: spin-orb-r 1.5s linear infinite; opacity: 0.8; border-left-color: #8a2be2; border-right-color: #8a2be2; border-top-color: transparent; border-bottom-color: transparent; }
         @keyframes spin-orb { to{transform:rotate(360deg);} }
         @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
-        .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
-        #easter-overlay { display:none; position:fixed; inset:0; background:#000; z-index:999999; align-items:center; justify-content:center; flex-direction:column; gap:20px; }
-        #easter-overlay.ativo { display:flex; animation:easterIn 0.5s ease; }
+        .core-glow { width: 50px; height: 50px; background: rgba(138,43,226,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(138,43,226,0.6); }
+
+        /* ============================
+           EASTER EGG
+        ============================ */
+        #easter-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 999999; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
+        #easter-overlay.ativo { display: flex; animation: easterIn 0.5s ease; }
         @keyframes easterIn { from{opacity:0;} to{opacity:1;} }
-        .easter-particles { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
-        .particle { position:absolute; border-radius:50%; background:#8a2be2; animation:particleFall linear infinite; }
+        .easter-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+        .particle { position: absolute; border-radius: 50%; background: #8a2be2; animation: particleFall linear infinite; }
         @keyframes particleFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
 
-        /* WIDGET CHECKLIST */
-        .checklist-widget { background:#0d0d0f; border:1px solid rgba(138,43,226,0.15); border-radius:20px; padding:16px 18px; margin-bottom:16px; }
-        .checklist-widget-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-        .checklist-widget-title { display:flex; align-items:center; gap:8px; font-size:9px; font-weight:800; letter-spacing:2px; color:#555; text-transform:uppercase; }
-        .checklist-widget-link { font-size:10px; font-weight:800; color:#8a2be2; cursor:pointer; letter-spacing:1px; background:none; border:none; padding:0; }
-        .checklist-widget-items { display:flex; flex-direction:column; gap:8px; }
-        .check-widget-item { display:flex; align-items:center; gap:12px; padding:10px 12px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid rgba(255,255,255,0.04); }
-        .check-widget-item input[type="checkbox"] { width:18px; height:18px; accent-color:#8a2be2; cursor:pointer; flex-shrink:0; }
-        .check-widget-item span { font-size:13px; color:#ccc; font-weight:600; flex:1; }
-        .check-widget-item.feito span { text-decoration:line-through; color:#444; }
-        .checklist-progresso { display:flex; align-items:center; gap:10px; margin-top:10px; }
-        .checklist-barra { flex:1; height:3px; background:rgba(255,255,255,0.04); border-radius:10px; overflow:hidden; }
-        .checklist-barra-fill { height:100%; background:#8a2be2; border-radius:10px; transition:width 0.4s ease; }
-        .checklist-pct { font-size:10px; font-weight:800; color:#8a2be2; min-width:30px; text-align:right; }
+        /* ============================
+           WIDGET CHECKLIST
+        ============================ */
+        .checklist-widget { background: #0d0d0f; border: 1px solid rgba(138,43,226,0.15); border-radius: 20px; padding: 16px 18px; margin-bottom: 16px; }
+        .checklist-widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .checklist-widget-title { display: flex; align-items: center; gap: 8px; font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #555; text-transform: uppercase; }
+        .checklist-widget-link { font-size: 10px; font-weight: 800; color: #8a2be2; cursor: pointer; letter-spacing: 1px; background: none; border: none; padding: 0; }
+        .checklist-widget-items { display: flex; flex-direction: column; gap: 8px; }
+        .check-widget-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); }
+        .check-widget-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #8a2be2; cursor: pointer; flex-shrink: 0; }
+        .check-widget-item span { font-size: 13px; color: #ccc; font-weight: 600; flex: 1; }
+        .check-widget-item.feito span { text-decoration: line-through; color: #444; }
+        .checklist-progresso { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .checklist-barra { flex: 1; height: 3px; background: rgba(255,255,255,0.04); border-radius: 10px; overflow: hidden; }
+        .checklist-barra-fill { height: 100%; background: #8a2be2; border-radius: 10px; transition: width 0.4s ease; }
+        .checklist-pct { font-size: 10px; font-weight: 800; color: #8a2be2; min-width: 30px; text-align: right; }
+
+        /* ============================
+           NOVOS ESTILOS — MELHORIAS
+        ============================ */
+
+        /* Fundo com grain sutil */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            background-size: 200px 200px;
+            opacity: 0.4;
+        }
+
+        /* Glow roxo no topo */
+        body::after {
+            content: '';
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(138,43,226,0.12) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+
+        .home-container, .glass-header { position: relative; z-index: 1; }
+
+        /* Welcome melhorado */
+        .welcome-section { margin: 16px 0 22px 0; }
+        .day-phrase { font-size: 12px; letter-spacing: 0.3px; opacity: 0.9; font-weight: 600; }
+        .welcome-section h1 {
+            font-size: 28px; font-weight: 900; margin-top: 4px; letter-spacing: -1.5px;
+            background: linear-gradient(135deg, #fff 60%, rgba(138,43,226,0.7));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        /* CARDS DE RESUMO RÁPIDO */
+        .quick-stats {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #0d0d0f; border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 18px; padding: 14px 16px;
+            display: flex; flex-direction: column; gap: 6px;
+            position: relative; overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+        .stat-card:active { transform: scale(0.97); }
+        .stat-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: var(--card-glow, rgba(138,43,226,0.04));
+            border-radius: inherit;
+        }
+        .stat-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .stat-card-icon {
+            width: 32px; height: 32px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--icon-bg, rgba(138,43,226,0.1));
+        }
+        .stat-card-icon svg { width: 16px; height: 16px; }
+        .stat-card-badge {
+            font-size: 9px; font-weight: 800; letter-spacing: 1px;
+            background: var(--badge-bg, rgba(138,43,226,0.15));
+            color: var(--badge-color, #8a2be2);
+            padding: 3px 8px; border-radius: 20px;
+        }
+        .stat-card-value { font-size: 22px; font-weight: 900; color: #fff; line-height: 1; }
+        .stat-card-label { font-size: 10px; color: #444; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Card largo de boas-vindas rápida */
+        .hello-card {
+            background: linear-gradient(135deg, #0d0d0f 0%, rgba(138,43,226,0.08) 100%);
+            border: 1px solid rgba(138,43,226,0.2);
+            border-radius: 22px; padding: 18px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px; position: relative; overflow: hidden;
+        }
+        .hello-card::after {
+            content: ''; position: absolute; right: -20px; top: -20px;
+            width: 100px; height: 100px;
+            background: radial-gradient(circle, rgba(138,43,226,0.2) 0%, transparent 70%);
+        }
+        .hello-card-text { flex: 1; }
+        .hello-card-text p { font-size: 11px; color: #555; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+        .hello-card-text h2 { font-size: 18px; font-weight: 900; color: #fff; }
+        .hello-card-text span { font-size: 11px; color: #8a2be2; font-weight: 600; margin-top: 4px; display: block; }
+        .hello-card-icon { width: 48px; height: 48px; border-radius: 16px; background: rgba(138,43,226,0.12); border: 1px solid rgba(138,43,226,0.3); display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+
+        /* Grid de apps melhorado */
+        .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+        .app-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: transform 0.15s; }
+        .app-item:active { transform: scale(0.92); }
+        .app-icon {
+            width: 58px; height: 58px; border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            background: #111; border: 1px solid rgba(255,255,255,0.05);
+            transition: box-shadow 0.3s, transform 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .app-icon::after {
+            content: ''; position: absolute; inset: 0; border-radius: inherit;
+            background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+        }
+        .app-item:hover .app-icon { transform: translateY(-2px); }
+        .app-item span { font-size: 9px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+
+        /* Seção label */
+        .section-label {
+            font-size: 9px; font-weight: 800; letter-spacing: 2.5px;
+            color: #333; text-transform: uppercase; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.04); }
+
+        /* Mural melhorado */
+        .mural-card {
+            background: #0d0d0f; padding: 16px 18px; border-radius: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid rgba(255,255,255,0.05); width: 100% !important;
+            margin-bottom: 20px; transition: border-color 0.2s;
+            position: relative; overflow: hidden;
+        }
+        .mural-card::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+            width: 3px; background: #8a2be2; border-radius: 3px 0 0 3px;
+        }
+        .mural-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+        .mural-text strong { font-size: 13px; color: #eee; display: block; }
+        #mural-preview { font-size: 11px; color: #555; margin-top: 2px; display: block; }
+
+        /* META PROGRESSO */
+        .meta-progress-section { margin-bottom: 20px; }
+        .meta-progress-card { background: #0d0d0f; border: 1px solid rgba(138,43,226,0.15); border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+        .meta-progress-header { display: flex; justify-content: space-between; align-items: center; }
+        .meta-progress-label { font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #555; text-transform: uppercase; }
+        .meta-progress-time { font-size: 11px; font-weight: 700; color: #8a2be2; }
+        .meta-progress-track { width: 100%; height: 4px; background: rgba(255,255,255,0.04); border-radius: 10px; overflow: hidden; }
+        .meta-progress-fill { height: 100%; background: #8a2be2; border-radius: 10px; box-shadow: 0 0 10px rgba(138,43,226,0.5); transition: width 0.5s ease; width: 0%; }
+        .meta-progress-fill.completa { background: #00c851; box-shadow: 0 0 10px rgba(0,200,81,0.5); }
+        .meta-progress-footer { display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 700; color: #333; }
+
+        /* Acesso rápido horizontal */
+        .quick-access { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; -ms-overflow-style: none; scrollbar-width: none; }
+        .quick-access::-webkit-scrollbar { display: none; }
+        .quick-chip {
+            display: flex; align-items: center; gap: 7px;
+            background: #0d0d0f; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 30px; padding: 8px 14px;
+            font-size: 11px; font-weight: 700; color: #888;
+            white-space: nowrap; cursor: pointer; flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .quick-chip:active { transform: scale(0.95); background: rgba(138,43,226,0.1); border-color: rgba(138,43,226,0.3); color: #8a2be2; }
+        .quick-chip svg { width: 13px; height: 13px; }
+
+        /* Resumo melhorado */
+        .summary-section {
+            background: #0d0d0f; border-radius: 35px 35px 0 0;
+            margin: 0 -20px; padding: 28px 20px 100px;
+            width: calc(100% + 40px); border-top: 1px solid rgba(138,43,226,0.15);
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+        }
+        .summary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .summary-header h3 { font-size: 14px; font-weight: 800; color: #fff; }
+        #current-date { font-size: 12px; color: #8a2be2; font-weight: 700; }
+
+        /* Cards de resumo dentro da section */
+        .summary-cards { display: flex; flex-direction: column; gap: 10px; }
+        .summary-card {
+            background: #16161a; padding: 18px 20px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+        .summary-card-row { display: flex; align-items: center; gap: 14px; }
+        .pulse-circle { width: 8px; height: 8px; background: #8a2be2; border-radius: 50%; box-shadow: 0 0 12px #8a2be2; animation: pulse-glow 2s infinite; flex-shrink: 0; }
+        @keyframes pulse-glow { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.3);opacity:0.5;} }
+        .status-info { flex: 1; }
+        .status-info strong { font-size: 13px; display: block; color: #eee; margin-bottom: 2px; }
+        #status-desc { font-size: 11px; color: #666; }
+        .xp-tag { background: linear-gradient(135deg, #8a2be2, #4b0082); color: #fff; padding: 6px 14px; border-radius: 12px; font-size: 10px; font-weight: 900; box-shadow: 0 4px 10px rgba(138,43,226,0.3); white-space: nowrap; }
+
+        /* Card de dica diária */
+        .tip-card {
+            background: linear-gradient(135deg, rgba(138,43,226,0.08), rgba(75,0,130,0.05));
+            border: 1px solid rgba(138,43,226,0.15); border-radius: 20px; padding: 16px 18px;
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+        .tip-card-icon { width: 36px; height: 36px; background: rgba(138,43,226,0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .tip-card-icon svg { width: 18px; height: 18px; color: #8a2be2; }
+        .tip-card-content { flex: 1; }
+        .tip-card-content p { font-size: 9px; font-weight: 800; letter-spacing: 2px; color: #8a2be2; text-transform: uppercase; margin-bottom: 5px; }
+        .tip-card-content span { font-size: 12px; color: #888; line-height: 1.5; font-weight: 500; }
+
+        /* Outros estilos mantidos */
+        .user-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.3); display: flex; align-items: center; justify-content: center; overflow: hidden; transition: transform 0.15s; }
+        .user-avatar:active { transform: scale(0.9); }
+
+        body.saindo { opacity: 0; transition: opacity 0.25s ease; pointer-events: none; }
+
+        /* Animação de entrada dos elementos */
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+        .hello-card { animation: fadeUp 0.5s ease 0.1s both; }
+        .quick-stats { animation: fadeUp 0.5s ease 0.2s both; }
+        .app-grid { animation: fadeUp 0.5s ease 0.3s both; }
+        .quick-access { animation: fadeUp 0.5s ease 0.35s both; }
+        .mural-card { animation: fadeUp 0.5s ease 0.4s both; }
+        .summary-section { animation: fadeUp 0.5s ease 0.45s both; }
+
+        /* Cores dos ícones */
+        .purple { color: #8a2be2; background: rgba(138,43,226,0.08) !important; border-color: rgba(138,43,226,0.2) !important; }
+        .blue   { color: #007aff; background: rgba(0,122,255,0.08) !important; border-color: rgba(0,122,255,0.2) !important; }
+        .red    { color: #ff3b30; background: rgba(255,59,48,0.08) !important; border-color: rgba(255,59,48,0.2) !important; }
+        .orange { color: #ff9500; background: rgba(255,149,0,0.08) !important; border-color: rgba(255,149,0,0.2) !important; }
+        .green  { color: #34c759; background: rgba(52,199,89,0.08) !important; border-color: rgba(52,199,89,0.2) !important; }
+        .gold   { color: #ffcc00; background: rgba(255,204,0,0.08) !important; border-color: rgba(255,204,0,0.2) !important; }
+
+        /* Modal */
+        .modal-card { background: #0f0f12; border: 1px solid #1a1a1c; border-radius: 28px; }
     </style>
 </head>
 <body>
 
+    <!-- SPLASH -->
     <div id="custom-splash">
         <div class="splash-content">
             <div class="brain-logo-wrapper"><i data-lucide="brain-circuit"></i></div>
@@ -74,6 +346,7 @@
 
     <div id="global-alert"></div>
 
+    <!-- MANUTENÇÃO -->
     <div id="manutencao-screen">
         <div style="position:relative; margin-bottom:30px;">
             <i data-lucide="cog" style="width:50px; height:50px; color:#8a2be2; animation:spin 4s linear infinite;"></i>
@@ -91,6 +364,7 @@
         </div>
     </div>
 
+    <!-- EASTER EGG -->
     <div id="easter-overlay">
         <div class="easter-particles" id="easter-particles"></div>
         <i data-lucide="brain-circuit" style="width:80px; height:80px; color:#8a2be2; filter:drop-shadow(0 0 20px #8a2be2); animation:pulseLogoGlow 1s infinite; position:relative; z-index:1;"></i>
@@ -101,6 +375,7 @@
         </div>
     </div>
 
+    <!-- HEADER -->
     <header class="glass-header">
         <div style="width:42px;"></div>
         <div class="hub-logo-container" id="logo-home" onclick="abrirSobreDono()">
@@ -116,11 +391,70 @@
     </header>
 
     <main class="home-container">
-        <section class="welcome-section">
-            <span id="frase-ia" class="day-phrase" style="color:#8a2be2; font-weight:700;">...</span>
-            <h1 id="user-display-name">ESTUDANTE</h1>
-        </section>
 
+        <!-- SAUDAÇÃO DINÂMICA -->
+        <div class="hello-card">
+            <div class="hello-card-text">
+                <p id="periodo-dia">BOM DIA</p>
+                <h2 id="user-display-name">ESTUDANTE</h2>
+                <span id="frase-ia" style="color:#8a2be2; font-weight:700;">...</span>
+            </div>
+            <div class="hello-card-icon">
+                <i data-lucide="brain-circuit" style="color:#8a2be2; width:24px;"></i>
+            </div>
+        </div>
+
+        <!-- CARDS DE RESUMO RÁPIDO -->
+        <div class="quick-stats">
+            <div class="stat-card" style="--card-glow:rgba(138,43,226,0.04); --icon-bg:rgba(138,43,226,0.1); --badge-bg:rgba(138,43,226,0.15); --badge-color:#8a2be2;" onclick="navegarPara('foco.html')">
+                <div class="stat-card-top">
+                    <div class="stat-card-icon">
+                        <i data-lucide="timer" style="color:#8a2be2;"></i>
+                    </div>
+                    <span class="stat-card-badge">HOJE</span>
+                </div>
+                <div class="stat-card-value" id="stat-foco">0h</div>
+                <div class="stat-card-label">Tempo de foco</div>
+            </div>
+            <div class="stat-card" style="--card-glow:rgba(0,200,81,0.04); --icon-bg:rgba(0,200,81,0.1); --badge-bg:rgba(0,200,81,0.12); --badge-color:#00c851;" onclick="navegarPara('agenda.html')">
+                <div class="stat-card-top">
+                    <div class="stat-card-icon">
+                        <i data-lucide="list-todo" style="color:#00c851;"></i>
+                    </div>
+                    <span class="stat-card-badge" style="background:rgba(0,200,81,0.12); color:#00c851;">AGENDA</span>
+                </div>
+                <div class="stat-card-value" id="stat-tarefas">0</div>
+                <div class="stat-card-label">Tarefas pendentes</div>
+            </div>
+            <div class="stat-card" style="--card-glow:rgba(255,204,0,0.04); --icon-bg:rgba(255,204,0,0.1); --badge-bg:rgba(255,204,0,0.12); --badge-color:#ffcc00;" onclick="navegarPara('ranking.html')">
+                <div class="stat-card-top">
+                    <div class="stat-card-icon">
+                        <i data-lucide="zap" style="color:#ffcc00;"></i>
+                    </div>
+                    <span class="stat-card-badge" style="background:rgba(255,204,0,0.12); color:#ffcc00;">XP</span>
+                </div>
+                <div class="stat-card-value" id="stat-xp">0</div>
+                <div class="stat-card-label">Pontos ganhos</div>
+            </div>
+            <div class="stat-card" style="--card-glow:rgba(0,122,255,0.04); --icon-bg:rgba(0,122,255,0.1); --badge-bg:rgba(0,122,255,0.12); --badge-color:#007aff;" onclick="navegarPara('notas.html')">
+                <div class="stat-card-top">
+                    <div class="stat-card-icon">
+                        <i data-lucide="layout-dashboard" style="color:#007aff;"></i>
+                    </div>
+                    <span class="stat-card-badge" style="background:rgba(0,122,255,0.12); color:#007aff;">NOTAS</span>
+                </div>
+                <div class="stat-card-value" id="stat-notas">0</div>
+                <div class="stat-card-label">Anotações salvas</div>
+            </div>
+        </div>
+
+        <!-- LABEL SEÇÃO -->
+        <div class="section-label">
+            <i data-lucide="grid-3x3" style="width:11px; color:#333;"></i>
+            Ferramentas
+        </div>
+
+        <!-- GRID DE APPS -->
         <div class="app-grid">
             <div class="app-item" onclick="navegarPara('notas.html')">
                 <div class="app-icon purple"><i data-lucide="layout-dashboard"></i></div>
@@ -132,7 +466,7 @@
             </div>
             <div class="app-item" onclick="navegarPara('foco.html')">
                 <div class="app-icon red"><i data-lucide="timer"></i></div>
-                <span>Modo Foco</span>
+                <span>Foco</span>
             </div>
             <div class="app-item" onclick="navegarPara('horario.html')">
                 <div class="app-icon orange"><i data-lucide="clock"></i></div>
@@ -140,7 +474,7 @@
             </div>
             <div class="app-item" onclick="navegarPara('estudos.html')">
                 <div class="app-icon green"><i data-lucide="brain-circuit"></i></div>
-                <span>Estudos & IA</span>
+                <span>IA</span>
             </div>
             <div class="app-item" onclick="navegarPara('ranking.html')">
                 <div class="app-icon gold"><i data-lucide="trophy"></i></div>
@@ -150,17 +484,50 @@
                 <div class="app-icon" style="color:#c084fc; background:rgba(192,132,252,0.08)!important; border-color:rgba(192,132,252,0.2)!important;"><i data-lucide="notebook-pen"></i></div>
                 <span>Caderno</span>
             </div>
+            <div class="app-item" onclick="navegarPara('configuracoes.html')">
+                <div class="app-icon" style="color:#aaa; background:rgba(255,255,255,0.04)!important; border-color:rgba(255,255,255,0.08)!important;"><i data-lucide="settings-2"></i></div>
+                <span>Config</span>
+            </div>
         </div>
 
+        <!-- ATALHOS RÁPIDOS -->
+        <div class="section-label">
+            <i data-lucide="zap" style="width:11px; color:#333;"></i>
+            Acesso rápido
+        </div>
+        <div class="quick-access">
+            <div class="quick-chip" onclick="navegarPara('foco.html')">
+                <i data-lucide="timer" style="color:#ff3b30;"></i>
+                Iniciar foco
+            </div>
+            <div class="quick-chip" onclick="navegarPara('agenda.html')">
+                <i data-lucide="plus-circle" style="color:#007aff;"></i>
+                Nova tarefa
+            </div>
+            <div class="quick-chip" onclick="navegarPara('estudos.html')">
+                <i data-lucide="sparkles" style="color:#8a2be2;"></i>
+                Perguntar à IA
+            </div>
+            <div class="quick-chip" onclick="navegarPara('horario.html')">
+                <i data-lucide="calendar" style="color:#ff9500;"></i>
+                Ver horário
+            </div>
+            <div class="quick-chip" onclick="navegarPara('notas.html')">
+                <i data-lucide="pencil" style="color:#34c759;"></i>
+                Anotar
+            </div>
+        </div>
+
+        <!-- MURAL -->
         <div class="mural-card" id="btn-mural-main">
-            <div class="mural-content" style="display:flex; align-items:center; gap:12px;">
-                <i data-lucide="megaphone" style="color:#8a2be2"></i>
+            <div class="mural-content" style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+                <i data-lucide="megaphone" style="color:#8a2be2; flex-shrink:0;"></i>
                 <div class="mural-text">
                     <strong>Mural de Avisos</strong>
                     <span id="mural-preview">Toque para ler</span>
                 </div>
             </div>
-            <i data-lucide="chevron-right"></i>
+            <i data-lucide="chevron-right" style="color:#333; flex-shrink:0;"></i>
         </div>
 
         <!-- WIDGET ROTINA DIÁRIA -->
@@ -179,6 +546,7 @@
             </div>
         </div>
 
+        <!-- META DO DIA -->
         <section class="meta-progress-section" id="meta-progress-section" style="display:none;">
             <div class="meta-progress-card">
                 <div class="meta-progress-header">
@@ -201,38 +569,53 @@
             </div>
         </section>
 
+        <!-- RESUMO -->
         <section class="summary-section">
             <div class="summary-header">
                 <h3>Resumo de hoje</h3>
                 <span id="current-date">--/--</span>
             </div>
-            <div class="summary-card">
-                <div class="status-row" style="display:flex; align-items:center; gap:15px;">
-                    <div class="pulse-circle"></div>
-                    <div class="status-info" style="flex:1">
-                        <strong>Status do Sistema</strong>
-                        <span id="status-desc" style="font-size:11px; color:#666;">Online</span>
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="summary-card-row">
+                        <div class="pulse-circle"></div>
+                        <div class="status-info">
+                            <strong>Status do Sistema</strong>
+                            <span id="status-desc">Online</span>
+                        </div>
+                        <span class="xp-tag" id="xp-display">+0 XP</span>
                     </div>
-                    <span class="xp-tag" id="xp-display">+0 XP</span>
+                </div>
+                <!-- Card de dica diária -->
+                <div class="tip-card" id="tip-card">
+                    <div class="tip-card-icon">
+                        <i data-lucide="lightbulb" style="color:#8a2be2;"></i>
+                    </div>
+                    <div class="tip-card-content">
+                        <p>💡 Dica do dia</p>
+                        <span id="tip-text">Carregando...</span>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <div style="width:100%; padding:40px 0; text-align:center; opacity:0.5;">
+        <div style="width:100%; padding:20px 0 40px; text-align:center; opacity:0.4;">
             <p id="rodape-home" style="font-size:10px; letter-spacing:2px; color:#eee; font-weight:300; text-transform:uppercase; font-family:sans-serif; cursor:pointer;">
                 FOUND & DEV <a href="https://www.instagram.com/wtfditoh" target="_blank" style="font-weight:800; color:#8a2be2; text-decoration:none;">DITOH</a>
             </p>
         </div>
     </main>
 
+    <!-- MODAL MURAL -->
     <div id="modal-mural" class="modal-overlay">
         <div class="modal-card-mural">
             <h3 style="color:white">Aviso Importante</h3>
             <div id="mural-msg" style="margin:20px 0; color:#bbb; font-size:14px; line-height:1.5;"></div>
-            <button onclick="document.getElementById('modal-mural').style.display='none'" style="width:100%; padding:12px; background:#8a2be2; border:none; border-radius:12px; color:white; font-weight:bold;">FECHAR</button>
+            <button onclick="document.getElementById('modal-mural').style.display='none'" style="width:100%; padding:12px; background:#8a2be2; border:none; border-radius:12px; color:white; font-weight:bold; cursor:pointer;">FECHAR</button>
         </div>
     </div>
 
+    <!-- MODAL DONO -->
     <div id="modal-dono" class="modal-dono-overlay">
         <div class="modal-dono-card">
             <div class="ditoh-core-orbital">
@@ -263,6 +646,64 @@
           .catch(function(err) { console.log('Erro no SW:', err); });
       }
 
+      // ── DICAS DO DIA ──────────────────────────────────────
+      var dicas = [
+        "Use a técnica Pomodoro: 25min de foco, 5min de pausa. Repita e veja sua produtividade explodir.",
+        "Revise suas anotações antes de dormir. O cérebro consolida memórias durante o sono.",
+        "Divida tarefas grandes em etapas menores. Cada check é uma vitória real.",
+        "Hidratação melhora concentração. Beba água antes de começar qualquer sessão de estudos.",
+        "Silêncio não é necessário — música instrumental pode aumentar o foco.",
+        "Ensinar algo a alguém é a forma mais rápida de fixar o conteúdo.",
+        "Defina sua meta do dia antes de abrir qualquer rede social.",
+        "Pequenas pausas ativas (5min de movimento) recarregam o cérebro melhor que o café.",
+      ];
+      var hoje = new Date();
+      var diaIdx = hoje.getDate() % dicas.length;
+      document.addEventListener('DOMContentLoaded', function() {
+        var tipEl = document.getElementById('tip-text');
+        if (tipEl) tipEl.textContent = dicas[diaIdx];
+
+        // Período do dia
+        var h = hoje.getHours();
+        var periodoEl = document.getElementById('periodo-dia');
+        if (periodoEl) {
+          if (h < 12) periodoEl.textContent = '☀️ BOM DIA';
+          else if (h < 18) periodoEl.textContent = '🌤️ BOA TARDE';
+          else periodoEl.textContent = '🌙 BOA NOITE';
+        }
+
+        // Stats do localStorage
+        carregarStats();
+      });
+
+      function carregarStats() {
+        // XP
+        var xp = parseInt(localStorage.getItem('dt_xp') || '0');
+        var statXp = document.getElementById('stat-xp');
+        if (statXp) statXp.textContent = xp;
+
+        // Tarefas pendentes
+        var agenda = JSON.parse(localStorage.getItem('dt_agenda') || '[]');
+        var pendentes = agenda.filter(function(t) { return !t.feita; }).length;
+        var statTarefas = document.getElementById('stat-tarefas');
+        if (statTarefas) statTarefas.textContent = pendentes;
+
+        // Notas
+        var notas = JSON.parse(localStorage.getItem('dt_notas') || '[]');
+        var statNotas = document.getElementById('stat-notas');
+        if (statNotas) statNotas.textContent = notas.length;
+
+        // Tempo de foco hoje
+        var hojeKey = new Date().toISOString().split('T')[0];
+        var focMin = parseInt(localStorage.getItem('dt_foco_' + hojeKey) || '0');
+        var statFoco = document.getElementById('stat-foco');
+        if (statFoco) {
+          if (focMin >= 60) statFoco.textContent = Math.floor(focMin/60) + 'h' + (focMin%60 > 0 ? (focMin%60)+'m' : '');
+          else statFoco.textContent = focMin + 'm';
+        }
+      }
+
+      // ── SPLASH ────────────────────────────────────────────
       window.addEventListener('load', function() {
         var progress = 0;
         var bar = document.getElementById('splash-bar');
@@ -281,6 +722,7 @@
         carregarChecklistWidget();
       });
 
+      // ── CHECKLIST WIDGET ──────────────────────────────────
       function carregarChecklistWidget() {
         var hoje = new Date().toISOString().split('T')[0];
         var notas = JSON.parse(localStorage.getItem('dt_caderno') || '[]');
@@ -346,6 +788,7 @@
         carregarChecklistWidget();
       }
 
+      // ── NAVEGAÇÃO ─────────────────────────────────────────
       function navegarPara(url) {
         document.body.classList.add('saindo');
         setTimeout(function() { window.location.href = url; }, 250);
@@ -360,8 +803,8 @@
         document.getElementById('modal-dono').style.display = 'none';
       }
 
-      var logoClicks = 0;
-      var logoTimer;
+      // ── EASTER EGG (7 cliques no logo) ───────────────────
+      var logoClicks = 0, logoTimer;
       document.getElementById('logo-home').addEventListener('click', function() {
         logoClicks++;
         clearTimeout(logoTimer);
@@ -380,8 +823,7 @@
           p.style.animationDuration = (Math.random() * 2 + 1) + 's';
           p.style.animationDelay = (Math.random() * 2) + 's';
           var size = (Math.random() * 8 + 4) + 'px';
-          p.style.width = size;
-          p.style.height = size;
+          p.style.width = size; p.style.height = size;
           container.appendChild(p);
         }
         overlay.classList.add('ativo');
@@ -389,8 +831,8 @@
         setTimeout(function() { overlay.classList.remove('ativo'); }, 4000);
       }
 
-      var rodapeClicks = 0;
-      var rodapeTimer;
+      // ── RODAPÉ CLICKS ─────────────────────────────────────
+      var rodapeClicks = 0, rodapeTimer;
       document.getElementById('rodape-home').addEventListener('click', function(e) {
         if (e.target.tagName === 'A') return;
         rodapeClicks++;
@@ -399,8 +841,7 @@
         if (rodapeClicks >= 5) { rodapeClicks = 0; abrirSobreDono(); }
       });
 
-      var manClicks = 0;
-      var manTimer;
+      var manClicks = 0, manTimer;
       document.getElementById('rodape-manutencao').addEventListener('click', function() {
         manClicks++;
         clearTimeout(manTimer);
