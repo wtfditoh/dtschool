@@ -1,67 +1,63 @@
-// --- CALCULADORA DE MOLARIDADE E CONCENTRAÇÃO (Questões 7-12 e 24-27) ---
-function calcMolaridadePro() {
-    const m = parseFloat(document.getElementById('m_sol_g').value);
-    const mm = parseFloat(document.getElementById('mm_g_mol').value);
-    const v_ml = parseFloat(document.getElementById('vol_ml').value);
+// --- LÓGICA HUBBRAIN QUÍMICA ---
+
+[span_11](start_span)[span_12](start_span)// Molaridade (NaCl 2.925g em 250mL MM 58.5)[span_11](end_span)[span_12](end_span)
+function calcMolaridade() {
+    const m = parseFloat(document.getElementById('mol_m').value);
+    const mm = parseFloat(document.getElementById('mol_mm').value);
+    const v = parseFloat(document.getElementById('mol_v').value);
     const res = document.getElementById('resMolar');
 
-    if (m && v_ml) {
-        let v_l = v_ml / 1000;
-        let C = m / v_l; [span_2](start_span)// Concentração Comum[span_2](end_span)
-        let M = mm ? (m / (mm * v_l)) : "N/A"; [span_3](start_span)// Concentração Molar[span_3](end_span)
-        
-        res.innerHTML = `C = ${C.toFixed(2)} g/L <br> M = ${typeof M === 'number' ? M.toFixed(3) + ' mol/L' : M}`;
+    if (m && mm && v) {
+        let v_litro = (v >= 10) ? v / 1000 : v; [span_13](start_span)// Converte mL para L automaticamente[span_13](end_span)
+        let M = m / (mm * v_litro);
+        [span_14](start_span)res.innerHTML = `Fórmula: M = ${m} / (${mm} * ${v_litro}) <br><strong>M = ${M.toFixed(3)} mol/L</strong>[span_14](end_span)`;
+    } else { res.innerHTML = "Preencha todos os campos!"; }
+}
+
+[span_15](start_span)[span_16](start_span)[span_17](start_span)// Número de Mols (NaOH 4g MM 40 / Glicose 90g MM 180)[span_15](end_span)[span_16](end_span)[span_17](end_span)
+function calcMols() {
+    const m = parseFloat(document.getElementById('n_massa').value);
+    const mm = parseFloat(document.getElementById('n_mm').value);
+    const res = document.getElementById('resMols');
+
+    if (m && mm) {
+        let n = m / mm;
+        [span_18](start_span)res.innerHTML = `Fórmula: n = ${m} / ${mm} <br><strong>n = ${n.toFixed(3)} mol</strong>[span_18](end_span)`;
+    } else { res.innerHTML = "Insira massa e massa molar!"; }
+}
+
+[span_19](start_span)// Concentração Comum (12g em 0.5L)[span_19](end_span)
+function calcComum() {
+    const m = parseFloat(document.getElementById('c_m').value);
+    const v = parseFloat(document.getElementById('c_v').value);
+    const res = document.getElementById('resComum');
+
+    if (m && v) {
+        let v_litro = (v >= 10) ? v / 1000 : v;
+        let c = m / v_litro;
+        [span_20](start_span)res.innerHTML = `Fórmula: C = ${m} / ${v_litro} <br><strong>C = ${c.toFixed(2)} g/L</strong>[span_20](end_span)`;
+    } else { res.innerHTML = "Preencha os campos!"; }
+}
+
+[span_21](start_span)// Título e Porcentagem[span_21](end_span)
+function calcTitulo() {
+    const v1 = parseFloat(document.getElementById('t_v1').value);
+    const vt = parseFloat(document.getElementById('t_vt').value);
+    const res = document.getElementById('resTitulo');
+
+    if (v1 && vt) {
+        let t = v1 / vt;
+        [span_22](start_span)res.innerHTML = `T = ${t.toFixed(2)} <br><strong>Porcentagem: ${(t * 100).toFixed(1)}%</strong>[span_22](end_span)`;
     }
 }
 
-// --- NOVO: CALCULADORA DE pH ---
+// pH
 function calcPH() {
-    const h = parseFloat(document.getElementById('conc_h').value);
+    const h = parseFloat(document.getElementById('ph_h').value);
     const res = document.getElementById('resPH');
 
     if (h > 0) {
         let ph = -Math.log10(h);
-        let poh = 14 - ph;
-        res.innerHTML = `pH: ${ph.toFixed(2)} <br> pOH: ${poh.toFixed(2)}`;
-    } else {
-        res.innerHTML = "Insira uma concentração > 0";
-    }
-}
-
-// --- NOVO: TERMOQUÍMICA (ΔH) ---
-function calcDeltaH() {
-    const hr = parseFloat(document.getElementById('h_reagentes').value);
-    const hp = parseFloat(document.getElementById('h_produtos').value);
-    const res = document.getElementById('resDeltaH');
-
-    if (!isNaN(hr) && !isNaN(hp)) {
-        let deltaH = hp - hr;
-        let tipo = deltaH > 0 ? "Endotérmica" : "Exotérmica";
-        res.innerHTML = `ΔH: ${deltaH.toFixed(2)} kJ <br> Reação ${tipo}`;
-    }
-}
-
-// --- NOVO: EBULIOSCOPIA ---
-function calcEbulioscopia() {
-    const ke = parseFloat(document.getElementById('ke_const').value);
-    const w = parseFloat(document.getElementById('molalidade').value);
-    const res = document.getElementById('resColig');
-
-    if (ke && w) {
-        let deltaTe = ke * w;
-        res.innerHTML = `ΔTe: ${deltaTe.toFixed(2)} °C (Aumento)`;
-    }
-}
-
-// --- DILUIÇÃO (Questão 17-18 da lógica) ---
-function calcDiluicaoVf() {
-    const c1 = parseFloat(document.getElementById('c_inicial').value);
-    const v1 = parseFloat(document.getElementById('v_inicial').value);
-    const c2 = parseFloat(document.getElementById('c_final').value);
-    const res = document.getElementById('resDiluicao');
-
-    if (c1 && v1 && c2) {
-        let v2 = (c1 * v1) / c2;
-        res.innerHTML = `Vf: ${v2.toFixed(2)} (unid. V1)`;
+        res.innerHTML = `<strong>pH = ${ph.toFixed(2)}</strong> <br> ${ph < 7 ? 'Meio Ácido' : 'Meio Básico'}`;
     }
 }
