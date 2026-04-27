@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HubBrain - Química Master</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HubBrain: Seção Química 🧪</h1>
+            <p>Calculadora inteligente de Soluções e Estequiometria</p>
+        </header>
+
+        <main class="grid-calc">
+            <section class="card">
+                <h3>Concentração Comum (C)</h3>
+                <div class="input-group">
+                    <input type="number" id="massaSoluto" placeholder="Massa do soluto (g)">
+                    <input type="number" id="volumeSolucao" placeholder="Volume da solução (L)">
+                    <button onclick="calcConcentracao()">Calcular</button>
+                </div>
+                <div class="result" id="resConcentracao">Resultado: --</div>
+            </section>
+
+            <section class="card">
+                <h3>Molaridade (M)</h3>
+                <div class="input-group">
+                    <input type="number" id="molsSoluto" placeholder="Nº de Mols (mol)">
+                    <input type="number" id="volMolaridade" placeholder="Volume (L)">
+                    <button onclick="calcMolaridade()">Calcular</button>
+                </div>
+                <div class="result" id="resMolaridade">Resultado: --</div>
+            </section>
+
+            <section class="card">
+                <h3>Massa ↔ Mol</h3>
+                <div class="input-group">
+                    <input type="number" id="massaGramas" placeholder="Massa total (g)">
+                    <input type="number" id="massaMolar" placeholder="Massa Molar (g/mol)">
+                    <button onclick="calcMols()">Calcular Mols</button>
+                </div>
+                <div class="result" id="resMols">Resultado: --</div>
+            </section>
+
+            <section class="card">
+                <h3>Diluição (C1.V1 = C2.V2)</h3>
+                <div class="input-group">
+                    <input type="number" id="c1" placeholder="C. Inicial">
+                    <input type="number" id="v1" placeholder="V. Inicial">
+                    <input type="number" id="c2" placeholder="C. Final">
+                    <button onclick="calcDiluicao()">Calcular V. Final</button>
+                </div>
+                <div class="result" id="resDiluicao">V2: --</div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
