@@ -1,63 +1,119 @@
-// --- LÓGICA HUBBRAIN QUÍMICA ---
+/**
+ * HUBBRAIN QUÍMICA V3 - LÓGICA ULTRA COMPLETA
+ * Fórmulas integradas e Memorial de Cálculo
+ */
 
-[span_11](start_span)[span_12](start_span)// Molaridade (NaCl 2.925g em 250mL MM 58.5)[span_11](end_span)[span_12](end_span)
-function calcMolaridade() {
-    const m = parseFloat(document.getElementById('mol_m').value);
-    const mm = parseFloat(document.getElementById('mol_mm').value);
-    const v = parseFloat(document.getElementById('mol_v').value);
-    const res = document.getElementById('resMolar');
-
-    if (m && mm && v) {
-        let v_litro = (v >= 10) ? v / 1000 : v; [span_13](start_span)// Converte mL para L automaticamente[span_13](end_span)
-        let M = m / (mm * v_litro);
-        [span_14](start_span)res.innerHTML = `Fórmula: M = ${m} / (${mm} * ${v_litro}) <br><strong>M = ${M.toFixed(3)} mol/L</strong>[span_14](end_span)`;
-    } else { res.innerHTML = "Preencha todos os campos!"; }
-}
-
-[span_15](start_span)[span_16](start_span)[span_17](start_span)// Número de Mols (NaOH 4g MM 40 / Glicose 90g MM 180)[span_15](end_span)[span_16](end_span)[span_17](end_span)
-function calcMols() {
-    const m = parseFloat(document.getElementById('n_massa').value);
-    const mm = parseFloat(document.getElementById('n_mm').value);
-    const res = document.getElementById('resMols');
-
-    if (m && mm) {
-        let n = m / mm;
-        [span_18](start_span)res.innerHTML = `Fórmula: n = ${m} / ${mm} <br><strong>n = ${n.toFixed(3)} mol</strong>[span_18](end_span)`;
-    } else { res.innerHTML = "Insira massa e massa molar!"; }
-}
-
-[span_19](start_span)// Concentração Comum (12g em 0.5L)[span_19](end_span)
-function calcComum() {
-    const m = parseFloat(document.getElementById('c_m').value);
-    const v = parseFloat(document.getElementById('c_v').value);
-    const res = document.getElementById('resComum');
+// 1. CONCENTRAÇÃO COMUM
+function resolverConcentracao() {
+    const m = parseFloat(document.getElementById('c_massa').value);
+    const v = parseFloat(document.getElementById('c_vol').value);
+    const res = document.getElementById('res_c');
 
     if (m && v) {
-        let v_litro = (v >= 10) ? v / 1000 : v;
-        let c = m / v_litro;
-        [span_20](start_span)res.innerHTML = `Fórmula: C = ${m} / ${v_litro} <br><strong>C = ${c.toFixed(2)} g/L</strong>[span_20](end_span)`;
-    } else { res.innerHTML = "Preencha os campos!"; }
-}
+        // Lógica de Unidade: Se V for > 10, assume-se mL e converte para L
+        let volLitros = (v >= 10) ? v / 1000 : v;
+        let c = m / volLitros;
 
-[span_21](start_span)// Título e Porcentagem[span_21](end_span)
-function calcTitulo() {
-    const v1 = parseFloat(document.getElementById('t_v1').value);
-    const vt = parseFloat(document.getElementById('t_vt').value);
-    const res = document.getElementById('resTitulo');
-
-    if (v1 && vt) {
-        let t = v1 / vt;
-        [span_22](start_span)res.innerHTML = `T = ${t.toFixed(2)} <br><strong>Porcentagem: ${(t * 100).toFixed(1)}%</strong>[span_22](end_span)`;
+        res.innerHTML = `
+            <span class="step">Passo 1: C = m / V</span><br>
+            <span class="step">Passo 2: C = ${m}g / ${volLitros}L</span><br>
+            <span class="final-res">C = ${c.toFixed(2)} g/L</span>
+        `;
+    } else {
+        res.innerHTML = "❌ Preencha todos os campos.";
     }
 }
 
-// pH
-function calcPH() {
-    const h = parseFloat(document.getElementById('ph_h').value);
-    const res = document.getElementById('resPH');
+// 2. NÚMERO DE MOLS (n = m/MM)
+function resolverMols() {
+    const m = parseFloat(document.getElementById('n_massa').value);
+    const mm = parseFloat(document.getElementById('n_mm').value);
+    const res = document.getElementById('res_n');
+
+    if (m && mm) {
+        let n = m / mm;
+        res.innerHTML = `
+            <span class="step">Passo 1: n = m / MM</span><br>
+            <span class="step">Passo 2: n = ${m}g / ${mm}g/mol</span><br>
+            <span class="final-res">n = ${n.toFixed(4)} mol</span>
+        `;
+    } else {
+        res.innerHTML = "❌ Preencha Massa e MM.";
+    }
+}
+
+// 3. MOLARIDADE (M = m / MM * V)
+function resolverMolaridade() {
+    const m = parseFloat(document.getElementById('m_massa').value);
+    const mm = parseFloat(document.getElementById('m_mm').value);
+    const v = parseFloat(document.getElementById('m_vol').value);
+    const res = document.getElementById('res_m');
+
+    if (m && mm && v) {
+        let vL = (v >= 10) ? v / 1000 : v;
+        let M = m / (mm * vL);
+
+        res.innerHTML = `
+            <span class="step">Passo 1: M = m / (MM * V)</span><br>
+            <span class="step">Passo 2: M = ${m} / (${mm} * ${vL})</span><br>
+            <span class="final-res">M = ${M.toFixed(3)} mol/L</span>
+        `;
+    } else {
+        res.innerHTML = "❌ Preencha Massa, MM e Vol.";
+    }
+}
+
+// 4. TÍTULO E PORCENTAGEM
+function resolverTitulo() {
+    const m1 = parseFloat(document.getElementById('t_soluto').value);
+    const mt = parseFloat(document.getElementById('t_total').value);
+    const res = document.getElementById('res_t');
+
+    if (m1 && mt) {
+        let t = m1 / mt;
+        let p = t * 100;
+        res.innerHTML = `
+            <span class="step">Passo 1: τ = m1 / m_total</span><br>
+            <span class="step">Passo 2: τ = ${m1} / ${mt}</span><br>
+            <span class="final-res">Título: ${t.toFixed(3)}</span>
+            <span class="final-res">Porcentagem: ${p.toFixed(1)}%</span>
+        `;
+    }
+}
+
+// 5. DILUIÇÃO
+function resolverDiluicao() {
+    const c1 = parseFloat(document.getElementById('d_c1').value);
+    const v1 = parseFloat(document.getElementById('d_v1').value);
+    const c2 = parseFloat(document.getElementById('d_c2').value);
+    const res = document.getElementById('res_d');
+
+    if (c1 && v1 && c2) {
+        let v2 = (c1 * v1) / c2;
+        res.innerHTML = `
+            <span class="step">Fórmula: V2 = (C1 * V1) / C2</span><br>
+            <span class="final-res">Vf = ${v2.toFixed(2)} unidades</span>
+        `;
+    }
+}
+
+// 6. PH
+function resolverPH() {
+    const h = parseFloat(document.getElementById('ph_input').value);
+    const res = document.getElementById('res_ph');
 
     if (h > 0) {
         let ph = -Math.log10(h);
-        res.innerHTML = `<strong>pH = ${ph.toFixed(2)}</strong> <br> ${ph < 7 ? 'Meio Ácido' : 'Meio Básico'}`;
+        let poh = 14 - ph;
+        let classificacao = ph < 7 ? "ÁCIDA" : (ph > 7 ? "BÁSICA" : "NEUTRA");
+        
+        res.innerHTML = `
+            <span class="step">pH = -log(${h})</span><br>
+            <span class="final-res">pH: ${ph.toFixed(2)}</span>
+            <span class="final-res">pOH: ${poh.toFixed(2)}</span>
+            <span class="step">Solução: ${classificacao}</span>
+        `;
+    } else {
+        res.innerHTML = "❌ Concentração inválida.";
     }
 }
