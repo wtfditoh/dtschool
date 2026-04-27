@@ -1,80 +1,67 @@
-// 1. Soluções: Calcula Concentração Comum e Molaridade de uma vez
-function calcFullSolucao() {
-    const m1 = parseFloat(document.getElementById('m1_sol').value);
-    const mm = parseFloat(document.getElementById('mm_sol').value);
-    const v = parseFloat(document.getElementById('v_sol').value);
-    const res = document.getElementById('resFullSol');
+// --- CALCULADORA DE MOLARIDADE E CONCENTRAÇÃO (Questões 7-12 e 24-27) ---
+function calcMolaridadePro() {
+    const m = parseFloat(document.getElementById('m_sol_g').value);
+    const mm = parseFloat(document.getElementById('mm_g_mol').value);
+    const v_ml = parseFloat(document.getElementById('vol_ml').value);
+    const res = document.getElementById('resMolar');
 
-    if (m1 && v) {
-        let concComum = m1 / v;
-        let molaridade = mm ? (m1 / (mm * v)) : "Falta MM";
-        res.innerHTML = `C: ${concComum.toFixed(2)} g/L | M: ${typeof molaridade === 'number' ? molaridade.toFixed(2) + ' mol/L' : molaridade}`;
-    } else {
-        res.innerHTML = "Massa e Volume são obrigatórios!";
+    if (m && v_ml) {
+        let v_l = v_ml / 1000;
+        let C = m / v_l; [span_2](start_span)// Concentração Comum[span_2](end_span)
+        let M = mm ? (m / (mm * v_l)) : "N/A"; [span_3](start_span)// Concentração Molar[span_3](end_span)
+        
+        res.innerHTML = `C = ${C.toFixed(2)} g/L <br> M = ${typeof M === 'number' ? M.toFixed(3) + ' mol/L' : M}`;
     }
 }
 
-// 2. Gases: Equação de Clapeyron (PV = nRT)
-function calcGases() {
-    let p = parseFloat(document.getElementById('p_gas').value);
-    let v = parseFloat(document.getElementById('v_gas').value);
-    let n = parseFloat(document.getElementById('n_gas').value);
-    let t = parseFloat(document.getElementById('t_gas').value);
-    const R = 0.082;
-    const res = document.getElementById('resGases');
+// --- NOVO: CALCULADORA DE pH ---
+function calcPH() {
+    const h = parseFloat(document.getElementById('conc_h').value);
+    const res = document.getElementById('resPH');
 
-    if (!p && v && n && t) res.innerHTML = `P = ${(n * R * t / v).toFixed(2)} atm`;
-    else if (p && !v && n && t) res.innerHTML = `V = ${(n * R * t / p).toFixed(2)} L`;
-    else if (p && v && !n && t) res.innerHTML = `n = ${(p * v / (R * t)).toFixed(2)} mol`;
-    else if (p && v && n && !t) res.innerHTML = `T = ${(p * v / (n * R)).toFixed(2)} K`;
-    else res.innerHTML = "Deixe apenas UM campo vazio!";
+    if (h > 0) {
+        let ph = -Math.log10(h);
+        let poh = 14 - ph;
+        res.innerHTML = `pH: ${ph.toFixed(2)} <br> pOH: ${poh.toFixed(2)}`;
+    } else {
+        res.innerHTML = "Insira uma concentração > 0";
+    }
 }
 
-// 3. Diluição
-function calcDiluicao() {
-    const c1 = parseFloat(document.getElementById('c1').value);
-    const v1 = parseFloat(document.getElementById('v1').value);
-    const c2 = parseFloat(document.getElementById('c2').value);
+// --- NOVO: TERMOQUÍMICA (ΔH) ---
+function calcDeltaH() {
+    const hr = parseFloat(document.getElementById('h_reagentes').value);
+    const hp = parseFloat(document.getElementById('h_produtos').value);
+    const res = document.getElementById('resDeltaH');
+
+    if (!isNaN(hr) && !isNaN(hp)) {
+        let deltaH = hp - hr;
+        let tipo = deltaH > 0 ? "Endotérmica" : "Exotérmica";
+        res.innerHTML = `ΔH: ${deltaH.toFixed(2)} kJ <br> Reação ${tipo}`;
+    }
+}
+
+// --- NOVO: EBULIOSCOPIA ---
+function calcEbulioscopia() {
+    const ke = parseFloat(document.getElementById('ke_const').value);
+    const w = parseFloat(document.getElementById('molalidade').value);
+    const res = document.getElementById('resColig');
+
+    if (ke && w) {
+        let deltaTe = ke * w;
+        res.innerHTML = `ΔTe: ${deltaTe.toFixed(2)} °C (Aumento)`;
+    }
+}
+
+// --- DILUIÇÃO (Questão 17-18 da lógica) ---
+function calcDiluicaoVf() {
+    const c1 = parseFloat(document.getElementById('c_inicial').value);
+    const v1 = parseFloat(document.getElementById('v_inicial').value);
+    const c2 = parseFloat(document.getElementById('c_final').value);
     const res = document.getElementById('resDiluicao');
 
     if (c1 && v1 && c2) {
         let v2 = (c1 * v1) / c2;
-        res.innerHTML = `Volume Final: ${v2.toFixed(2)} L`;
-    }
-}
-
-// 4. Fração Molar
-function calcFracao() {
-    const n1 = parseFloat(document.getElementById('n_soluto').value);
-    const n2 = parseFloat(document.getElementById('n_solvente').value);
-    const res = document.getElementById('resFracao');
-
-    if (n1 && n2) {
-        let nt = n1 + n2;
-        let x1 = n1 / nt;
-        let x2 = n2 / nt;
-        res.innerHTML = `X1: ${x1.toFixed(2)} | X2: ${x2.toFixed(2)}`;
-    }
-}
-
-// 5. Densidade e PPM (Partes por Milhão)
-function calcDensidadePPM() {
-    const m = parseFloat(document.getElementById('m_total').value);
-    const v = parseFloat(document.getElementById('v_total').value);
-    const res = document.getElementById('resDensPPM');
-
-    if (m && v) {
-        let d = m / v;
-        let ppm = (m / (v * 1000)) * 1000000; // Simplificado para g/mL
-        res.innerHTML = `D: ${d.toFixed(2)} g/mL | PPM: ${ppm.toFixed(0)}`;
-    }
-}
-
-// 6. Conversor Kelvin
-function convertTemp() {
-    const c = parseFloat(document.getElementById('celsius').value);
-    const res = document.getElementById('resTemp');
-    if (!isNaN(c)) {
-        res.innerHTML = `Kelvin: ${(c + 273.15).toFixed(2)} K`;
+        res.innerHTML = `Vf: ${v2.toFixed(2)} (unid. V1)`;
     }
 }
