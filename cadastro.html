@@ -12,39 +12,52 @@
 <body>
 <div class="login-wrapper">
     
-    <!-- MASCOTE 3D BRAIN -->
-    <div class="brain-mascot" id="mascote">
-        <div class="brain-orb">
-            <div class="orb-inner">
-                <div class="orb-glow"></div>
-                <div class="orb-core">
-                    <i data-lucide="brain-circuit" class="brain-icon"></i>
-                </div>
-                <div class="orb-ring ring-1"></div>
-                <div class="orb-ring ring-2"></div>
-                <div class="orb-ring ring-3"></div>
+    <!-- MASCOTE CÉREBRO 3D -->
+    <div class="brain-character" id="mascote">
+        <svg class="brain-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="brainGrad" cx="40%" cy="35%">
+                    <stop offset="0%" stop-color="#b060ff"/>
+                    <stop offset="60%" stop-color="#8a2be2"/>
+                    <stop offset="100%" stop-color="#5a10c0"/>
+                </radialGradient>
+                <filter id="shadow">
+                    <feDropShadow dx="0" dy="8" stdDeviation="6" flood-opacity="0.4"/>
+                </filter>
+            </defs>
+            <g filter="url(#shadow)">
+                <path fill="url(#brainGrad)" stroke="#5a10c0" stroke-width="2"
+                      d="M 70 100 Q 50 70, 55 50 Q 60 30, 75 25 Q 90 20, 100 30 Q 100 50, 95 70 Q 90 85, 85 100 Q 82 120, 75 135 Q 70 145, 65 155 Q 62 165, 70 170 L 70 100 Z"/>
+                <path fill="url(#brainGrad)" stroke="#5a10c0" stroke-width="2"
+                      d="M 130 100 Q 150 70, 145 50 Q 140 30, 125 25 Q 110 20, 100 30 Q 100 50, 105 70 Q 110 85, 115 100 Q 118 120, 125 135 Q 130 145, 135 155 Q 138 165, 130 170 L 130 100 Z"/>
+                <g stroke="#6a1fc2" stroke-width="3" fill="none" opacity="0.6" stroke-linecap="round">
+                    <path d="M 65 55 Q 70 60, 75 58"/><path d="M 62 70 Q 68 75, 73 73"/>
+                    <path d="M 60 90 Q 67 95, 72 92"/><path d="M 63 110 Q 70 115, 75 112"/>
+                    <path d="M 65 130 Q 71 135, 76 132"/><path d="M 135 55 Q 130 60, 125 58"/>
+                    <path d="M 138 70 Q 132 75, 127 73"/><path d="M 140 90 Q 133 95, 128 92"/>
+                    <path d="M 137 110 Q 130 115, 125 112"/><path d="M 135 130 Q 129 135, 124 132"/>
+                </g>
+                <ellipse fill="rgba(255,255,255,0.15)" cx="75" cy="45" rx="12" ry="8" transform="rotate(-20 75 45)"/>
+                <ellipse fill="rgba(255,255,255,0.15)" cx="125" cy="45" rx="12" ry="8" transform="rotate(20 125 45)"/>
+            </g>
+        </svg>
+        <div class="character-eyes">
+            <div class="char-eye left-eye">
+                <div class="eyeball"><div class="pupil" id="pupil-left"><div class="pupil-shine"></div></div></div>
             </div>
-            
-            <!-- OLHOS -->
-            <div class="eyes-container">
-                <div class="eye left-eye">
-                    <div class="pupil" id="pupil-left"></div>
-                    <div class="shine"></div>
-                </div>
-                <div class="eye right-eye">
-                    <div class="pupil" id="pupil-right"></div>
-                    <div class="shine"></div>
-                </div>
+            <div class="char-eye right-eye">
+                <div class="eyeball"><div class="pupil" id="pupil-right"><div class="pupil-shine"></div></div></div>
             </div>
         </div>
-        
-        <!-- PARTÍCULAS FLUTUANTES -->
-        <div class="particles">
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
+        <div class="character-mouth" id="mouth">
+            <svg viewBox="0 0 40 20" class="mouth-svg">
+                <path id="mouth-path" d="M 5 10 Q 20 15 35 10" stroke="#8a2be2" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="thought-particles">
+            <div class="thought-bubble"></div>
+            <div class="thought-bubble"></div>
+            <div class="thought-bubble"></div>
         </div>
     </div>
 
@@ -58,48 +71,23 @@
         </div>
 
         <div class="input-field">
-            <div class="input-icon">
-                <i data-lucide="user"></i>
-            </div>
-            <input 
-                type="text" 
-                id="user-name" 
-                placeholder="Seu nome" 
-                autocomplete="name"
-                spellcheck="false"
-            >
+            <div class="input-icon"><i data-lucide="user"></i></div>
+            <input type="text" id="user-name" placeholder="Seu nome" autocomplete="name" spellcheck="false">
         </div>
 
         <div class="input-field">
-            <div class="input-icon">
-                <i data-lucide="mail"></i>
-            </div>
-            <input 
-                type="email" 
-                id="user-email" 
-                placeholder="Seu melhor e-mail" 
-                autocomplete="email"
-                spellcheck="false"
-            >
+            <div class="input-icon"><i data-lucide="mail"></i></div>
+            <input type="email" id="user-email" placeholder="Seu melhor e-mail" autocomplete="email" spellcheck="false">
         </div>
 
         <div class="input-field">
-            <div class="input-icon">
-                <i data-lucide="lock"></i>
-            </div>
-            <input 
-                type="password" 
-                id="user-pass" 
-                placeholder="Crie uma senha forte" 
-                autocomplete="new-password"
-                oninput="checarForca()"
-            >
+            <div class="input-icon"><i data-lucide="lock"></i></div>
+            <input type="password" id="user-pass" placeholder="Crie uma senha forte" autocomplete="new-password" oninput="checarForca()">
             <button type="button" class="toggle-password" onclick="toggleSenha()">
                 <i data-lucide="eye" id="eye-icon"></i>
             </button>
         </div>
 
-        <!-- FORÇA DA SENHA -->
         <div class="password-strength" id="strength-box">
             <div class="strength-bars">
                 <div class="bar" id="bar1"></div>
@@ -117,7 +105,7 @@
             <i data-lucide="user-plus"></i>
         </button>
 
-        <div class="footer-actions">
+        <div class="footer-actions" style="margin-top:20px;">
             <a href="login.html" class="link-secondary">Já tem conta? <strong>Entrar agora</strong></a>
         </div>
 
@@ -132,7 +120,6 @@
 <script type="module" src="login-logica.js"></script>
 <script>
     lucide.createIcons();
-
     const mascote = document.getElementById('mascote');
     const inputName = document.getElementById('user-name');
     const inputEmail = document.getElementById('user-email');
@@ -140,38 +127,31 @@
     const card = document.getElementById('login-card');
     const pupilL = document.getElementById('pupil-left');
     const pupilR = document.getElementById('pupil-right');
+    const mouth = document.getElementById('mouth-path');
 
-    // ── MOVIMENTO DOS OLHOS ─────────────────────────────────────────
     function moverOlhos(x, y) {
         if (!mascote || mascote.classList.contains('hide-eyes')) return;
         const rect = mascote.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        
-        const deltaX = x - centerX;
-        const deltaY = y - centerY;
-        const angle = Math.atan2(deltaY, deltaX);
-        const distance = Math.min(3, Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 30);
-        
+        const centerY = rect.top + rect.height / 2 - 10;
+        const angle = Math.atan2(y - centerY, x - centerX);
+        const distance = Math.min(4, Math.hypot(x - centerX, y - centerY) / 40);
         const moveX = Math.cos(angle) * distance;
         const moveY = Math.sin(angle) * distance;
-        
         if (pupilL) pupilL.style.transform = `translate(${moveX}px, ${moveY}px)`;
         if (pupilR) pupilR.style.transform = `translate(${moveX}px, ${moveY}px)`;
     }
 
     document.addEventListener('mousemove', e => moverOlhos(e.clientX, e.clientY));
-    document.addEventListener('touchmove', e => {
-        if (e.touches[0]) moverOlhos(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
+    document.addEventListener('touchmove', e => { if (e.touches[0]) moverOlhos(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
 
-    // ── ESTADOS DO MASCOTE ─────────────────────────────────────────
     [inputName, inputEmail].forEach(input => {
         if (!input) return;
         input.addEventListener('focus', () => {
             mascote.classList.remove('hide-eyes', 'error', 'success');
-            if (pupilL) pupilL.style.transform = 'translate(0, 4px)';
-            if (pupilR) pupilR.style.transform = 'translate(0, 4px)';
+            if (pupilL) pupilL.style.transform = 'translate(0, 5px)';
+            if (pupilR) pupilR.style.transform = 'translate(0, 5px)';
+            if (mouth) mouth.setAttribute('d', 'M 5 10 Q 20 15 35 10');
         });
         input.addEventListener('blur', () => {
             if (pupilL) pupilL.style.transform = 'translate(0, 0)';
@@ -182,13 +162,14 @@
     inputPass && inputPass.addEventListener('focus', () => {
         mascote.classList.add('hide-eyes');
         mascote.classList.remove('error', 'success');
+        if (mouth) mouth.setAttribute('d', 'M 5 12 Q 20 8 35 12');
     });
 
     inputPass && inputPass.addEventListener('blur', () => {
         mascote.classList.remove('hide-eyes');
+        if (mouth) mouth.setAttribute('d', 'M 5 10 Q 20 15 35 10');
     });
 
-    // ── TOGGLE SENHA ────────────────────────────────────────────────
     window.toggleSenha = function() {
         const type = inputPass.type === 'password' ? 'text' : 'password';
         inputPass.type = type;
@@ -197,32 +178,22 @@
         lucide.createIcons();
     };
 
-    // ── FORÇA DA SENHA ──────────────────────────────────────────────
     window.checarForca = function() {
         const val = inputPass.value;
         const box = document.getElementById('strength-box');
-        
-        if (!val) {
-            box.style.display = 'none';
-            return;
-        }
-        
+        if (!val) { box.style.display = 'none'; return; }
         box.style.display = 'block';
-        
         let score = 0;
         if (val.length >= 6) score++;
         if (val.length >= 10) score++;
         if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
         if (/[^A-Za-z0-9]/.test(val)) score++;
-        
         const colors = ['#ff4455', '#ff8800', '#ffbb33', '#00e5a0'];
         const labels = ['SENHA FRACA', 'SENHA MÉDIA', 'SENHA BOA', 'SENHA FORTE'];
-        
         for (let i = 1; i <= 4; i++) {
             const bar = document.getElementById('bar' + i);
             if (bar) bar.style.background = i <= score ? colors[score - 1] : 'rgba(255,255,255,0.05)';
         }
-        
         const label = document.getElementById('strength-label');
         if (label) {
             label.textContent = labels[score - 1] || 'SENHA MUITO FRACA';
@@ -230,20 +201,22 @@
         }
     };
 
-    // ── ANIMAÇÕES DE FEEDBACK ───────────────────────────────────────
     window.yetiErro = function() {
         mascote.classList.add('error');
         mascote.classList.remove('success', 'hide-eyes');
         card.classList.add('shake-error');
+        if (mouth) mouth.setAttribute('d', 'M 5 15 Q 20 10 35 15');
         setTimeout(() => {
             mascote.classList.remove('error');
             card.classList.remove('shake-error');
+            if (mouth) mouth.setAttribute('d', 'M 5 10 Q 20 15 35 10');
         }, 1500);
     };
 
     window.yetiSucesso = function() {
         mascote.classList.add('success');
         mascote.classList.remove('error', 'hide-eyes');
+        if (mouth) mouth.setAttribute('d', 'M 5 8 Q 20 18 35 8');
     };
 </script>
 </body>
