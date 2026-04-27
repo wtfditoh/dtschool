@@ -12,39 +12,103 @@
 <body>
 <div class="login-wrapper">
     
-    <!-- MASCOTE 3D BRAIN -->
-    <div class="brain-mascot" id="mascote">
-        <div class="brain-orb">
-            <div class="orb-inner">
-                <div class="orb-glow"></div>
-                <div class="orb-core">
-                    <i data-lucide="brain-circuit" class="brain-icon"></i>
-                </div>
-                <div class="orb-ring ring-1"></div>
-                <div class="orb-ring ring-2"></div>
-                <div class="orb-ring ring-3"></div>
-            </div>
+    <!-- MASCOTE CÉREBRO 3D -->
+    <div class="brain-character" id="mascote">
+        <!-- SVG do cérebro -->
+        <svg class="brain-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="brainGrad" cx="40%" cy="35%">
+                    <stop offset="0%" stop-color="#b060ff"/>
+                    <stop offset="60%" stop-color="#8a2be2"/>
+                    <stop offset="100%" stop-color="#5a10c0"/>
+                </radialGradient>
+                <filter id="shadow">
+                    <feDropShadow dx="0" dy="8" stdDeviation="6" flood-opacity="0.4"/>
+                </filter>
+            </defs>
             
-            <!-- OLHOS -->
-            <div class="eyes-container">
-                <div class="eye left-eye">
-                    <div class="pupil" id="pupil-left"></div>
-                    <div class="shine"></div>
+            <!-- Base do cérebro -->
+            <g filter="url(#shadow)">
+                <!-- Hemisfério esquerdo -->
+                <path fill="url(#brainGrad)" stroke="#5a10c0" stroke-width="2"
+                      d="M 70 100 
+                         Q 50 70, 55 50
+                         Q 60 30, 75 25
+                         Q 90 20, 100 30
+                         Q 100 50, 95 70
+                         Q 90 85, 85 100
+                         Q 82 120, 75 135
+                         Q 70 145, 65 155
+                         Q 62 165, 70 170
+                         L 70 100 Z"/>
+                
+                <!-- Hemisfério direito -->
+                <path fill="url(#brainGrad)" stroke="#5a10c0" stroke-width="2"
+                      d="M 130 100
+                         Q 150 70, 145 50
+                         Q 140 30, 125 25
+                         Q 110 20, 100 30
+                         Q 100 50, 105 70
+                         Q 110 85, 115 100
+                         Q 118 120, 125 135
+                         Q 130 145, 135 155
+                         Q 138 165, 130 170
+                         L 130 100 Z"/>
+                
+                <!-- Sulcos e giros -->
+                <g stroke="#6a1fc2" stroke-width="3" fill="none" opacity="0.6" stroke-linecap="round">
+                    <path d="M 65 55 Q 70 60, 75 58"/>
+                    <path d="M 62 70 Q 68 75, 73 73"/>
+                    <path d="M 60 90 Q 67 95, 72 92"/>
+                    <path d="M 63 110 Q 70 115, 75 112"/>
+                    <path d="M 65 130 Q 71 135, 76 132"/>
+                    <path d="M 135 55 Q 130 60, 125 58"/>
+                    <path d="M 138 70 Q 132 75, 127 73"/>
+                    <path d="M 140 90 Q 133 95, 128 92"/>
+                    <path d="M 137 110 Q 130 115, 125 112"/>
+                    <path d="M 135 130 Q 129 135, 124 132"/>
+                </g>
+                
+                <!-- Brilhos -->
+                <ellipse fill="rgba(255,255,255,0.15)" cx="75" cy="45" rx="12" ry="8" transform="rotate(-20 75 45)"/>
+                <ellipse fill="rgba(255,255,255,0.15)" cx="125" cy="45" rx="12" ry="8" transform="rotate(20 125 45)"/>
+                <ellipse fill="rgba(255,255,255,0.08)" cx="70" cy="100" rx="8" ry="5"/>
+                <ellipse fill="rgba(255,255,255,0.08)" cx="130" cy="100" rx="8" ry="5"/>
+            </g>
+        </svg>
+        
+        <!-- Olhos -->
+        <div class="character-eyes">
+            <div class="char-eye left-eye">
+                <div class="eyeball">
+                    <div class="pupil" id="pupil-left">
+                        <div class="pupil-shine"></div>
+                    </div>
                 </div>
-                <div class="eye right-eye">
-                    <div class="pupil" id="pupil-right"></div>
-                    <div class="shine"></div>
+            </div>
+            <div class="char-eye right-eye">
+                <div class="eyeball">
+                    <div class="pupil" id="pupil-right">
+                        <div class="pupil-shine"></div>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <!-- PARTÍCULAS FLUTUANTES -->
-        <div class="particles">
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
+        <!-- Boca -->
+        <div class="character-mouth" id="mouth">
+            <svg viewBox="0 0 40 20" class="mouth-svg">
+                <path id="mouth-path" d="M 5 10 Q 20 15 35 10" 
+                      stroke="#8a2be2" stroke-width="3" 
+                      fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        
+        <!-- Partículas pensando -->
+        <div class="thought-particles">
+            <div class="thought-bubble"></div>
+            <div class="thought-bubble"></div>
+            <div class="thought-bubble"></div>
         </div>
     </div>
 
@@ -131,18 +195,18 @@
     const card = document.getElementById('login-card');
     const pupilL = document.getElementById('pupil-left');
     const pupilR = document.getElementById('pupil-right');
+    const mouth = document.getElementById('mouth-path');
 
     // ── MOVIMENTO DOS OLHOS ─────────────────────────────────────────
     function moverOlhos(x, y) {
         if (!mascote || mascote.classList.contains('hide-eyes')) return;
+        
         const rect = mascote.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
+        const centerY = rect.top + rect.height / 2 - 10;
         
-        const deltaX = x - centerX;
-        const deltaY = y - centerY;
-        const angle = Math.atan2(deltaY, deltaX);
-        const distance = Math.min(3, Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 30);
+        const angle = Math.atan2(y - centerY, x - centerX);
+        const distance = Math.min(4, Math.hypot(x - centerX, y - centerY) / 40);
         
         const moveX = Math.cos(angle) * distance;
         const moveY = Math.sin(angle) * distance;
@@ -159,8 +223,9 @@
     // ── ESTADOS DO MASCOTE ─────────────────────────────────────────
     inputEmail && inputEmail.addEventListener('focus', () => {
         mascote.classList.remove('hide-eyes', 'error', 'success');
-        if (pupilL) pupilL.style.transform = 'translate(0, 4px)';
-        if (pupilR) pupilR.style.transform = 'translate(0, 4px)';
+        if (pupilL) pupilL.style.transform = 'translate(0, 5px)';
+        if (pupilR) pupilR.style.transform = 'translate(0, 5px)';
+        if (mouth) mouth.setAttribute('d', 'M 5 10 Q 20 15 35 10');
     });
 
     inputEmail && inputEmail.addEventListener('blur', () => {
@@ -171,10 +236,12 @@
     inputPass && inputPass.addEventListener('focus', () => {
         mascote.classList.add('hide-eyes');
         mascote.classList.remove('error', 'success');
+        if (mouth) mouth.setAttribute('d', 'M 5 12 Q 20 8 35 12');
     });
 
     inputPass && inputPass.addEventListener('blur', () => {
         mascote.classList.remove('hide-eyes');
+        if (mouth) mouth.setAttribute('d', 'M 5 10 Q 20 15 35 10');
     });
 
     // ── TOGGLE SENHA ────────────────────────────────────────────────
@@ -191,15 +258,18 @@
         mascote.classList.add('error');
         mascote.classList.remove('success', 'hide-eyes');
         card.classList.add('shake-error');
+        if (mouth) mouth.setAttribute('d', 'M 5 15 Q 20 10 35 15');
         setTimeout(() => {
             mascote.classList.remove('error');
             card.classList.remove('shake-error');
+            if (mouth) mouth.setAttribute('d', 'M 5 10 Q 20 15 35 10');
         }, 1500);
     };
 
     window.yetiSucesso = function() {
         mascote.classList.add('success');
         mascote.classList.remove('error', 'hide-eyes');
+        if (mouth) mouth.setAttribute('d', 'M 5 8 Q 20 18 35 8');
     };
 
     window.recuperarSenha = function(e) {
