@@ -3,82 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HubBrain - Química Ultra</title>
-    <link rel="stylesheet" href="style.css">
+    <title>HubBrain | Química Total 2º Ano</title>
+    <link rel="stylesheet" href="quimica.css">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>HubBrain: Química Pro 🧪</h1>
-            <p>O fim do sofrimento acadêmico. Insira os dados e deixe o cérebro agir.</p>
+        <header class="main-header">
+            <h1>HUB<span>BRAIN</span> <small>// QUÍMICA TOTAL</small></h1>
+            <p>De Soluções a Equilíbrio Iônico e Termoquímica.</p>
         </header>
 
-        <main class="grid-calc">
-            <section class="card">
-                <h3>Soluções & Molaridade</h3>
-                <div class="input-group">
-                    <input type="number" id="m1_sol" placeholder="Massa Soluto (g)">
-                    <input type="number" id="mm_sol" placeholder="Massa Molar (g/mol)">
-                    <input type="number" id="v_sol" placeholder="Volume (L)">
-                    <button onclick="calcFullSolucao()">Calcular Tudo</button>
+        <div class="grid-layout">
+            <section class="card border-blue">
+                <div class="card-tag">Revisão</div>
+                <h3>Concentração e Molaridade</h3>
+                <div class="inputs">
+                    <input type="number" id="m_sol_g" placeholder="Massa Soluto (g)">
+                    <input type="number" id="mm_g_mol" placeholder="Massa Molar (g/mol)">
+                    <input type="number" id="vol_ml" placeholder="Volume (mL)">
                 </div>
-                <div class="result" id="resFullSol">C: -- | M: --</div>
+                <button onclick="calcMolaridadePro()">CALCULAR M e C</button>
+                <div class="result-box" id="resMolar">Aguardando...</div>
             </section>
 
-            <section class="card">
-                <h3>Gases (PV = nRT)</h3>
-                <p><small>Deixe em branco o que quer descobrir</small></p>
-                <div class="input-group">
-                    <input type="number" id="p_gas" placeholder="Pressão (atm)">
-                    <input type="number" id="v_gas" placeholder="Volume (L)">
-                    <input type="number" id="n_gas" placeholder="Mols (mol)">
-                    <input type="number" id="t_gas" placeholder="Temp (K)">
-                    <button onclick="calcGases()">Descobrir Incógnita</button>
+            <section class="card border-purple">
+                <div class="card-tag">Novo</div>
+                <h3>Calculadora de pH</h3>
+                <div class="inputs">
+                    <input type="number" id="conc_h" placeholder="Concentração de [H+] (ex: 0.01)">
                 </div>
-                <div class="result" id="resGases">Resultado: --</div>
+                <button onclick="calcPH()">CALCULAR pH</button>
+                <div class="result-box" id="resPH">pH = -log[H+]</div>
             </section>
 
-            <section class="card">
-                <h3>Diluição (C1V1 = C2V2)</h3>
-                <div class="input-group">
-                    <input type="number" id="c1" placeholder="Conc. Inicial">
-                    <input type="number" id="v1" placeholder="Vol. Inicial">
-                    <input type="number" id="c2" placeholder="Conc. Final">
-                    <button onclick="calcDiluicao()">Achar Volume Final</button>
+            <section class="card border-red">
+                <div class="card-tag">Novo</div>
+                <h3>Variação de Entalpia (ΔH)</h3>
+                <div class="inputs">
+                    <input type="number" id="h_reagentes" placeholder="H Reagentes (kJ)">
+                    <input type="number" id="h_produtos" placeholder="H Produtos (kJ)">
                 </div>
-                <div class="result" id="resDiluicao">V2: --</div>
+                <button onclick="calcDeltaH()">CALCULAR ΔH</button>
+                <div class="result-box" id="resDeltaH">ΔH = Hp - Hr</div>
             </section>
 
-            <section class="card">
-                <h3>Fração Molar (X)</h3>
-                <div class="input-group">
-                    <input type="number" id="n_soluto" placeholder="Mols Soluto">
-                    <input type="number" id="n_solvente" placeholder="Mols Solvente">
-                    <button onclick="calcFracao()">Calcular Fração</button>
+            <section class="card border-green">
+                <div class="card-tag">Avançado</div>
+                <h3>Ebulioscopia (ΔTe)</h3>
+                <p class="hint">Aumento da temp. de ebulição</p>
+                <div class="inputs">
+                    <input type="number" id="ke_const" placeholder="Constante Ke">
+                    <input type="number" id="molalidade" placeholder="Molalidade (W)">
                 </div>
-                <div class="result" id="resFracao">X1: -- | X2: --</div>
+                <button onclick="calcEbulioscopia()">CALCULAR ΔTe</button>
+                <div class="result-box" id="resColig">ΔTe = Ke . W</div>
             </section>
 
-            <section class="card">
-                <h3>PPM & Densidade</h3>
-                <div class="input-group">
-                    <input type="number" id="m_total" placeholder="Massa Total (g)">
-                    <input type="number" id="v_total" placeholder="Volume Total (mL)">
-                    <button onclick="calcDensidadePPM()">Calcular</button>
+            <section class="card border-orange">
+                <div class="card-tag">Físico-Química</div>
+                <h3>Diluição (Vf)</h3>
+                <div class="inputs">
+                    <input type="number" id="c_inicial" placeholder="C Inicial">
+                    <input type="number" id="v_inicial" placeholder="V Inicial">
+                    <input type="number" id="c_final" placeholder="C Final">
                 </div>
-                <div class="result" id="resDensPPM">D: -- | PPM: --</div>
+                <button onclick="calcDiluicaoVf()">CALCULAR V FINAL</button>
+                <div class="result-box" id="resDiluicao">C1.V1 = C2.V2</div>
             </section>
-
-            <section class="card">
-                <h3>Celsius ↔ Kelvin</h3>
-                <div class="input-group">
-                    <input type="number" id="celsius" placeholder="Celsius (°C)">
-                    <button onclick="convertTemp()">Converter</button>
-                </div>
-                <div class="result" id="resTemp">Kelvin: --</div>
-            </section>
-        </main>
+        </div>
     </div>
-    <script src="script.js"></script>
+    <script src="quimica-logica.js"></script>
 </body>
 </html>
