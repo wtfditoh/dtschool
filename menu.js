@@ -16,7 +16,7 @@ const criarMenuGlobal = () => {
                 <a href="notas.html" id="link-notas"><i data-lucide="layout-dashboard"></i> Notas</a>
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
                 <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
-                <a href="caderno.html" id="link-caderno"><i data-lucide="notebook-pen"></i> Caderno</a>
+                <a href="quimica.html" id="link-caderno"><i data-lucide="notebook-pen"></i> Química</a>
                 <a href="cronograma.html" id="link-cronograma"><i data-lucide="calendar-days"></i> Cronograma</a>
 
                 <div class="menu-section-label">PRODUTIVIDADE</div>
