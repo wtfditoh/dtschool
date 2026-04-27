@@ -3,73 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HubBrain | Química Glass Pro</title>
+    <title>HUBBRAIN | QUÍMICA TOTAL 2026</title>
     <link rel="stylesheet" href="quimica.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div class="glass-bg"></div>
     <div class="container">
         <header class="main-header">
-            <h1>HUB<span>BRAIN</span></h1>
-            [span_0](start_span)<p>Laboratório de Físico-Química // 2º Ano[span_0](end_span)</p>
+            <div class="logo-area">
+                <h1>HUB<span>BRAIN</span></h1>
+                <div class="status-bar">SANTOS DUMONT EDITION // 2º ANO</div>
+            </div>
+            <p class="subtitle">O fim do sofrimento em Físico-Química. Resolva revisões, listas e provas em segundos.</p>
         </header>
 
-        <div class="grid-layout">
-            <section class="card">
-                [span_1](start_span)<div class="card-tag">Fórmula: M = m / (MM * V)[span_1](end_span)</div>
-                <h3>Concentração Molar (M)</h3>
-                <div class="inputs">
-                    <input type="number" id="mol_m" placeholder="Massa do soluto (g)">
-                    <input type="number" id="mol_mm" placeholder="Massa Molar (g/mol)">
-                    <input type="number" id="mol_v" placeholder="Volume (mL ou L)">
+        <main class="grid-calc">
+            <section class="card glass-item">
+                <div class="card-header">
+                    <span class="icon">⚗️</span>
+                    <h3>Concentração Comum</h3>
+                    <span class="formula-badge">C = m / V</span>
                 </div>
-                <button onclick="calcMolaridade()">Calcular Molaridade</button>
-                [span_2](start_span)[span_3](start_span)<div class="result-box" id="resMolar">Resultado em mol/L[span_2](end_span)[span_3](end_span)</div>
+                <p class="description">Ideal para as questões 7, 8, 9 e 10 da revisão.</p>
+                <div class="input-group">
+                    <label>Massa do Soluto (g)</label>
+                    <input type="number" id="c_massa" placeholder="Ex: 12">
+                    <label>Volume (mL ou L)</label>
+                    <input type="number" id="c_vol" placeholder="Ex: 500 ou 0.5">
+                </div>
+                <button class="btn-glow" onclick="resolverConcentracao()">EXECUTAR CÁLCULO</button>
+                <div class="result-area" id="res_c">Aguardando dados...</div>
             </section>
 
-            <section class="card">
-                [span_4](start_span)<div class="card-tag">Fórmula: n = m / MM[span_4](end_span)</div>
-                <h3>Número de Mols (n)</h3>
-                <div class="inputs">
-                    <input type="number" id="n_massa" placeholder="Massa (g)">
-                    <input type="number" id="n_mm" placeholder="Massa Molar (g/mol)">
+            <section class="card glass-item">
+                <div class="card-header">
+                    <span class="icon">⚖️</span>
+                    <h3>Número de Mols</h3>
+                    <span class="formula-badge">n = m / MM</span>
                 </div>
-                <button onclick="calcMols()">Calcular Mols</button>
-                [span_5](start_span)<div class="result-box" id="resMols">Calcula mols de soluto[span_5](end_span)</div>
+                <p class="description">Resolve questões de NaOH (4g), Glicose (90g) e NaCl.</p>
+                <div class="input-group">
+                    <label>Massa Dada (g)</label>
+                    <input type="number" id="n_massa" placeholder="Ex: 4 ou 90">
+                    <label>Massa Molar (g/mol)</label>
+                    <input type="number" id="n_mm" placeholder="Ex: 40 ou 180">
+                </div>
+                <button class="btn-glow" onclick="resolverMols()">EXECUTAR CÁLCULO</button>
+                <div class="result-area" id="res_n">Aguardando dados...</div>
             </section>
 
-            <section class="card">
-                [span_6](start_span)<div class="card-tag">Fórmula: C = m / V[span_6](end_span)</div>
-                <h3>Concentração Comum (C)</h3>
-                <div class="inputs">
-                    <input type="number" id="c_m" placeholder="Massa (g)">
-                    <input type="number" id="c_v" placeholder="Volume (L ou mL)">
+            <section class="card glass-item highlight">
+                <div class="card-header">
+                    <span class="icon">🧪</span>
+                    <h3>Molaridade (M)</h3>
+                    <span class="formula-badge">M = n / V</span>
                 </div>
-                <button onclick="calcComum()">Calcular Concentração</button>
-                [span_7](start_span)[span_8](start_span)<div class="result-box" id="resComum">Resultado em g/L[span_7](end_span)[span_8](end_span)</div>
+                <p class="description">Para questões complexas como a do NaCl (2,925g).</p>
+                <div class="input-group">
+                    <label>Massa (g)</label>
+                    <input type="number" id="m_massa" placeholder="Ex: 2.925">
+                    <label>Massa Molar (MM)</label>
+                    <input type="number" id="m_mm" placeholder="Ex: 58.5">
+                    <label>Volume (mL ou L)</label>
+                    <input type="number" id="m_vol" placeholder="Ex: 250">
+                </div>
+                <button class="btn-glow" onclick="resolverMolaridade()">EXECUTAR CÁLCULO</button>
+                <div class="result-area" id="res_m">Aguardando dados...</div>
             </section>
 
-            <section class="card">
-                [span_9](start_span)<div class="card-tag">Fórmula: T = V1 / V[span_9](end_span)</div>
-                <h3>Título & Porcentagem</h3>
-                <div class="inputs">
-                    <input type="number" id="t_v1" placeholder="Volume/Massa Soluto">
-                    <input type="number" id="t_vt" placeholder="Volume/Massa Total">
+            <section class="card glass-item">
+                <div class="card-header">
+                    <span class="icon">📊</span>
+                    <h3>Título & %</h3>
+                    <span class="formula-badge">τ = m1 / m</span>
                 </div>
-                <button onclick="calcTitulo()">Calcular Título</button>
-                [span_10](start_span)<div class="result-box" id="resTitulo">Relação soluto/solução[span_10](end_span)</div>
+                <p class="description">Questões de Título em Massa ou Volume (Questões 13-15).</p>
+                <div class="input-group">
+                    <label>Massa/Vol Soluto</label>
+                    <input type="number" id="t_soluto" placeholder="Ex: 20">
+                    <label>Massa/Vol Solução (Total)</label>
+                    <input type="number" id="t_total" placeholder="Ex: 100">
+                </div>
+                <button class="btn-glow" onclick="resolverTitulo()">EXECUTAR CÁLCULO</button>
+                <div class="result-area" id="res_t">Aguardando dados...</div>
             </section>
 
-            <section class="card">
-                <div class="card-tag">Fórmula: pH = -log[H+]</div>
-                <h3>Acidez (pH)</h3>
-                <div class="inputs">
-                    <input type="number" id="ph_h" step="any" placeholder="Concentração [H+]">
+            <section class="card glass-item">
+                <div class="card-header">
+                    <span class="icon">💧</span>
+                    <h3>Diluição</h3>
+                    <span class="formula-badge">C1.V1 = C2.V2</span>
                 </div>
-                <button onclick="calcPH()">Calcular pH</button>
-                <div class="result-box" id="resPH">Escala 0 a 14</div>
+                <p class="description">Achar o volume final ou concentração após adicionar água.</p>
+                <div class="input-group">
+                    <input type="number" id="d_c1" placeholder="C Inicial">
+                    <input type="number" id="d_v1" placeholder="V Inicial">
+                    <input type="number" id="d_c2" placeholder="C Final">
+                </div>
+                <button class="btn-glow" onclick="resolverDiluicao()">ACHAR V2</button>
+                <div class="result-area" id="res_d">Aguardando dados...</div>
             </section>
-        </div>
+
+            <section class="card glass-item">
+                <div class="card-header">
+                    <span class="icon">🔋</span>
+                    <h3>Potencial Hidrogeniônico</h3>
+                    <span class="formula-badge">pH = -log[H+]</span>
+                </div>
+                <p class="description">Calcula pH, pOH e classifica a solução.</p>
+                <div class="input-group">
+                    <label>Concentração [H+]</label>
+                    <input type="number" id="ph_input" step="any" placeholder="Ex: 0.001">
+                </div>
+                <button class="btn-glow" onclick="resolverPH()">ANALISAR MEIO</button>
+                <div class="result-area" id="res_ph">Aguardando dados...</div>
+            </section>
+        </main>
+        
+        <footer class="footer">
+            <p>Desenvolvido para alunos da EE Santos Dumont - HubBrain v3.0</p>
+        </footer>
     </div>
     <script src="quimica-logica.js"></script>
 </body>
