@@ -6,113 +6,79 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root{
-    --bg:#0b1220;
-    --card:#111a2e;
-    --text:#e6edf3;
-    --muted:#93a4b8;
-    --accent:#4ea1ff;
-    --border:rgba(255,255,255,0.08);
-}
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-}
-
 body{
-    background:var(--bg);
-    color:var(--text);
-    padding:20px;
+    margin:0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+    background:#fff;
+    color:#111;
 }
 
-/* botão voltar estilo app */
-.back{
+/* topo estilo app */
+.topbar{
     position:fixed;
-    top:18px;
-    left:18px;
-    width:42px;
-    height:42px;
-    border-radius:12px;
-    background:rgba(255,255,255,0.06);
-    border:1px solid var(--border);
+    top:0;
+    left:0;
+    right:0;
+    height:50px;
     display:flex;
     align-items:center;
-    justify-content:center;
-    text-decoration:none;
-    color:var(--text);
-    font-size:18px;
-    backdrop-filter: blur(10px);
-    transition:.2s;
+    padding:0 14px;
+    border-bottom:1px solid #eee;
+    background:#fff;
+    z-index:10;
 }
 
-.back:hover{
-    transform:scale(1.05);
-    background:rgba(255,255,255,0.1);
-}
-
-/* layout */
-.wrap{
-    max-width:720px;
-    margin:60px auto;
-}
-
-.header{
-    margin-bottom:20px;
-}
-
-.header h1{
+.back{
     font-size:22px;
+    text-decoration:none;
+    color:#111;
+    margin-right:12px;
+}
+
+.title{
+    font-size:16px;
     font-weight:600;
 }
 
-.header p{
-    color:var(--muted);
-    font-size:13px;
-    margin-top:4px;
+/* conteúdo */
+.container{
+    padding:70px 18px 30px;
+    max-width:720px;
+    margin:auto;
 }
 
-.card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:18px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.35);
+.section{
+    margin-bottom:22px;
 }
 
-.card p{
-    margin-bottom:12px;
-    color:var(--text);
+h2{
     font-size:14px;
+    margin-bottom:6px;
+    font-weight:700;
+}
+
+p, li{
+    font-size:13.5px;
+    line-height:1.5;
+    color:#333;
 }
 
 ul{
     padding-left:18px;
 }
 
-li{
-    margin-bottom:10px;
-    color:var(--muted);
-    font-size:14px;
+.divider{
+    height:1px;
+    background:#eee;
+    margin:18px 0;
 }
 
-.tag{
-    display:inline-block;
-    padding:4px 10px;
-    border-radius:999px;
-    background:rgba(78,161,255,0.15);
-    color:var(--accent);
-    font-size:12px;
-    margin-bottom:12px;
-}
-
+/* rodapé leve */
 .footer{
-    margin-top:14px;
     font-size:12px;
-    color:var(--muted);
+    color:#777;
     text-align:center;
+    margin-top:30px;
 }
 </style>
 
@@ -120,32 +86,43 @@ li{
 
 <body>
 
-<a class="back" href="login.html">←</a>
+<div class="topbar">
+    <a class="back" href="login.html">‹</a>
+    <div class="title">Termos de Uso</div>
+</div>
 
-<div class="wrap">
+<div class="container">
 
-    <div class="header">
-        <div class="tag">Hub Brain • Legal</div>
-        <h1>Termos de Uso</h1>
-        <p>Última atualização: 2026</p>
+    <div class="section">
+        <h2>Visão geral</h2>
+        <p>O Hub Brain é uma plataforma educacional. Ao usar o app, você concorda com estes termos.</p>
     </div>
 
-    <div class="card">
+    <div class="divider"></div>
 
-        <p>Ao usar o <strong>Hub Brain</strong>, você concorda com os termos abaixo:</p>
-
+    <div class="section">
+        <h2>Uso da conta</h2>
         <ul>
-            <li>Uso exclusivo para fins educacionais e de aprendizado.</li>
-            <li>Você é responsável por manter sua conta segura.</li>
-            <li>Proibido manipular XP, ranking ou sistema.</li>
-            <li>Podemos atualizar recursos e regras a qualquer momento.</li>
-            <li>O uso contínuo significa aceitação dos termos.</li>
+            <li>Você é responsável pelos seus dados de acesso.</li>
+            <li>Não compartilhe sua conta com terceiros.</li>
         </ul>
+    </div>
 
-        <p style="margin-top:12px; color:var(--muted);">
-            Este documento existe para manter a transparência e segurança da plataforma.
-        </p>
+    <div class="divider"></div>
 
+    <div class="section">
+        <h2>Regras da plataforma</h2>
+        <ul>
+            <li>Não é permitido manipular XP ou ranking.</li>
+            <li>Não tente explorar falhas do sistema.</li>
+        </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section">
+        <h2>Atualizações</h2>
+        <p>Podemos atualizar estes termos a qualquer momento para melhorar a plataforma.</p>
     </div>
 
     <div class="footer">
