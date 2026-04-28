@@ -8,177 +8,220 @@
     <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="perfil.css">
     <link rel="stylesheet" href="transicoes.css">
-    <style>
-        .glass-header { display:flex; align-items:center; justify-content:space-between; padding:0 15px; height:70px; background:rgba(10,10,10,0.9)!important; backdrop-filter:blur(15px); border-bottom:1px solid rgba(138,43,226,0.2); position:sticky; top:0; z-index:1000; }
-        .hub-logo-container { display:flex; align-items:center; gap:10px; cursor:pointer; transition:transform 0.1s; -webkit-tap-highlight-color:transparent; }
-        .hub-logo-container:active { transform:scale(0.92); }
-        .hub-logo-text { font-weight:900; font-size:19px; letter-spacing:1px; color:white; text-transform:uppercase; }
-        .hub-logo-text.purple { color:#8a2be2; text-shadow:0 0 10px rgba(138,43,226,0.3); }
-        .hub-symbol { background:rgba(138,43,226,0.1); padding:6px; border-radius:10px; border:1px solid rgba(138,43,226,0.3); display:flex; align-items:center; justify-content:center; animation:pulse-glow-logo 3s infinite ease-in-out; }
-        @keyframes pulse-glow-logo { 0%,100%{box-shadow:0 0 0px rgba(138,43,226,0);transform:scale(1);} 50%{box-shadow:0 0 15px rgba(138,43,226,0.4);transform:scale(1.05);} }
-        .meta-card { background:#0e0e12; border:1px solid rgba(138,43,226,0.15); border-radius:20px; padding:20px; margin:16px 0; display:flex; flex-direction:column; gap:14px; }
-        .meta-header { display:flex; justify-content:space-between; align-items:center; }
-        .meta-title { font-size:10px; font-weight:800; letter-spacing:2px; color:white; }
-        .meta-badge { font-size:10px; font-weight:800; color:#8a2be2; background:rgba(138,43,226,0.1); border:1px solid rgba(138,43,226,0.2); padding:4px 10px; border-radius:20px; }
-        .meta-hint { font-size:11px; color:#444; font-weight:600; }
-        .meta-input-row { display:flex; align-items:center; justify-content:center; gap:16px; }
-        .meta-input-group { display:flex; flex-direction:column; align-items:center; gap:8px; }
-        .meta-input-group label { font-size:9px; font-weight:800; letter-spacing:2px; color:#333; }
-        .meta-stepper { display:flex; align-items:center; gap:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:10px 16px; }
-        .meta-stepper span { font-size:32px; color:white; min-width:36px; text-align:center; line-height:1; font-weight:800; }
-        .meta-btn { background:none; border:none; color:#555; font-size:22px; font-weight:800; cursor:pointer; padding:4px 8px; transition:0.15s; }
-        .meta-btn:active { color:#8a2be2; }
-        .meta-sep { font-size:28px; font-weight:900; color:#1a1a1a; margin-bottom:20px; }
-        .meta-save-btn { width:100%; padding:14px; background:#8a2be2; border:none; border-radius:14px; color:white; font-size:12px; font-weight:900; letter-spacing:2px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s; box-shadow:0 4px 20px rgba(138,43,226,0.3); }
-        .meta-save-btn:active { transform:scale(0.98); }
-        .modal-dono-overlay { display:none; position:fixed; inset:0; align-items:center; justify-content:center; backdrop-filter:blur(25px) saturate(180%); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
-        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; box-shadow:0 0 40px rgba(0,0,0,0.5); animation:brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-        @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
-        .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
-        .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
-        .ring-1 { width:100%; height:100%; animation:spin-orb 2s linear infinite; opacity:0.6; }
-        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; opacity:0.8; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
-        @keyframes spin-orb { to{transform:rotate(360deg);} }
-        @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
-        .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
-    </style>
 </head>
 <body>
     <div id="toast-container"></div>
 
     <header class="glass-header">
-        <button id="open-menu" style="background:rgba(255,255,255,0.03); border:1px solid #222; color:white; padding:10px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+        <button id="open-menu" class="menu-btn">
             <i data-lucide="menu"></i>
         </button>
         <div class="hub-logo-container" onclick="abrirSobreDono()">
             <span class="hub-logo-text">Hub</span>
-            <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2; width:22px; height:22px;"></i></div>
+            <div class="hub-symbol">
+                <i data-lucide="brain-circuit"></i>
+            </div>
             <span class="hub-logo-text purple">Brain</span>
         </div>
         <div style="width:44px;"></div>
     </header>
 
-    <div class="perfil-container" style="padding-top:20px;">
-        <div class="perfil-card">
+    <div class="perfil-container">
+        
+        <!-- CARD PRINCIPAL -->
+        <div class="profile-hero">
+            <div class="profile-bg-glow"></div>
+            
+            <!-- Avatar -->
             <div class="avatar-section">
-                <div class="avatar-wrapper"><i data-lucide="user" id="avatar-icon"></i></div>
-                <button class="btn-edit-photo" onclick="window.abrirGaleria()">
-                    <i data-lucide="camera" style="width:16px;"></i>
-                </button>
-            </div>
-            <div class="id-badge-container">
-                <p class="user-id-display" id="display-id">Carregando...</p>
-            </div>
-            <div class="form-group">
-                <label>COMO QUERES SER CHAMADO?</label>
-                <div class="input-wrapper">
-                    <i data-lucide="signature" class="input-icon"></i>
-                    <input type="text" id="user-name-input" placeholder="Teu Nickname">
+                <div class="avatar-ring">
+                    <div class="avatar-wrapper">
+                        <i data-lucide="user" id="avatar-icon"></i>
+                    </div>
+                    <button class="btn-edit-avatar" onclick="window.abrirGaleria()">
+                        <i data-lucide="camera"></i>
+                    </button>
                 </div>
-                <p class="hint">Este nome aparecerá no Ranking Global.</p>
             </div>
-            <button id="btn-salvar-perfil" class="btn-save">
-                <i data-lucide="check-circle"></i> SALVAR ALTERAÇÕES
+
+            <!-- ID Badge -->
+            <div class="user-id-badge">
+                <span id="display-id">Carregando...</span>
+            </div>
+
+            <!-- Input Nome -->
+            <div class="name-input-group">
+                <label>COMO QUER SER CHAMADO?</label>
+                <div class="input-styled">
+                    <i data-lucide="at-sign" class="input-icon-left"></i>
+                    <input type="text" id="user-name-input" placeholder="Seu apelido no ranking">
+                </div>
+                <p class="input-hint">Este nome aparecerá no Ranking Global</p>
+            </div>
+
+            <button id="btn-salvar-perfil" class="btn-save-profile">
+                <i data-lucide="check-circle"></i>
+                <span>SALVAR ALTERAÇÕES</span>
             </button>
         </div>
 
-        <div class="perfil-stats" id="area-stats"></div>
+        <!-- STATS -->
+        <div id="area-stats"></div>
 
         <!-- META DIÁRIA -->
         <div class="meta-card" id="meta-card">
-            <div class="meta-header" onclick="toggleMeta()" style="cursor:pointer;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <i data-lucide="target" style="color:#8a2be2; width:18px;"></i>
+            <div class="meta-header" onclick="toggleMeta()">
+                <div class="meta-header-left">
+                    <div class="meta-icon-wrap">
+                        <i data-lucide="target"></i>
+                    </div>
                     <span class="meta-title">META DIÁRIA</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:8px;">
+                <div class="meta-header-right">
                     <span class="meta-badge" id="meta-badge">Não definida</span>
-                    <span id="meta-arrow" style="font-size:18px; color:#555; transition:transform 0.3s, color 0.3s;">↓</span>
+                    <i data-lucide="chevron-down" id="meta-arrow" class="meta-arrow"></i>
                 </div>
             </div>
-            <div id="meta-controls" style="display:none;">
-                <p class="meta-hint" style="margin-bottom:14px;">Quantas horas você quer estudar por dia?</p>
-                <div class="meta-input-row">
-                    <div class="meta-input-group">
+            
+            <div id="meta-controls" class="meta-controls">
+                <p class="meta-hint">Quantas horas você quer estudar por dia?</p>
+                
+                <div class="meta-time-picker">
+                    <div class="time-input-group">
                         <label>HORAS</label>
-                        <div class="meta-stepper">
-                            <button class="meta-btn" id="meta-h-down">−</button>
-                            <span id="meta-h-val">0</span>
-                            <button class="meta-btn" id="meta-h-up">+</button>
+                        <div class="time-stepper">
+                            <button class="stepper-btn" id="meta-h-down">
+                                <i data-lucide="minus"></i>
+                            </button>
+                            <span class="time-value" id="meta-h-val">0</span>
+                            <button class="stepper-btn" id="meta-h-up">
+                                <i data-lucide="plus"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="meta-sep">:</div>
-                    <div class="meta-input-group">
+
+                    <div class="time-separator">:</div>
+
+                    <div class="time-input-group">
                         <label>MINUTOS</label>
-                        <div class="meta-stepper">
-                            <button class="meta-btn" id="meta-m-down">−</button>
-                            <span id="meta-m-val">30</span>
-                            <button class="meta-btn" id="meta-m-up">+</button>
+                        <div class="time-stepper">
+                            <button class="stepper-btn" id="meta-m-down">
+                                <i data-lucide="minus"></i>
+                            </button>
+                            <span class="time-value" id="meta-m-val">30</span>
+                            <button class="stepper-btn" id="meta-m-up">
+                                <i data-lucide="plus"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <button class="meta-save-btn" id="btn-salvar-meta" style="margin-top:14px;">
-                    <i data-lucide="check" style="width:16px;"></i> SALVAR META
+
+                <button class="btn-save-meta" id="btn-salvar-meta">
+                    <i data-lucide="check"></i>
+                    <span>SALVAR META</span>
                 </button>
             </div>
         </div>
 
+        <!-- CONQUISTAS -->
         <div id="area-conquistas"></div>
 
+        <!-- LOGOUT -->
         <button onclick="window.logout()" class="btn-logout">
-            <i data-lucide="log-out"></i> SAIR DA CONTA
+            <i data-lucide="log-out"></i>
+            <span>SAIR DA CONTA</span>
         </button>
     </div>
 
     <!-- MODAL DITOH -->
-    <div id="modal-dono" class="modal-dono-overlay">
-        <div class="modal-dono-card">
-            <div class="ditoh-core-orbital">
+    <div id="modal-dono" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-ditoh-orbital">
                 <div class="orbital-ring ring-1"></div>
                 <div class="orbital-ring ring-2"></div>
-                <div class="core-glow"><i data-lucide="zap" style="color:white; width:28px; height:28px; filter:drop-shadow(0 0 8px #8a2be2);"></i></div>
+                <div class="orbital-core">
+                    <i data-lucide="zap"></i>
+                </div>
             </div>
-            <h3 style="color:white; margin:0; font-size:26px; font-weight:900; letter-spacing:2px;">DITOH</h3>
-            <p style="color:#8a2be2; font-weight:bold; margin:5px 0 20px 0; font-size:12px; letter-spacing:4px; text-transform:uppercase;">Founder & Dev</p>
-            <div style="background:rgba(138,43,226,0.1); padding:20px; border-radius:20px; margin-bottom:25px; border-left:4px solid #8a2be2; text-align:left;">
-                <p style="color:#eee; font-size:13px; font-style:italic; line-height:1.6; margin:0;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."</p>
+            
+            <h3>DITOH</h3>
+            <p class="modal-subtitle">Founder & Dev</p>
+            
+            <div class="modal-quote">
+                <p>"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."</p>
             </div>
-            <a href="https://www.instagram.com/wtfditoh?igsh=MTh3OHk3MHFqZXpjcQ==" target="_blank" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:10px; color:white; font-size:15px; margin-bottom:30px; background:rgba(255,255,255,0.05); padding:14px; border-radius:15px; border:1px solid rgba(138,43,226,0.2);">
-                <i data-lucide="instagram" style="width:18px; color:#8a2be2;"></i>
-                <span style="font-weight:600;">@wtfditoh</span>
+            
+            <a href="https://www.instagram.com/wtfditoh" target="_blank" class="modal-instagram">
+                <i data-lucide="instagram"></i>
+                <span>@wtfditoh</span>
             </a>
-            <button onclick="fecharSobreDono()" style="width:100%; background:#8a2be2; color:white; border:none; padding:15px; border-radius:12px; font-weight:900; cursor:pointer; text-transform:uppercase;">Voltar</button>
+            
+            <button onclick="fecharSobreDono()" class="modal-close-btn">VOLTAR</button>
         </div>
     </div>
 
-    <div id="modal-avatar" class="modal-avatar-overlay" style="display:none;">
-        <div class="modal-avatar-card">
+    <!-- MODAL AVATAR -->
+    <div id="modal-avatar" class="modal-overlay">
+        <div class="modal-card modal-avatar-card">
             <h3>ESCOLHA SEU ÍCONE</h3>
-            <p class="hint" style="text-align:center; margin-bottom:15px;">Estilos exclusivos Hub Brain</p>
+            <p class="modal-subtitle">Estilos exclusivos Hub Brain</p>
+            
             <div class="avatar-grid">
-                <div class="avatar-option" onclick="window.selecionarAvatar('user')"><i data-lucide="user"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('zap')"><i data-lucide="zap"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('brain-circuit')"><i data-lucide="brain-circuit"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('rocket')"><i data-lucide="rocket"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('flame')"><i data-lucide="flame"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('trophy')"><i data-lucide="trophy"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('crown')"><i data-lucide="crown"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('ghost')"><i data-lucide="ghost"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('sword')"><i data-lucide="sword"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('target')"><i data-lucide="target"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('skull')"><i data-lucide="skull"></i></div>
-                <div class="avatar-option" onclick="window.selecionarAvatar('gem')"><i data-lucide="gem"></i></div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('user')">
+                    <i data-lucide="user"></i>
+                </div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('zap')">
+                    <i data-lucide="zap"></i>
+                </div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('brain-circuit')">
+                    <i data-lucide="brain-circuit"></i>
+                </div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('rocket')">
+                    <i data-lucide="rocket"></i>
+                </div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('flame')">
+                    <i data-lucide="flame"></i>
+                </div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('trophy')">
+                    <i data-lucide="trophy"></i>
+                </div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('crown')">
+                    <i data-lucide="crown"></i>
+                </div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('ghost')">
+                    <i data-lucide="ghost"></i>
+                </div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('sword')">
+                    <i data-lucide="sword"></i>
+                </div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('target')">
+                    <i data-lucide="target"></i>
+                </div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('skull')">
+                    <i data-lucide="skull"></i>
+                </div>
+                <div class="avatar-option" onclick="window.selecionarAvatar('gem')">
+                    <i data-lucide="gem"></i>
+                </div>
             </div>
-            <button onclick="window.fecharGaleria()" class="btn-fechar-galeria">VOLTAR</button>
+            
+            <button onclick="window.fecharGaleria()" class="modal-close-btn">FECHAR</button>
         </div>
     </div>
 
     <script src="menu.js"></script>
     <script type="module" src="perfil-logica.js"></script>
     <script>
-        function abrirSobreDono() { document.getElementById('modal-dono').style.display='flex'; if(window.lucide) lucide.createIcons(); }
-        function fecharSobreDono() { document.getElementById('modal-dono').style.display='none'; }
-        window.onload = () => { if(window.lucide) lucide.createIcons(); };
+        function abrirSobreDono() {
+            document.getElementById('modal-dono').style.display = 'flex';
+            if (window.lucide) lucide.createIcons();
+        }
+        function fecharSobreDono() {
+            document.getElementById('modal-dono').style.display = 'none';
+        }
+        window.onload = () => {
+            if (window.lucide) lucide.createIcons();
+        };
     </script>
 </body>
 </html>
