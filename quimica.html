@@ -2,129 +2,59 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUBBRAIN | QUÍMICA TOTAL 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Brain | Química</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="quimica.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="glass-bg"></div>
-    <div class="container">
-        <header class="main-header">
-            <div class="logo-area">
-                <h1>HUB<span>BRAIN</span></h1>
-                <div class="status-bar">SANTOS DUMONT EDITION // 2º ANO</div>
-            </div>
-            <p class="subtitle">O fim do sofrimento em Físico-Química. Resolva revisões, listas e provas em segundos.</p>
-        </header>
 
-        <main class="grid-calc">
-            <section class="card glass-item">
-                <div class="card-header">
-                    <span class="icon">⚗️</span>
-                    <h3>Concentração Comum</h3>
-                    <span class="formula-badge">C = m / V</span>
-                </div>
-                <p class="description">Ideal para as questões 7, 8, 9 e 10 da revisão.</p>
-                <div class="input-group">
-                    <label>Massa do Soluto (g)</label>
-                    <input type="number" id="c_massa" placeholder="Ex: 12">
-                    <label>Volume (mL ou L)</label>
-                    <input type="number" id="c_vol" placeholder="Ex: 500 ou 0.5">
-                </div>
-                <button class="btn-glow" onclick="resolverConcentracao()">EXECUTAR CÁLCULO</button>
-                <div class="result-area" id="res_c">Aguardando dados...</div>
-            </section>
-
-            <section class="card glass-item">
-                <div class="card-header">
-                    <span class="icon">⚖️</span>
-                    <h3>Número de Mols</h3>
-                    <span class="formula-badge">n = m / MM</span>
-                </div>
-                <p class="description">Resolve questões de NaOH (4g), Glicose (90g) e NaCl.</p>
-                <div class="input-group">
-                    <label>Massa Dada (g)</label>
-                    <input type="number" id="n_massa" placeholder="Ex: 4 ou 90">
-                    <label>Massa Molar (g/mol)</label>
-                    <input type="number" id="n_mm" placeholder="Ex: 40 ou 180">
-                </div>
-                <button class="btn-glow" onclick="resolverMols()">EXECUTAR CÁLCULO</button>
-                <div class="result-area" id="res_n">Aguardando dados...</div>
-            </section>
-
-            <section class="card glass-item highlight">
-                <div class="card-header">
-                    <span class="icon">🧪</span>
-                    <h3>Molaridade (M)</h3>
-                    <span class="formula-badge">M = n / V</span>
-                </div>
-                <p class="description">Para questões complexas como a do NaCl (2,925g).</p>
-                <div class="input-group">
-                    <label>Massa (g)</label>
-                    <input type="number" id="m_massa" placeholder="Ex: 2.925">
-                    <label>Massa Molar (MM)</label>
-                    <input type="number" id="m_mm" placeholder="Ex: 58.5">
-                    <label>Volume (mL ou L)</label>
-                    <input type="number" id="m_vol" placeholder="Ex: 250">
-                </div>
-                <button class="btn-glow" onclick="resolverMolaridade()">EXECUTAR CÁLCULO</button>
-                <div class="result-area" id="res_m">Aguardando dados...</div>
-            </section>
-
-            <section class="card glass-item">
-                <div class="card-header">
-                    <span class="icon">📊</span>
-                    <h3>Título & %</h3>
-                    <span class="formula-badge">τ = m1 / m</span>
-                </div>
-                <p class="description">Questões de Título em Massa ou Volume (Questões 13-15).</p>
-                <div class="input-group">
-                    <label>Massa/Vol Soluto</label>
-                    <input type="number" id="t_soluto" placeholder="Ex: 20">
-                    <label>Massa/Vol Solução (Total)</label>
-                    <input type="number" id="t_total" placeholder="Ex: 100">
-                </div>
-                <button class="btn-glow" onclick="resolverTitulo()">EXECUTAR CÁLCULO</button>
-                <div class="result-area" id="res_t">Aguardando dados...</div>
-            </section>
-
-            <section class="card glass-item">
-                <div class="card-header">
-                    <span class="icon">💧</span>
-                    <h3>Diluição</h3>
-                    <span class="formula-badge">C1.V1 = C2.V2</span>
-                </div>
-                <p class="description">Achar o volume final ou concentração após adicionar água.</p>
-                <div class="input-group">
-                    <input type="number" id="d_c1" placeholder="C Inicial">
-                    <input type="number" id="d_v1" placeholder="V Inicial">
-                    <input type="number" id="d_c2" placeholder="C Final">
-                </div>
-                <button class="btn-glow" onclick="resolverDiluicao()">ACHAR V2</button>
-                <div class="result-area" id="res_d">Aguardando dados...</div>
-            </section>
-
-            <section class="card glass-item">
-                <div class="card-header">
-                    <span class="icon">🔋</span>
-                    <h3>Potencial Hidrogeniônico</h3>
-                    <span class="formula-badge">pH = -log[H+]</span>
-                </div>
-                <p class="description">Calcula pH, pOH e classifica a solução.</p>
-                <div class="input-group">
-                    <label>Concentração [H+]</label>
-                    <input type="number" id="ph_input" step="any" placeholder="Ex: 0.001">
-                </div>
-                <button class="btn-glow" onclick="resolverPH()">ANALISAR MEIO</button>
-                <div class="result-area" id="res_ph">Aguardando dados...</div>
-            </section>
-        </main>
-        
-        <footer class="footer">
-            <p>Desenvolvido para alunos da EE Santos Dumont - HubBrain v3.0</p>
-        </footer>
+<header class="glass-header">
+    <button id="open-menu" class="btn-menu"><i data-lucide="menu"></i></button>
+    <div class="header-center">
+        <div class="header-icon"><i data-lucide="flask-conical"></i></div>
+        <span class="header-title">QUÍMICA</span>
     </div>
-    <script src="quimica-logica.js"></script>
+    <div style="width:42px;"></div>
+</header>
+
+<div class="container">
+
+    <!-- BUSCA -->
+    <div class="search-wrap">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" id="busca-calc" class="search-input" placeholder="Buscar cálculo..." oninput="filtrarCalculos()">
+    </div>
+
+    <!-- CATEGORIAS -->
+    <div class="cats-scroll" id="cats-scroll">
+        <button class="cat-pill active" onclick="filtrarCategoria(this,'todas')">Todos</button>
+        <button class="cat-pill" onclick="filtrarCategoria(this,'solucao')">Soluções</button>
+        <button class="cat-pill" onclick="filtrarCategoria(this,'mol')">Mol & Massa</button>
+        <button class="cat-pill" onclick="filtrarCategoria(this,'gas')">Gases</button>
+        <button class="cat-pill" onclick="filtrarCategoria(this,'termoquimica')">Termoquímica</button>
+        <button class="cat-pill" onclick="filtrarCategoria(this,'cinetica')">Cinética</button>
+        <button class="cat-pill" onclick="filtrarCategoria(this,'eletro')">Eletroquímica</button>
+        <button class="cat-pill" onclick="filtrarCategoria(this,'acido')">Ácido/Base</button>
+        <button class="cat-pill" onclick="filtrarCategoria(this,'mistura')">Misturas</button>
+    </div>
+
+    <!-- LISTA DE CALCULADORAS -->
+    <div id="lista-calculadoras"></div>
+
+</div>
+
+<!-- MODAL CALCULADORA -->
+<div class="modal-overlay" id="modal-calc">
+    <div class="modal-sheet" id="modal-content">
+        <!-- preenchido via JS -->
+    </div>
+</div>
+
+<script src="menu.js"></script>
+<script src="quimica-logica.js"></script>
 </body>
 </html>
