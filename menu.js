@@ -11,6 +11,7 @@ const criarMenuGlobal = () => {
                 <a href="index.html" id="link-home"><i data-lucide="home"></i> Início</a>
                 <a href="perfil.html" id="link-perfil"><i data-lucide="user"></i> Perfil</a>
                 <a href="ranking.html" id="link-ranking"><i data-lucide="trophy"></i> Ranking</a>
+                <a href="configuracoes.html" id="link-configuracoes"><i data-lucide="settings-2"></i> Configurações</a>
 
                 <div class="menu-section-label">ESTUDOS</div>
                 <a href="notas.html" id="link-notas"><i data-lucide="layout-dashboard"></i> Notas</a>
