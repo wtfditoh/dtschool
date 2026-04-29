@@ -5,281 +5,604 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Bem-vindo!</title>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background: #050508; color: white;
-            font-family: 'Inter', -apple-system, sans-serif;
-            min-height: 100svh; overflow: hidden;
-            display: flex; flex-direction: column;
+            background: #050508;
+            font-family: 'Outfit', -apple-system, sans-serif;
+            color: white;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* BACKGROUND ANIMADO */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(138,43,226,0.15) 0%, transparent 60%),
+                        radial-gradient(circle at 70% 80%, rgba(138,43,226,0.1) 0%, transparent 60%);
+            pointer-events: none;
+            animation: pulse-bg 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse-bg {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* GRAIN TEXTURE */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            background-size: 200px 200px;
+            opacity: 0.5;
+            pointer-events: none;
         }
 
         /* BOTÃO PULAR */
-        .btn-pular {
-            position: fixed; top: 20px; right: 20px;
-            background: none; border: none; color: #444;
-            font-size: 12px; font-weight: 700; letter-spacing: 1px;
-            cursor: pointer; z-index: 100; padding: 10px;
-            text-transform: uppercase;
+        .btn-skip {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 10px 18px;
+            color: #888;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.2s;
         }
 
-        /* CONTAINER DOS SLIDES */
-        .slides-wrapper {
-            flex: 1; display: flex; align-items: center;
-            overflow: hidden; position: relative;
+        .btn-skip:active {
+            transform: scale(0.95);
+            background: rgba(255,255,255,0.06);
+        }
+
+        /* CONTAINER */
+        .onboarding-wrapper {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* SLIDES */
+        .slides-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
         }
 
         .slides-track {
-            display: flex; width: 100%;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            width: 100%;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .slide {
-            min-width: 100vw; padding: 40px 32px;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            text-align: center; gap: 20px;
+            min-width: 100vw;
+            padding: 60px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 24px;
         }
 
-        /* ÍCONE DO SLIDE */
+        /* ÍCONE ANIMADO */
         .slide-icon {
-            width: 100px; height: 100px;
-            background: rgba(138,43,226,0.1);
-            border: 1px solid rgba(138,43,226,0.3);
+            width: 140px;
+            height: 140px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .icon-bg {
+            position: absolute;
+            inset: 0;
+            background: rgba(138,43,226,0.08);
+            border: 2px solid rgba(138,43,226,0.2);
+            border-radius: 40px;
+            animation: rotate-border 20s linear infinite;
+            box-shadow: 
+                0 0 40px rgba(138,43,226,0.2),
+                inset 0 0 30px rgba(138,43,226,0.05);
+        }
+
+        @keyframes rotate-border {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .icon-content {
+            position: absolute;
+            inset: 8px;
+            background: radial-gradient(circle at 30% 30%, rgba(138,43,226,0.15), rgba(138,43,226,0.05));
             border-radius: 32px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 48px;
-            box-shadow: 0 0 40px rgba(138,43,226,0.2);
-            animation: floatIcon 3s ease-in-out infinite;
-        }
-        @keyframes floatIcon {
-            0%,100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: float-icon 3.5s ease-in-out infinite;
         }
 
+        @keyframes float-icon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .icon-content i {
+            width: 64px;
+            height: 64px;
+            color: #8a2be2;
+            filter: drop-shadow(0 0 20px rgba(138,43,226,0.6));
+        }
+
+        /* PARTÍCULAS */
+        .icon-particles {
+            position: absolute;
+            inset: -20px;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #8a2be2;
+            border-radius: 50%;
+            opacity: 0;
+            animation: particle-float 3s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { top: 30%; right: 15%; animation-delay: 1s; }
+        .particle:nth-child(3) { bottom: 25%; left: 20%; animation-delay: 2s; }
+
+        @keyframes particle-float {
+            0%, 100% { opacity: 0; transform: translateY(0) scale(1); }
+            50% { opacity: 0.8; transform: translateY(-30px) scale(1.5); }
+        }
+
+        /* BADGE */
         .slide-badge {
-            font-size: 10px; font-weight: 800; letter-spacing: 3px;
-            color: #8a2be2; text-transform: uppercase;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #8a2be2;
+            text-transform: uppercase;
+            background: rgba(138,43,226,0.1);
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(138,43,226,0.2);
         }
 
+        /* TÍTULO */
         .slide-title {
-            font-size: 28px; font-weight: 900;
-            line-height: 1.2; letter-spacing: -0.5px;
+            font-size: 32px;
+            font-weight: 900;
+            line-height: 1.2;
+            letter-spacing: -1px;
+            max-width: 320px;
         }
 
-        .slide-title span { color: #8a2be2; }
+        .slide-title .highlight {
+            background: linear-gradient(135deg, #b060ff, #8a2be2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(138,43,226,0.5));
+        }
 
+        /* DESCRIÇÃO */
         .slide-desc {
-            font-size: 15px; color: #555; line-height: 1.6;
-            font-weight: 500; max-width: 280px;
+            font-size: 16px;
+            color: #888;
+            line-height: 1.7;
+            font-weight: 500;
+            max-width: 300px;
         }
 
         /* SLIDE FINAL */
-        .slide-final .slide-icon {
-            width: 120px; height: 120px; font-size: 56px;
-            background: rgba(138,43,226,0.15);
-            box-shadow: 0 0 60px rgba(138,43,226,0.3);
+        .slide-final .icon-bg {
+            animation: pulse-final 2s ease-in-out infinite;
         }
 
-        /* RODAPÉ */
+        @keyframes pulse-final {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 40px rgba(138,43,226,0.2);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 0 60px rgba(138,43,226,0.4);
+            }
+        }
+
+        /* FOOTER */
         .onboarding-footer {
-            padding: 24px 32px 48px;
-            display: flex; flex-direction: column;
-            align-items: center; gap: 20px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            background: linear-gradient(to top, rgba(5,5,8,0.95), transparent);
+            backdrop-filter: blur(10px);
         }
 
-        /* PONTOS DE PROGRESSO */
-        .dots {
-            display: flex; gap: 8px; align-items: center;
+        /* DOTS */
+        .progress-dots {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
+
         .dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: #222; transition: all 0.3s ease;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .dot.ativo {
-            width: 20px; border-radius: 10px;
+
+        .dot.active {
+            width: 24px;
+            border-radius: 10px;
             background: #8a2be2;
+            box-shadow: 0 0 20px rgba(138,43,226,0.6);
         }
 
         /* BOTÕES */
-        .btn-proximo {
-            width: 100%; padding: 18px;
-            background: #8a2be2; border: none; border-radius: 18px;
-            color: white; font-size: 14px; font-weight: 900;
-            letter-spacing: 1px; cursor: pointer;
-            box-shadow: 0 4px 30px rgba(138,43,226,0.4);
-            transition: transform 0.15s;
-            text-transform: uppercase;
+        .btn-next {
+            width: 100%;
+            max-width: 340px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(138,43,226,0.15), rgba(138,43,226,0.1));
+            border: 2px solid rgba(138,43,226,0.3);
+            border-radius: 20px;
+            color: white;
+            font-size: 15px;
+            font-weight: 800;
+            font-family: inherit;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
         }
-        .btn-proximo:active { transform: scale(0.98); }
 
-        .btn-comecar {
-            width: 100%; padding: 18px;
-            background: linear-gradient(135deg, #8a2be2, #6a1cb2);
-            border: none; border-radius: 18px;
-            color: white; font-size: 14px; font-weight: 900;
-            letter-spacing: 2px; cursor: pointer;
-            box-shadow: 0 4px 40px rgba(138,43,226,0.5);
-            transition: transform 0.15s;
-            text-transform: uppercase;
+        .btn-next::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-next:hover::before {
+            opacity: 1;
+        }
+
+        .btn-next:active {
+            transform: scale(0.98);
+        }
+
+        .btn-start {
             display: none;
+            width: 100%;
+            max-width: 340px;
+            padding: 20px;
+            background: linear-gradient(135deg, #8a2be2, #6a1fc2);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 15px;
+            font-weight: 800;
+            font-family: inherit;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(138,43,226,0.5);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        .btn-comecar:active { transform: scale(0.98); }
 
-        /* GLOW DE FUNDO */
-        .bg-glow {
-            position: fixed; pointer-events: none;
-            border-radius: 50%; filter: blur(80px);
-            opacity: 0.15; z-index: 0;
+        .btn-start:active {
+            transform: scale(0.98);
         }
-        .bg-glow-1 { width: 300px; height: 300px; background: #8a2be2; top: -50px; right: -50px; }
-        .bg-glow-2 { width: 200px; height: 200px; background: #8a2be2; bottom: 100px; left: -50px; }
+
+        .btn-start i {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ANIMAÇÕES DE ENTRADA */
+        .slide > * {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slide-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .slide > *:nth-child(1) { animation-delay: 0.1s; }
+        .slide > *:nth-child(2) { animation-delay: 0.2s; }
+        .slide > *:nth-child(3) { animation-delay: 0.3s; }
+        .slide > *:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes slide-in {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RESPONSIVO */
+        @media (max-width: 480px) {
+            .slide {
+                padding: 40px 24px;
+            }
+
+            .slide-icon {
+                width: 120px;
+                height: 120px;
+            }
+
+            .icon-content i {
+                width: 56px;
+                height: 56px;
+            }
+
+            .slide-title {
+                font-size: 28px;
+            }
+
+            .slide-desc {
+                font-size: 15px;
+            }
+        }
     </style>
 </head>
 <body>
+    <button class="btn-skip" onclick="pular()">PULAR</button>
 
-    <div class="bg-glow bg-glow-1"></div>
-    <div class="bg-glow bg-glow-2"></div>
+    <div class="onboarding-wrapper">
+        <div class="slides-container">
+            <div class="slides-track" id="slides-track">
 
-    <button class="btn-pular" onclick="pular()">Pular</button>
+                <!-- SLIDE 1: BEM-VINDO -->
+                <div class="slide">
+                    <div class="slide-icon">
+                        <div class="icon-bg"></div>
+                        <div class="icon-content">
+                            <i data-lucide="brain-circuit"></i>
+                        </div>
+                        <div class="icon-particles">
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                        </div>
+                    </div>
+                    <span class="slide-badge">BEM-VINDO AO</span>
+                    <h1 class="slide-title">Hub <span class="highlight">Brain</span></h1>
+                    <p class="slide-desc">Seu app escolar inteligente. Organize, estude e suba no ranking.</p>
+                </div>
 
-    <div class="slides-wrapper">
-        <div class="slides-track" id="slides-track">
+                <!-- SLIDE 2: NOTAS -->
+                <div class="slide">
+                    <div class="slide-icon">
+                        <div class="icon-bg"></div>
+                        <div class="icon-content">
+                            <i data-lucide="chart-line"></i>
+                        </div>
+                        <div class="icon-particles">
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                        </div>
+                    </div>
+                    <span class="slide-badge">DESEMPENHO</span>
+                    <h1 class="slide-title">Controle suas <span class="highlight">Notas</span></h1>
+                    <p class="slide-desc">Acompanhe suas notas por bimestre e veja seu aproveitamento em tempo real.</p>
+                </div>
 
-            <!-- SLIDE 1 — BOAS VINDAS -->
-            <div class="slide">
-                <div class="slide-icon">🧠</div>
-                <span class="slide-badge">Bem-vindo ao</span>
-                <h1 class="slide-title">Hub <span>Brain</span></h1>
-                <p class="slide-desc">Seu app escolar inteligente. Organize, estude e suba no ranking.</p>
+                <!-- SLIDE 3: AGENDA -->
+                <div class="slide">
+                    <div class="slide-icon">
+                        <div class="icon-bg"></div>
+                        <div class="icon-content">
+                            <i data-lucide="calendar-check"></i>
+                        </div>
+                        <div class="icon-particles">
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                        </div>
+                    </div>
+                    <span class="slide-badge">ORGANIZAÇÃO</span>
+                    <h1 class="slide-title">Nunca perca um <span class="highlight">Prazo</span></h1>
+                    <p class="slide-desc">Cadastre tarefas e provas. Receba notificações antes do vencimento.</p>
+                </div>
+
+                <!-- SLIDE 4: FOCO -->
+                <div class="slide">
+                    <div class="slide-icon">
+                        <div class="icon-bg"></div>
+                        <div class="icon-content">
+                            <i data-lucide="timer"></i>
+                        </div>
+                        <div class="icon-particles">
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                        </div>
+                    </div>
+                    <span class="slide-badge">PRODUTIVIDADE</span>
+                    <h1 class="slide-title">Foco <span class="highlight">Total</span></h1>
+                    <p class="slide-desc">Timer com flip clock, histórico de sessões e meta diária de estudos.</p>
+                </div>
+
+                <!-- SLIDE 5: RANKING -->
+                <div class="slide">
+                    <div class="slide-icon">
+                        <div class="icon-bg"></div>
+                        <div class="icon-content">
+                            <i data-lucide="trophy"></i>
+                        </div>
+                        <div class="icon-particles">
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                        </div>
+                    </div>
+                    <span class="slide-badge">COMPETIÇÃO</span>
+                    <h1 class="slide-title">Compete e <span class="highlight">Evolui</span></h1>
+                    <p class="slide-desc">Ganhe XP, suba no ranking global e desbloqueie conquistas exclusivas.</p>
+                </div>
+
+                <!-- SLIDE 6: FINAL -->
+                <div class="slide slide-final">
+                    <div class="slide-icon">
+                        <div class="icon-bg"></div>
+                        <div class="icon-content">
+                            <i data-lucide="rocket"></i>
+                        </div>
+                        <div class="icon-particles">
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                        </div>
+                    </div>
+                    <span class="slide-badge">TUDO PRONTO!</span>
+                    <h1 class="slide-title">Bora, <span class="highlight" id="nome-usuario">estudante</span>!</h1>
+                    <p class="slide-desc">O Hub Brain tá pronto pra te ajudar a dominar os estudos. Vamos nessa?</p>
+                </div>
+
             </div>
+        </div>
 
-            <!-- SLIDE 2 — NOTAS -->
-            <div class="slide">
-                <div class="slide-icon">📊</div>
-                <span class="slide-badge">Desempenho</span>
-                <h1 class="slide-title">Controle suas <span>Notas</span></h1>
-                <p class="slide-desc">Acompanhe suas notas por bimestre e veja seu aproveitamento em tempo real.</p>
-            </div>
-
-            <!-- SLIDE 3 — AGENDA -->
-            <div class="slide">
-                <div class="slide-icon">📋</div>
-                <span class="slide-badge">Organização</span>
-                <h1 class="slide-title">Nunca perca um <span>Prazo</span></h1>
-                <p class="slide-desc">Cadastre tarefas e provas. Receba notificações antes do vencimento.</p>
-            </div>
-
-            <!-- SLIDE 4 — MODO FOCO -->
-            <div class="slide">
-                <div class="slide-icon">⏱️</div>
-                <span class="slide-badge">Produtividade</span>
-                <h1 class="slide-title">Foco <span>Total</span></h1>
-                <p class="slide-desc">Timer com flip clock, histórico de sessões e meta diária de estudos.</p>
-            </div>
-
-            <!-- SLIDE 5 — RANKING -->
-            <div class="slide">
-                <div class="slide-icon">🏆</div>
-                <span class="slide-badge">Competição</span>
-                <h1 class="slide-title">Compete e <span>Evolui</span></h1>
-                <p class="slide-desc">Ganhe XP, suba no ranking global e desbloqueie conquistas exclusivas.</p>
-            </div>
-
-            <!-- SLIDE 6 — FINAL -->
-            <div class="slide slide-final" id="slide-final">
-                <div class="slide-icon">🚀</div>
-                <span class="slide-badge">Tudo pronto!</span>
-                <h1 class="slide-title" id="titulo-final">Bora, <span id="nome-final">estudante</span>!</h1>
-                <p class="slide-desc">O Hub Brain tá pronto pra te ajudar a dominar os estudos. Vamos nessa?</p>
-            </div>
-
+        <div class="onboarding-footer">
+            <div class="progress-dots" id="dots"></div>
+            <button class="btn-next" id="btn-next" onclick="proximo()">PRÓXIMO</button>
+            <button class="btn-start" id="btn-start" onclick="comecar()">
+                <span>VAMOS LÁ</span>
+                <i data-lucide="arrow-right"></i>
+            </button>
         </div>
     </div>
 
-    <div class="onboarding-footer">
-        <div class="dots" id="dots"></div>
-        <button class="btn-proximo" id="btn-proximo" onclick="proximo()">PRÓXIMO</button>
-        <button class="btn-comecar" id="btn-comecar" onclick="comecar()">VAMOS LÁ! 🚀</button>
-    </div>
-
     <script>
-        const TOTAL = 6;
-        let atual = 0;
+        const TOTAL_SLIDES = 6;
+        let slideAtual = 0;
 
-        // Preenche nome no slide final
-        const nome = localStorage.getItem('dt_user_name') || 'Estudante';
-        const nomeEl = document.getElementById('nome-final');
-        if (nomeEl) nomeEl.innerText = nome.split(' ')[0];
+        // Preenche nome do usuário
+        const nomeUsuario = localStorage.getItem('dt_user_name') || 'Estudante';
+        const nomeEl = document.getElementById('nome-usuario');
+        if (nomeEl) nomeEl.textContent = nomeUsuario.split(' ')[0];
 
-        // Cria os dots
-        const dotsEl = document.getElementById('dots');
-        for (let i = 0; i < TOTAL; i++) {
-            const d = document.createElement('div');
-            d.className = 'dot' + (i === 0 ? ' ativo' : '');
-            d.id = 'dot-' + i;
-            dotsEl.appendChild(d);
+        // Cria dots
+        const dotsContainer = document.getElementById('dots');
+        for (let i = 0; i < TOTAL_SLIDES; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.id = 'dot-' + i;
+            dotsContainer.appendChild(dot);
         }
 
         function atualizarUI() {
             // Move o track
-            document.getElementById('slides-track').style.transform = `translateX(-${atual * 100}vw)`;
+            const track = document.getElementById('slides-track');
+            track.style.transform = `translateX(-${slideAtual * 100}vw)`;
 
             // Atualiza dots
-            for (let i = 0; i < TOTAL; i++) {
-                const d = document.getElementById('dot-' + i);
-                d.className = 'dot' + (i === atual ? ' ativo' : '');
+            for (let i = 0; i < TOTAL_SLIDES; i++) {
+                const dot = document.getElementById('dot-' + i);
+                if (dot) {
+                    dot.className = 'dot' + (i === slideAtual ? ' active' : '');
+                }
             }
 
-            // Mostra botão certo
-            const btnProx = document.getElementById('btn-proximo');
-            const btnCom = document.getElementById('btn-comecar');
-            if (atual === TOTAL - 1) {
-                btnProx.style.display = 'none';
-                btnCom.style.display = 'block';
+            // Mostra botão correto
+            const btnNext = document.getElementById('btn-next');
+            const btnStart = document.getElementById('btn-start');
+            
+            if (slideAtual === TOTAL_SLIDES - 1) {
+                btnNext.style.display = 'none';
+                btnStart.style.display = 'flex';
             } else {
-                btnProx.style.display = 'block';
-                btnCom.style.display = 'none';
+                btnNext.style.display = 'block';
+                btnStart.style.display = 'none';
             }
+
+            // Atualiza ícones
+            if (window.lucide) lucide.createIcons();
         }
 
         function proximo() {
-            if (atual < TOTAL - 1) {
-                atual++;
+            if (slideAtual < TOTAL_SLIDES - 1) {
+                slideAtual++;
                 atualizarUI();
             }
         }
 
         function pular() {
-            concluir();
+            finalizar();
         }
 
         function comecar() {
-            concluir();
+            finalizar();
         }
 
-        function concluir() {
+        function finalizar() {
             localStorage.setItem('dt_onboarding_done', 'true');
             document.body.style.opacity = '0';
-            document.body.style.transition = 'opacity 0.3s ease';
-            setTimeout(() => { window.location.replace('index.html'); }, 300);
+            document.body.style.transition = 'opacity 0.4s ease';
+            setTimeout(() => {
+                window.location.replace('index.html');
+            }, 400);
         }
 
         // Swipe para navegar
         let touchStartX = 0;
-        document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
-        document.addEventListener('touchend', (e) => {
-            const diff = touchStartX - e.changedTouches[0].clientX;
-            if (diff > 50 && atual < TOTAL - 1) { atual++; atualizarUI(); }
-            if (diff < -50 && atual > 0) { atual--; atualizarUI(); }
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
         });
 
-        // Fade de entrada
-        document.body.style.opacity = '0';
-        document.body.style.transition = 'opacity 0.3s ease';
-        setTimeout(function() { document.body.style.opacity = '1'; }, 50);
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchStartX - touchEndX;
 
+            if (diff > 60 && slideAtual < TOTAL_SLIDES - 1) {
+                slideAtual++;
+                atualizarUI();
+            } else if (diff < -60 && slideAtual > 0) {
+                slideAtual--;
+                atualizarUI();
+            }
+        });
+
+        // Animação de entrada
+        document.body.style.opacity = '0';
+        setTimeout(() => {
+            document.body.style.transition = 'opacity 0.6s ease';
+            document.body.style.opacity = '1';
+        }, 100);
+
+        // Inicializa
         atualizarUI();
         if (window.lucide) lucide.createIcons();
     </script>
