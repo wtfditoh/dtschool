@@ -294,16 +294,12 @@ window.salvarNota = async function(id, periodo, valor) {
 window.confirmarNovaMateria = async function() {
     const input = document.getElementById('nome-materia-input');
     if (input && input.value.trim() !== '') {
-        const cfg = getCfg();
+        // Sempre cria com n1, n2, n3, n4 pra garantir compatibilidade
         const nova = { 
             id: Date.now(), 
-            nome: input.value.trim() 
+            nome: input.value.trim(),
+            n1: '', n2: '', n3: '', n4: ''
         };
-        
-        // Inicializa notas vazias baseado no período
-        for (let i = 1; i <= cfg.numPeriodos; i++) {
-            nova['n' + i] = '';
-        }
         
         materias.push(nova);
         localStorage.setItem('materias', JSON.stringify(materias));
