@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { verificarConquistas, mostrarPopupConquista } from "./conquistas.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -16,32 +15,65 @@ const db = getFirestore(app);
 
 let materias = JSON.parse(localStorage.getItem('materias')) || [];
 let idParaExcluir = null;
-let versaoLocal = null;
 
-// ─── LÊ CONFIGS ───────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════════════════
+function showToast(msg, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `
+        <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}"></i>
+        <span>${msg}</span>
+    `;
+    container.appendChild(toast);
+    if (window.lucide) lucide.createIcons();
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONFIGURAÇÕES
+// ═══════════════════════════════════════════════════════════════════════════
 function getCfg() {
     try {
         const raw = localStorage.getItem('dt_config');
         const cfg = raw ? JSON.parse(raw) : {};
+        
         const periodo = cfg.periodo || 'bimestral';
         const numPeriodos = { bimestral: 4, trimestral: 3, semestral: 2 }[periodo] || 4;
         const notaMax = parseFloat(cfg.nota_max || cfg.notaMax || 10);
         const media = parseFloat(cfg.media_aprovacao || cfg.media || 6.0);
-        // Soma mínima = média × numPeriodos
         const somaMinima = media * numPeriodos;
-        // Labels dos períodos
+        
         const labels = {
-            bimestral:  ['1º BIM', '2º BIM', '3º BIM', '4º BIM'],
+            bimestral: ['1º BIM', '2º BIM', '3º BIM', '4º BIM'],
             trimestral: ['1º TRI', '2º TRI', '3º TRI'],
-            semestral:  ['1º SEM', '2º SEM'],
+            semestral: ['1º SEM', '2º SEM']
         }[periodo] || ['1º', '2º', '3º', '4º'];
+        
         return { numPeriodos, notaMax, media, somaMinima, labels, periodo };
-    } catch(e) {
-        return { numPeriodos: 4, notaMax: 10, media: 6.0, somaMinima: 24, labels: ['1º BIM','2º BIM','3º BIM','4º BIM'], periodo: 'bimestral' };
+    } catch (e) {
+        return { 
+            numPeriodos: 4, 
+            notaMax: 10, 
+            media: 6.0, 
+            somaMinima: 24, 
+            labels: ['1º BIM', '2º BIM', '3º BIM', '4º BIM'], 
+            periodo: 'bimestral' 
+        };
     }
 }
 
-// ─── HELPER: notas da matéria ─────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
 function getNotas(m, numPeriodos) {
     const notas = [];
     for (let i = 1; i <= numPeriodos; i++) {
@@ -55,38 +87,40 @@ function somaNotas(notas) {
     return notas.reduce((acc, v) => acc + (v !== null && !isNaN(v) ? v : 0), 0);
 }
 
-// ─── MONITOR VERSÃO ───────────────────────
-function monitorarVersaoSistema() {
-    onSnapshot(doc(db, "config", "versao_sistema"), (s) => {
-        if (s.exists()) {
-            const v = s.data().v;
-            if (versaoLocal === null) versaoLocal = v;
-            else if (v !== versaoLocal) setTimeout(() => window.location.reload(true), 1000);
-        }
-    });
-}
-
-// ─── XP ───────────────────────────────────
 function calcularXP(m, cfg) {
     let xp = 0;
     const notas = getNotas(m, cfg.numPeriodos);
+    
     notas.forEach(n => {
         if (n === null || isNaN(n)) return;
         const pct = n / cfg.notaMax;
-        if (pct >= 1.0)       xp += 100;
-        else if (pct >= 0.8)  xp += 50;
-        else if (pct >= 0.6)  xp += 20;
-        else if (pct >= 0.4)  xp -= 20;
-        else if (pct > 0)     xp -= 50;
-        else                  xp -= 100;
+        
+        if (pct >= 1.0) xp += 100;
+        else if (pct >= 0.8) xp += 50;
+        else if (pct >= 0.6) xp += 20;
+        else if (pct >= 0.4) xp -= 20;
+        else if (pct > 0) xp -= 50;
+        else xp -= 100;
     });
+    
     return xp;
 }
 
-// ─── SALVAR NA NUVEM ──────────────────────
+function getNotaClass(nota, cfg) {
+    if (nota === null || isNaN(nota)) return '';
+    const pct = nota / cfg.notaMax;
+    if (pct >= 0.8) return 'boa';
+    if (pct >= 0.6) return 'media';
+    return 'baixa';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SALVAR NA NUVEM
+// ═══════════════════════════════════════════════════════════════════════════
 async function salvarNaNuvem() {
     const email = localStorage.getItem('dt_user_email');
     const userType = localStorage.getItem('dt_user_type');
+    
     if (userType === 'local' || !email || email === 'null') return;
 
     try {
@@ -102,103 +136,111 @@ async function salvarNaNuvem() {
             avatar: localStorage.getItem('dt_user_avatar') || 'user',
             atualizadoEm: Date.now()
         }, { merge: true });
-
-        await verificarConquistasNotas(email);
-    } catch(e) { console.error('Erro Firebase:', e); }
+    } catch (e) {
+        console.error('Erro ao salvar na nuvem:', e);
+    }
 }
 
-async function verificarConquistasNotas(email) {
-    try {
-        const snap = await getDoc(doc(db, "notas", email));
-        if (!snap.exists()) return;
-        const novas = await verificarConquistas(email, { ...snap.data(), materias });
-        if (novas.length > 0) mostrarPopupConquista(novas);
-    } catch(e) {}
-}
-
-// ─── RENDERIZAR LISTA ─────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDERIZAR
+// ═══════════════════════════════════════════════════════════════════════════
 window.atualizarLista = function() {
     const lista = document.getElementById('lista-materias');
     if (!lista) return;
+    
     const cfg = getCfg();
     materias.sort((a, b) => b.id - a.id);
 
     if (materias.length === 0) {
-        lista.innerHTML = `<div style="text-align:center;color:#555;padding:40px;font-weight:bold;">Nenhuma matéria criada. Clique no + para começar!</div>`;
+        lista.innerHTML = `
+            <div class="empty-state">
+                <i data-lucide="book-open"></i>
+                <h3>Nenhuma disciplina</h3>
+                <p>Clique no + para adicionar sua primeira matéria</p>
+            </div>
+        `;
         atualizarStats(cfg);
+        if (window.lucide) lucide.createIcons();
         return;
     }
 
-    lista.innerHTML = materias.map(m => {
+    lista.innerHTML = materias.map((m, idx) => {
         const notas = getNotas(m, cfg.numPeriodos);
         const soma = somaNotas(notas);
         const mediaM = (soma / cfg.numPeriodos).toFixed(1);
         const percent = Math.min((soma / cfg.somaMinima) * 100, 100);
         const aprovado = soma >= cfg.somaMinima;
+        const quase = soma >= cfg.somaMinima * 0.85 && soma < cfg.somaMinima;
         const faltam = Math.max(0, cfg.somaMinima - soma).toFixed(1);
 
         // Cor da barra
-        const barCor = aprovado ? '#2ecc71' : soma >= cfg.somaMinima * 0.7 ? '#ffcc00' : '#8a2be2';
+        let barCor = '#8a2be2';
+        if (aprovado) barCor = '#00e5a0';
+        else if (quase) barCor = '#ffb800';
+
+        // Status badge
+        let statusHTML = '';
+        if (aprovado) {
+            statusHTML = '<span class="status-badge aprovado">✓ APROVADO</span>';
+        } else if (quase) {
+            statusHTML = '<span class="status-badge quase">⚡ QUASE LÁ</span>';
+        } else {
+            statusHTML = `<span class="status-badge media">Média: ${mediaM}</span>`;
+        }
 
         return `
-        <div class="materia-card">
-            <div class="card-top">
-                <h3 style="font-size:17px;font-weight:800;color:white;">${m.nome}</h3>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="font-size:11px;font-weight:800;color:${aprovado?'#2ecc71':'#555'};">
-                        ${aprovado ? '✓ APROVADO' : `Média: ${mediaM}`}
-                    </span>
-                    <button onclick="window.abrirModalExcluir(${m.id})" style="background:none;border:none;color:#ff4444;opacity:0.5;cursor:pointer;padding:4px;">
-                        <i data-lucide="trash-2" style="width:16px;"></i>
+        <div class="materia-card" style="animation-delay: ${idx * 0.1}s">
+            <div class="card-header">
+                <h2 class="materia-nome">${m.nome}</h2>
+                <div class="card-actions">
+                    ${statusHTML}
+                    <button onclick="window.abrirModalExcluir(${m.id})" class="btn-delete">
+                        <i data-lucide="trash-2"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- BARRA PROGRESSO -->
-            <div style="height:5px;background:rgba(255,255,255,0.05);border-radius:10px;margin:10px 0;overflow:hidden;">
-                <div style="width:${percent}%;height:100%;background:${barCor};box-shadow:0 0 8px ${barCor};border-radius:10px;transition:width 0.5s ease;"></div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: ${percent}%; background: ${barCor}; box-shadow: 0 0 10px ${barCor};"></div>
             </div>
 
-            <!-- INPUTS DINÂMICOS por período -->
-            <div style="display:grid;grid-template-columns:repeat(${cfg.numPeriodos},1fr);gap:8px;">
-                ${Array.from({length: cfg.numPeriodos}, (_, i) => {
+            <div class="notas-grid">
+                ${Array.from({ length: cfg.numPeriodos }, (_, i) => {
                     const n = i + 1;
                     const val = m['n' + n] !== undefined && m['n' + n] !== '' ? m['n' + n] : '';
                     const nota = parseFloat(val);
-                    const notaCor = isNaN(nota) ? 'rgba(138,43,226,0.2)' : nota >= cfg.media * (nota / (cfg.somaMinima / cfg.numPeriodos) >= 1 ? 1 : 1) ? nota >= cfg.notaMax * 0.8 ? 'rgba(46,204,113,0.3)' : nota >= cfg.notaMax * 0.6 ? 'rgba(138,43,226,0.2)' : 'rgba(255,204,0,0.2)' : 'rgba(255,68,68,0.2)';
+                    const notaClass = getNotaClass(nota, cfg);
+                    
                     return `
-                    <div style="display:flex;flex-direction:column;gap:4px;">
-                        <span style="font-size:8px;font-weight:800;letter-spacing:1px;color:#444;text-align:center;">${cfg.labels[i]}</span>
-                        <input type="number" step="0.1" min="0" max="${cfg.notaMax}" value="${val}"
-                            style="width:100%;background:rgba(0,0,0,0.5);border:1px solid ${notaCor};color:white;padding:12px 4px;border-radius:12px;text-align:center;font-size:14px;font-weight:800;outline:none;-webkit-appearance:none;"
-                            onchange="window.salvarNota(${m.id},${n},this.value)"
-                            onfocus="this.style.borderColor='#8a2be2'"
-                            onblur="this.style.borderColor='${notaCor}'">
+                    <div class="nota-input-group">
+                        <label class="nota-label">${cfg.labels[i]}</label>
+                        <input 
+                            type="number" 
+                            step="0.1" 
+                            min="0" 
+                            max="${cfg.notaMax}" 
+                            value="${val}"
+                            class="nota-input ${notaClass}"
+                            onchange="window.salvarNota(${m.id}, ${n}, this.value)"
+                            placeholder="0.0"
+                        >
                     </div>`;
                 }).join('')}
             </div>
 
-            <!-- RODAPÉ -->
-            <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;">
-                <div style="display:flex;flex-direction:column;gap:2px;">
-                    <span style="font-size:11px;color:#555;font-weight:700;">
-                        SOMA: ${soma.toFixed(1)} / ${cfg.somaMinima.toFixed(1)}
-                    </span>
-                    <span style="font-size:10px;color:#333;">
-                        Nota máx/período: ${cfg.notaMax} | Média: ${cfg.media}
-                    </span>
+            <div class="card-footer">
+                <div class="footer-info">
+                    <span class="soma-info">SOMA: ${soma.toFixed(1)} / ${cfg.somaMinima.toFixed(1)}</span>
+                    <span class="config-info">Nota máx: ${cfg.notaMax} | Média: ${cfg.media}</span>
                 </div>
-                ${aprovado
-                    ? `<div style="display:flex;align-items:center;gap:8px;">
-                        <span style="background:rgba(46,204,113,0.1);color:#2ecc71;padding:4px 10px;border-radius:8px;font-size:10px;font-weight:900;border:1px solid rgba(46,204,113,0.2);">✓ APROVADO</span>
-                        <button onclick="window.gerarCardVitoria('${m.nome}','${mediaM}')" style="background:none;border:none;color:#8a2be2;cursor:pointer;padding:4px;">
-                            <i data-lucide="share-2" style="width:16px;"></i>
-                        </button>
-                       </div>`
-                    : `<span style="color:#ffcc00;font-size:11px;font-weight:800;">
-                        Faltam ${faltam} pts
-                       </span>`
-                }
+                <div class="footer-actions">
+                    ${aprovado 
+                        ? `<button onclick="window.gerarCardVitoria('${m.nome}', '${mediaM}')" class="btn-share">
+                            <i data-lucide="share-2"></i>
+                           </button>` 
+                        : `<span class="falta-badge">Faltam ${faltam} pts</span>`
+                    }
+                </div>
             </div>
         </div>`;
     }).join('');
@@ -209,21 +251,32 @@ window.atualizarLista = function() {
 
 function atualizarStats(cfg) {
     const total = materias.length;
-    let somaMedias = 0, aprovados = 0;
+    let somaMedias = 0;
+    let aprovados = 0;
+    let xpTotal = 0;
+
     materias.forEach(m => {
         const notas = getNotas(m, cfg.numPeriodos);
         const soma = somaNotas(notas);
         somaMedias += soma / cfg.numPeriodos;
         if (soma >= cfg.somaMinima) aprovados++;
+        xpTotal += calcularXP(m, cfg);
     });
+
     const mediaGeral = total > 0 ? (somaMedias / total).toFixed(1) : '0.0';
+
     const mgEl = document.getElementById('media-geral');
     const acEl = document.getElementById('aprov-count');
-    if (mgEl) mgEl.innerText = mediaGeral;
-    if (acEl) acEl.innerText = `${aprovados}/${total}`;
+    const xpEl = document.getElementById('total-xp');
+
+    if (mgEl) mgEl.textContent = mediaGeral;
+    if (acEl) acEl.textContent = `${aprovados}/${total}`;
+    if (xpEl) xpEl.textContent = xpTotal;
 }
 
-// ─── SALVAR NOTA ──────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// SALVAR NOTA
+// ═══════════════════════════════════════════════════════════════════════════
 window.salvarNota = async function(id, periodo, valor) {
     const i = materias.findIndex(m => m.id === id);
     if (i !== -1) {
@@ -231,74 +284,137 @@ window.salvarNota = async function(id, periodo, valor) {
         localStorage.setItem('materias', JSON.stringify(materias));
         window.atualizarLista();
         await salvarNaNuvem();
+        showToast('Nota salva!');
     }
 };
 
-// ─── NOVA MATÉRIA ─────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// NOVA MATÉRIA
+// ═══════════════════════════════════════════════════════════════════════════
 window.confirmarNovaMateria = async function() {
     const input = document.getElementById('nome-materia-input');
     if (input && input.value.trim() !== '') {
-        const nova = { id: Date.now(), nome: input.value.trim(), n1:'', n2:'', n3:'', n4:'' };
+        const cfg = getCfg();
+        const nova = { 
+            id: Date.now(), 
+            nome: input.value.trim() 
+        };
+        
+        // Inicializa notas vazias baseado no período
+        for (let i = 1; i <= cfg.numPeriodos; i++) {
+            nova['n' + i] = '';
+        }
+        
         materias.push(nova);
         localStorage.setItem('materias', JSON.stringify(materias));
         window.atualizarLista();
+        
         if (window.fecharModal) window.fecharModal();
         input.value = '';
+        
         await salvarNaNuvem();
+        showToast(`${nova.nome} adicionada!`);
     }
 };
 
-// ─── EXCLUIR MATÉRIA ──────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// EXCLUIR
+// ═══════════════════════════════════════════════════════════════════════════
 window.abrirModalExcluir = function(id) {
     idParaExcluir = id;
-    document.getElementById('modal-excluir-container').style.display = 'flex';
+    document.getElementById('modal-excluir').style.display = 'flex';
+    if (window.lucide) lucide.createIcons();
 };
+
 window.confirmarExclusao = async function() {
+    const materia = materias.find(m => m.id === idParaExcluir);
     materias = materias.filter(m => m.id !== idParaExcluir);
     localStorage.setItem('materias', JSON.stringify(materias));
     window.atualizarLista();
-    window.fecharModalExcluir();
+    
+    if (window.fecharModalExcluir) window.fecharModalExcluir();
+    
     await salvarNaNuvem();
+    if (materia) showToast(`${materia.nome} excluída`, 'error');
 };
 
-// ─── COMPARTILHAR ─────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPARTILHAR
+// ═══════════════════════════════════════════════════════════════════════════
 window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     let container = document.getElementById('compartilhamento-container');
-    if (!container) { container = document.createElement('div'); container.id = 'compartilhamento-container'; document.body.appendChild(container); }
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'compartilhamento-container';
+        document.body.appendChild(container);
+    }
 
     container.innerHTML = `
-        <div class="card-vitoria-story">
-            <div class="vitoria-content">
-                <div class="logo-neon-vitoria"><i data-lucide="brain-circuit" style="width:240px;height:240px;color:#8a2be2;"></i></div>
-                <p class="status-conquista">${parseFloat(mediaReal) >= 8.0 ? 'Nível Elite' : 'Objetivo Concluído'}</p>
-                <h1 class="materia-nome-vitoria">${nomeMateria}</h1>
-                <p class="badge-comemorativa">${parseFloat(mediaReal) >= 8.0 ? `NOTA EXTRAORDINÁRIA: ${mediaReal}` : `MÉDIA ${mediaReal} SUPERADA`}</p>
+        <div style="width:1080px;height:1920px;background:radial-gradient(circle at center,#1a0b2e 0%,#050505 100%);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:120px 60px;position:relative;">
+            <div style="flex-grow:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:1;">
+                <div style="margin-bottom:60px;filter:drop-shadow(0 0 40px rgba(138,43,226,0.8));">
+                    <i data-lucide="brain-circuit" style="width:240px;height:240px;color:#8a2be2;"></i>
+                </div>
+                <p style="color:#fff;font-size:50px;font-weight:800;text-transform:uppercase;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 20px rgba(138,43,226,0.8);">
+                    ${parseFloat(mediaReal) >= 8.0 ? 'NÍVEL ELITE' : 'OBJETIVO CONCLUÍDO'}
+                </p>
+                <h1 style="color:#fff;font-size:140px;font-weight:900;line-height:1;margin:0;text-transform:uppercase;text-shadow:0 0 30px rgba(138,43,226,0.5);">
+                    ${nomeMateria}
+                </h1>
+                <p style="margin-top:40px;font-size:35px;font-weight:600;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:8px;border-bottom:1px solid rgba(138,43,226,0.4);padding-bottom:10px;">
+                    ${parseFloat(mediaReal) >= 8.0 ? `NOTA EXTRAORDINÁRIA: ${mediaReal}` : `MÉDIA ${mediaReal} SUPERADA`}
+                </p>
             </div>
-            <div class="vitoria-footer"><p>HUB BRAIN</p><p class="link-app-vitoria">https://hubbrain.netlify.app/</p></div>
-        </div>`;
+            <div style="text-align:center;z-index:1;">
+                <p style="color:#8a2be2;font-size:30px;font-weight:800;letter-spacing:5px;text-transform:uppercase;">HUB BRAIN</p>
+                <p style="font-size:24px;color:#444;margin-top:15px;text-transform:lowercase;font-weight:400;letter-spacing:1px;">hubbrain.netlify.app</p>
+            </div>
+        </div>
+    `;
 
     if (window.lucide) lucide.createIcons({ container });
 
     setTimeout(async () => {
         try {
-            const canvas = await html2canvas(container, { backgroundColor: '#0d0d0d', width: 1080, height: 1920, scale: 1, useCORS: true });
+            const canvas = await html2canvas(container, {
+                backgroundColor: '#0d0d0d',
+                width: 1080,
+                height: 1920,
+                scale: 1,
+                useCORS: true
+            });
+
             canvas.toBlob(async blob => {
                 const file = new File([blob], `Vitoria_${nomeMateria}.png`, { type: 'image/png' });
+                
                 if (navigator.share) {
-                    await navigator.share({ title: 'Hub Brain', text: `Menos uma! Passei em ${nomeMateria}. 🚀\nhttps://hubbrain.netlify.app/`, files: [file] });
+                    await navigator.share({
+                        title: 'Hub Brain',
+                        text: `Menos uma! Passei em ${nomeMateria}. 🚀\nhubbrain.netlify.app`,
+                        files: [file]
+                    });
                 } else {
-                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Vitoria_${nomeMateria}.png`; a.click();
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `Vitoria_${nomeMateria}.png`;
+                    a.click();
                 }
+                
                 container.innerHTML = '';
             });
-        } catch(e) { console.error('Erro ao compartilhar', e); }
+        } catch (e) {
+            console.error('Erro ao compartilhar:', e);
+            showToast('Erro ao gerar imagem', 'error');
+        }
     }, 400);
 };
 
-// ─── INIT ─────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
-    monitorarVersaoSistema();
     window.atualizarLista();
+    
     const email = localStorage.getItem('dt_user_email');
     if (email && email !== 'null') {
         try {
@@ -308,7 +424,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 localStorage.setItem('materias', JSON.stringify(materias));
                 window.atualizarLista();
             }
-        } catch(e) {}
+        } catch (e) {
+            console.error('Erro ao carregar do Firebase:', e);
+        }
     }
+    
+    if (window.lucide) lucide.createIcons();
 });
-          
