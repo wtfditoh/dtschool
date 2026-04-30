@@ -1,0 +1,131 @@
+/* tema.css — importa em todas as páginas */
+/* Adiciona <link rel="stylesheet" href="tema.css"> em todas as páginas */
+
+/* ── FONTE ── */
+html.font-small, html.font-small body { font-size: 13px !important; }
+html.font-large, html.font-large body { font-size: 17px !important; }
+
+/* ── TEMA CLARO ── */
+html.light-mode, html.light-mode body,
+body.light-mode {
+    background: #f0ecff !important;
+    color: #1a0a2e !important;
+}
+
+/* HEADER */
+body.light-mode .glass-header,
+html.light-mode .glass-header {
+    background: rgba(240,236,255,0.96) !important;
+    border-bottom-color: rgba(138,43,226,0.2) !important;
+}
+body.light-mode .glass-header .hub-logo-text { color: #1a0a2e !important; }
+body.light-mode .btn-menu,
+body.light-mode .btn-icon,
+body.light-mode #open-menu {
+    background: rgba(138,43,226,0.08) !important;
+    border-color: rgba(138,43,226,0.2) !important;
+    color: #1a0a2e !important;
+}
+
+/* CARDS */
+body.light-mode .materia-card,
+body.light-mode .tarefa-item,
+body.light-mode .stat-card,
+body.light-mode .stat-box,
+body.light-mode .xp-card,
+body.light-mode .perfil-card,
+body.light-mode .meta-card,
+body.light-mode .conquista-item,
+body.light-mode .cfg-card,
+body.light-mode .calc-card,
+body.light-mode .sessao-hoje-card,
+body.light-mode .cronograma-card,
+body.light-mode .link-card {
+    background: #ffffff !important;
+    border-color: rgba(138,43,226,0.15) !important;
+    color: #1a0a2e !important;
+}
+
+/* INPUTS */
+body.light-mode input,
+body.light-mode select,
+body.light-mode textarea,
+body.light-mode .input-ia,
+body.light-mode .calc-input,
+body.light-mode .cfg-input,
+body.light-mode .cfg-select,
+body.light-mode .search-input {
+    background: #f0ecff !important;
+    border-color: rgba(138,43,226,0.2) !important;
+    color: #1a0a2e !important;
+}
+body.light-mode input::placeholder,
+body.light-mode textarea::placeholder { color: #9b8bc0 !important; }
+
+/* TEXTOS DIMMED */
+body.light-mode .stat-label,
+body.light-mode .cfg-desc,
+body.light-mode .card-desc,
+body.light-mode .hint,
+body.light-mode .calc-formula,
+body.light-mode .flip-label,
+body.light-mode .section-title {
+    color: #6a5090 !important;
+}
+
+/* MENU LATERAL */
+body.light-mode .side-menu {
+    background: #f8f4ff !important;
+    border-right-color: rgba(138,43,226,0.2) !important;
+}
+body.light-mode .menu-links a { color: #6a5090 !important; }
+body.light-mode .menu-links a.active { background: rgba(138,43,226,0.1) !important; color: #8a2be2 !important; }
+body.light-mode .menu-section-label { color: #c0b0d0 !important; }
+
+/* MODAL */
+body.light-mode .modal-content,
+body.light-mode .modal-sheet,
+body.light-mode .modal-card {
+    background: #ffffff !important;
+    border-color: rgba(138,43,226,0.15) !important;
+    color: #1a0a2e !important;
+}
+
+/* FLIP CLOCK */
+body.light-mode .flip-card { background: #ffffff !important; border-color: rgba(138,43,226,0.15) !important; }
+body.light-mode .flip-card .flip-top,
+body.light-mode .flip-card .flip-bottom { color: #1a0a2e !important; }
+body.light-mode .flip-sep { color: #8a2be2 !important; }
+
+/* AGENDA */
+body.light-mode .calendar-card { background: #ffffff !important; }
+body.light-mode .dia-numero { color: #1a0a2e !important; }
+body.light-mode .dia-numero.hoje { background: #8a2be2 !important; color: white !important; }
+
+/* CONQUISTAS */
+body.light-mode .conquista-item { background: #f8f4ff !important; }
+body.light-mode .conquista-nome { color: #1a0a2e !important; }
+body.light-mode .conquista-desc { color: #6a5090 !important; }
+
+/* BOTÕES SECUNDÁRIOS */
+body.light-mode .btn-visitante,
+body.light-mode .btn-cancelar-modal,
+body.light-mode .btn-limpar { color: #6a5090 !important; border-color: rgba(138,43,226,0.2) !important; }
+
+/* PROGRESS BARS */
+body.light-mode .progress-track,
+body.light-mode .xp-bar-bg,
+body.light-mode .conquistas-barra-bg {
+    background: rgba(138,43,226,0.08) !important;
+}
+
+/* CHIP MATERIA */
+body.light-mode .chip-materia { background: #f0ecff !important; border-color: rgba(138,43,226,0.2) !important; color: #6a5090 !important; }
+body.light-mode .chip-materia.selected { background: rgba(138,43,226,0.15) !important; color: #8a2be2 !important; }
+
+/* MODO FOCO XP TAG */
+body.light-mode .xp-tag { background: rgba(138,43,226,0.08) !important; color: #8a2be2 !important; }
+
+/* FUNDO GERAL */
+body.light-mode .bg-dark { background: #f0ecff !important; }
+body.light-mode .container-agenda { background: transparent !important; }
