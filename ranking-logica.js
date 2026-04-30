@@ -24,6 +24,12 @@ function getPatente(xp) {
     return "Novato 🟢";
 }
 
+function formatarNumero(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+}
+
 async function carregarRanking() {
     try {
         const querySnapshot = await getDocs(collection(db, "notas"));
@@ -41,47 +47,57 @@ async function carregarRanking() {
             }
         });
 
+        // Remove duplicatas mantendo o maior XP
         const listaUnica = Object.values(listaRaw.reduce((acc, curr) => {
             if (!acc[curr.id] || curr.xp > acc[curr.id].xp) acc[curr.id] = curr;
             return acc;
         }, {}));
 
+        // Ordena por XP
         listaUnica.sort((a, b) => b.xp - a.xp);
+
+        // Calcula estatísticas
+        const totalUsuarios = listaUnica.length;
+        const totalXP = listaUnica.reduce((sum, u) => sum + u.xp, 0);
+
+        // Atualiza stats no header
+        const totalUsuariosEl = document.getElementById('total-usuarios');
+        const totalXpEl = document.getElementById('total-xp');
+        
+        if (totalUsuariosEl) totalUsuariosEl.textContent = totalUsuarios;
+        if (totalXpEl) totalXpEl.textContent = formatarNumero(totalXP);
+
         renderizar(listaUnica);
     } catch (e) {
         console.error("Erro ao carregar ranking:", e);
+        const container = document.getElementById('lista-ranking');
+        if (container) {
+            container.innerHTML = '<p style="text-align:center; padding:40px; color:#ff4455; font-size:13px; font-weight:700;">Erro ao carregar ranking. Tente novamente.</p>';
+        }
     }
 }
 
 function renderizar(lista) {
     // PÓDIO — top 3
-    const cores = ['#f1c40f', '#bdc3c7', '#cd7f32'];
     for (let i = 0; i < 3; i++) {
         const u = lista[i];
-        const nomeElem    = document.getElementById(`p${i+1}-name`);
-        const scoreElem   = document.getElementById(`p${i+1}-score`);
+        const nomeElem = document.getElementById(`p${i+1}-name`);
+        const scoreElem = document.getElementById(`p${i+1}-score`);
         const patenteElem = document.getElementById(`p${i+1}-patente`);
-        const frame       = document.getElementById(`avatar-p${i+1}`);
+        const avatarElem = document.getElementById(`avatar-p${i+1}`);
 
-        if (u && nomeElem && scoreElem && frame) {
-            nomeElem.innerText  = u.nome.split(' ')[0];
-            scoreElem.innerText = u.xp;
-            if (patenteElem) patenteElem.innerText = getPatente(u.xp);
+        if (u && nomeElem && scoreElem && avatarElem) {
+            nomeElem.textContent = u.nome.split(' ')[0];
+            scoreElem.textContent = u.xp;
+            if (patenteElem) patenteElem.textContent = getPatente(u.xp);
 
             const iconName = isNaN(u.avatar) ? u.avatar : "user";
-            const cor = cores[i];
-            const size = i === 0 ? '38px' : '28px';
-
-            if (i === 0) {
-                frame.innerHTML = `
-                    <i data-lucide="crown" class="crown-icon"></i>
-                    <i data-lucide="${iconName}" style="width:${size}; height:${size}; color:${cor};"></i>
-                `;
-            } else {
-                frame.innerHTML = `
-                    <i data-lucide="${iconName}" style="width:${size}; height:${size}; color:${cor};"></i>
-                `;
-            }
+            avatarElem.setAttribute('data-lucide', iconName);
+        } else {
+            // Se não tem usuário suficiente, mostra vazio
+            if (nomeElem) nomeElem.textContent = '---';
+            if (scoreElem) scoreElem.textContent = '0';
+            if (patenteElem) patenteElem.textContent = '—';
         }
     }
 
@@ -89,28 +105,33 @@ function renderizar(lista) {
     const container = document.getElementById('lista-ranking');
     if (!container) return;
 
-    container.innerHTML = lista.slice(3).map((u, i) => {
-        const isMe     = u.id === meuID;
-        const iconName = isNaN(u.avatar) ? u.avatar : "user";
-        const pos      = i + 4;
+    if (lista.length <= 3) {
+        container.innerHTML = '<p style="text-align:center; padding:40px; color:#444; font-size:13px; font-weight:700; letter-spacing:1px;">APENAS O PÓDIO ESTÁ COMPETINDO</p>';
+    } else {
+        container.innerHTML = lista.slice(3).map((u, i) => {
+            const isMe = u.id === meuID;
+            const iconName = isNaN(u.avatar) ? u.avatar : "user";
+            const pos = i + 4;
 
-        return `
-        <div class="rank-item ${isMe ? 'minha-pos' : ''}">
-            <span class="rank-pos">${pos}º</span>
-            <div class="rank-avatar">
-                <i data-lucide="${iconName}" style="width:18px; height:18px; color:${isMe ? '#c084fc' : '#555'};"></i>
-            </div>
-            <div class="rank-info">
-                <span class="rank-name">
-                    ${u.nome}
-                    ${isMe ? '<span class="rank-voce">VOCÊ</span>' : ''}
-                </span>
-                <span class="rank-patente">${getPatente(u.xp)}</span>
-            </div>
-            <span class="rank-xp">${u.xp} XP</span>
-        </div>`;
-    }).join('') || '<p style="text-align:center; padding:30px; color:#333; font-size:12px; font-weight:700; letter-spacing:1px;">NENHUM COMPETIDOR ENCONTRADO</p>';
+            return `
+            <div class="rank-item ${isMe ? 'me' : ''}">
+                <span class="rank-position">${pos}º</span>
+                <div class="rank-avatar">
+                    <i data-lucide="${iconName}"></i>
+                </div>
+                <div class="rank-info">
+                    <div class="rank-name">
+                        ${u.nome}
+                        ${isMe ? '<span class="rank-badge">VOCÊ</span>' : ''}
+                    </div>
+                    <div class="rank-patente">${getPatente(u.xp)}</div>
+                </div>
+                <span class="rank-xp">${u.xp} XP</span>
+            </div>`;
+        }).join('');
+    }
 
+    // Re-renderiza os ícones do Lucide
     if (window.lucide) lucide.createIcons();
 }
 
