@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="tema.css">
     <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="configuracoes.css">
 </head>
@@ -21,24 +22,19 @@
     <div style="width:42px;"></div>
 </header>
 
-<!-- TOAST -->
 <div id="toast-cfg"></div>
 
 <div class="cfg-container">
 
     <!-- ── APARÊNCIA ── -->
     <div class="cfg-section">
-        <div class="section-label">
-            <i data-lucide="palette" class="section-icon"></i>
-            APARÊNCIA
-        </div>
+        <div class="section-label"><i data-lucide="palette" class="section-icon"></i>APARÊNCIA</div>
 
-        <!-- TEMA -->
         <div class="cfg-card">
             <div class="cfg-row">
                 <div class="cfg-info">
                     <div class="cfg-title">Tema</div>
-                    <div class="cfg-desc">Escolha o visual do app</div>
+                    <div class="cfg-desc">Visual do aplicativo</div>
                 </div>
                 <div class="theme-pills">
                     <button class="theme-pill active" id="theme-dark" onclick="setTema('dark')">
@@ -50,30 +46,11 @@
                 </div>
             </div>
         </div>
-
-        <!-- TAMANHO FONTE -->
-        <div class="cfg-card">
-            <div class="cfg-row">
-                <div class="cfg-info">
-                    <div class="cfg-title">Tamanho da Fonte</div>
-                    <div class="cfg-desc">Ajuste o texto do app</div>
-                </div>
-                <div class="font-pills">
-                    <button class="font-pill" id="font-small" onclick="setFonte('small')">A</button>
-                    <button class="font-pill active" id="font-medium" onclick="setFonte('medium')">A</button>
-                    <button class="font-pill" id="font-large" onclick="setFonte('large')">A</button>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <!-- ── ESCOLA ── -->
     <div class="cfg-section">
-        <div class="section-label">
-            <i data-lucide="school" class="section-icon"></i>
-            ESCOLA
-        </div>
+        <div class="section-label"><i data-lucide="school" class="section-icon"></i>ESCOLA</div>
 
         <div class="cfg-card">
             <div class="cfg-label">NOME DA ESCOLA</div>
@@ -82,28 +59,25 @@
 
         <div class="cfg-card">
             <div class="cfg-label">SÉRIE / ANO</div>
-            <div class="select-wrap">
-                <select id="cfg-serie" class="cfg-select">
-                    <option value="">Selecione...</option>
-                    <optgroup label="Ensino Médio">
-                        <option value="1em">1° Ano — Ensino Médio</option>
-                        <option value="2em">2° Ano — Ensino Médio</option>
-                        <option value="3em">3° Ano — Ensino Médio</option>
-                    </optgroup>
-                    <optgroup label="Ensino Fundamental">
-                        <option value="6ef">6° Ano — Fund.</option>
-                        <option value="7ef">7° Ano — Fund.</option>
-                        <option value="8ef">8° Ano — Fund.</option>
-                        <option value="9ef">9° Ano — Fund.</option>
-                    </optgroup>
-                    <optgroup label="Superior">
-                        <option value="fac">Faculdade / Cursinho</option>
-                    </optgroup>
-                </select>
-            </div>
+            <select id="cfg-serie" class="cfg-select">
+                <option value="">Selecione...</option>
+                <optgroup label="Ensino Médio">
+                    <option value="1em">1° Ano — Ensino Médio</option>
+                    <option value="2em">2° Ano — Ensino Médio</option>
+                    <option value="3em">3° Ano — Ensino Médio</option>
+                </optgroup>
+                <optgroup label="Ensino Fundamental">
+                    <option value="6ef">6° Ano</option>
+                    <option value="7ef">7° Ano</option>
+                    <option value="8ef">8° Ano</option>
+                    <option value="9ef">9° Ano</option>
+                </optgroup>
+                <optgroup label="Superior">
+                    <option value="fac">Faculdade / Cursinho</option>
+                </optgroup>
+            </select>
         </div>
 
-        <!-- NÚMERO DE BIMESTRES -->
         <div class="cfg-card">
             <div class="cfg-label">SISTEMA DE AVALIAÇÃO</div>
             <div class="period-grid">
@@ -122,10 +96,9 @@
             </div>
         </div>
 
-        <!-- MÉDIA -->
         <div class="cfg-card">
             <div class="cfg-row" style="align-items:flex-start;">
-                <div class="cfg-info" style="flex:1;">
+                <div class="cfg-info">
                     <div class="cfg-title">Média para Aprovação</div>
                     <div class="cfg-desc">Nota mínima exigida pela escola</div>
                 </div>
@@ -144,7 +117,6 @@
             </div>
         </div>
 
-        <!-- NOTA MÁXIMA -->
         <div class="cfg-card">
             <div class="cfg-row">
                 <div class="cfg-info">
@@ -158,15 +130,11 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <!-- ── MODO FOCO ── -->
     <div class="cfg-section">
-        <div class="section-label">
-            <i data-lucide="timer" class="section-icon"></i>
-            MODO FOCO
-        </div>
+        <div class="section-label"><i data-lucide="timer" class="section-icon"></i>MODO FOCO</div>
 
         <div class="cfg-card">
             <div class="cfg-row">
@@ -174,9 +142,7 @@
                     <div class="cfg-title">Som de Tick</div>
                     <div class="cfg-desc">Bip a cada segundo no timer</div>
                 </div>
-                <div class="toggle-wrap">
-                    <div class="cfg-toggle active" id="toggle-tick" onclick="toggleOpcao('tick')"></div>
-                </div>
+                <div class="cfg-toggle active" id="toggle-tick" onclick="toggleOpcao('tick')"></div>
             </div>
         </div>
 
@@ -184,19 +150,17 @@
             <div class="cfg-row">
                 <div class="cfg-info">
                     <div class="cfg-title">Notificação ao Finalizar</div>
-                    <div class="cfg-desc">Vibrar/notificar quando o timer acabar</div>
+                    <div class="cfg-desc">Vibrar quando o timer acabar</div>
                 </div>
-                <div class="toggle-wrap">
-                    <div class="cfg-toggle active" id="toggle-notif-foco" onclick="toggleOpcao('notifFoco')"></div>
-                </div>
+                <div class="cfg-toggle active" id="toggle-notifFoco" onclick="toggleOpcao('notifFoco')"></div>
             </div>
         </div>
 
         <div class="cfg-card">
             <div class="cfg-row" style="align-items:flex-start;">
                 <div class="cfg-info">
-                    <div class="cfg-title">Meta Diária Padrão</div>
-                    <div class="cfg-desc">Tempo padrão ao abrir o foco</div>
+                    <div class="cfg-title">Tempo Padrão</div>
+                    <div class="cfg-desc">Tempo ao abrir o modo foco</div>
                 </div>
                 <div class="meta-inputs">
                     <div class="meta-input-pair">
@@ -211,27 +175,23 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <!-- ── NOTIFICAÇÕES ── -->
     <div class="cfg-section">
-        <div class="section-label">
-            <i data-lucide="bell" class="section-icon"></i>
-            NOTIFICAÇÕES
-        </div>
+        <div class="section-label"><i data-lucide="bell" class="section-icon"></i>NOTIFICAÇÕES</div>
 
         <div class="cfg-card">
             <div class="cfg-row">
                 <div class="cfg-info">
                     <div class="cfg-title">Lembrete Diário de Estudos</div>
-                    <div class="cfg-desc">Notificação se não bateu a meta</div>
+                    <div class="cfg-desc">Notifica se não bateu a meta</div>
                 </div>
                 <div class="cfg-toggle" id="toggle-lembrete" onclick="toggleOpcao('lembrete')"></div>
             </div>
         </div>
 
-        <div class="cfg-card" id="card-horario-lembrete" style="display:none;">
+        <div class="cfg-card" id="card-horario" style="display:none;">
             <div class="cfg-label">HORÁRIO DO LEMBRETE</div>
             <input type="time" id="cfg-horario-lembrete" class="cfg-input" value="20:00">
         </div>
@@ -239,65 +199,155 @@
         <div class="cfg-card">
             <div class="cfg-row">
                 <div class="cfg-info">
+                    <div class="cfg-title">Alerta de Streak em Risco</div>
+                    <div class="cfg-desc">Avisa quando sua sequência pode quebrar</div>
+                </div>
+                <div class="cfg-toggle active" id="toggle-streak" onclick="toggleOpcao('streak')"></div>
+            </div>
+        </div>
+
+        <div class="cfg-card">
+            <div class="cfg-row">
+                <div class="cfg-info">
                     <div class="cfg-title">Alertas de Prazo (Agenda)</div>
-                    <div class="cfg-desc">Avisar atividades próximas do vencimento</div>
+                    <div class="cfg-desc">Avisa atividades próximas do vencimento</div>
                 </div>
                 <div class="cfg-toggle active" id="toggle-prazo" onclick="toggleOpcao('prazo')"></div>
             </div>
         </div>
 
+        <div class="cfg-card">
+            <div class="cfg-row">
+                <div class="cfg-info">
+                    <div class="cfg-title">Conquistas</div>
+                    <div class="cfg-desc">Popup ao desbloquear conquistas</div>
+                </div>
+                <div class="cfg-toggle active" id="toggle-conquistas" onclick="toggleOpcao('conquistas')"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── PRIVACIDADE ── -->
+    <div class="cfg-section">
+        <div class="section-label"><i data-lucide="shield" class="section-icon"></i>PRIVACIDADE</div>
+
+        <div class="cfg-card">
+            <div class="cfg-row">
+                <div class="cfg-info">
+                    <div class="cfg-title">Aparecer no Ranking Global</div>
+                    <div class="cfg-desc">Seu perfil fica visível para outros usuários</div>
+                </div>
+                <div class="cfg-toggle active" id="toggle-ranking" onclick="toggleOpcao('ranking')"></div>
+            </div>
+        </div>
+
+        <div class="cfg-card">
+            <div class="cfg-row">
+                <div class="cfg-info">
+                    <div class="cfg-title">Mostrar Escola no Perfil</div>
+                    <div class="cfg-desc">Exibe o nome da escola publicamente</div>
+                </div>
+                <div class="cfg-toggle" id="toggle-showEscola" onclick="toggleOpcao('showEscola')"></div>
+            </div>
+        </div>
     </div>
 
     <!-- ── DADOS ── -->
     <div class="cfg-section">
-        <div class="section-label">
-            <i data-lucide="database" class="section-icon"></i>
-            DADOS
+        <div class="section-label"><i data-lucide="database" class="section-icon"></i>DADOS</div>
+
+        <div class="cfg-card">
+            <div class="cfg-row">
+                <div class="cfg-info">
+                    <div class="cfg-title">Exportar Dados</div>
+                    <div class="cfg-desc">Notas, agenda e histórico em JSON</div>
+                </div>
+                <button class="cfg-action-btn" onclick="exportarDados()">
+                    <i data-lucide="download" style="width:14px;height:14px;"></i> Exportar
+                </button>
+            </div>
         </div>
 
         <div class="cfg-card">
             <div class="cfg-row">
                 <div class="cfg-info">
                     <div class="cfg-title">Exportar Configurações</div>
-                    <div class="cfg-desc">Salva um arquivo JSON com suas configs</div>
+                    <div class="cfg-desc">Salva backup das suas configs</div>
                 </div>
                 <button class="cfg-action-btn" onclick="exportarConfig()">
-                    <i data-lucide="download" style="width:14px;height:14px;"></i>
-                    Exportar
-                </button>
-            </div>
-        </div>
-
-        <div class="cfg-card">
-            <div class="cfg-row">
-                <div class="cfg-info">
-                    <div class="cfg-title">Importar Configurações</div>
-                    <div class="cfg-desc">Restaura um backup de configs</div>
-                </div>
-                <button class="cfg-action-btn" onclick="document.getElementById('import-file').click()">
-                    <i data-lucide="upload" style="width:14px;height:14px;"></i>
-                    Importar
-                    <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importarConfig(this)">
+                    <i data-lucide="download" style="width:14px;height:14px;"></i> Exportar
                 </button>
             </div>
         </div>
 
         <div class="cfg-card danger-zone">
             <div class="cfg-label" style="color:#ff4455;">ZONA DE RISCO</div>
-            <button class="btn-danger" onclick="confirmarLimpeza('caderno')">
-                <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
-                Limpar Caderno
-            </button>
-            <button class="btn-danger" onclick="confirmarLimpeza('cronograma')">
-                <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+            <button class="btn-danger" onclick="confirmarLimpeza('cronograma','Limpar Cronogramas?','Todos os cronogramas criados serão removidos.')">
+                <i data-lucide="calendar-x" style="width:14px;height:14px;"></i>
                 Limpar Cronogramas
             </button>
-            <button class="btn-danger" onclick="confirmarLimpeza('foco')">
-                <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+            <button class="btn-danger" onclick="confirmarLimpeza('foco','Limpar Histórico de Foco?','Todo o histórico de sessões será removido do dispositivo.')">
+                <i data-lucide="timer-off" style="width:14px;height:14px;"></i>
                 Limpar Histórico de Foco
             </button>
         </div>
+    </div>
 
+    <!-- ── FEEDBACK ── -->
+    <div class="cfg-section">
+        <div class="section-label"><i data-lucide="message-square-heart" class="section-icon"></i>FALE COM O DITOH</div>
+
+        <div class="cfg-card">
+            <div class="cfg-label">TIPO</div>
+            <div class="feedback-tipos">
+                <button class="feedback-tipo active" data-tipo="sugestao" onclick="setFeedbackTipo(this,'sugestao')">💡 Sugestão</button>
+                <button class="feedback-tipo" data-tipo="bug" onclick="setFeedbackTipo(this,'bug')">🐛 Bug</button>
+                <button class="feedback-tipo" data-tipo="elogio" onclick="setFeedbackTipo(this,'elogio')">🔥 Elogio</button>
+                <button class="feedback-tipo" data-tipo="outro" onclick="setFeedbackTipo(this,'outro')">💬 Outro</button>
+            </div>
+        </div>
+
+        <div class="cfg-card">
+            <div class="cfg-label">SUA MENSAGEM</div>
+            <textarea id="feedback-texto" class="cfg-input cfg-textarea"
+                placeholder="Conta aí o que você tá pensando... uma ideia, um bug que achou, qualquer coisa. Lerei tudo! 👀"></textarea>
+            <div style="display:flex;justify-content:flex-end;margin-top:6px;">
+                <span id="feedback-chars" style="font-size:10px;color:#333;">0/500</span>
+            </div>
+        </div>
+
+        <button class="btn-feedback-enviar" id="btn-feedback" onclick="enviarFeedback()">
+            <i data-lucide="send" style="width:16px;height:16px;"></i>
+            ENVIAR MENSAGEM
+        </button>
+    </div>
+
+    <!-- ── CONTA ── -->
+    <div class="cfg-section">
+        <div class="section-label"><i data-lucide="user-cog" class="section-icon"></i>CONTA</div>
+
+        <div class="cfg-card">
+            <div class="cfg-row">
+                <div class="cfg-info">
+                    <div class="cfg-title">Alterar Senha</div>
+                    <div class="cfg-desc">Envia link de redefinição pro seu e-mail</div>
+                </div>
+                <button class="cfg-action-btn" onclick="alterarSenha()">
+                    <i data-lucide="key-round" style="width:14px;height:14px;"></i> Enviar
+                </button>
+            </div>
+        </div>
+
+        <div class="cfg-card danger-zone">
+            <div class="cfg-label" style="color:#ff4455;">PERIGO MÁXIMO</div>
+            <button class="btn-danger btn-excluir-conta" onclick="confirmarExcluirConta()">
+                <i data-lucide="user-x" style="width:14px;height:14px;"></i>
+                Excluir Minha Conta
+            </button>
+            <p style="font-size:10px;color:#333;margin-top:8px;line-height:1.5;">
+                Apaga permanentemente sua conta, notas, histórico e dados do Firebase. Essa ação é irreversível.
+            </p>
+        </div>
     </div>
 
     <!-- SALVAR -->
@@ -306,9 +356,13 @@
         SALVAR CONFIGURAÇÕES
     </button>
 
-    <!-- VERSÃO -->
-    <div class="versao-info">
-        Hub Brain v2.0 · Feito por <span style="color:#8a2be2;">Ditoh</span>
+    <!-- SOBRE -->
+    <div class="sobre-box">
+        <div class="sobre-logo">🧠 Hub Brain</div>
+        <div class="sobre-versao">v2.0 · Feito com 🔥 por <span style="color:#8a2be2;">Ditoh</span></div>
+        <a href="https://instagram.com/wtfditoh" target="_blank" class="sobre-insta">
+            <i data-lucide="instagram" style="width:14px;height:14px;"></i> @wtfditoh
+        </a>
     </div>
 
 </div>
@@ -316,16 +370,30 @@
 <!-- MODAL CONFIRMAÇÃO -->
 <div class="modal-overlay" id="modal-confirm">
     <div class="modal-card">
-        <div style="font-size:36px;margin-bottom:12px;text-align:center;">⚠️</div>
-        <div class="modal-title" id="modal-confirm-title">Confirmar ação</div>
-        <div class="modal-desc" id="modal-confirm-desc">Essa ação não pode ser desfeita.</div>
+        <div style="font-size:38px;margin-bottom:12px;text-align:center;" id="modal-emoji">⚠️</div>
+        <div class="modal-title" id="modal-title">Confirmar ação</div>
+        <div class="modal-desc" id="modal-desc">Essa ação não pode ser desfeita.</div>
+        <input type="text" id="modal-confirm-input" class="cfg-input" placeholder="" style="display:none;margin-bottom:12px;">
         <button class="btn-confirm-ok" id="btn-confirm-ok">CONFIRMAR</button>
         <button class="btn-confirm-cancel" onclick="fecharModal()">CANCELAR</button>
     </div>
 </div>
 
+<script src="tema.js"></script>
 <script src="menu.js"></script>
 <script type="module" src="configuracoes-logica.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const textarea = document.getElementById('feedback-texto');
+        if (textarea) {
+            textarea.addEventListener('input', () => {
+                const len = textarea.value.length;
+                document.getElementById('feedback-chars').innerText = `${len}/500`;
+                if (len > 500) textarea.value = textarea.value.substring(0, 500);
+            });
+        }
+        if (window.lucide) lucide.createIcons();
+    });
+</script>
 </body>
-  </html>
-  
+</html>
