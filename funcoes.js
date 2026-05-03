@@ -416,9 +416,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const snap = await getDoc(doc(db, 'notas', email));
             if (snap.exists() && snap.data().materias) {
-                materias = snap.data().materias;
-                localStorage.setItem('materias', JSON.stringify(materias));
-                window.atualizarLista();
+                const materiasFirebase = snap.data().materias;
+                
+                // Se tem mais matérias locais do que no Firebase, usa as locais
+                if (materias.length > materiasFirebase.length) {
+                    console.log('Usando matérias locais (mais atualizadas)');
+                    await salvarNaNuvem(); // Sincroniza pro Firebase
+                } else {
+                    materias = materiasFirebase;
+                    localStorage.setItem('materias', JSON.stringify(materias));
+                    window.atualizarLista();
+                }
             }
         } catch (e) {
             console.error('Erro ao carregar do Firebase:', e);
