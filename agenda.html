@@ -4,284 +4,328 @@
     <script>if (!localStorage.getItem('dt_user_name')) { window.location.href = 'login.html'; }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain - Agenda</title>
+    <title>Agenda - Hub Brain</title>
+    
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="menu.css">
-    <link rel="stylesheet" href="agenda-estilo.css">
-    <style>
-        * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-
-        .glass-header { display:flex; align-items:center; justify-content:space-between; padding:0 15px; height:70px; background:rgba(10,10,10,0.9)!important; backdrop-filter:blur(15px); border-bottom:1px solid rgba(138,43,226,0.2); position:sticky; top:0; z-index:1000; }
-        .hub-logo-container { display:flex; align-items:center; gap:10px; cursor:pointer; }
-        .hub-logo-text { font-weight:900; font-size:19px; letter-spacing:1px; color:white; }
-        .hub-logo-text.purple { color:#8a2be2; }
-        .hub-symbol { background:rgba(138,43,226,0.1); padding:6px; border-radius:10px; border:1px solid rgba(138,43,226,0.3); display:flex; align-items:center; justify-content:center; }
-
-        /* BIMESTRE TABS */
-        .bimestre-tabs { display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
-        .bimestre-tabs::-webkit-scrollbar { display:none; }
-        .bim-tab { padding:8px 14px; border:1px solid #1a1a1a; background:rgba(0,0,0,0.3); border-radius:20px; color:#333; font-size:10px; font-weight:800; cursor:pointer; white-space:nowrap; transition:0.2s; letter-spacing:1px; flex-shrink:0; font-family:inherit; }
-        .bim-tab.active { background:rgba(138,43,226,0.12); border-color:#8a2be2; color:#c084fc; }
-
-        /* FILTROS MATÉRIA */
-        .filtros-materias { display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
-        .filtros-materias::-webkit-scrollbar { display:none; }
-        .filtro-mat { padding:6px 12px; border:1px solid #111; background:rgba(0,0,0,0.3); border-radius:20px; color:#333; font-size:10px; font-weight:800; cursor:pointer; white-space:nowrap; transition:0.2s; flex-shrink:0; font-family:inherit; }
-        .filtro-mat.active { background:rgba(138,43,226,0.1); border-color:#8a2be2; color:#c084fc; }
-
-        /* RESUMO */
-        .resumo-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px; }
-        .resumo-item { background:rgba(0,0,0,0.3); border:1px solid #111; border-radius:14px; padding:12px 6px; text-align:center; }
-        .resumo-num { font-size:20px; font-weight:900; color:#8a2be2; display:block; }
-        .resumo-label { font-size:8px; font-weight:700; color:#333; letter-spacing:1px; text-transform:uppercase; }
-
-        /* SECTION HEADER */
-        .section-header-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; margin-top:4px; }
-        .section-title-label { font-size:11px; font-weight:800; letter-spacing:2px; color:#444; }
-        .btn-share { display:flex; align-items:center; gap:6px; background:rgba(138,43,226,0.08); border:1px solid rgba(138,43,226,0.2); color:#8a2be2; padding:7px 12px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; transition:0.2s; }
-        .btn-share:active { transform:scale(0.95); }
-
-        /* GRUPO MATÉRIA */
-        .grupo-materia { margin-bottom:16px; }
-        .grupo-header { display:flex; align-items:center; gap:8px; padding:10px 14px; background:rgba(138,43,226,0.06); border:1px solid rgba(138,43,226,0.1); border-radius:14px; margin-bottom:8px; cursor:pointer; }
-        .grupo-nome { font-size:12px; font-weight:800; color:#8a2be2; letter-spacing:1px; flex:1; }
-        .grupo-count { font-size:10px; color:#333; font-weight:700; }
-        .grupo-arrow { color:#333; font-size:12px; transition:transform 0.2s; }
-
-        /* TIPO BADGE */
-        .tipo-badge { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:800; letter-spacing:1px; padding:3px 8px; border-radius:20px; background:rgba(138,43,226,0.1); border:1px solid rgba(138,43,226,0.2); color:#c084fc; }
-        .bim-badge { font-size:9px; color:#333; font-weight:700; margin-left:4px; }
-
-        /* STATUS TAGS */
-        .status-tag { display:inline-flex; align-items:center; font-size:9px; font-weight:800; letter-spacing:0.5px; padding:3px 8px; border-radius:20px; }
-        .st-hoje { background:rgba(255,68,68,0.1); color:#ff4444; border:1px solid rgba(255,68,68,0.2); }
-        .st-urgente { background:rgba(255,68,68,0.1); color:#ff4444; border:1px solid rgba(255,68,68,0.2); }
-        .st-alerta { background:rgba(255,187,51,0.1); color:#ffbb33; border:1px solid rgba(255,187,51,0.2); }
-        .st-ok { background:rgba(0,200,81,0.1); color:#00c851; border:1px solid rgba(0,200,81,0.2); }
-        .st-concluido { background:rgba(0,210,255,0.1); color:#00d2ff; border:1px solid rgba(0,210,255,0.2); }
-        .st-expirado { background:rgba(80,80,80,0.1); color:#333; border:1px solid #1a1a1a; }
-
-        /* TOAST */
-        #toast-agenda { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#111116; border:1px solid rgba(138,43,226,0.4); color:white; padding:10px 20px; border-radius:12px; font-size:12px; font-weight:700; z-index:99999; display:none; white-space:nowrap; }
-
-        /* MODAL DITOH */
-        .modal-dono-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; backdrop-filter:blur(25px); background:rgba(10,10,10,0.75); z-index:99999; padding:20px; }
-        .modal-dono-card { border:1px solid rgba(138,43,226,0.3); background:rgba(15,15,15,0.95); border-radius:30px; width:100%; max-width:320px; padding:40px 25px; text-align:center; }
-        .ditoh-core-orbital { width:100px; height:100px; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; position:relative; }
-        .orbital-ring { position:absolute; border-radius:50%; border:2px solid transparent; border-top-color:#8a2be2; border-bottom-color:#8a2be2; }
-        .ring-1 { width:100%; height:100%; animation:spin-orb 2s linear infinite; opacity:0.6; }
-        .ring-2 { width:80%; height:80%; animation:spin-orb-r 1.5s linear infinite; border-left-color:#8a2be2; border-right-color:#8a2be2; border-top-color:transparent; border-bottom-color:transparent; }
-        @keyframes spin-orb { to{transform:rotate(360deg);} }
-        @keyframes spin-orb-r { to{transform:rotate(-360deg);} }
-        .core-glow { width:50px; height:50px; background:rgba(138,43,226,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(138,43,226,0.6); }
-
-        /* MODAL COMPARTILHAR */
-        .share-card { background:#0a0a0e; border:1px solid rgba(138,43,226,0.2); border-radius:16px; padding:18px; margin-bottom:14px; }
-        .share-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
-        .share-item:last-child { border-bottom:none; }
-        .share-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-        .share-nome { font-size:13px; font-weight:700; flex:1; color:white; }
-        .share-prazo { font-size:10px; color:#444; }
-        .share-rodape { text-align:center; margin-top:10px; font-size:9px; color:#222; letter-spacing:2px; }
-        .btn-share-wpp { width:100%; padding:14px; border:1px solid rgba(37,211,102,0.25); background:rgba(37,211,102,0.08); color:#25d366; border-radius:14px; font-size:13px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px; font-family:inherit; }
-        .btn-share-img { width:100%; padding:14px; background:#8a2be2; border:none; color:white; border-radius:14px; font-size:13px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px; box-shadow:0 4px 16px rgba(138,43,226,0.3); font-family:inherit; }
-        .btn-fechar-share { width:100%; padding:13px; background:none; border:1px solid #111; color:#333; border-radius:14px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
-
-        /* INPUT ERRO */
-        .input-erro { border:1px solid #ff4444 !important; animation:shake 0.3s; }
-        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
-    </style>
+    <link rel="stylesheet" href="agenda.css">
 </head>
-<body class="bg-dark">
+<body>
 
-<div id="toast-agenda"></div>
+    <div id="toast-agenda"></div>
 
-<header class="glass-header">
-    <button id="open-menu" class="btn-menu"><i data-lucide="menu"></i></button>
-    <div class="hub-logo-container" onclick="abrirSobreDono()">
-        <span class="hub-logo-text">Hub</span>
-        <div class="hub-symbol"><i data-lucide="brain-circuit" style="color:#8a2be2;width:22px;height:22px;"></i></div>
-        <span class="hub-logo-text purple">Brain</span>
-    </div>
-    <div style="width:44px;"></div>
-</header>
+    <!-- HEADER -->
+    <header class="glass-header">
+        <button id="open-menu" class="menu-btn">
+            <i data-lucide="menu"></i>
+        </button>
+        
+        <div class="hub-logo-container" onclick="abrirSobreDono()">
+            <span class="hub-logo-text">Hub</span>
+            <div class="hub-symbol">
+                <i data-lucide="brain-circuit"></i>
+            </div>
+            <span class="hub-logo-text purple">Brain</span>
+        </div>
 
-<main class="container-agenda">
+        <div style="width:44px;"></div>
+    </header>
 
-    <!-- BIMESTRE -->
-    <div class="bimestre-tabs">
-        <button class="bim-tab active" data-bim="todos" onclick="selecionarBimestre(this,'todos')">TODOS</button>
-        <button class="bim-tab" data-bim="1" onclick="selecionarBimestre(this,'1')">1° BIM</button>
-        <button class="bim-tab" data-bim="2" onclick="selecionarBimestre(this,'2')">2° BIM</button>
-        <button class="bim-tab" data-bim="3" onclick="selecionarBimestre(this,'3')">3° BIM</button>
-        <button class="bim-tab" data-bim="4" onclick="selecionarBimestre(this,'4')">4° BIM</button>
-    </div>
+    <main class="agenda-container">
 
-    <!-- FILTROS MATÉRIA -->
-    <div class="filtros-materias" id="filtros-materias"></div>
+        <!-- STATS HEADER -->
+        <div class="stats-header">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i data-lucide="calendar"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="res-total">0</span>
+                    <label class="stat-label">Total</label>
+                </div>
+            </div>
 
-    <!-- CALENDÁRIO ORIGINAL -->
-    <div class="mes-indicador" id="mes-topo">CARREGANDO...</div>
-    <div class="calendar-card">
-        <div class="calendar-nav">
-            <button onclick="mudarMes(-1)" class="btn-nav-clean"><i data-lucide="chevron-left"></i></button>
+            <div class="stat-card">
+                <div class="stat-icon danger">
+                    <i data-lucide="alert-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="res-urgente">0</span>
+                    <label class="stat-label">Urgente</label>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i data-lucide="check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="res-conc">0</span>
+                    <label class="stat-label">Feitas</label>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon primary">
+                    <i data-lucide="trending-up"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="res-pct">0%</span>
+                    <label class="stat-label">Progresso</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTROS BIMESTRE -->
+        <div class="filtros-section">
+            <div class="filtros-scroll">
+                <button class="filtro-chip active" data-bim="todos" onclick="selecionarBimestre(this,'todos')">
+                    <i data-lucide="calendar" style="width:14px;height:14px;"></i>
+                    TODOS
+                </button>
+                <button class="filtro-chip" data-bim="1" onclick="selecionarBimestre(this,'1')">1º BIM</button>
+                <button class="filtro-chip" data-bim="2" onclick="selecionarBimestre(this,'2')">2º BIM</button>
+                <button class="filtro-chip" data-bim="3" onclick="selecionarBimestre(this,'3')">3º BIM</button>
+                <button class="filtro-chip" data-bim="4" onclick="selecionarBimestre(this,'4')">4º BIM</button>
+            </div>
+        </div>
+
+        <!-- FILTROS MATÉRIA -->
+        <div class="filtros-section" id="filtros-materias-wrapper" style="display:none;">
+            <div class="filtros-scroll" id="filtros-materias"></div>
+        </div>
+
+        <!-- CALENDÁRIO -->
+        <div class="calendar-card">
+            <div class="calendar-header">
+                <button onclick="mudarMes(-1)" class="btn-month-nav">
+                    <i data-lucide="chevron-left"></i>
+                </button>
+                <h3 id="mes-topo" class="month-title">Carregando...</h3>
+                <button onclick="mudarMes(1)" class="btn-month-nav">
+                    <i data-lucide="chevron-right"></i>
+                </button>
+            </div>
             <div id="calendar-grid" class="calendar-grid"></div>
-            <button onclick="mudarMes(1)" class="btn-nav-clean"><i data-lucide="chevron-right"></i></button>
         </div>
-    </div>
 
-    <!-- RESUMO -->
-    <div class="resumo-strip">
-        <div class="resumo-item"><span class="resumo-num" id="res-total">0</span><span class="resumo-label">TOTAL</span></div>
-        <div class="resumo-item"><span class="resumo-num" style="color:#ff4444;" id="res-urgente">0</span><span class="resumo-label">URGENTE</span></div>
-        <div class="resumo-item"><span class="resumo-num" style="color:#00d2ff;" id="res-conc">0</span><span class="resumo-label">FEITAS</span></div>
-        <div class="resumo-item"><span class="resumo-num" style="color:#00c851;" id="res-pct">0%</span><span class="resumo-label">PROGRESSO</span></div>
-    </div>
-
-    <!-- LISTA -->
-    <div class="agenda-section">
-        <div class="section-header-row">
-            <h3 class="section-title-label" id="titulo-lista">ATIVIDADES</h3>
-            <button class="btn-share" onclick="abrirCompartilhar()">
-                <i data-lucide="share-2" style="width:13px;height:13px;"></i> COMPARTILHAR
-            </button>
-        </div>
-        <div id="lista-agenda"></div>
-    </div>
-</main>
-
-<!-- FAB -->
-<button class="fab-button" onclick="abrirModalAgendaHoje()">
-    <i data-lucide="plus"></i>
-</button>
-
-<!-- MODAL NOVA ATIVIDADE (igual ao original + novos campos) -->
-<div id="modal-agenda" class="modal">
-    <div class="modal-content glass">
-        <h3 style="color:#8a2be2;margin-bottom:18px;font-size:16px;">Nova Atividade</h3>
-
-        <input type="text" id="tarefa-nome" placeholder="Título" class="input-ia">
-        <textarea id="tarefa-desc" placeholder="Detalhes (opcional)" class="input-ia" style="height:70px;resize:none;"></textarea>
-
-        <select id="tarefa-materia" class="input-ia" style="background-color:#1a1a2e!important;color:white!important;">
-            <option value="Geral">Geral / Outros</option>
-        </select>
-
-        <select id="tarefa-tipo" class="input-ia" style="background-color:#1a1a2e!important;color:white!important;">
-            <option value="tarefa">📝 Tarefa</option>
-            <option value="prova">🎯 Prova / Exame</option>
-            <option value="trabalho">📋 Trabalho</option>
-            <option value="revisao">🔄 Revisão</option>
-            <option value="projeto">💡 Projeto</option>
-        </select>
-
-        <select id="tarefa-bimestre" class="input-ia" style="background-color:#1a1a2e!important;color:white!important;">
-            <option value="">Bimestre (opcional)</option>
-            <option value="1">1° Bimestre</option>
-            <option value="2">2° Bimestre</option>
-            <option value="3">3° Bimestre</option>
-            <option value="4">4° Bimestre</option>
-        </select>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div>
-                <label style="font-size:10px;color:#8a2be2;display:block;margin-bottom:4px;">INÍCIO</label>
-                <input type="date" id="tarefa-data-inicio" class="input-ia" style="margin-bottom:0;">
+        <!-- LISTA -->
+        <div class="lista-section">
+            <div class="section-header">
+                <h3 id="titulo-lista" class="section-title">ATIVIDADES</h3>
+                <button class="btn-share" onclick="abrirCompartilhar()">
+                    <i data-lucide="share-2"></i>
+                    <span>Compartilhar</span>
+                </button>
             </div>
-            <div>
-                <label style="font-size:10px;color:#ff4444;display:block;margin-bottom:4px;">PRAZO</label>
-                <input type="date" id="tarefa-data-fim" class="input-ia" style="margin-bottom:0;">
+            <div id="lista-agenda"></div>
+        </div>
+
+    </main>
+
+    <!-- FAB -->
+    <button class="fab-add" onclick="abrirModalAgendaHoje()">
+        <i data-lucide="plus"></i>
+    </button>
+
+    <!-- MODAL NOVA ATIVIDADE -->
+    <div id="modal-agenda" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header-top">
+                <div class="modal-icon-header">
+                    <i data-lucide="calendar-plus"></i>
+                </div>
+                <h3>Nova Atividade</h3>
+            </div>
+
+            <div class="modal-form">
+                <input 
+                    type="text" 
+                    id="tarefa-nome" 
+                    class="input-field" 
+                    placeholder="Título da atividade"
+                >
+
+                <textarea 
+                    id="tarefa-desc" 
+                    class="input-field textarea-field" 
+                    placeholder="Descrição (opcional)"
+                    rows="3"
+                ></textarea>
+
+                <select id="tarefa-materia" class="input-field">
+                    <option value="Geral">📚 Geral / Outros</option>
+                </select>
+
+                <select id="tarefa-tipo" class="input-field">
+                    <option value="tarefa">📝 Tarefa</option>
+                    <option value="prova">🎯 Prova / Exame</option>
+                    <option value="trabalho">📋 Trabalho</option>
+                    <option value="revisao">🔄 Revisão</option>
+                    <option value="projeto">💡 Projeto</option>
+                </select>
+
+                <select id="tarefa-bimestre" class="input-field">
+                    <option value="">Bimestre (opcional)</option>
+                    <option value="1">1° Bimestre</option>
+                    <option value="2">2° Bimestre</option>
+                    <option value="3">3° Bimestre</option>
+                    <option value="4">4° Bimestre</option>
+                </select>
+
+                <div class="date-grid">
+                    <div class="date-group">
+                        <label class="date-label">
+                            <i data-lucide="calendar" style="width:12px;height:12px;"></i>
+                            Início
+                        </label>
+                        <input type="date" id="tarefa-data-inicio" class="input-field date-input">
+                    </div>
+                    <div class="date-group">
+                        <label class="date-label danger">
+                            <i data-lucide="flag" style="width:12px;height:12px;"></i>
+                            Prazo
+                        </label>
+                        <input type="date" id="tarefa-data-fim" class="input-field date-input">
+                    </div>
+                </div>
+
+                <label class="btn-attach" for="tarefa-img">
+                    <i data-lucide="paperclip"></i>
+                    <span>Anexar imagem</span>
+                    <input type="file" id="tarefa-img" accept="image/*" style="display:none;" onchange="previewImg(this)">
+                </label>
+                <div id="preview-container"></div>
+            </div>
+
+            <div class="modal-actions">
+                <button onclick="fecharModalAgenda()" class="btn-modal btn-cancel">
+                    Cancelar
+                </button>
+                <button id="btn-salvar-agenda" onclick="validarEAdicionar()" class="btn-modal btn-primary">
+                    <i data-lucide="check"></i>
+                    Agendar
+                </button>
             </div>
         </div>
-        <div style="height:12px;"></div>
+    </div>
 
-        <label class="btn-anexo" for="tarefa-img">
-            <i data-lucide="image"></i> Anexar Foto
-            <input type="file" id="tarefa-img" accept="image/*" style="display:none;" onchange="previewImg(this)">
-        </label>
-        <div id="preview-container"></div>
+    <!-- MODAL COMPARTILHAR -->
+    <div id="modal-compartilhar" class="modal-overlay">
+        <div class="modal-card modal-share">
+            <div class="modal-header-top">
+                <div class="modal-icon-header">
+                    <i data-lucide="share-2"></i>
+                </div>
+                <h3>Compartilhar Agenda</h3>
+            </div>
 
-        <div class="area-botoes-modal">
-            <button onclick="fecharModalAgenda()" class="btn-modal-voltar">Cancelar</button>
-            <button id="btn-salvar-agenda" onclick="validarEAdicionar()" class="btn-modal-acao" style="background:#8a2be2;">Agendar</button>
+            <div class="share-preview-wrapper">
+                <div class="share-preview" id="share-preview"></div>
+            </div>
+
+            <div class="modal-actions-column">
+                <button id="btn-toggle-concluidas" onclick="toggleShareConcluidas()" class="btn-toggle-done">
+                    <i data-lucide="eye"></i>
+                    Mostrar concluídas
+                </button>
+                <button class="btn-share-action btn-image" onclick="gerarImagem()">
+                    <i data-lucide="image"></i>
+                    Salvar imagem
+                </button>
+                <button class="btn-share-action btn-whatsapp" onclick="compartilharWpp()">
+                    <i data-lucide="message-circle"></i>
+                    WhatsApp
+                </button>
+                <button onclick="fecharCompartilhar()" class="btn-modal btn-cancel">
+                    Fechar
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- MODAL COMPARTILHAR -->
-<div id="modal-compartilhar" class="modal">
-    <div class="modal-content glass" style="padding:20px;max-height:90vh;display:flex;flex-direction:column;">
-        <h3 style="color:#8a2be2;margin-bottom:14px;font-size:15px;flex-shrink:0;">Compartilhar Agenda</h3>
-        <!-- PREVIEW COM SCROLL -->
-        <div class="share-card" id="share-preview" style="overflow-y:auto;max-height:45vh;flex-shrink:1;"></div>
-        <!-- BOTÕES FIXOS ABAIXO -->
-        <div style="flex-shrink:0;margin-top:12px;">
-            <button id="btn-toggle-concluidas" onclick="toggleShareConcluidas()" style="width:100%;padding:11px;background:rgba(0,210,255,0.08);border:1px solid rgba(0,210,255,0.2);color:#00d2ff;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:8px;font-family:inherit;">👁 Mostrar concluídas</button>
-            <button class="btn-share-img" onclick="gerarImagem()">
-                <i data-lucide="image" style="width:16px;height:16px;"></i> SALVAR IMAGEM
-            </button>
-            <button class="btn-share-wpp" onclick="compartilharWpp()">
-                📱 WHATSAPP
-            </button>
-            <button class="btn-fechar-share" onclick="fecharCompartilhar()">FECHAR</button>
+    <!-- MODAL CONFIRMAR DELETE -->
+    <div id="modal-confirm-del" class="modal-overlay">
+        <div class="modal-card modal-danger">
+            <div class="modal-icon-header danger">
+                <i data-lucide="trash-2"></i>
+            </div>
+            <h3>Excluir atividade?</h3>
+            <p class="modal-description">Esta ação não pode ser desfeita.</p>
+
+            <div class="modal-actions">
+                <button onclick="cancelarDelete()" class="btn-modal btn-cancel">
+                    Cancelar
+                </button>
+                <button onclick="confirmarDelete()" class="btn-modal btn-danger">
+                    Excluir
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- MODAL CONFIRMAR DELETE -->
-<div id="modal-confirm-del" class="modal" style="display:none;">
-    <div class="modal-content glass" style="max-width:300px;text-align:center;padding:28px 22px;">
-        <div style="font-size:36px;margin-bottom:12px;">🗑️</div>
-        <h3 style="color:white;font-size:16px;font-weight:900;margin-bottom:8px;">Deletar atividade?</h3>
-        <p style="color:#555;font-size:13px;margin-bottom:22px;line-height:1.5;">Essa ação não pode ser desfeita.</p>
-        <div style="display:flex;gap:10px;">
-            <button onclick="cancelarDelete()" style="flex:1;padding:13px;background:none;border:1px solid #222;color:#555;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;">CANCELAR</button>
-            <button onclick="confirmarDelete()" style="flex:1;padding:13px;background:rgba(255,68,68,0.15);border:1px solid rgba(255,68,68,0.3);color:#ff4444;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;">DELETAR</button>
+    <!-- MODAL DITOH -->
+    <div id="modal-dono" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-ditoh-orbital">
+                <div class="orbital-ring ring-1"></div>
+                <div class="orbital-ring ring-2"></div>
+                <div class="orbital-core">
+                    <i data-lucide="zap"></i>
+                </div>
+            </div>
+            
+            <h3>DITOH</h3>
+            <p class="modal-subtitle">Founder & Dev</p>
+            
+            <div class="modal-quote">
+                <p>"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."</p>
+            </div>
+            
+            <a href="https://www.instagram.com/wtfditoh" target="_blank" class="modal-instagram">
+                <i data-lucide="instagram"></i>
+                <span>@wtfditoh</span>
+            </a>
+            
+            <button onclick="fecharSobreDono()" class="modal-btn">VOLTAR</button>
         </div>
     </div>
-</div>
 
-<!-- MODAL DITOH -->
-<div id="modal-dono" class="modal-dono-overlay">
-    <div class="modal-dono-card">
-        <div class="ditoh-core-orbital">
-            <div class="orbital-ring ring-1"></div>
-            <div class="orbital-ring ring-2"></div>
-            <div class="core-glow"><i data-lucide="zap" style="color:white;width:28px;height:28px;filter:drop-shadow(0 0 8px #8a2be2);"></i></div>
-        </div>
-        <h3 style="color:white;margin:0;font-size:26px;font-weight:900;letter-spacing:2px;">DITOH</h3>
-        <p style="color:#8a2be2;font-weight:bold;margin:5px 0 20px;font-size:12px;letter-spacing:4px;">Founder & Dev</p>
-        <div style="background:rgba(138,43,226,0.1);padding:20px;border-radius:20px;margin-bottom:25px;border-left:4px solid #8a2be2;text-align:left;">
-            <p style="color:#eee;font-size:13px;font-style:italic;line-height:1.6;margin:0;">"O Hub Brain é o meu projeto de vida pra ajudar a gente a não se perder na correria. Mas ó, o app nunca tá pronto: se você teve um estalo e pensou 'podia ter tal coisa', me chama na DM agora. Bora fazer esse sistema ser o mais brabo de todos."</p>
-        </div>
-        <a href="https://www.instagram.com/wtfditoh" target="_blank" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:10px;color:white;font-size:15px;margin-bottom:25px;background:rgba(255,255,255,0.05);padding:14px;border-radius:15px;border:1px solid rgba(138,43,226,0.2);">
-            <i data-lucide="instagram" style="width:18px;color:#8a2be2;"></i>
-            <span style="font-weight:600;">@wtfditoh</span>
-        </a>
-        <button onclick="fecharSobreDono()" style="width:100%;background:#8a2be2;color:white;border:none;padding:15px;border-radius:12px;font-weight:900;cursor:pointer;">VOLTAR</button>
-    </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="menu.js"></script>
-<script type="module" src="agenda-logica.js"></script>
-<script>
-    function abrirSobreDono() { document.getElementById('modal-dono').style.display='flex'; if(window.lucide) lucide.createIcons(); }
-    function fecharSobreDono() { document.getElementById('modal-dono').style.display='none'; }
-
-    function validarEAdicionar() {
-        const nomeInput = document.getElementById('tarefa-nome');
-        const btn = document.getElementById('btn-salvar-agenda');
-        if (!nomeInput.value.trim()) {
-            btn.style.background='#ff4444'; btn.innerText='Preencha o título!';
-            nomeInput.classList.add('input-erro');
-            setTimeout(() => { btn.style.background='#8a2be2'; btn.innerText='Agendar'; nomeInput.classList.remove('input-erro'); }, 2000);
-            return;
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="menu.js"></script>
+    <script type="module" src="agenda-logica.js"></script>
+    
+    <script>
+        function abrirSobreDono() { 
+            document.getElementById('modal-dono').style.display='flex'; 
+            if(window.lucide) lucide.createIcons(); 
         }
-        if (typeof adicionarTarefa === 'function') adicionarTarefa();
-    }
+        function fecharSobreDono() { 
+            document.getElementById('modal-dono').style.display='none'; 
+        }
 
-    document.addEventListener('DOMContentLoaded', () => { if(window.lucide) lucide.createIcons(); });
-</script>
+        function validarEAdicionar() {
+            const nomeInput = document.getElementById('tarefa-nome');
+            const btn = document.getElementById('btn-salvar-agenda');
+            if (!nomeInput.value.trim()) {
+                nomeInput.classList.add('error');
+                btn.innerHTML = '<i data-lucide="alert-circle"></i> Preencha o título!';
+                if(window.lucide) lucide.createIcons();
+                setTimeout(() => { 
+                    nomeInput.classList.remove('error'); 
+                    btn.innerHTML = '<i data-lucide="check"></i> Agendar';
+                    if(window.lucide) lucide.createIcons();
+                }, 2000);
+                return;
+            }
+            if (typeof adicionarTarefa === 'function') adicionarTarefa();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { 
+            if(window.lucide) lucide.createIcons(); 
+        });
+    </script>
 </body>
 </html>
