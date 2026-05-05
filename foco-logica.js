@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { verificarConquistas, mostrarPopupConquista } from "./conquistas.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -12,423 +13,360 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const userEmail = localStorage.getItem('dt_user_email');
 
-let materias = JSON.parse(localStorage.getItem('materias')) || [];
-let idParaExcluir = null;
+let timer = null;
+let segsRestantes = 0;
+let totalSegs = 0;
+let isPaused = false;
+let materiaSelecionada = "Geral";
+let sessionActive = false;
+let modoAtual = 'timer'; // 'timer' ou 'livre'
 
-// ═══════════════════════════════════════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════════════════════════════════════
-function showToast(msg, type = 'success') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
+// MODO LIVRE
+let livreSegs = 0;
+let livreTimer = null;
 
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerHTML = `
-        <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}"></i>
-        <span>${msg}</span>
-    `;
-    container.appendChild(toast);
-    if (window.lucide) lucide.createIcons();
+// --- SOM ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const playTick = () => {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.08);
+};
 
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 500);
-    }, 3000);
-}
+const pad = n => String(n).padStart(2, '0');
+const formatarTempo = (min) => {
+    if (min < 60) return min + 'm';
+    const h = Math.floor(min / 60), m = min % 60;
+    return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
+};
+const getHojeStr = () => new Date().toISOString().split('T')[0];
 
-// ═══════════════════════════════════════════════════════════════════════════
-// CONFIGURAÇÕES
-// ═══════════════════════════════════════════════════════════════════════════
-function getCfg() {
-    try {
-        const raw = localStorage.getItem('dt_config');
-        const cfg = raw ? JSON.parse(raw) : {};
-        
-        const periodo = cfg.periodo || 'bimestral';
-        const numPeriodos = { bimestral: 4, trimestral: 3, semestral: 2 }[periodo] || 4;
-        const notaMax = parseFloat(cfg.nota_max || cfg.notaMax || 10);
-        const media = parseFloat(cfg.media_aprovacao || cfg.media || 6.0);
-        const somaMinima = media * numPeriodos;
-        
-        const labels = {
-            bimestral: ['1º BIM', '2º BIM', '3º BIM', '4º BIM'],
-            trimestral: ['1º TRI', '2º TRI', '3º TRI'],
-            semestral: ['1º SEM', '2º SEM']
-        }[periodo] || ['1º', '2º', '3º', '4º'];
-        
-        return { numPeriodos, notaMax, media, somaMinima, labels, periodo };
-    } catch (e) {
-        return { 
-            numPeriodos: 4, 
-            notaMax: 10, 
-            media: 6.0, 
-            somaMinima: 24, 
-            labels: ['1º BIM', '2º BIM', '3º BIM', '4º BIM'], 
-            periodo: 'bimestral' 
-        };
-    }
-}
+// --- FLIP CLOCK ---
+let prevH = '00', prevM = '25', prevS = '00';
 
-// ═══════════════════════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════════════════════
-function getNotas(m, numPeriodos) {
-    const notas = [];
-    for (let i = 1; i <= numPeriodos; i++) {
-        const v = m['n' + i];
-        notas.push(v === '' || v === undefined || v === null ? null : parseFloat(v));
-    }
-    return notas;
-}
+const flipCard = (unit, newVal) => {
+    const flap = document.getElementById('flap-' + unit);
+    const flapTxt = document.getElementById('flap-' + unit + '-txt');
+    const topCur = document.getElementById('top-' + unit + '-cur');
+    const botCur = document.getElementById('bot-' + unit + '-cur');
+    flapTxt.innerText = topCur.innerText;
+    flap.classList.remove('flipping');
+    void flap.offsetWidth;
+    flap.classList.add('flipping');
+    setTimeout(() => { topCur.innerText = newVal; botCur.innerText = newVal; flapTxt.innerText = newVal; }, 200);
+    setTimeout(() => { flap.classList.remove('flipping'); }, 400);
+};
 
-function somaNotas(notas) {
-    return notas.reduce((acc, v) => acc + (v !== null && !isNaN(v) ? v : 0), 0);
-}
+const atualizarFlip = (h, m, s) => {
+    const hStr = pad(h), mStr = pad(m), sStr = pad(s);
+    if (hStr !== prevH) { flipCard('h', hStr); prevH = hStr; }
+    if (mStr !== prevM) { flipCard('m', mStr); prevM = mStr; }
+    if (sStr !== prevS) { flipCard('s', sStr); prevS = sStr; }
+};
 
-function calcularXP(m, cfg) {
-    let xp = 0;
-    const notas = getNotas(m, cfg.numPeriodos);
-    
-    notas.forEach(n => {
-        if (n === null || isNaN(n)) return;
-        const pct = n / cfg.notaMax;
-        
-        if (pct >= 1.0) xp += 100;
-        else if (pct >= 0.8) xp += 50;
-        else if (pct >= 0.6) xp += 20;
-        else if (pct >= 0.4) xp -= 20;
-        else if (pct > 0) xp -= 50;
-        else xp -= 100;
+const setFlipStatic = (h, m, s) => {
+    const hStr = pad(h), mStr = pad(m), sStr = pad(s);
+    ['h','m','s'].forEach((u, i) => {
+        const val = [hStr, mStr, sStr][i];
+        document.getElementById('top-' + u + '-cur').innerText = val;
+        document.getElementById('bot-' + u + '-cur').innerText = val;
+        document.getElementById('flap-' + u + '-txt').innerText = val;
     });
-    
-    return xp;
-}
+    prevH = hStr; prevM = mStr; prevS = sStr;
+};
 
-function getNotaClass(nota, cfg) {
-    if (nota === null || isNaN(nota)) return '';
-    const pct = nota / cfg.notaMax;
-    if (pct >= 0.8) return 'boa';
-    if (pct >= 0.6) return 'media';
-    return 'baixa';
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SALVAR NA NUVEM
-// ═══════════════════════════════════════════════════════════════════════════
-async function salvarNaNuvem() {
-    const email = localStorage.getItem('dt_user_email');
-    const userType = localStorage.getItem('dt_user_type');
-    
-    if (userType === 'local' || !email || email === 'null') return;
-
-    try {
-        const cfg = getCfg();
-        let xpTotal = 0;
-        materias.forEach(m => { xpTotal += calcularXP(m, cfg); });
-
-        await setDoc(doc(db, "notas", email), {
-            materias,
-            xp: xpTotal,
-            email,
-            nome: localStorage.getItem('dt_user_name') || 'Estudante',
-            avatar: localStorage.getItem('dt_user_avatar') || 'user',
-            atualizadoEm: Date.now()
-        }, { merge: true });
-    } catch (e) {
-        console.error('Erro ao salvar na nuvem:', e);
+// --- MODO SELECTOR ---
+window.selecionarModo = (modo) => {
+    if (sessionActive) return;
+    modoAtual = modo;
+    document.getElementById('modo-btn-timer').classList.toggle('active', modo === 'timer');
+    document.getElementById('modo-btn-livre').classList.toggle('active', modo === 'livre');
+    document.getElementById('setup-controls').style.display = modo === 'timer' ? 'block' : 'none';
+    document.getElementById('livre-info').style.display = modo === 'livre' ? 'block' : 'none';
+    document.getElementById('xp-tag').style.display = modo === 'timer' ? 'block' : 'none';
+    if (modo === 'livre') {
+        setFlipStatic(0, 0, 0);
+    } else {
+        atualizarSetup();
     }
+};
+
+// --- TROCA DE VIEW ---
+window.trocarView = (view) => {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    document.querySelectorAll('.tab-btn')[view === 'timer' ? 0 : 1].classList.add('active');
+    if (view === 'historico') carregarHistorico();
+};
+
+// --- MATÉRIAS ---
+async function carregarMaterias() {
+    const chips = document.getElementById('chips-materias');
+    let materias = ['Geral'];
+    try {
+        if (userEmail) {
+            const snap = await getDoc(doc(db, "notas", userEmail));
+            if (snap.exists() && snap.data().materias) {
+                materias = ['Geral', ...snap.data().materias.map(m => m.nome)];
+            }
+        }
+        const local = JSON.parse(localStorage.getItem('materias') || '[]');
+        if (local.length > 0 && materias.length === 1) {
+            materias = ['Geral', ...local.map(m => m.nome)];
+        }
+    } catch(e) {}
+
+    chips.innerHTML = materias.map(m => `
+        <div class="chip-materia ${m === 'Geral' ? 'selected' : ''}" data-materia="${m}" onclick="selecionarMateria('${m}')">${m}</div>
+    `).join('');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// RENDERIZAR
-// ═══════════════════════════════════════════════════════════════════════════
-window.atualizarLista = function() {
-    const lista = document.getElementById('lista-materias');
-    if (!lista) return;
-    
-    const cfg = getCfg();
-    materias.sort((a, b) => b.id - a.id);
+window.selecionarMateria = (nome) => {
+    if (sessionActive) return;
+    materiaSelecionada = nome;
+    document.querySelectorAll('.chip-materia').forEach(c => {
+        c.classList.toggle('selected', c.dataset.materia === nome);
+    });
+};
 
-    if (materias.length === 0) {
-        lista.innerHTML = `
-            <div class="empty-state">
-                <i data-lucide="book-open"></i>
-                <h3>Nenhuma disciplina</h3>
-                <p>Clique no + para adicionar sua primeira matéria</p>
-            </div>
-        `;
-        atualizarStats(cfg);
-        if (window.lucide) lucide.createIcons();
+// --- CONTROLES ---
+const getH = () => parseInt(document.getElementById('h-val').innerText);
+const getM = () => parseInt(document.getElementById('m-val').innerText);
+
+const atualizarSetup = () => {
+    document.getElementById('xp-num').innerText = Math.max(5, Math.floor((getH() * 60 + getM()) / 25 * 10));
+    setFlipStatic(getH(), getM(), 0);
+};
+
+document.getElementById('h-up').onclick   = () => { const v = getH(); if(v < 12) document.getElementById('h-val').innerText = v + 1; atualizarSetup(); };
+document.getElementById('h-down').onclick  = () => { const v = getH(); if(v > 0)  document.getElementById('h-val').innerText = v - 1; atualizarSetup(); };
+document.getElementById('m-up').onclick   = () => { const v = getM(); document.getElementById('m-val').innerText = v < 55 ? v + 5 : 0; atualizarSetup(); };
+document.getElementById('m-down').onclick  = () => { const v = getM(); if(v >= 5) document.getElementById('m-val').innerText = v - 5; atualizarSetup(); };
+
+// --- INICIAR ---
+document.getElementById('btn-start').onclick = () => {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    if (modoAtual === 'livre') {
+        iniciarModoLivre();
         return;
     }
-
-    lista.innerHTML = materias.map((m, idx) => {
-        const notas = getNotas(m, cfg.numPeriodos);
-        const soma = somaNotas(notas);
-        const mediaM = (soma / cfg.numPeriodos).toFixed(1);
-        const percent = Math.min((soma / cfg.somaMinima) * 100, 100);
-        const aprovado = soma >= cfg.somaMinima;
-        const quase = soma >= cfg.somaMinima * 0.85 && soma < cfg.somaMinima;
-        const faltam = Math.max(0, cfg.somaMinima - soma).toFixed(1);
-
-        // Cor da barra
-        let barCor = '#8a2be2';
-        if (aprovado) barCor = '#00e5a0';
-        else if (quase) barCor = '#ffb800';
-
-        // Status badge
-        let statusHTML = '';
-        if (aprovado) {
-            statusHTML = '<span class="status-badge aprovado">✓ APROVADO</span>';
-        } else if (quase) {
-            statusHTML = '<span class="status-badge quase">⚡ QUASE LÁ</span>';
-        } else {
-            statusHTML = `<span class="status-badge media">Média: ${mediaM}</span>`;
-        }
-
-        return `
-        <div class="materia-card" style="animation-delay: ${idx * 0.1}s">
-            <div class="card-header">
-                <h2 class="materia-nome">${m.nome}</h2>
-                <div class="card-actions">
-                    ${statusHTML}
-                    <button onclick="window.abrirModalExcluir(${m.id})" class="btn-delete">
-                        <i data-lucide="trash-2"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: ${percent}%; background: ${barCor}; box-shadow: 0 0 10px ${barCor};"></div>
-            </div>
-
-            <div class="notas-grid">
-                ${Array.from({ length: cfg.numPeriodos }, (_, i) => {
-                    const n = i + 1;
-                    const val = m['n' + n] !== undefined && m['n' + n] !== '' ? m['n' + n] : '';
-                    const nota = parseFloat(val);
-                    const notaClass = getNotaClass(nota, cfg);
-                    
-                    return `
-                    <div class="nota-input-group">
-                        <label class="nota-label">${cfg.labels[i]}</label>
-                        <input 
-                            type="number" 
-                            step="0.1" 
-                            min="0" 
-                            max="${cfg.notaMax}" 
-                            value="${val}"
-                            class="nota-input ${notaClass}"
-                            onchange="window.salvarNota(${m.id}, ${n}, this.value)"
-                            placeholder="0.0"
-                        >
-                    </div>`;
-                }).join('')}
-            </div>
-
-            <div class="card-footer">
-                <div class="footer-info">
-                    <span class="soma-info">SOMA: ${soma.toFixed(1)} / ${cfg.somaMinima.toFixed(1)}</span>
-                    <span class="config-info">Nota máx: ${cfg.notaMax} | Média: ${cfg.media}</span>
-                </div>
-                <div class="footer-actions">
-                    ${aprovado 
-                        ? `<button onclick="window.gerarCardVitoria('${m.nome}', '${mediaM}')" class="btn-share">
-                            <i data-lucide="share-2"></i>
-                           </button>` 
-                        : `<span class="falta-badge">Faltam ${faltam} pts</span>`
-                    }
-                </div>
-            </div>
-        </div>`;
-    }).join('');
-
-    atualizarStats(cfg);
-    if (window.lucide) lucide.createIcons();
+    
+    const h = getH(), m = getM();
+    if (h === 0 && m === 0) return;
+    segsRestantes = h * 3600 + m * 60;
+    totalSegs = segsRestantes;
+    sessionActive = true;
+    document.getElementById('setup-controls').style.display = 'none';
+    document.getElementById('modo-selector').style.display = 'none';
+    document.getElementById('progress-wrap').style.display = 'flex';
+    document.getElementById('btn-start').style.display = 'none';
+    document.getElementById('btn-pause').style.display = 'block';
+    document.getElementById('btn-quit').style.display = 'block';
+    document.getElementById('xp-tag').style.display = 'none';
+    document.getElementById('materia-ativa-label').innerText = materiaSelecionada.toUpperCase();
+    document.querySelectorAll('.chip-materia').forEach(c => c.style.opacity = '0.3');
+    timer = setInterval(tick, 1000);
 };
 
-function atualizarStats(cfg) {
-    const total = materias.length;
-    let somaMedias = 0;
-    let aprovados = 0;
-    let xpTotal = 0;
-
-    materias.forEach(m => {
-        const notas = getNotas(m, cfg.numPeriodos);
-        const soma = somaNotas(notas);
-        somaMedias += soma / cfg.numPeriodos;
-        if (soma >= cfg.somaMinima) aprovados++;
-        xpTotal += calcularXP(m, cfg);
-    });
-
-    const mediaGeral = total > 0 ? (somaMedias / total).toFixed(1) : '0.0';
-
-    const mgEl = document.getElementById('media-geral');
-    const acEl = document.getElementById('aprov-count');
-    const xpEl = document.getElementById('total-xp');
-
-    if (mgEl) mgEl.textContent = mediaGeral;
-    if (acEl) acEl.textContent = `${aprovados}/${total}`;
-    if (xpEl) xpEl.textContent = xpTotal;
+// --- MODO LIVRE ---
+function iniciarModoLivre() {
+    livreSegs = 0;
+    sessionActive = true;
+    document.getElementById('livre-info').style.display = 'none';
+    document.getElementById('modo-selector').style.display = 'none';
+    document.getElementById('livre-progress-wrap').style.display = 'flex';
+    document.getElementById('btn-start').style.display = 'none';
+    document.getElementById('btn-pause').style.display = 'block';
+    document.getElementById('btn-parar-livre').style.display = 'block';
+    document.getElementById('btn-quit').style.display = 'block';
+    document.getElementById('livre-materia-label').innerText = materiaSelecionada.toUpperCase();
+    document.querySelectorAll('.chip-materia').forEach(c => c.style.opacity = '0.3');
+    
+    livreTimer = setInterval(tickLivre, 1000);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SALVAR NOTA
-// ═══════════════════════════════════════════════════════════════════════════
-window.salvarNota = async function(id, periodo, valor) {
-    const i = materias.findIndex(m => m.id === id);
-    if (i !== -1) {
-        materias[i]['n' + periodo] = valor === '' ? '' : parseFloat(valor);
-        localStorage.setItem('materias', JSON.stringify(materias));
-        window.atualizarLista();
-        await salvarNaNuvem();
-        showToast('Nota salva!');
-    }
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-// NOVA MATÉRIA
-// ═══════════════════════════════════════════════════════════════════════════
-window.confirmarNovaMateria = async function() {
-    const input = document.getElementById('nome-materia-input');
-    if (input && input.value.trim() !== '') {
-        const cfg = getCfg();
-        const nova = { 
-            id: Date.now(), 
-            nome: input.value.trim() 
-        };
-        
-        // Inicializa notas vazias baseado no período
-        for (let i = 1; i <= cfg.numPeriodos; i++) {
-            nova['n' + i] = '';
-        }
-        
-        materias.push(nova);
-        localStorage.setItem('materias', JSON.stringify(materias));
-        window.atualizarLista();
-        
-        if (window.fecharModal) window.fecharModal();
-        input.value = '';
-        
-        await salvarNaNuvem();
-        showToast(`${nova.nome} adicionada!`);
-    }
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-// EXCLUIR
-// ═══════════════════════════════════════════════════════════════════════════
-window.abrirModalExcluir = function(id) {
-    idParaExcluir = id;
-    document.getElementById('modal-excluir').style.display = 'flex';
-    if (window.lucide) lucide.createIcons();
-};
-
-window.confirmarExclusao = async function() {
-    const materia = materias.find(m => m.id === idParaExcluir);
-    materias = materias.filter(m => m.id !== idParaExcluir);
-    localStorage.setItem('materias', JSON.stringify(materias));
-    window.atualizarLista();
+const tickLivre = () => {
+    if (isPaused) return;
+    livreSegs++;
+    playTick();
+    const h = Math.floor(livreSegs / 3600);
+    const m = Math.floor((livreSegs % 3600) / 60);
+    const s = livreSegs % 60;
+    atualizarFlip(h, m, s);
     
-    if (window.fecharModalExcluir) window.fecharModalExcluir();
-    
-    await salvarNaNuvem();
-    if (materia) showToast(`${materia.nome} excluída`, 'error');
+    // Atualiza XP acumulado a cada minuto
+    const minutos = Math.floor(livreSegs / 60);
+    const xpAcum = Math.floor(minutos / 25 * 10);
+    document.getElementById('livre-xp-badge').innerText = '+' + xpAcum + ' XP acumulado';
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// COMPARTILHAR
-// ═══════════════════════════════════════════════════════════════════════════
-window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
-    let container = document.getElementById('compartilhamento-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'compartilhamento-container';
-        document.body.appendChild(container);
+// FINALIZAR MODO LIVRE
+document.getElementById('btn-parar-livre').onclick = async () => {
+    clearInterval(livreTimer);
+    const minutos = Math.floor(livreSegs / 60);
+    if (minutos < 1) {
+        alert('Você precisa estudar pelo menos 1 minuto!');
+        livreTimer = setInterval(tickLivre, 1000);
+        return;
     }
+    await finalizarSessao(true, minutos);
+};
 
-    container.innerHTML = `
-        <div style="width:1080px;height:1920px;background:radial-gradient(circle at center,#1a0b2e 0%,#050505 100%);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:120px 60px;position:relative;">
-            <div style="flex-grow:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:1;">
-                <div style="margin-bottom:60px;filter:drop-shadow(0 0 40px rgba(138,43,226,0.8));">
-                    <i data-lucide="brain-circuit" style="width:240px;height:240px;color:#8a2be2;"></i>
-                </div>
-                <p style="color:#fff;font-size:50px;font-weight:800;text-transform:uppercase;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 20px rgba(138,43,226,0.8);">
-                    ${parseFloat(mediaReal) >= 8.0 ? 'NÍVEL ELITE' : 'OBJETIVO CONCLUÍDO'}
-                </p>
-                <h1 style="color:#fff;font-size:140px;font-weight:900;line-height:1;margin:0;text-transform:uppercase;text-shadow:0 0 30px rgba(138,43,226,0.5);">
-                    ${nomeMateria}
-                </h1>
-                <p style="margin-top:40px;font-size:35px;font-weight:600;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:8px;border-bottom:1px solid rgba(138,43,226,0.4);padding-bottom:10px;">
-                    ${parseFloat(mediaReal) >= 8.0 ? `NOTA EXTRAORDINÁRIA: ${mediaReal}` : `MÉDIA ${mediaReal} SUPERADA`}
-                </p>
-            </div>
-            <div style="text-align:center;z-index:1;">
-                <p style="color:#8a2be2;font-size:30px;font-weight:800;letter-spacing:5px;text-transform:uppercase;">HUB BRAIN</p>
-                <p style="font-size:24px;color:#444;margin-top:15px;text-transform:lowercase;font-weight:400;letter-spacing:1px;">hubbrain.netlify.app</p>
-            </div>
-        </div>
-    `;
+const tick = () => {
+    if (isPaused) return;
+    segsRestantes--;
+    playTick();
+    const h = Math.floor(segsRestantes / 3600);
+    const m = Math.floor((segsRestantes % 3600) / 60);
+    const s = segsRestantes % 60;
+    atualizarFlip(h, m, s);
+    const pct = Math.round(((totalSegs - segsRestantes) / totalSegs) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progresso-pct').innerText = pct + '%';
+    if (segsRestantes <= 0) finalizarSessao(true, Math.floor(totalSegs / 60));
+};
 
-    if (window.lucide) lucide.createIcons({ container });
+// --- PAUSAR ---
+document.getElementById('btn-pause').onclick = () => {
+    isPaused = !isPaused;
+    document.getElementById('btn-pause').innerText = isPaused ? 'RETOMAR' : 'PAUSAR';
+};
 
-    setTimeout(async () => {
+// --- DESISTIR ---
+document.getElementById('btn-quit').onclick = () => {
+    isPaused = true;
+    document.getElementById('modal-confirm').style.display = 'flex';
+};
+document.getElementById('btn-keep-going').onclick = () => {
+    isPaused = false;
+    document.getElementById('modal-confirm').style.display = 'none';
+};
+document.getElementById('btn-really-quit').onclick = async () => {
+    clearInterval(timer);
+    clearInterval(livreTimer);
+    const segsFeitos = modoAtual === 'livre' ? livreSegs : (totalSegs - segsRestantes);
+    const xp = Math.floor((segsFeitos / 60) / 25 * 10 / 2);
+    if (xp > 0 && userEmail) {
+        try { await updateDoc(doc(db, "notas", userEmail), { xp: increment(xp) }); } catch(e) {}
+    }
+    location.reload();
+};
+
+// --- FINALIZAR ---
+const finalizarSessao = async (completa, minutosParam) => {
+    clearInterval(timer);
+    clearInterval(livreTimer);
+    const minutos = minutosParam || Math.floor(totalSegs / 60);
+    const xp = Math.floor(minutos / 25 * 10);
+    let temNovas = false;
+
+    if (userEmail && completa) {
         try {
-            const canvas = await html2canvas(container, {
-                backgroundColor: '#0d0d0d',
-                width: 1080,
-                height: 1920,
-                scale: 1,
-                useCORS: true
-            });
+            const hoje = getHojeStr();
+            await setDoc(doc(db, "notas", userEmail), {
+                xp: increment(xp),
+                historico_foco: arrayUnion({
+                    materia: materiaSelecionada,
+                    minutos: minutos,
+                    data: hoje,
+                    timestamp: Date.now(),
+                    modo: modoAtual
+                })
+            }, { merge: true });
 
-            canvas.toBlob(async blob => {
-                const file = new File([blob], `Vitoria_${nomeMateria}.png`, { type: 'image/png' });
-                
-                if (navigator.share) {
-                    await navigator.share({
-                        title: 'Hub Brain',
-                        text: `Menos uma! Passei em ${nomeMateria}. 🚀\nhubbrain.netlify.app`,
-                        files: [file]
-                    });
-                } else {
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = `Vitoria_${nomeMateria}.png`;
-                    a.click();
+            const snap = await getDoc(doc(db, "notas", userEmail));
+            if (snap.exists()) {
+                const dados = { ...snap.data(), _sessaoAgora: true };
+                const novas = await verificarConquistas(userEmail, dados);
+                if (novas.length > 0) {
+                    temNovas = true;
+                    mostrarPopupConquista(novas);
                 }
-                
-                container.innerHTML = '';
-            });
-        } catch (e) {
-            console.error('Erro ao compartilhar:', e);
-            showToast('Erro ao gerar imagem', 'error');
-        }
-    }, 400);
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    setTimeout(() => location.reload(), temNovas ? 4000 : 500);
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', async () => {
-    window.atualizarLista();
-    
-    const email = localStorage.getItem('dt_user_email');
-    if (email && email !== 'null') {
-        try {
-            const snap = await getDoc(doc(db, 'notas', email));
-            if (snap.exists() && snap.data().materias) {
-                materias = snap.data().materias;
-                localStorage.setItem('materias', JSON.stringify(materias));
-                window.atualizarLista();
-            }
-        } catch (e) {
-            console.error('Erro ao carregar do Firebase:', e);
+// --- HISTÓRICO ---
+async function carregarHistorico() {
+    if (!userEmail) return;
+    try {
+        const snap = await getDoc(doc(db, "notas", userEmail));
+        if (!snap.exists()) return;
+        const historico = snap.data().historico_foco || [];
+        const hoje = getHojeStr();
+
+        const totalMin = historico.reduce((a, s) => a + s.minutos, 0);
+        const hojeMin  = historico.filter(s => s.data === hoje).reduce((a, s) => a + s.minutos, 0);
+
+        let streak = 0;
+        const dias = [...new Set(historico.map(s => s.data))].sort().reverse();
+        let dCheck = new Date(hoje);
+        for (const d of dias) {
+            if (d === dCheck.toISOString().split('T')[0]) { streak++; dCheck.setDate(dCheck.getDate() - 1); }
+            else break;
         }
-    }
-    
+
+        document.getElementById('stat-hoje').innerText     = Math.floor(hojeMin / 60) + 'h';
+        document.getElementById('stat-hoje-min').innerText = (hojeMin % 60) + 'min';
+        document.getElementById('stat-total').innerText    = Math.floor(totalMin / 60) + 'h';
+        document.getElementById('stat-total-min').innerText = (totalMin % 60) + 'min';
+        document.getElementById('stat-sessoes').innerText  = historico.length;
+        document.getElementById('stat-streak').innerText   = streak;
+
+        const porMateria = {};
+        historico.forEach(s => { porMateria[s.materia] = (porMateria[s.materia] || 0) + s.minutos; });
+        const maxMin = Math.max(...Object.values(porMateria), 1);
+
+        document.getElementById('lista-por-materia').innerHTML = Object.keys(porMateria).length === 0
+            ? '<div class="empty-state"><p>Nenhuma sessão ainda</p></div>'
+            : Object.entries(porMateria).sort((a,b) => b[1]-a[1]).map(([nome, min]) => `
+                <div class="materia-bar-item">
+                    <div class="materia-bar-header">
+                        <span class="materia-bar-nome">${nome}</span>
+                        <span class="materia-bar-tempo">${formatarTempo(min)}</span>
+                    </div>
+                    <div class="materia-bar-track">
+                        <div class="materia-bar-fill" style="width:${(min/maxMin)*100}%"></div>
+                    </div>
+                </div>`).join('');
+
+        const recentes = [...historico].sort((a,b) => b.timestamp - a.timestamp).slice(0, 10);
+        document.getElementById('lista-sessoes').innerHTML = recentes.length === 0
+            ? '<div class="empty-state"><p>Complete sua primeira sessão!</p></div>'
+            : recentes.map(s => {
+                const d = new Date(s.timestamp);
+                const modoLabel = s.modo === 'livre' ? '∞' : '';
+                return `<div class="sessao-item">
+                    <div class="sessao-dot"></div>
+                    <div class="sessao-info">
+                        <div class="sessao-materia">${s.materia} ${modoLabel}</div>
+                        <div class="sessao-data">${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+                    </div>
+                    <div class="sessao-duracao">${formatarTempo(s.minutos)}</div>
+                </div>`;
+            }).join('');
+
+    } catch(e) { console.error(e); }
+}
+
+// --- INIT ---
+document.addEventListener('DOMContentLoaded', () => {
+    carregarMaterias();
+    atualizarSetup();
     if (window.lucide) lucide.createIcons();
 });
-    
