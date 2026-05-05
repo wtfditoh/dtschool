@@ -48,8 +48,13 @@ const formatData = d => d ? d.split('-').reverse().join('/') : '';
 function toast(msg) {
     const el = document.getElementById('toast-agenda');
     if (!el) return;
-    el.innerText = msg; el.style.display = 'block'; el.style.opacity = '1';
-    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.style.display = 'none', 300); }, 2500);
+    el.innerText = msg; 
+    el.style.display = 'block'; 
+    el.style.opacity = '1';
+    setTimeout(() => { 
+        el.style.opacity = '0'; 
+        setTimeout(() => el.style.display = 'none', 300); 
+    }, 2500);
 }
 
 // XP
@@ -138,17 +143,38 @@ window.buscarDadosNuvem = async function() {
             agendaGlobal = snap.docs.map(d => ({ id_firebase: d.id, ...d.data() }));
         } catch(e) { console.error(e); }
     }
+    
+    // Torna agendaGlobal acessível globalmente
+    window.agendaGlobal = agendaGlobal;
+    window.filtroBimestre = filtroBimestre;
+    window.filtroMateria = filtroMateria;
+    window.dataSelecionada = dataSelecionada;
+    
     renderFiltrosMateria();
     window.renderizarCalendario();
     renderResumo();
     window.carregarTarefas(dataSelecionada);
 };
 
-// FILTRO BIMESTRE
+// FILTRO BIMESTRE - CORRIGIDO para poder desmarcar
 window.selecionarBimestre = function(el, bim) {
-    filtroBimestre = bim;
-    document.querySelectorAll('.bim-tab').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
+    // Se clicar no mesmo que já tá ativo E não é "todos", volta pra "todos"
+    const jaAtivo = el.classList.contains('active');
+    
+    if (jaAtivo && bim !== 'todos') {
+        // Desmarca o atual e marca "todos"
+        document.querySelectorAll('.filtro-chip[data-bim]').forEach(b => b.classList.remove('active'));
+        const btnTodos = document.querySelector('.filtro-chip[data-bim="todos"]');
+        if (btnTodos) btnTodos.classList.add('active');
+        filtroBimestre = 'todos';
+    } else {
+        // Marca o clicado
+        document.querySelectorAll('.filtro-chip[data-bim]').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        filtroBimestre = bim;
+    }
+    
+    window.filtroBimestre = filtroBimestre;
     renderResumo();
     window.carregarTarefas(dataSelecionada);
 };
@@ -156,16 +182,26 @@ window.selecionarBimestre = function(el, bim) {
 // FILTRO MATÉRIA
 function renderFiltrosMateria() {
     const wrap = document.getElementById('filtros-materias');
+    const wrapper = document.getElementById('filtros-materias-wrapper');
     if (!wrap) return;
+    
     const materias = [...new Set(agendaGlobal.map(t=>t.materia).filter(Boolean))];
-    if (materias.length === 0) { wrap.innerHTML=''; return; }
+    
+    if (materias.length === 0) { 
+        if (wrapper) wrapper.style.display = 'none';
+        return; 
+    }
+    
+    if (wrapper) wrapper.style.display = 'block';
+    
     wrap.innerHTML = ['todas',...materias].map(m =>
-        `<button class="filtro-mat ${m===filtroMateria?'active':''}" onclick="window.selecionarFiltroMateria('${m}')">${m==='todas'?'TODAS':m.toUpperCase()}</button>`
+        `<button class="filtro-chip ${m===filtroMateria?'active':''}" onclick="window.selecionarFiltroMateria('${m}')">${m==='todas'?'TODAS':m.toUpperCase()}</button>`
     ).join('');
 }
 
 window.selecionarFiltroMateria = function(m) {
     filtroMateria = m;
+    window.filtroMateria = filtroMateria;
     renderFiltrosMateria();
     renderResumo();
     window.carregarTarefas(dataSelecionada);
@@ -205,44 +241,65 @@ function renderResumo() {
     if(rPct) rPct.innerText = pct + '%';
 }
 
-// CALENDÁRIO — igual ao original
+window.renderResumo = renderResumo;
+
+// CALENDÁRIO
 window.renderizarCalendario = function() {
     const grid = document.getElementById('calendar-grid');
     const topoMes = document.getElementById('mes-topo');
     if (!grid || !topoMes) return;
     grid.innerHTML = '';
-    ['D','S','T','Q','Q','S','S'].forEach(d => grid.innerHTML += `<div class="dia-semana">${d}</div>`);
+    ['D','S','T','Q','Q','S','S'].forEach(d => {
+        const dia = document.createElement('div');
+        dia.className = 'dia-semana';
+        dia.textContent = d;
+        grid.appendChild(dia);
+    });
     const ano = mesExibido.getFullYear();
     const mes = mesExibido.getMonth();
     topoMes.innerText = new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric'}).format(mesExibido);
     const primeiroDia = new Date(ano,mes,1).getDay();
     const diasNoMes = new Date(ano,mes+1,0).getDate();
-    for(let i=0;i<primeiroDia;i++) grid.innerHTML += '<div></div>';
+    for(let i=0;i<primeiroDia;i++) {
+        const vazio = document.createElement('div');
+        grid.appendChild(vazio);
+    }
     const hojeLocal = getHojeLocal();
     for(let dia=1;dia<=diasNoMes;dia++) {
         const ds = `${ano}-${pad(mes+1)}-${pad(dia)}`;
         const tarefasDoDia = agendaGlobal.filter(t => ds >= t.dataInicio && ds <= t.dataFim);
-        let htmlDot = '';
+        
+        const diaEl = document.createElement('div');
+        diaEl.className = 'dia-numero';
+        if (hojeLocal === ds) diaEl.classList.add('hoje');
+        if (dataSelecionada === ds) diaEl.classList.add('selecionado');
+        diaEl.textContent = dia;
+        diaEl.onclick = () => window.selecionarDia(ds);
+        
         if (tarefasDoDia.length > 0) {
             const ativas = tarefasDoDia.filter(t=>!t.concluida);
+            let dotEl = document.createElement('div');
+            dotEl.className = 'dot';
+            
             if (ativas.length === 0) {
-                htmlDot = '<div class="dot status-concluido"></div>';
+                dotEl.classList.add('status-concluido');
             } else {
                 const diffs = ativas.map(t => Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeLocal+'T00:00:00'))/86400000));
                 const minDiff = Math.min(...diffs);
                 const cl = minDiff<=3 ? 'status-urgente' : minDiff<=7 ? 'status-alerta' : 'status-tranquilo';
-                htmlDot = `<div class="dot ${cl}"></div>`;
+                dotEl.classList.add(cl);
             }
+            diaEl.appendChild(dotEl);
         }
-        const hjCl = hojeLocal===ds ? 'hoje' : '';
-        const selCl = dataSelecionada===ds ? 'selecionado' : '';
-        grid.innerHTML += `<div class="dia-numero ${hjCl} ${selCl}" onclick="selecionarDia('${ds}')">${dia}${htmlDot}</div>`;
+        
+        grid.appendChild(diaEl);
     }
     if (window.lucide) lucide.createIcons();
 };
 
 window.selecionarDia = function(d) {
     dataSelecionada = dataSelecionada === d ? '' : d;
+    window.dataSelecionada = dataSelecionada;
     const titulo = document.getElementById('titulo-lista');
     if (titulo) titulo.innerText = dataSelecionada ? 'DIA ' + formatData(dataSelecionada) : 'ATIVIDADES';
     window.renderizarCalendario();
@@ -265,7 +322,8 @@ window.carregarTarefas = function(filtroData) {
     if (filtroData) arr = arr.filter(t => filtroData >= t.dataInicio && filtroData <= t.dataFim);
 
     if (arr.length === 0) {
-        lista.innerHTML = '<p style="color:#333;text-align:center;padding:30px;font-size:13px;font-weight:600;">Sem atividades aqui 📭</p>';
+        lista.innerHTML = '<div class="empty-state"><i data-lucide="inbox"></i><h3>Sem atividades</h3><p>Nenhuma atividade encontrada aqui 📭</p></div>';
+        if (window.lucide) lucide.createIcons();
         return;
     }
 
@@ -331,33 +389,39 @@ window.carregarTarefas = function(filtroData) {
 
             html += `
             <div class="tarefa-item" style="border-left:4px solid ${borderColor};opacity:${t.concluida?'0.55':'1'};">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
-                    <div style="flex:1;">
-                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+                <div class="tarefa-header">
+                    <div class="tarefa-content">
+                        <div class="tarefa-badges">
                             <span class="tipo-badge">${tipo.emoji} ${tipo.label}</span>
                             ${bimLabel}
                         </div>
-                        <b style="display:block;font-size:16px;color:white;text-decoration:${t.concluida?'line-through':'none'};cursor:pointer;margin-bottom:4px;" onclick="alternarConcluida('${idFb}',${idLc})">${t.nome}</b>
-                        ${t.descricao ? `<p style="color:#666;font-size:12px;margin:0 0 8px;line-height:1.4;">${t.descricao}</p>` : ''}
-                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <div class="tarefa-nome" onclick="alternarConcluida('${idFb}',${idLc})" style="text-decoration:${t.concluida?'line-through':'none'};">
+                            ${t.nome}
+                        </div>
+                        ${t.descricao ? `<div class="tarefa-desc">${t.descricao}</div>` : ''}
+                        <div class="tarefa-meta">
                             ${statusTag}
-                            <span style="font-size:10px;color:#333;">Prazo: ${formatData(t.dataFim)}</span>
+                            <span class="prazo-text">Prazo: ${formatData(t.dataFim)}</span>
                         </div>
                     </div>
-                    <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+                    <div class="tarefa-actions">
                         ${!t.concluida ? `
-                        <button onclick="moverTarefa('${idFb}',${idLc},-1)" style="background:rgba(255,255,255,0.03);border:1px solid #111;color:#333;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12px;line-height:1;" title="Mover para cima">↑</button>
-                        <button onclick="moverTarefa('${idFb}',${idLc},1)" style="background:rgba(255,255,255,0.03);border:1px solid #111;color:#333;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12px;line-height:1;" title="Mover para baixo">↓</button>
-                        ` : ''}
-                        <button onclick="alternarConcluida('${idFb}',${idLc})" style="background:rgba(138,43,226,0.1);border:1px solid rgba(138,43,226,0.2);color:#8a2be2;padding:7px;border-radius:10px;cursor:pointer;display:flex;align-items:center;">
-                            <i data-lucide="${t.concluida?'rotate-ccw':'check-circle'}" style="width:15px;height:15px;"></i>
+                        <button onclick="moverTarefa('${idFb}',${idLc},-1)" class="btn-action btn-move" title="Mover para cima">
+                            <i data-lucide="arrow-up"></i>
                         </button>
-                        <button onclick="removerTarefa('${idFb}',${idLc})" style="background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.15);color:#ff4444;padding:7px;border-radius:10px;cursor:pointer;display:flex;align-items:center;">
-                            <i data-lucide="trash-2" style="width:15px;height:15px;"></i>
+                        <button onclick="moverTarefa('${idFb}',${idLc},1)" class="btn-action btn-move" title="Mover para baixo">
+                            <i data-lucide="arrow-down"></i>
+                        </button>
+                        ` : ''}
+                        <button onclick="alternarConcluida('${idFb}',${idLc})" class="btn-action btn-toggle">
+                            <i data-lucide="${t.concluida?'rotate-ccw':'check-circle'}"></i>
+                        </button>
+                        <button onclick="removerTarefa('${idFb}',${idLc})" class="btn-action btn-delete">
+                            <i data-lucide="trash-2"></i>
                         </button>
                     </div>
                 </div>
-                ${t.imagem ? `<img src="${t.imagem}" style="width:100%;border-radius:12px;margin-top:12px;">` : ''}
+                ${t.imagem ? `<img src="${t.imagem}" class="tarefa-imagem">` : ''}
             </div>`;
         });
         html += '</div></div>';
@@ -395,7 +459,8 @@ window.adicionarTarefa = async function() {
     const nova = { nome, descricao:desc, dataInicio, dataFim, materia, tipo, bimestre, imagem:imagemBase64, concluida:false, usuario:userEmail, onesignal_player_id:playerId||null, criadoEm:Date.now() };
 
     if (userType === 'local') {
-        agendaGlobal.push(nova); localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
+        agendaGlobal.push(nova); 
+        localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
     } else {
         await addDoc(collection(db,'agenda'), nova);
     }
@@ -416,9 +481,13 @@ window.confirmarDelete = async function() {
     const t = agendaGlobal.find(x => userType==='local' ? x.criadoEm===idLc : x.id_firebase===idFb);
     if (t?.concluida) await atualizarXPRanking(-identificarXPTarefa(t));
     if (userType === 'local') {
-        agendaGlobal = agendaGlobal.filter(x=>x.criadoEm!==idLc); localStorage.setItem('dt_agenda',JSON.stringify(agendaGlobal));
-    } else { await deleteDoc(doc(db,'agenda',idFb)); }
+        agendaGlobal = agendaGlobal.filter(x=>x.criadoEm!==idLc); 
+        localStorage.setItem('dt_agenda',JSON.stringify(agendaGlobal));
+    } else { 
+        await deleteDoc(doc(db,'agenda',idFb)); 
+    }
     await window.buscarDadosNuvem();
+    toast('✓ Atividade excluída');
 };
 window.cancelarDelete = function() {
     document.getElementById('modal-confirm-del').style.display = 'none';
@@ -430,7 +499,11 @@ window.alternarConcluida = async function(idFb, idLc) {
     let t;
     if (userType === 'local') {
         const idx = agendaGlobal.findIndex(x=>x.criadoEm===idLc);
-        if(idx!==-1){t=agendaGlobal[idx];t.concluida=!t.concluida;localStorage.setItem('dt_agenda',JSON.stringify(agendaGlobal));}
+        if(idx!==-1){
+            t=agendaGlobal[idx];
+            t.concluida=!t.concluida;
+            localStorage.setItem('dt_agenda',JSON.stringify(agendaGlobal));
+        }
     } else {
         t = agendaGlobal.find(x=>x.id_firebase===idFb);
         if(!t) return;
@@ -451,7 +524,9 @@ window.abrirModalAgendaHoje = function() {
     document.getElementById('tarefa-data-inicio').value = dataSelecionada || hoje;
     document.getElementById('tarefa-data-fim').value = dataSelecionada || hoje;
     document.getElementById('modal-agenda').style.display = 'flex';
+    if (window.lucide) lucide.createIcons();
 };
+
 window.fecharModalAgenda = function() {
     document.getElementById('modal-agenda').style.display='none';
     document.getElementById('tarefa-nome').value='';
@@ -464,25 +539,57 @@ window.fecharModalAgenda = function() {
 };
 
 window.carregarMateriasNoSelect = function() {
-    const sel = document.getElementById('tarefa-materia'); if(!sel) return;
+    const sel = document.getElementById('tarefa-materia'); 
+    if(!sel) return;
     const mats = JSON.parse(localStorage.getItem('materias_db')||localStorage.getItem('materias')||'[]');
-    sel.innerHTML = '<option value="Geral">Geral / Outros</option>';
-    mats.forEach(m => { if(m.nome){const o=document.createElement('option');o.value=m.nome;o.textContent=m.nome;sel.appendChild(o);} });
+    sel.innerHTML = '<option value="Geral">📚 Geral / Outros</option>';
+    mats.forEach(m => { 
+        if(m.nome){
+            const o=document.createElement('option');
+            o.value=m.nome;
+            o.textContent=m.nome;
+            sel.appendChild(o);
+        } 
+    });
 };
 
 window.previewImg = function(input) {
     if(input.files?.[0]){
         const r=new FileReader();
-        r.onload=e=>{imagemBase64=e.target.result;document.getElementById('preview-container').innerHTML=`<img src="${imagemBase64}" style="width:100%;border-radius:12px;margin-top:12px;">`;};
+        r.onload=e=>{
+            imagemBase64=e.target.result;
+            document.getElementById('preview-container').innerHTML=`<img src="${imagemBase64}" style="width:100%;border-radius:14px;margin-top:12px;">`;
+        };
         r.readAsDataURL(input.files[0]);
     }
 };
 
-// COMPARTILHAR
+// COMPARTILHAR - CORRIGIDO COM FILTROS
 let _shareShowConcluidas = false;
 
 window.abrirCompartilhar = function() {
     _shareShowConcluidas = false;
+    
+    // Popula select de matérias
+    const selectMateria = document.getElementById('share-filtro-materia');
+    const selectBim = document.getElementById('share-filtro-bimestre');
+    
+    if (selectMateria) {
+        const materias = [...new Set(agendaGlobal.map(t => t.materia).filter(Boolean))];
+        selectMateria.innerHTML = '<option value="todas">Todas as matérias</option>';
+        materias.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = m;
+            selectMateria.appendChild(opt);
+        });
+        selectMateria.value = filtroMateria;
+    }
+    
+    if (selectBim) {
+        selectBim.value = filtroBimestre;
+    }
+    
     _renderSharePreview();
     document.getElementById('modal-compartilhar').style.display='flex';
     if(window.lucide) lucide.createIcons();
@@ -491,44 +598,75 @@ window.abrirCompartilhar = function() {
 window.toggleShareConcluidas = function() {
     _shareShowConcluidas = !_shareShowConcluidas;
     const btn = document.getElementById('btn-toggle-concluidas');
-    if (btn) btn.innerText = _shareShowConcluidas ? '👁 Ocultar concluídas' : '👁 Mostrar concluídas';
+    if (btn) {
+        if (_shareShowConcluidas) {
+            btn.innerHTML = '<i data-lucide="eye-off"></i> Ocultar concluídas';
+        } else {
+            btn.innerHTML = '<i data-lucide="eye"></i> Mostrar concluídas';
+        }
+        if (window.lucide) lucide.createIcons();
+    }
     _renderSharePreview();
 };
 
 function _renderSharePreview() {
+    const selectMateria = document.getElementById('share-filtro-materia');
+    const selectBim = document.getElementById('share-filtro-bimestre');
+    
+    const filtroMateriaShare = selectMateria ? selectMateria.value : 'todas';
+    const filtroBimestreShare = selectBim ? selectBim.value : 'todos';
+    
     const hojeStr = getHojeLocal();
-    const bimLabel = filtroBimestre !== 'todos' ? BIMESTRES[filtroBimestre]?.label : '';
-    const mLabel = filtroMateria !== 'todas' ? filtroMateria : '';
-    const titulo = [mLabel, bimLabel].filter(Boolean).join(' • ') || 'Agenda Completa';
-
-    // Ordena por prioridade (campo ordem se tiver, senão por dataFim)
-    let arr = getTarefasFiltradas().sort((a,b) => {
+    
+    // Filtra as tarefas
+    let arr = [...agendaGlobal];
+    
+    if (filtroMateriaShare !== 'todas') {
+        arr = arr.filter(t => t.materia === filtroMateriaShare);
+    }
+    
+    if (filtroBimestreShare !== 'todos') {
+        const ano = new Date().getFullYear();
+        const bim = BIMESTRES[filtroBimestreShare];
+        if (bim) {
+            const ini = ano + bim.inicio;
+            const fim = ano + bim.fim;
+            arr = arr.filter(t => (t.bimestre === filtroBimestreShare) || (t.dataFim >= ini && t.dataInicio <= fim));
+        }
+    }
+    
+    arr.sort((a, b) => {
+        if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
         const oA = a.ordem !== undefined ? a.ordem : 9999;
         const oB = b.ordem !== undefined ? b.ordem : 9999;
         if (oA !== oB) return oA - oB;
         return new Date(a.dataFim) - new Date(b.dataFim);
     });
-
-    const pendentes = arr.filter(t=>!t.concluida);
-    const concluidas = arr.filter(t=>t.concluida);
-
+    
+    const pendentes = arr.filter(t => !t.concluida);
+    const concluidas = arr.filter(t => t.concluida);
+    
+    const bimLabel = filtroBimestreShare !== 'todos' ? BIMESTRES[filtroBimestreShare]?.label : '';
+    const mLabel = filtroMateriaShare !== 'todas' ? filtroMateriaShare : '';
+    const titulo = [mLabel, bimLabel].filter(Boolean).join(' • ') || 'Agenda Completa';
+    
     function buildItems(lista) {
         return lista.map(t => {
-            const diff = Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00'))/86400000);
-            const cor = t.concluida ? '#00d2ff' : diff<=0 ? '#ff4444' : diff<=3 ? '#ff4444' : diff<=7 ? '#ffbb33' : '#00c851';
-            const tipo = TIPOS[t.tipo]||TIPOS.tarefa;
+            const diff = Math.ceil((new Date(t.dataFim + 'T00:00:00') - new Date(hojeStr + 'T00:00:00')) / 86400000);
+            const cor = t.concluida ? '#00d2ff' : diff <= 0 ? '#ff4444' : diff <= 3 ? '#ff4444' : diff <= 7 ? '#ffbb33' : '#00c851';
+            const tipo = TIPOS[t.tipo] || TIPOS.tarefa;
             const bimStr = t.bimestre ? `<span style="font-size:9px;color:#333;margin-left:4px;">${t.bimestre}° BIM</span>` : '';
             const prazoStr = t.concluida
                 ? `<span style="font-size:9px;color:#00d2ff;">✓ Concluída</span>`
                 : `<span style="font-size:9px;color:${cor};">📅 ${formatData(t.dataFim)}</span>`;
             return `
-                <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
-                    <div style="width:7px;height:7px;border-radius:50%;background:${cor};box-shadow:0 0 5px ${cor};flex-shrink:0;margin-top:5px;"></div>
+                <div class="share-item">
+                    <div class="share-dot" style="background:${cor};box-shadow:0 0 5px ${cor};"></div>
                     <div style="flex:1;min-width:0;">
-                        <div style="font-size:13px;font-weight:700;color:${t.concluida?'#555':'white'};text-decoration:${t.concluida?'line-through':'none'};">${tipo.emoji} ${t.nome}</div>
+                        <div style="font-size:13px;font-weight:700;color:${t.concluida ? '#555' : 'white'};text-decoration:${t.concluida ? 'line-through' : 'none'};">${tipo.emoji} ${t.nome}</div>
                         ${t.descricao ? `<div style="font-size:11px;color:#555;margin-top:2px;line-height:1.4;">${t.descricao}</div>` : ''}
                         <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
-                            <span style="font-size:9px;color:#8a2be2;background:rgba(138,43,226,0.1);border:1px solid rgba(138,43,226,0.15);padding:1px 7px;border-radius:20px;">${t.materia||'Geral'}</span>
+                            <span style="font-size:9px;color:#8a2be2;background:rgba(138,43,226,0.1);border:1px solid rgba(138,43,226,0.15);padding:1px 7px;border-radius:20px;">${t.materia || 'Geral'}</span>
                             ${bimStr}
                             ${prazoStr}
                         </div>
@@ -536,103 +674,135 @@ function _renderSharePreview() {
                 </div>`;
         }).join('');
     }
-
+    
     let html = '';
     if (pendentes.length > 0) {
-        html += `<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#444;margin-bottom:6px;">PENDENTES (${pendentes.length})</div>`;
+        html += `<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#555;margin-bottom:8px;">PENDENTES (${pendentes.length})</div>`;
         html += buildItems(pendentes);
     }
     if (_shareShowConcluidas && concluidas.length > 0) {
-        html += `<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#444;margin:12px 0 6px;">CONCLUÍDAS (${concluidas.length})</div>`;
+        html += `<div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#555;margin:14px 0 8px;">CONCLUÍDAS (${concluidas.length})</div>`;
         html += buildItems(concluidas);
     }
     if (!html && !_shareShowConcluidas && concluidas.length > 0) {
-        html = '<p style="color:#555;text-align:center;padding:8px;font-size:12px;">Todas concluídas! 🎉</p>';
+        html = '<p style="color:#555;text-align:center;padding:20px;font-size:13px;">Todas concluídas! 🎉</p>';
     }
-    if (!html) html = '<p style="color:#333;text-align:center;padding:16px;font-size:12px;">Nenhuma atividade 🎉</p>';
-
-    document.getElementById('share-preview').innerHTML = `
-        <div style="font-size:15px;font-weight:900;color:white;margin-bottom:2px;">📚 Hub Brain</div>
-        <div style="font-size:9px;color:#444;letter-spacing:2px;margin-bottom:14px;">${titulo.toUpperCase()}</div>
-        ${html}
-        <div style="text-align:center;margin-top:12px;font-size:9px;color:#222;letter-spacing:2px;">hubbrain.netlify.app</div>
-    `;
+    if (!html) html = '<p style="color:#444;text-align:center;padding:20px;font-size:13px;">Nenhuma atividade 🎉</p>';
+    
+    const preview = document.getElementById('share-preview');
+    if (preview) {
+        preview.innerHTML = `
+            <div style="font-size:16px;font-weight:900;color:white;margin-bottom:4px;">📚 Hub Brain</div>
+            <div style="font-size:10px;color:#555;letter-spacing:1.5px;margin-bottom:16px;text-transform:uppercase;">${titulo}</div>
+            ${html}
+            <div style="text-align:center;margin-top:16px;font-size:9px;color:#333;letter-spacing:2px;">hubbrain.netlify.app</div>
+        `;
+    }
 }
 
-window.fecharCompartilhar = function() { document.getElementById('modal-compartilhar').style.display='none'; };
+window._renderSharePreview = _renderSharePreview;
+
+window.fecharCompartilhar = function() { 
+    document.getElementById('modal-compartilhar').style.display='none'; 
+};
 
 window.gerarImagem = async function() {
     const el = document.getElementById('share-preview');
     try {
         const canvas = await html2canvas(el, { backgroundColor:'#0a0a0e', scale:2 });
         const a = document.createElement('a');
-        a.download='agenda-hubbrain.png'; a.href=canvas.toDataURL(); a.click();
+        a.download='agenda-hubbrain.png'; 
+        a.href=canvas.toDataURL(); 
+        a.click();
         toast('✓ Imagem salva!');
-    } catch(e) { toast('Erro ao gerar imagem'); }
+    } catch(e) { 
+        toast('Erro ao gerar imagem'); 
+    }
 };
 
 window.compartilharWpp = function() {
-    const arr = getTarefasFiltradas().sort((a,b) => {
+    const selectMateria = document.getElementById('share-filtro-materia');
+    const selectBim = document.getElementById('share-filtro-bimestre');
+    
+    const filtroMateriaShare = selectMateria ? selectMateria.value : 'todas';
+    const filtroBimestreShare = selectBim ? selectBim.value : 'todos';
+    
+    let arr = [...agendaGlobal];
+    
+    if (filtroMateriaShare !== 'todas') {
+        arr = arr.filter(t => t.materia === filtroMateriaShare);
+    }
+    
+    if (filtroBimestreShare !== 'todos') {
+        const ano = new Date().getFullYear();
+        const bim = BIMESTRES[filtroBimestreShare];
+        if (bim) {
+            const ini = ano + bim.inicio;
+            const fim = ano + bim.fim;
+            arr = arr.filter(t => (t.bimestre === filtroBimestreShare) || (t.dataFim >= ini && t.dataInicio <= fim));
+        }
+    }
+    
+    arr.sort((a, b) => {
         if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
         const oA = a.ordem !== undefined ? a.ordem : 9999;
         const oB = b.ordem !== undefined ? b.ordem : 9999;
         if (oA !== oB) return oA - oB;
         return new Date(a.dataFim) - new Date(b.dataFim);
     });
+    
     const hojeStr = getHojeLocal();
-    const bimLabel = filtroBimestre !== 'todos' ? BIMESTRES[filtroBimestre]?.label : '';
-    const mLabel = filtroMateria !== 'todas' ? filtroMateria : '';
+    const bimLabel = filtroBimestreShare !== 'todos' ? BIMESTRES[filtroBimestreShare]?.label : '';
+    const mLabel = filtroMateriaShare !== 'todas' ? filtroMateriaShare : '';
     const titulo = [mLabel, bimLabel].filter(Boolean).join(' • ') || 'Agenda';
-
+    
     let txt = `📚 *Hub Brain — ${titulo}*\n`;
     txt += `━━━━━━━━━━━━━━━\n\n`;
-
-    const pendentes = arr.filter(t=>!t.concluida);
-    const concluidas = arr.filter(t=>t.concluida);
-
+    
+    const pendentes = arr.filter(t => !t.concluida);
+    const concluidas = arr.filter(t => t.concluida);
+    
     if (pendentes.length > 0) {
         txt += `*📌 PENDENTES (${pendentes.length})*\n`;
-        pendentes.slice(0,10).forEach(t => {
-            const diff = Math.ceil((new Date(t.dataFim+'T00:00:00') - new Date(hojeStr+'T00:00:00'))/86400000);
-            const urgEmoji = diff<=0 ? '🔴' : diff<=3 ? '🟠' : diff<=7 ? '🟡' : '🟢';
-            const tipo = TIPOS[t.tipo]||TIPOS.tarefa;
+        pendentes.slice(0, 10).forEach(t => {
+            const diff = Math.ceil((new Date(t.dataFim + 'T00:00:00') - new Date(hojeStr + 'T00:00:00')) / 86400000);
+            const urgEmoji = diff <= 0 ? '🔴' : diff <= 3 ? '🟠' : diff <= 7 ? '🟡' : '🟢';
+            const tipo = TIPOS[t.tipo] || TIPOS.tarefa;
             txt += `\n${urgEmoji} ${tipo.emoji} *${t.nome}*\n`;
-            txt += `   📚 ${t.materia||'Geral'}`;
+            txt += `   📚 ${t.materia || 'Geral'}`;
             if (t.bimestre) txt += ` • ${t.bimestre}° BIM`;
             txt += `\n   📅 Prazo: ${formatData(t.dataFim)}\n`;
         });
     }
-
+    
     if (concluidas.length > 0) {
         txt += `\n*✅ CONCLUÍDAS (${concluidas.length})*\n`;
-        concluidas.slice(0,6).forEach(t => {
-            const tipo = TIPOS[t.tipo]||TIPOS.tarefa;
+        concluidas.slice(0, 6).forEach(t => {
+            const tipo = TIPOS[t.tipo] || TIPOS.tarefa;
             txt += `\n✓ ~${tipo.emoji} ${t.nome}~\n`;
-            txt += `   📚 ${t.materia||'Geral'}`;
+            txt += `   📚 ${t.materia || 'Geral'}`;
             if (t.bimestre) txt += ` • ${t.bimestre}° BIM`;
             txt += `\n`;
         });
     }
-
+    
     txt += `\n━━━━━━━━━━━━━━━\n_Hub Brain — hubbrain.netlify.app_`;
-    window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+    window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
 };
 
 // REORDENAÇÃO MANUAL
 window.moverTarefa = async function(idFb, idLc, direcao) {
-    // Pega lista filtrada atual (só pendentes, na ordem atual)
-    const lista = getTarefasFiltradas().filter(t=>!t.concluida).sort((a,b) => {
+    const lista = getTarefasFiltradas().filter(t => !t.concluida).sort((a, b) => {
         const oA = a.ordem !== undefined ? a.ordem : 9999;
         const oB = b.ordem !== undefined ? b.ordem : 9999;
         if (oA !== oB) return oA - oB;
         return new Date(a.dataFim) - new Date(b.dataFim);
     });
-    const idx = lista.findIndex(t => userType==='local' ? t.criadoEm===idLc : t.id_firebase===idFb);
+    const idx = lista.findIndex(t => userType === 'local' ? t.criadoEm === idLc : t.id_firebase === idFb);
     if (idx === -1) return;
     const newIdx = idx + direcao;
     if (newIdx < 0 || newIdx >= lista.length) return;
 
-    // Troca as ordens
     const a = lista[idx], b = lista[newIdx];
     const oA = a.ordem !== undefined ? a.ordem : idx;
     const oB = b.ordem !== undefined ? b.ordem : newIdx;
@@ -640,9 +810,9 @@ window.moverTarefa = async function(idFb, idLc, direcao) {
 
     if (userType !== 'local') {
         try {
-            if (a.id_firebase) await updateDoc(doc(db,'agenda',a.id_firebase), { ordem: a.ordem });
-            if (b.id_firebase) await updateDoc(doc(db,'agenda',b.id_firebase), { ordem: b.ordem });
-        } catch(e) {}
+            if (a.id_firebase) await updateDoc(doc(db, 'agenda', a.id_firebase), { ordem: a.ordem });
+            if (b.id_firebase) await updateDoc(doc(db, 'agenda', b.id_firebase), { ordem: b.ordem });
+        } catch (e) {}
     } else {
         localStorage.setItem('dt_agenda', JSON.stringify(agendaGlobal));
     }
