@@ -936,6 +936,44 @@ body::before {
 }
 
 /* COMPARTILHAR */
+.share-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.share-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.share-filter-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #555;
+}
+
+.share-select {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 10px 12px;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+}
+
+.share-select:focus {
+    border-color: var(--primary);
+}
+
 .share-preview-wrapper {
     max-height: 50vh;
     overflow-y: auto;
