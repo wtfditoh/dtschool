@@ -294,12 +294,16 @@ window.salvarNota = async function(id, periodo, valor) {
 window.confirmarNovaMateria = async function() {
     const input = document.getElementById('nome-materia-input');
     if (input && input.value.trim() !== '') {
-        // Sempre cria com n1, n2, n3, n4 pra garantir compatibilidade
+        const cfg = getCfg();
         const nova = { 
             id: Date.now(), 
-            nome: input.value.trim(),
-            n1: '', n2: '', n3: '', n4: ''
+            nome: input.value.trim() 
         };
+        
+        // Inicializa notas vazias baseado no período
+        for (let i = 1; i <= cfg.numPeriodos; i++) {
+            nova['n' + i] = '';
+        }
         
         materias.push(nova);
         localStorage.setItem('materias', JSON.stringify(materias));
@@ -416,17 +420,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const snap = await getDoc(doc(db, 'notas', email));
             if (snap.exists() && snap.data().materias) {
-                const materiasFirebase = snap.data().materias;
-                
-                // Se tem mais matérias locais do que no Firebase, usa as locais
-                if (materias.length > materiasFirebase.length) {
-                    console.log('Usando matérias locais (mais atualizadas)');
-                    await salvarNaNuvem(); // Sincroniza pro Firebase
-                } else {
-                    materias = materiasFirebase;
-                    localStorage.setItem('materias', JSON.stringify(materias));
-                    window.atualizarLista();
-                }
+                materias = snap.data().materias;
+                localStorage.setItem('materias', JSON.stringify(materias));
+                window.atualizarLista();
             }
         } catch (e) {
             console.error('Erro ao carregar do Firebase:', e);
@@ -435,3 +431,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (window.lucide) lucide.createIcons();
 });
+        
