@@ -222,6 +222,26 @@
                 <h3>Compartilhar Agenda</h3>
             </div>
 
+            <!-- FILTROS NO COMPARTILHAR -->
+            <div class="share-filters">
+                <div class="share-filter-group">
+                    <label class="share-filter-label">Matéria:</label>
+                    <select id="share-filtro-materia" class="share-select" onchange="window._renderSharePreview && window._renderSharePreview()">
+                        <option value="todas">Todas as matérias</option>
+                    </select>
+                </div>
+                <div class="share-filter-group">
+                    <label class="share-filter-label">Bimestre:</label>
+                    <select id="share-filtro-bimestre" class="share-select" onchange="window._renderSharePreview && window._renderSharePreview()">
+                        <option value="todos">Todos os bimestres</option>
+                        <option value="1">1º Bimestre</option>
+                        <option value="2">2º Bimestre</option>
+                        <option value="3">3º Bimestre</option>
+                        <option value="4">4º Bimestre</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="share-preview-wrapper">
                 <div class="share-preview" id="share-preview"></div>
             </div>
@@ -296,6 +316,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="menu.js"></script>
     <script type="module" src="agenda-logica.js"></script>
+    <script src="agenda-extras.js"></script>
     
     <script>
         function abrirSobreDono() { 
@@ -305,6 +326,26 @@
         function fecharSobreDono() { 
             document.getElementById('modal-dono').style.display='none'; 
         }
+
+        // CORRIGIDO: Permite clicar novamente pra desmarcar
+        window.selecionarBimestre = function(el, bim) {
+            // Se clicar no mesmo que já tá ativo, volta pra "todos"
+            if (el.classList.contains('active') && bim !== 'todos') {
+                bim = 'todos';
+                document.querySelectorAll('.filtro-chip[data-bim]').forEach(b => b.classList.remove('active'));
+                document.querySelector('.filtro-chip[data-bim="todos"]').classList.add('active');
+            } else {
+                document.querySelectorAll('.filtro-chip[data-bim]').forEach(b => b.classList.remove('active'));
+                el.classList.add('active');
+            }
+            
+            // Chama a função global se existir
+            if (window.filtroBimestre !== undefined && window.renderResumo && window.carregarTarefas) {
+                window.filtroBimestre = bim;
+                window.renderResumo();
+                window.carregarTarefas(window.dataSelecionada || '');
+            }
+        };
 
         function validarEAdicionar() {
             const nomeInput = document.getElementById('tarefa-nome');
