@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar XP - Hub Brain</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #050508;
+            color: white;
+            font-family: -apple-system, sans-serif;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(138,43,226,0.3);
+            border-radius: 24px;
+            padding: 32px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #8a2be2;
+        }
+        p {
+            color: #888;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        .info-box {
+            background: rgba(138,43,226,0.1);
+            border: 1px solid rgba(138,43,226,0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 24px 0;
+            text-align: left;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .label {
+            color: #888;
+            font-size: 14px;
+        }
+        .value {
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .btn {
+            background: #8a2be2;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(138,43,226,0.4);
+        }
+        .btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .status.success {
+            background: rgba(0,229,160,0.1);
+            border: 1px solid rgba(0,229,160,0.3);
+            color: #00e5a0;
+        }
+        .status.error {
+            background: rgba(255,68,85,0.1);
+            border: 1px solid rgba(255,68,85,0.3);
+            color: #ff4455;
+        }
+        .status.loading {
+            background: rgba(138,43,226,0.1);
+            border: 1px solid rgba(138,43,226,0.3);
+            color: #8a2be2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Recuperar XP</h1>
+        <p>Este script vai recalcular todo o seu XP corretamente, somando Agenda + Notas + Foco.</p>
+
+        <div class="info-box">
+            <div class="info-item">
+                <span class="label">Email:</span>
+                <span class="value" id="user-email">Carregando...</span>
+            </div>
+            <div class="info-item">
+                <span class="label">XP Atual (errado):</span>
+                <span class="value" id="xp-atual">--</span>
+            </div>
+            <div class="info-item">
+                <span class="label">XP de Notas:</span>
+                <span class="value" id="xp-notas">--</span>
+            </div>
+            <div class="info-item">
+                <span class="label">XP de Agenda:</span>
+                <span class="value" id="xp-agenda">--</span>
+            </div>
+            <div class="info-item">
+                <span class="label">XP CORRETO (total):</span>
+                <span class="value" id="xp-correto" style="color:#00e5a0;">--</span>
+            </div>
+        </div>
+
+        <button id="btn-calcular" class="btn" onclick="calcularXP()">
+            Calcular XP Correto
+        </button>
+        <button id="btn-corrigir" class="btn" onclick="corrigirXP()" disabled>
+            Corrigir no Firebase
+        </button>
+
+        <div id="status"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+            authDomain: "dt-scho0l.firebaseapp.com",
+            projectId: "dt-scho0l",
+            storageBucket: "dt-scho0l.firebasestorage.app",
+            messagingSenderId: "78578509391",
+            appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const userEmail = localStorage.getItem('dt_user_email');
+        document.getElementById('user-email').textContent = userEmail || 'Não logado';
+
+        let xpCalculado = 0;
+
+        window.calcularXP = async function() {
+            const btn = document.getElementById('btn-calcular');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            status.className = 'status loading';
+            status.textContent = '⏳ Calculando...';
+
+            try {
+                // 1. Busca dados do usuário
+                const userDoc = await getDoc(doc(db, "notas", userEmail));
+                if (!userDoc.exists()) {
+                    throw new Error('Usuário não encontrado');
+                }
+
+                const userData = userDoc.data();
+                document.getElementById('xp-atual').textContent = userData.xp || 0;
+
+                // 2. Calcula XP das NOTAS
+                function getCfg() {
+                    const raw = localStorage.getItem('dt_config');
+                    const cfg = raw ? JSON.parse(raw) : {};
+                    const periodo = cfg.periodo || 'bimestral';
+                    const numPeriodos = { bimestral: 4, trimestral: 3, semestral: 2 }[periodo] || 4;
+                    const notaMax = parseFloat(cfg.nota_max || cfg.notaMax || 10);
+                    return { numPeriodos, notaMax };
+                }
+
+                function calcularXPNota(n, notaMax) {
+                    if (n === null || isNaN(n)) return 0;
+                    const pct = n / notaMax;
+                    if (pct >= 1.0) return 100;
+                    if (pct >= 0.8) return 50;
+                    if (pct >= 0.6) return 20;
+                    if (pct >= 0.4) return -20;
+                    if (pct > 0) return -50;
+                    return -100;
+                }
+
+                const cfg = getCfg();
+                let xpNotas = 0;
+                const materias = userData.materias || [];
+                
+                materias.forEach(m => {
+                    for (let i = 1; i <= cfg.numPeriodos; i++) {
+                        const nota = parseFloat(m['n' + i]);
+                        if (!isNaN(nota)) {
+                            xpNotas += calcularXPNota(nota, cfg.notaMax);
+                        }
+                    }
+                });
+
+                document.getElementById('xp-notas').textContent = xpNotas;
+
+                // 3. Calcula XP da AGENDA
+                const agendaQuery = query(collection(db, "agenda"), where("usuario", "==", userEmail));
+                const agendaSnap = await getDocs(agendaQuery);
+                
+                let xpAgenda = 0;
+                const TIPOS_XP = {
+                    tarefa: 10,
+                    prova: 30,
+                    trabalho: 20,
+                    revisao: 10,
+                    projeto: 25
+                };
+
+                agendaSnap.docs.forEach(doc => {
+                    const t = doc.data();
+                    if (t.concluida) {
+                        xpAgenda += TIPOS_XP[t.tipo] || 10;
+                    }
+                });
+
+                document.getElementById('xp-agenda').textContent = xpAgenda;
+
+                // 4. Total correto
+                xpCalculado = xpNotas + xpAgenda;
+                document.getElementById('xp-correto').textContent = xpCalculado;
+
+                status.className = 'status success';
+                status.textContent = '✓ Cálculo concluído! Clique em "Corrigir no Firebase" para salvar.';
+                
+                document.getElementById('btn-corrigir').disabled = false;
+
+            } catch (e) {
+                status.className = 'status error';
+                status.textContent = '❌ Erro: ' + e.message;
+                btn.disabled = false;
+            }
+        };
+
+        window.corrigirXP = async function() {
+            const btn = document.getElementById('btn-corrigir');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            status.className = 'status loading';
+            status.textContent = '⏳ Salvando no Firebase...';
+
+            try {
+                await setDoc(doc(db, "notas", userEmail), {
+                    xp: xpCalculado,
+                    xpNotas: document.getElementById('xp-notas').textContent,
+                    xpRecuperadoEm: Date.now()
+                }, { merge: true });
+
+                status.className = 'status success';
+                status.textContent = `✓ XP corrigido com sucesso! Novo total: ${xpCalculado} XP`;
+                
+                setTimeout(() => {
+                    window.location.href = 'ranking.html';
+                }, 2000);
+
+            } catch (e) {
+                status.className = 'status error';
+                status.textContent = '❌ Erro ao salvar: ' + e.message;
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
