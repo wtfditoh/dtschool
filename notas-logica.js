@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -125,19 +125,57 @@ async function salvarNaNuvem() {
 
     try {
         const cfg = getCfg();
-        let xpTotal = 0;
-        materias.forEach(m => { xpTotal += calcularXP(m, cfg); });
-
-        await setDoc(doc(db, "notas", email), {
+        
+        // Calcula XP ATUAL das notas
+        let xpNotas = 0;
+        materias.forEach(m => { xpNotas += calcularXP(m, cfg); });
+        
+        console.log('🔵 XP NOVO das notas:', xpNotas);
+        
+        // Pega o documento atual pra ver o XP antigo de notas
+        const docRef = doc(db, "notas", email);
+        const docSnap = await getDoc(docRef);
+        
+        let xpNotasAntigo = 0;
+        let xpTotalAtual = 0;
+        if (docSnap.exists()) {
+            xpNotasAntigo = docSnap.data().xpNotas || 0;
+            xpTotalAtual = docSnap.data().xp || 0;
+        }
+        
+        console.log('🟡 XP ANTIGO das notas:', xpNotasAntigo);
+        console.log('🟢 XP TOTAL atual:', xpTotalAtual);
+        
+        // Calcula a diferença
+        const diferencaXP = xpNotas - xpNotasAntigo;
+        
+        console.log('🟣 DIFERENÇA:', diferencaXP);
+        console.log('🔴 XP TOTAL NOVO será:', xpTotalAtual + diferencaXP);
+        
+        // Atualiza o documento
+        // - Salva xpNotas separado pra controle
+        // - Incrementa o xp total pela diferença
+        await setDoc(docRef, {
             materias,
-            xp: xpTotal,
+            xpNotas: xpNotas, // XP específico das notas
             email,
             nome: localStorage.getItem('dt_user_name') || 'Estudante',
             avatar: localStorage.getItem('dt_user_avatar') || 'user',
             atualizadoEm: Date.now()
         }, { merge: true });
+        
+        // Se teve diferença, atualiza o XP total
+        if (diferencaXP !== 0) {
+            await setDoc(docRef, {
+                xp: increment(diferencaXP)
+            }, { merge: true });
+            
+            console.log('✅ XP atualizado com increment de', diferencaXP);
+        } else {
+            console.log('ℹ️ Nenhuma mudança no XP (diferença = 0)');
+        }
     } catch (e) {
-        console.error('Erro ao salvar na nuvem:', e);
+        console.error('❌ Erro ao salvar na nuvem:', e);
     }
 }
 
@@ -294,16 +332,12 @@ window.salvarNota = async function(id, periodo, valor) {
 window.confirmarNovaMateria = async function() {
     const input = document.getElementById('nome-materia-input');
     if (input && input.value.trim() !== '') {
-        const cfg = getCfg();
+        // Sempre cria com n1, n2, n3, n4 pra garantir compatibilidade
         const nova = { 
             id: Date.now(), 
-            nome: input.value.trim() 
+            nome: input.value.trim(),
+            n1: '', n2: '', n3: '', n4: ''
         };
-        
-        // Inicializa notas vazias baseado no período
-        for (let i = 1; i <= cfg.numPeriodos; i++) {
-            nova['n' + i] = '';
-        }
         
         materias.push(nova);
         localStorage.setItem('materias', JSON.stringify(materias));
@@ -324,6 +358,10 @@ window.abrirModalExcluir = function(id) {
     idParaExcluir = id;
     document.getElementById('modal-excluir').style.display = 'flex';
     if (window.lucide) lucide.createIcons();
+};
+
+window.fecharModalExcluir = function() {
+    document.getElementById('modal-excluir').style.display = 'none';
 };
 
 window.confirmarExclusao = async function() {
@@ -413,16 +451,23 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
 // INIT
 // ═══════════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+    // Sempre renderiza as notas locais primeiro
     window.atualizarLista();
     
+    // Só depois tenta sincronizar com Firebase (sem sobrescrever)
     const email = localStorage.getItem('dt_user_email');
     if (email && email !== 'null') {
         try {
             const snap = await getDoc(doc(db, 'notas', email));
             if (snap.exists() && snap.data().materias) {
-                materias = snap.data().materias;
-                localStorage.setItem('materias', JSON.stringify(materias));
-                window.atualizarLista();
+                const materiasFirebase = snap.data().materias;
+                
+                // Se não tem matérias locais, usa as do Firebase
+                if (materias.length === 0 && materiasFirebase.length > 0) {
+                    materias = materiasFirebase;
+                    localStorage.setItem('materias', JSON.stringify(materias));
+                    window.atualizarLista();
+                }
             }
         } catch (e) {
             console.error('Erro ao carregar do Firebase:', e);
@@ -431,4 +476,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (window.lucide) lucide.createIcons();
 });
-        
