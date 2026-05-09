@@ -33,7 +33,7 @@ const criarMenuGlobal = () => {
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
                 <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
                 <a href="quimica.html" id="link-quimica"><i data-lucide="flask-conical"></i> Química</a>
-                <a href="financeiro.html" id="link-financeiro"><i data-lucide="trending-up"></i> Mat. Financeira</a>
+                <a href="rgb-roi.html" id="link-rgb"><i data-lucide="scan-eye"></i> Análise RGB</a>
                 <a href="cronograma.html" id="link-cronograma"><i data-lucide="calendar-days"></i> Cronograma</a>
 
                 <div class="menu-section-label">PRODUTIVIDADE</div>
