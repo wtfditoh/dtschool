@@ -104,7 +104,7 @@ const criarMenuGlobal = () => {
     const paginas = [
         'home', 'perfil', 'notas', 'agenda', 'estudos', 'horario',
         'ranking', 'foco', 'admin', 'cronograma', 'quimica',
-        'financeiro', 'configuracoes'
+        'rgb', 'configuracoes'
     ];
 
     if (path === '/' || path.endsWith('index.html')) {
