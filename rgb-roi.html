@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Brain | Análise RGB</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="menu.css">
+    <style>
+        :root {
+            --p: #8a2be2; --p2: #c084fc; --pd: rgba(138,43,226,0.1);
+            --bg: #060608; --card: #0c0c10; --border: rgba(138,43,226,0.15);
+            --t: #e8e0f0; --td: #444; --mono: 'DM Mono', monospace;
+        }
+        * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+        body { background:var(--bg); color:var(--t); font-family:'Space Grotesk',sans-serif; min-height:100vh; overflow-x:hidden; }
+
+        body::before { content:''; position:fixed; top:-200px; left:50%; transform:translateX(-50%); width:600px; height:400px; background:radial-gradient(ellipse, rgba(138,43,226,0.07) 0%, transparent 70%); pointer-events:none; z-index:0; }
+
+        .glass-header { display:flex; align-items:center; justify-content:space-between; padding:0 16px; height:60px; background:rgba(6,6,8,0.96); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:1000; }
+        .header-center { display:flex; align-items:center; gap:8px; }
+        .header-icon { width:32px; height:32px; background:var(--pd); border:1px solid var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+        .header-icon i { width:16px; height:16px; color:var(--p); }
+        .header-title { font-size:14px; font-weight:900; letter-spacing:2px; color:white; }
+        .btn-menu { background:rgba(255,255,255,0.03); border:1px solid #1a1a1a; color:white; padding:9px; border-radius:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+        .container { max-width:500px; margin:0 auto; padding:20px 16px 100px; position:relative; z-index:1; }
+
+        /* STEP LABEL */
+        .step-label { font-size:9px; font-weight:800; letter-spacing:3px; color:var(--td); text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+        .step-num { width:20px; height:20px; border-radius:50%; background:var(--pd); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; color:var(--p2); flex-shrink:0; }
+
+        /* UPLOAD AREA */
+        .upload-area { background:var(--card); border:2px dashed rgba(138,43,226,0.2); border-radius:20px; padding:32px 20px; text-align:center; cursor:pointer; transition:0.2s; margin-bottom:16px; position:relative; overflow:hidden; }
+        .upload-area:hover { border-color:var(--p); background:rgba(138,43,226,0.04); }
+        .upload-area.has-image { border-style:solid; border-color:var(--border); padding:0; }
+        .upload-icon { font-size:36px; margin-bottom:10px; }
+        .upload-title { font-size:14px; font-weight:700; color:white; margin-bottom:4px; }
+        .upload-sub { font-size:11px; color:var(--td); }
+        .upload-btns { display:flex; gap:10px; justify-content:center; margin-top:16px; }
+        .upload-btn { display:flex; align-items:center; gap:6px; padding:10px 18px; border-radius:12px; font-size:12px; font-weight:700; cursor:pointer; border:none; font-family:inherit; transition:0.2s; }
+        .upload-btn.galeria { background:var(--pd); border:1px solid var(--border); color:var(--p2); }
+        .upload-btn.camera { background:linear-gradient(135deg,var(--p),#6a1cb2); color:white; box-shadow:0 4px 16px rgba(138,43,226,0.3); }
+        .upload-btn i { width:14px; height:14px; }
+
+        /* CANVAS WRAP */
+        .canvas-wrap { position:relative; width:100%; border-radius:18px; overflow:hidden; background:#000; touch-action:none; }
+        #canvas-main { display:block; width:100%; height:auto; cursor:crosshair; user-select:none; }
+        .canvas-hint { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:rgba(255,255,255,0.7); font-size:10px; font-weight:700; padding:4px 12px; border-radius:20px; pointer-events:none; white-space:nowrap; }
+
+        /* AÇÕES */
+        .actions-row { display:flex; gap:8px; margin-top:10px; margin-bottom:20px; }
+        .btn-action { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:13px; border-radius:14px; font-size:12px; font-weight:800; cursor:pointer; border:none; font-family:inherit; letter-spacing:0.5px; transition:0.2s; }
+        .btn-action:active { transform:scale(0.97); }
+        .btn-analisar { background:linear-gradient(135deg,var(--p),#6a1cb2); color:white; box-shadow:0 4px 16px rgba(138,43,226,0.3); }
+        .btn-analisar:disabled { opacity:0.4; cursor:not-allowed; }
+        .btn-limpar { background:rgba(255,255,255,0.04); border:1px solid #1a1a1a; color:var(--td); }
+        .btn-download { background:rgba(0,229,160,0.08); border:1px solid rgba(0,229,160,0.2); color:#00e5a0; }
+
+        /* RESULTADO */
+        .resultado-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:20px; margin-bottom:16px; display:none; }
+        .resultado-card.visible { display:block; animation:fadeIn 0.4s ease; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);} }
+
+        .resultado-titulo { font-size:10px; font-weight:800; letter-spacing:3px; color:var(--td); margin-bottom:16px; }
+
+        /* COR PREVIEW */
+        .cor-preview { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
+        .cor-swatch { width:70px; height:70px; border-radius:16px; flex-shrink:0; box-shadow:0 4px 20px rgba(0,0,0,0.5); border:2px solid rgba(255,255,255,0.1); }
+        .cor-hex { font-family:var(--mono); font-size:22px; font-weight:700; color:white; }
+        .cor-nome { font-size:11px; color:var(--td); margin-top:4px; }
+
+        /* RGB BARS */
+        .rgb-bars { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+        .rgb-bar-row { display:flex; align-items:center; gap:10px; }
+        .rgb-bar-label { font-family:var(--mono); font-size:11px; font-weight:700; min-width:14px; }
+        .rgb-bar-track { flex:1; height:8px; border-radius:10px; background:rgba(255,255,255,0.05); overflow:hidden; }
+        .rgb-bar-fill { height:100%; border-radius:10px; transition:width 0.6s ease; }
+        .rgb-bar-val { font-family:var(--mono); font-size:11px; color:var(--td); min-width:36px; text-align:right; }
+
+        /* STATS GRID */
+        .stats-mini { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:16px; }
+        .stat-mini { background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.04); border-radius:14px; padding:12px; }
+        .stat-mini-val { font-family:var(--mono); font-size:16px; font-weight:700; color:white; }
+        .stat-mini-label { font-size:9px; font-weight:700; letter-spacing:1px; color:var(--td); margin-top:3px; }
+
+        /* HISTOGRAMA */
+        .hist-wrap { margin-top:4px; }
+        .hist-title { font-size:10px; font-weight:800; letter-spacing:2px; color:var(--td); margin-bottom:10px; }
+        #canvas-hist { width:100%; border-radius:12px; display:block; }
+
+        /* ROI PREVIEW */
+        .roi-preview-wrap { margin-top:16px; }
+        .roi-preview-title { font-size:10px; font-weight:800; letter-spacing:2px; color:var(--td); margin-bottom:8px; }
+        #canvas-roi { max-width:100%; border-radius:12px; display:block; border:1px solid var(--border); }
+
+        /* INTERPRETAÇÃO */
+        .interpretacao-box { background:rgba(138,43,226,0.05); border:1px solid var(--border); border-radius:14px; padding:14px; margin-top:16px; }
+        .int-titulo { font-size:9px; font-weight:800; letter-spacing:2px; color:var(--p2); margin-bottom:8px; }
+        .int-texto { font-size:12px; color:var(--td); line-height:1.6; }
+        .int-valor { color:white; font-weight:700; }
+
+        /* EMPTY STATE */
+        .empty-state { text-align:center; padding:40px 20px; color:var(--td); }
+        .empty-emoji { font-size:40px; display:block; margin-bottom:12px; }
+    </style>
+</head>
+<body>
+
+<header class="glass-header">
+    <button id="open-menu" class="btn-menu"><i data-lucide="menu"></i></button>
+    <div class="header-center">
+        <div class="header-icon"><i data-lucide="scan-eye"></i></div>
+        <span class="header-title">ANÁLISE RGB</span>
+    </div>
+    <div style="width:42px;"></div>
+</header>
+
+<div class="container">
+
+    <!-- STEP 1: IMAGEM -->
+    <div class="step-label">
+        <div class="step-num">1</div>
+        CARREGAR IMAGEM
+    </div>
+
+    <div class="upload-area" id="upload-area">
+        <div id="upload-placeholder">
+            <div class="upload-icon">🔬</div>
+            <div class="upload-title">Nenhuma imagem selecionada</div>
+            <div class="upload-sub">Foto de experimento, solução, amostra...</div>
+            <div class="upload-btns">
+                <button class="upload-btn galeria" onclick="document.getElementById('file-galeria').click()">
+                    <i data-lucide="image"></i> Galeria
+                </button>
+                <button class="upload-btn camera" onclick="document.getElementById('file-camera').click()">
+                    <i data-lucide="camera"></i> Câmera
+                </button>
+            </div>
+        </div>
+        <div class="canvas-wrap" id="canvas-wrap" style="display:none;">
+            <canvas id="canvas-main"></canvas>
+            <div class="canvas-hint" id="canvas-hint">Arraste para selecionar o ROI</div>
+        </div>
+    </div>
+
+    <input type="file" id="file-galeria" accept="image/*" style="display:none;" onchange="carregarImagem(this)">
+    <input type="file" id="file-camera" accept="image/*" capture="environment" style="display:none;" onchange="carregarImagem(this)">
+
+    <!-- STEP 2: ROI -->
+    <div class="step-label" id="step2-label" style="opacity:0.3;">
+        <div class="step-num">2</div>
+        SELECIONAR ROI
+        <span style="font-size:9px;color:var(--td);font-weight:600;letter-spacing:0;margin-left:4px;">(Região de Interesse)</span>
+    </div>
+
+    <div class="actions-row">
+        <button class="btn-action btn-analisar" id="btn-analisar" onclick="analisarROI()" disabled>
+            <i data-lucide="scan-search" style="width:15px;height:15px;"></i>
+            ANALISAR ROI
+        </button>
+        <button class="btn-action btn-limpar" onclick="limparTudo()">
+            <i data-lucide="rotate-ccw" style="width:15px;height:15px;"></i>
+            Limpar
+        </button>
+    </div>
+
+    <!-- STEP 3: RESULTADO -->
+    <div class="step-label" id="step3-label" style="opacity:0.3;">
+        <div class="step-num">3</div>
+        RESULTADO
+    </div>
+
+    <div class="resultado-card" id="resultado-card">
+
+        <div class="resultado-titulo">ANÁLISE RGB MÉDIA</div>
+
+        <!-- COR + HEX -->
+        <div class="cor-preview">
+            <div class="cor-swatch" id="cor-swatch"></div>
+            <div>
+                <div class="cor-hex" id="cor-hex">#000000</div>
+                <div class="cor-nome" id="cor-nome">Carregando...</div>
+            </div>
+        </div>
+
+        <!-- BARRAS RGB -->
+        <div class="rgb-bars">
+            <div class="rgb-bar-row">
+                <span class="rgb-bar-label" style="color:#ff5555;">R</span>
+                <div class="rgb-bar-track">
+                    <div class="rgb-bar-fill" id="bar-r" style="background:linear-gradient(90deg,#cc0000,#ff5555);"></div>
+                </div>
+                <span class="rgb-bar-val" id="val-r">0</span>
+            </div>
+            <div class="rgb-bar-row">
+                <span class="rgb-bar-label" style="color:#55ff55;">G</span>
+                <div class="rgb-bar-track">
+                    <div class="rgb-bar-fill" id="bar-g" style="background:linear-gradient(90deg,#006600,#55ff55);"></div>
+                </div>
+                <span class="rgb-bar-val" id="val-g">0</span>
+            </div>
+            <div class="rgb-bar-row">
+                <span class="rgb-bar-label" style="color:#5599ff;">B</span>
+                <div class="rgb-bar-track">
+                    <div class="rgb-bar-fill" id="bar-b" style="background:linear-gradient(90deg,#000099,#5599ff);"></div>
+                </div>
+                <span class="rgb-bar-val" id="val-b">0</span>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-mini">
+            <div class="stat-mini">
+                <div class="stat-mini-val" id="stat-pixels">0</div>
+                <div class="stat-mini-label">PIXELS ANALISADOS</div>
+            </div>
+            <div class="stat-mini">
+                <div class="stat-mini-val" id="stat-bright">0</div>
+                <div class="stat-mini-label">BRILHO MÉDIO</div>
+            </div>
+            <div class="stat-mini">
+                <div class="stat-mini-val" id="stat-sat">0%</div>
+                <div class="stat-mini-label">SATURAÇÃO</div>
+            </div>
+            <div class="stat-mini">
+                <div class="stat-mini-val" id="stat-hue">0°</div>
+                <div class="stat-mini-label">MATIZ (HUE)</div>
+            </div>
+        </div>
+
+        <!-- INTERPRETAÇÃO -->
+        <div class="interpretacao-box" id="interpretacao-box">
+            <div class="int-titulo">INTERPRETAÇÃO</div>
+            <div class="int-texto" id="int-texto">—</div>
+        </div>
+
+        <!-- ROI RECORTADO -->
+        <div class="roi-preview-wrap" id="roi-preview-wrap" style="display:none;">
+            <div class="roi-preview-title">ROI RECORTADO</div>
+            <canvas id="canvas-roi"></canvas>
+            <button class="btn-action btn-download" onclick="baixarROI()" style="width:100%;margin-top:8px;">
+                <i data-lucide="download" style="width:14px;height:14px;"></i>
+                BAIXAR ROI
+            </button>
+        </div>
+
+        <!-- HISTOGRAMA -->
+        <div class="hist-wrap">
+            <div class="hist-title">HISTOGRAMA RGB</div>
+            <canvas id="canvas-hist" height="140"></canvas>
+            <button class="btn-action btn-download" onclick="baixarHistograma()" style="width:100%;margin-top:8px;">
+                <i data-lucide="download" style="width:14px;height:14px;"></i>
+                BAIXAR HISTOGRAMA
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="menu.js"></script>
+<script>
+// ── ESTADO ──────────────────────────────
+let imgOriginal = null;
+let roi = null; // {x, y, w, h} em coordenadas da imagem real
+let isDragging = false;
+let startX, startY;
+let canvasScale = 1;
+
+const canvasMain = document.getElementById('canvas-main');
+const ctx = canvasMain.getContext('2d');
+
+// ── CARREGAR IMAGEM ──────────────────────
+function carregarImagem(input) {
+    if (!input.files?.[0]) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+            imgOriginal = img;
+            const wrap = document.getElementById('canvas-wrap');
+            const maxW = wrap.parentElement.clientWidth - 0;
+            canvasScale = maxW / img.width;
+            canvasMain.width = img.width;
+            canvasMain.height = img.height;
+            canvasMain.style.width = maxW + 'px';
+            canvasMain.style.height = (img.height * canvasScale) + 'px';
+            ctx.drawImage(img, 0, 0);
+            document.getElementById('upload-placeholder').style.display = 'none';
+            wrap.style.display = 'block';
+            document.getElementById('upload-area').classList.add('has-image');
+            document.getElementById('step2-label').style.opacity = '1';
+            roi = null;
+            document.getElementById('btn-analisar').disabled = true;
+            document.getElementById('resultado-card').classList.remove('visible');
+            document.getElementById('step3-label').style.opacity = '0.3';
+            document.getElementById('canvas-hint').style.display = 'block';
+            if (window.lucide) lucide.createIcons();
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+// ── ROI: MOUSE ────────────────────────────
+canvasMain.addEventListener('mousedown', e => {
+    if (!imgOriginal) return;
+    isDragging = true;
+    const r = canvasMain.getBoundingClientRect();
+    startX = (e.clientX - r.left) / canvasScale;
+    startY = (e.clientY - r.top) / canvasScale;
+});
+canvasMain.addEventListener('mousemove', e => {
+    if (!isDragging || !imgOriginal) return;
+    const r = canvasMain.getBoundingClientRect();
+    const cx = (e.clientX - r.left) / canvasScale;
+    const cy = (e.clientY - r.top) / canvasScale;
+    desenharROI(cx, cy);
+});
+canvasMain.addEventListener('mouseup', e => {
+    if (!isDragging) return;
+    isDragging = false;
+    finalizarROI(e.clientX, e.clientY, canvasMain.getBoundingClientRect());
+});
+
+// ── ROI: TOUCH ────────────────────────────
+canvasMain.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (!imgOriginal) return;
+    isDragging = true;
+    const r = canvasMain.getBoundingClientRect();
+    const t = e.touches[0];
+    startX = (t.clientX - r.left) / canvasScale;
+    startY = (t.clientY - r.top) / canvasScale;
+}, { passive: false });
+
+canvasMain.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!isDragging || !imgOriginal) return;
+    const r = canvasMain.getBoundingClientRect();
+    const t = e.touches[0];
+    const cx = (t.clientX - r.left) / canvasScale;
+    const cy = (t.clientY - r.top) / canvasScale;
+    desenharROI(cx, cy);
+}, { passive: false });
+
+canvasMain.addEventListener('touchend', e => {
+    if (!isDragging) return;
+    isDragging = false;
+    const r = canvasMain.getBoundingClientRect();
+    const t = e.changedTouches[0];
+    finalizarROI(t.clientX, t.clientY, r);
+});
+
+function desenharROI(cx, cy) {
+    ctx.clearRect(0, 0, canvasMain.width, canvasMain.height);
+    ctx.drawImage(imgOriginal, 0, 0);
+    const x = Math.min(startX, cx);
+    const y = Math.min(startY, cy);
+    const w = Math.abs(cx - startX);
+    const h = Math.abs(cy - startY);
+    ctx.strokeStyle = '#c084fc';
+    ctx.lineWidth = 2 / canvasScale;
+    ctx.setLineDash([6 / canvasScale, 3 / canvasScale]);
+    ctx.strokeRect(x, y, w, h);
+    ctx.fillStyle = 'rgba(138,43,226,0.12)';
+    ctx.fillRect(x, y, w, h);
+    ctx.setLineDash([]);
+}
+
+function finalizarROI(clientX, clientY, rect) {
+    const cx = (clientX - rect.left) / canvasScale;
+    const cy = (clientY - rect.top) / canvasScale;
+    const x = Math.max(0, Math.min(startX, cx));
+    const y = Math.max(0, Math.min(startY, cy));
+    const w = Math.min(Math.abs(cx - startX), imgOriginal.width - x);
+    const h = Math.min(Math.abs(cy - startY), imgOriginal.height - y);
+    if (w > 5 && h > 5) {
+        roi = { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) };
+        document.getElementById('btn-analisar').disabled = false;
+        document.getElementById('canvas-hint').style.display = 'none';
+    }
+}
+
+// ── ANALISAR ─────────────────────────────
+function analisarROI() {
+    if (!imgOriginal || !roi) return;
+
+    const tmpCanvas = document.createElement('canvas');
+    tmpCanvas.width = roi.w;
+    tmpCanvas.height = roi.h;
+    const tmpCtx = tmpCanvas.getContext('2d');
+    tmpCtx.drawImage(imgOriginal, roi.x, roi.y, roi.w, roi.h, 0, 0, roi.w, roi.h);
+
+    const data = tmpCtx.getImageData(0, 0, roi.w, roi.h).data;
+    const totalPx = roi.w * roi.h;
+
+    // Histogramas
+    const histR = new Array(256).fill(0);
+    const histG = new Array(256).fill(0);
+    const histB = new Array(256).fill(0);
+
+    let sumR = 0, sumG = 0, sumB = 0;
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i+1], b = data[i+2];
+        sumR += r; sumG += g; sumB += b;
+        histR[r]++; histG[g]++; histB[b]++;
+    }
+
+    const mR = sumR / totalPx;
+    const mG = sumG / totalPx;
+    const mB = sumB / totalPx;
+
+    // HSV
+    const r1 = mR/255, g1 = mG/255, b1 = mB/255;
+    const max = Math.max(r1,g1,b1), min = Math.min(r1,g1,b1);
+    const d = max - min;
+    let h = 0, s = max === 0 ? 0 : d/max, v = max;
+    if (d > 0) {
+        if (max === r1) h = ((g1-b1)/d + (g1<b1?6:0)) / 6;
+        else if (max === g1) h = ((b1-r1)/d + 2) / 6;
+        else h = ((r1-g1)/d + 4) / 6;
+    }
+    const hue = Math.round(h * 360);
+    const sat = Math.round(s * 100);
+    const bright = Math.round((mR + mG + mB) / 3);
+    const hexStr = '#' + [mR,mG,mB].map(v => Math.round(v).toString(16).padStart(2,'0')).join('');
+
+    // Atualiza UI
+    document.getElementById('val-r').innerText = mR.toFixed(1);
+    document.getElementById('val-g').innerText = mG.toFixed(1);
+    document.getElementById('val-b').innerText = mB.toFixed(1);
+    document.getElementById('bar-r').style.width = (mR/255*100) + '%';
+    document.getElementById('bar-g').style.width = (mG/255*100) + '%';
+    document.getElementById('bar-b').style.width = (mB/255*100) + '%';
+    document.getElementById('cor-swatch').style.background = `rgb(${Math.round(mR)},${Math.round(mG)},${Math.round(mB)})`;
+    document.getElementById('cor-hex').innerText = hexStr.toUpperCase();
+    document.getElementById('cor-nome').innerText = nomearCor(hue, sat, v);
+    document.getElementById('stat-pixels').innerText = totalPx.toLocaleString('pt-BR');
+    document.getElementById('stat-bright').innerText = bright;
+    document.getElementById('stat-sat').innerText = sat + '%';
+    document.getElementById('stat-hue').innerText = hue + '°';
+
+    // Interpretação
+    document.getElementById('int-texto').innerHTML = interpretarCor(mR, mG, mB, hue, sat, v);
+
+    // ROI preview
+    const canvasRoi = document.getElementById('canvas-roi');
+    canvasRoi.width = roi.w;
+    canvasRoi.height = roi.h;
+    canvasRoi.getContext('2d').drawImage(tmpCanvas, 0, 0);
+    document.getElementById('roi-preview-wrap').style.display = 'block';
+
+    // Histograma
+    desenharHistograma(histR, histG, histB, totalPx);
+
+    document.getElementById('resultado-card').classList.add('visible');
+    document.getElementById('step3-label').style.opacity = '1';
+    document.getElementById('resultado-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── HISTOGRAMA ───────────────────────────
+function desenharHistograma(histR, histG, histB, total) {
+    const c = document.getElementById('canvas-hist');
+    const w = c.parentElement.clientWidth;
+    c.width = w; c.height = 140;
+    const hCtx = c.getContext('2d');
+    hCtx.fillStyle = '#0a0a10';
+    hCtx.fillRect(0, 0, w, 140);
+
+    const barW = w / 256;
+    const maxVal = Math.max(...histR, ...histG, ...histB);
+
+    const channels = [
+        { hist: histR, color: 'rgba(255,85,85,0.6)' },
+        { hist: histG, color: 'rgba(85,255,85,0.6)' },
+        { hist: histB, color: 'rgba(85,153,255,0.6)' },
+    ];
+
+    channels.forEach(({ hist, color }) => {
+        hCtx.fillStyle = color;
+        for (let i = 0; i < 256; i++) {
+            const h = (hist[i] / maxVal) * 120;
+            hCtx.fillRect(i * barW, 140 - h, barW + 0.5, h);
+        }
+    });
+
+    // Legenda
+    hCtx.font = '10px DM Mono, monospace';
+    [['R', 'rgba(255,85,85,0.9)', 10], ['G', 'rgba(85,255,85,0.9)', 30], ['B', 'rgba(85,153,255,0.9)', 50]].forEach(([l, c, x]) => {
+        hCtx.fillStyle = c; hCtx.fillText(l, x, 14);
+    });
+}
+
+// ── NOMEAR COR ───────────────────────────
+function nomearCor(hue, sat, val) {
+    if (sat < 0.1) {
+        if (val < 0.2) return 'Preto / Muito escuro';
+        if (val > 0.8) return 'Branco / Muito claro';
+        return 'Cinza / Neutro';
+    }
+    if (hue < 15 || hue >= 345) return 'Vermelho';
+    if (hue < 45) return 'Laranja';
+    if (hue < 75) return 'Amarelo';
+    if (hue < 150) return 'Verde';
+    if (hue < 195) return 'Ciano';
+    if (hue < 255) return 'Azul';
+    if (hue < 285) return 'Índigo / Roxo';
+    if (hue < 345) return 'Magenta / Rosa';
+    return 'Indefinido';
+}
+
+// ── INTERPRETAÇÃO QUÍMICA ────────────────
+function interpretarCor(r, g, b, hue, sat, val) {
+    const fmt = v => `<span class="int-valor">${v}</span>`;
+    let texto = `R=${fmt(r.toFixed(1))} G=${fmt(g.toFixed(1))} B=${fmt(b.toFixed(1))}<br><br>`;
+
+    const bright = (r + g + b) / 3;
+    const absR = Math.abs(Math.log10(255/r || 1));
+
+    texto += `<b>Brilho médio:</b> ${fmt(bright.toFixed(1))} — `;
+    if (bright > 200) texto += 'Solução muito clara / baixa concentração<br>';
+    else if (bright > 150) texto += 'Solução clara<br>';
+    else if (bright > 100) texto += 'Solução moderada<br>';
+    else if (bright > 50) texto += 'Solução escura / alta concentração<br>';
+    else texto += 'Solução muito escura / concentrada<br>';
+
+    if (sat > 0.3) {
+        texto += `<br><b>Canal dominante:</b> `;
+        if (r > g && r > b) texto += fmt('Vermelho') + ' — indica absorção na região azul/verde (possível solução avermelhada)<br>';
+        else if (g > r && g > b) texto += fmt('Verde') + ' — indica absorção na região vermelha/azul<br>';
+        else texto += fmt('Azul') + ' — indica absorção na região vermelha/verde<br>';
+    }
+
+    texto += `<br><b>Absorbância estimada (canal R):</b> ${fmt(absR.toFixed(4))}<br>`;
+    texto += `<i style="font-size:10px;color:#333;">Para colorimetria precisa, use a Lei de Beer-Lambert com calibração.</i>`;
+
+    return texto;
+}
+
+// ── DOWNLOADS ────────────────────────────
+function baixarROI() {
+    const c = document.getElementById('canvas-roi');
+    const a = document.createElement('a');
+    a.download = 'roi-hubbrain.png';
+    a.href = c.toDataURL();
+    a.click();
+}
+
+function baixarHistograma() {
+    const c = document.getElementById('canvas-hist');
+    const a = document.createElement('a');
+    a.download = 'histograma-rgb-hubbrain.png';
+    a.href = c.toDataURL();
+    a.click();
+}
+
+// ── LIMPAR ───────────────────────────────
+function limparTudo() {
+    imgOriginal = null; roi = null;
+    ctx.clearRect(0, 0, canvasMain.width, canvasMain.height);
+    document.getElementById('upload-placeholder').style.display = 'block';
+    document.getElementById('canvas-wrap').style.display = 'none';
+    document.getElementById('upload-area').classList.remove('has-image');
+    document.getElementById('step2-label').style.opacity = '0.3';
+    document.getElementById('step3-label').style.opacity = '0.3';
+    document.getElementById('btn-analisar').disabled = true;
+    document.getElementById('resultado-card').classList.remove('visible');
+    document.getElementById('roi-preview-wrap').style.display = 'none';
+    document.getElementById('canvas-hint').style.display = 'block';
+    document.getElementById('file-galeria').value = '';
+    document.getElementById('file-camera').value = '';
+    if (window.lucide) lucide.createIcons();
+}
+
+document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
+</script>
+</body>
+</html>
