@@ -259,6 +259,86 @@
 
     </div>
 
+
+    <!-- COMPARAÇÃO DE AMOSTRAS -->
+    <div class="step-label" style="margin-top:24px;">
+        <div class="step-num" style="background:rgba(0,229,160,0.1);border-color:rgba(0,229,160,0.2);color:#00e5a0;">★</div>
+        COMPARAR AMOSTRAS
+        <span style="font-size:9px;color:var(--td);font-weight:600;letter-spacing:0;margin-left:4px;">(ex: banana boa vs podre)</span>
+    </div>
+
+    <div style="background:var(--card);border:1px solid rgba(0,229,160,0.15);border-radius:20px;padding:18px;margin-bottom:16px;">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+
+            <!-- AMOSTRA A -->
+            <div>
+                <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#00e5a0;margin-bottom:8px;">AMOSTRA A</div>
+                <div id="comp-a-swatch" style="width:100%;height:60px;border-radius:12px;background:#1a1a1a;border:1px solid #222;margin-bottom:8px;display:flex;align-items:center;justify-content:center;">
+                    <span style="font-size:10px;color:#333;">Sem amostra</span>
+                </div>
+                <div style="font-family:'DM Mono',monospace;font-size:10px;color:#444;" id="comp-a-vals">R: — G: — B: —</div>
+                <button onclick="salvarAmostra('a')" id="btn-salvar-a" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.2);color:#00e5a0;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:0.2s;" disabled>
+                    Salvar Análise Atual
+                </button>
+            </div>
+
+            <!-- AMOSTRA B -->
+            <div>
+                <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#c084fc;margin-bottom:8px;">AMOSTRA B</div>
+                <div id="comp-b-swatch" style="width:100%;height:60px;border-radius:12px;background:#1a1a1a;border:1px solid #222;margin-bottom:8px;display:flex;align-items:center;justify-content:center;">
+                    <span style="font-size:10px;color:#333;">Sem amostra</span>
+                </div>
+                <div style="font-family:'DM Mono',monospace;font-size:10px;color:#444;" id="comp-b-vals">R: — G: — B: —</div>
+                <button onclick="salvarAmostra('b')" id="btn-salvar-b" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.2);color:#c084fc;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:0.2s;" disabled>
+                    Salvar Análise Atual
+                </button>
+            </div>
+        </div>
+
+        <!-- RESULTADO COMPARAÇÃO -->
+        <div id="comp-resultado" style="display:none;">
+            <div style="height:1px;background:rgba(255,255,255,0.04);margin-bottom:14px;"></div>
+            <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#444;margin-bottom:12px;">DIFERENÇA (B - A)</div>
+
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:#ff5555;min-width:14px;">R</span>
+                    <div style="flex:1;height:6px;border-radius:10px;background:rgba(255,255,255,0.05);overflow:hidden;">
+                        <div id="diff-bar-r" style="height:100%;border-radius:10px;transition:width 0.5s;"></div>
+                    </div>
+                    <span style="font-family:'DM Mono',monospace;font-size:11px;color:#444;min-width:50px;text-align:right;" id="diff-val-r">—</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:#55ff55;min-width:14px;">G</span>
+                    <div style="flex:1;height:6px;border-radius:10px;background:rgba(255,255,255,0.05);overflow:hidden;">
+                        <div id="diff-bar-g" style="height:100%;border-radius:10px;transition:width 0.5s;"></div>
+                    </div>
+                    <span style="font-family:'DM Mono',monospace;font-size:11px;color:#444;min-width:50px;text-align:right;" id="diff-val-g">—</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:#5599ff;min-width:14px;">B</span>
+                    <div style="flex:1;height:6px;border-radius:10px;background:rgba(255,255,255,0.05);overflow:hidden;">
+                        <div id="diff-bar-b" style="height:100%;border-radius:10px;transition:width 0.5s;"></div>
+                    </div>
+                    <span style="font-family:'DM Mono',monospace;font-size:11px;color:#444;min-width:50px;text-align:right;" id="diff-val-b">—</span>
+                </div>
+            </div>
+
+            <!-- CONCLUSÃO -->
+            <div id="comp-conclusao" style="background:rgba(0,0,0,0.3);border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,0.04);">
+                <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#444;margin-bottom:6px;">CONCLUSÃO</div>
+                <div id="comp-texto" style="font-size:12px;color:#888;line-height:1.6;"></div>
+            </div>
+        </div>
+
+        <!-- HINT -->
+        <div id="comp-hint" style="text-align:center;padding:8px 0;font-size:11px;color:#333;font-weight:600;">
+            Faça uma análise e salve como Amostra A ou B
+        </div>
+
+    </div>
+
 </div>
 
 <script src="menu.js"></script>
@@ -465,33 +545,162 @@ function analisarROI() {
 // ── HISTOGRAMA ───────────────────────────
 function desenharHistograma(histR, histG, histB, total) {
     const c = document.getElementById('canvas-hist');
-    const w = c.parentElement.clientWidth;
-    c.width = w; c.height = 140;
+    const dpr = window.devicePixelRatio || 1;
+    const W = c.parentElement.clientWidth;
+    const H = 240;
+
+    // Margens pra eixos
+    const ml = 52, mr = 16, mt = 20, mb = 44;
+    const pw = W - ml - mr;  // largura do plot
+    const ph = H - mt - mb;  // altura do plot
+
+    c.width = W * dpr;
+    c.height = H * dpr;
+    c.style.width = W + 'px';
+    c.style.height = H + 'px';
     const hCtx = c.getContext('2d');
-    hCtx.fillStyle = '#0a0a10';
-    hCtx.fillRect(0, 0, w, 140);
+    hCtx.scale(dpr, dpr);
 
-    const barW = w / 256;
-    const maxVal = Math.max(...histR, ...histG, ...histB);
+    // FUNDO
+    hCtx.fillStyle = '#0a0a12';
+    hCtx.fillRect(0, 0, W, H);
 
+    // GRADE HORIZONTAL
+    const maxVal = Math.max(...histR, ...histG, ...histB, 1);
+    const gridLines = 5;
+    hCtx.font = `${9 * dpr / dpr}px DM Mono, monospace`;
+    hCtx.textAlign = 'right';
+    hCtx.textBaseline = 'middle';
+
+    for (let i = 0; i <= gridLines; i++) {
+        const y = mt + ph - (i / gridLines) * ph;
+        const val = Math.round((i / gridLines) * maxVal);
+
+        // Linha de grade
+        hCtx.strokeStyle = 'rgba(255,255,255,0.05)';
+        hCtx.lineWidth = 1;
+        hCtx.beginPath();
+        hCtx.moveTo(ml, y);
+        hCtx.lineTo(ml + pw, y);
+        hCtx.stroke();
+
+        // Label eixo Y (frequência)
+        hCtx.fillStyle = '#444';
+        hCtx.font = '9px DM Mono, monospace';
+        const label = val >= 1000 ? (val/1000).toFixed(1)+'k' : String(val);
+        hCtx.fillText(label, ml - 6, y);
+    }
+
+    // GRADE VERTICAL (a cada 64)
+    hCtx.textAlign = 'center';
+    hCtx.textBaseline = 'top';
+    for (let i = 0; i <= 4; i++) {
+        const x = ml + (i / 4) * pw;
+        const val = Math.round(i * 255 / 4);
+
+        hCtx.strokeStyle = 'rgba(255,255,255,0.04)';
+        hCtx.lineWidth = 1;
+        hCtx.beginPath();
+        hCtx.moveTo(x, mt);
+        hCtx.lineTo(x, mt + ph);
+        hCtx.stroke();
+
+        // Label eixo X
+        hCtx.fillStyle = '#444';
+        hCtx.font = '9px DM Mono, monospace';
+        hCtx.fillText(String(val), x, mt + ph + 6);
+    }
+
+    // BARRAS DOS CANAIS (ordem: B, G, R pra melhor sobreposição visual)
     const channels = [
-        { hist: histR, color: 'rgba(255,85,85,0.6)' },
-        { hist: histG, color: 'rgba(85,255,85,0.6)' },
-        { hist: histB, color: 'rgba(85,153,255,0.6)' },
+        { hist: histB, color: 'rgba(80,140,255,0.55)', stroke: 'rgba(80,140,255,0.9)' },
+        { hist: histG, color: 'rgba(60,220,60,0.55)',  stroke: 'rgba(60,220,60,0.9)'  },
+        { hist: histR, color: 'rgba(255,70,70,0.55)',  stroke: 'rgba(255,70,70,0.9)'  },
     ];
 
-    channels.forEach(({ hist, color }) => {
-        hCtx.fillStyle = color;
+    const barW = pw / 256;
+
+    channels.forEach(({ hist, color, stroke }) => {
+        // Área preenchida (curva suavizada)
+        hCtx.beginPath();
+        hCtx.moveTo(ml, mt + ph);
         for (let i = 0; i < 256; i++) {
-            const h = (hist[i] / maxVal) * 120;
-            hCtx.fillRect(i * barW, 140 - h, barW + 0.5, h);
+            const x = ml + i * barW + barW / 2;
+            const y = mt + ph - (hist[i] / maxVal) * ph;
+            if (i === 0) hCtx.moveTo(x, y);
+            else hCtx.lineTo(x, y);
         }
+        hCtx.lineTo(ml + pw, mt + ph);
+        hCtx.closePath();
+        hCtx.fillStyle = color;
+        hCtx.fill();
+
+        // Linha de contorno
+        hCtx.beginPath();
+        for (let i = 0; i < 256; i++) {
+            const x = ml + i * barW + barW / 2;
+            const y = mt + ph - (hist[i] / maxVal) * ph;
+            if (i === 0) hCtx.moveTo(x, y);
+            else hCtx.lineTo(x, y);
+        }
+        hCtx.strokeStyle = stroke;
+        hCtx.lineWidth = 1.5;
+        hCtx.stroke();
     });
 
-    // Legenda
-    hCtx.font = '10px DM Mono, monospace';
-    [['R', 'rgba(255,85,85,0.9)', 10], ['G', 'rgba(85,255,85,0.9)', 30], ['B', 'rgba(85,153,255,0.9)', 50]].forEach(([l, c, x]) => {
-        hCtx.fillStyle = c; hCtx.fillText(l, x, 14);
+    // EIXOS PRINCIPAIS
+    hCtx.strokeStyle = 'rgba(255,255,255,0.15)';
+    hCtx.lineWidth = 1;
+    // Eixo Y
+    hCtx.beginPath(); hCtx.moveTo(ml, mt); hCtx.lineTo(ml, mt + ph); hCtx.stroke();
+    // Eixo X
+    hCtx.beginPath(); hCtx.moveTo(ml, mt + ph); hCtx.lineTo(ml + pw, mt + ph); hCtx.stroke();
+
+    // TÍTULO EIXO X
+    hCtx.fillStyle = '#555';
+    hCtx.font = 'bold 9px DM Mono, monospace';
+    hCtx.textAlign = 'center';
+    hCtx.fillText('Intensidade do Pixel (0 - 255)', ml + pw / 2, H - 8);
+
+    // TÍTULO EIXO Y
+    hCtx.save();
+    hCtx.translate(11, mt + ph / 2);
+    hCtx.rotate(-Math.PI / 2);
+    hCtx.textAlign = 'center';
+    hCtx.fillText('Frequência', 0, 0);
+    hCtx.restore();
+
+    // LEGENDA NO TOPO
+    const legItems = [
+        { label: 'R', color: 'rgba(255,70,70,0.9)' },
+        { label: 'G', color: 'rgba(60,220,60,0.9)' },
+        { label: 'B', color: 'rgba(80,140,255,0.9)' },
+    ];
+    let lx = ml + 6;
+    legItems.forEach(({ label, color }) => {
+        hCtx.fillStyle = color;
+        hCtx.fillRect(lx, mt - 14, 18, 7);
+        hCtx.fillStyle = '#aaa';
+        hCtx.font = '9px DM Mono, monospace';
+        hCtx.textAlign = 'left';
+        hCtx.fillText(label, lx + 22, mt - 8);
+        lx += 42;
+    });
+
+    // LINHA VERTICAL DOS VALORES MÉDIOS
+    const meansRaw = [
+        { val: parseFloat(document.getElementById('val-r').innerText || 0), color: 'rgba(255,70,70,0.8)' },
+        { val: parseFloat(document.getElementById('val-g').innerText || 0), color: 'rgba(60,220,60,0.8)' },
+        { val: parseFloat(document.getElementById('val-b').innerText || 0), color: 'rgba(80,140,255,0.8)' },
+    ];
+    meansRaw.forEach(({ val, color }) => {
+        if (isNaN(val)) return;
+        const x = ml + (val / 255) * pw;
+        hCtx.strokeStyle = color;
+        hCtx.lineWidth = 1;
+        hCtx.setLineDash([3, 3]);
+        hCtx.beginPath(); hCtx.moveTo(x, mt); hCtx.lineTo(x, mt + ph); hCtx.stroke();
+        hCtx.setLineDash([]);
     });
 }
 
@@ -575,6 +784,108 @@ function limparTudo() {
     document.getElementById('file-camera').value = '';
     if (window.lucide) lucide.createIcons();
 }
+
+
+// ── COMPARAÇÃO ───────────────────────────
+let amostras = { a: null, b: null };
+
+function salvarAmostra(letra) {
+    const r = parseFloat(document.getElementById('val-r').innerText);
+    const g = parseFloat(document.getElementById('val-g').innerText);
+    const b = parseFloat(document.getElementById('val-b').innerText);
+    const hex = document.getElementById('cor-hex').innerText;
+    const nome = document.getElementById('cor-nome').innerText;
+    if (isNaN(r)) return;
+
+    amostras[letra] = { r, g, b, hex, nome };
+
+    const cor = letra === 'a' ? '#00e5a0' : '#c084fc';
+    const swatch = document.getElementById('comp-' + letra + '-swatch');
+    swatch.style.background = hex;
+    swatch.innerHTML = '';
+
+    document.getElementById('comp-' + letra + '-vals').innerText =
+        'R: ' + r.toFixed(1) + '  G: ' + g.toFixed(1) + '  B: ' + b.toFixed(1);
+
+    // Atualiza botão
+    const btn = document.getElementById('btn-salvar-' + letra);
+    btn.innerText = '✓ ' + nome;
+
+    if (amostras.a && amostras.b) compararAmostras();
+    document.getElementById('comp-hint').style.display = amostras.a && amostras.b ? 'none' : 'block';
+}
+
+// Habilita botões quando há análise
+const origAnalisar = window.analisarROI;
+window.analisarROI = function() {
+    origAnalisar();
+    setTimeout(() => {
+        document.getElementById('btn-salvar-a').disabled = false;
+        document.getElementById('btn-salvar-b').disabled = false;
+    }, 300);
+};
+
+function compararAmostras() {
+    const a = amostras.a, b = amostras.b;
+    const dR = b.r - a.r, dG = b.g - a.g, dB = b.b - a.b;
+    const dist = Math.sqrt(dR*dR + dG*dG + dB*dB);
+
+    // Barras de diferença
+    function setDiffBar(id, valId, delta, cor) {
+        const pct = Math.min(Math.abs(delta) / 255 * 100, 100);
+        const el = document.getElementById(id);
+        el.style.width = pct + '%';
+        el.style.background = delta >= 0 ? cor : '#444';
+        document.getElementById(valId).innerText =
+            (delta >= 0 ? '+' : '') + delta.toFixed(1) + ' (' + (delta >= 0 ? '↑' : '↓') + ')';
+        document.getElementById(valId).style.color = delta > 10 ? cor : delta < -10 ? '#ff4455' : '#555';
+    }
+    setDiffBar('diff-bar-r','diff-val-r', dR, '#ff5555');
+    setDiffBar('diff-bar-g','diff-val-g', dG, '#55ff55');
+    setDiffBar('diff-bar-b','diff-val-b', dB, '#5599ff');
+
+    // Conclusão
+    let conclusao = '';
+    const brightA = (a.r + a.g + a.b) / 3;
+    const brightB = (b.r + b.g + b.b) / 3;
+    const dBright = brightB - brightA;
+
+    if (dist < 15) {
+        conclusao = '🟰 As amostras são <strong style="color:white;">muito similares</strong> — diferença RGB pequena (dist: ' + dist.toFixed(1) + '). Provavelmente o mesmo estado.';
+    } else if (dist < 40) {
+        conclusao = '🟡 Diferença <strong style="color:white;">moderada</strong> entre as amostras (dist: ' + dist.toFixed(1) + '). Pode indicar variação de maturação ou concentração.';
+    } else {
+        conclusao = '🔴 Diferença <strong style="color:white;">significativa</strong> entre as amostras (dist: ' + dist.toFixed(1) + '). Alteração visual clara.';
+    }
+
+    // Análise por canal dominante
+    const maxDelta = Math.max(Math.abs(dR), Math.abs(dG), Math.abs(dB));
+    if (maxDelta > 20) {
+        if (Math.abs(dR) === maxDelta) {
+            conclusao += dR > 0
+                ? '<br><br>📍 Canal <strong style="color:#ff5555;">R subiu</strong> em B — B está mais avermelhado/amarronzado (ex: maturação, oxidação).'
+                : '<br><br>📍 Canal <strong style="color:#ff5555;">R caiu</strong> em B — B está mais frio/azulado.';
+        } else if (Math.abs(dG) === maxDelta) {
+            conclusao += dG > 0
+                ? '<br><br>📍 Canal <strong style="color:#55ff55;">G subiu</strong> em B — B está mais esverdeado (ex: menos maduro).'
+                : '<br><br>📍 Canal <strong style="color:#55ff55;">G caiu</strong> em B — B perdeu verde (ex: amadurecimento, escurecimento).';
+        } else {
+            conclusao += dB > 0
+                ? '<br><br>📍 Canal <strong style="color:#5599ff;">B subiu</strong> em B — tonalidade mais azulada.'
+                : '<br><br>📍 Canal <strong style="color:#5599ff;">B caiu</strong> em B — tonalidade menos azulada.';
+        }
+    }
+
+    if (Math.abs(dBright) > 15) {
+        conclusao += dBright > 0
+            ? '<br><br>☀️ B é <strong style="color:white;">mais claro</strong> que A (' + Math.abs(dBright).toFixed(1) + ' pts de brilho).'
+            : '<br><br>🌑 B é <strong style="color:white;">mais escuro</strong> que A (' + Math.abs(dBright).toFixed(1) + ' pts de brilho) — pode indicar maior concentração ou escurecimento.';
+    }
+
+    document.getElementById('comp-texto').innerHTML = conclusao;
+    document.getElementById('comp-resultado').style.display = 'block';
+}
+
 
 document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
 </script>
