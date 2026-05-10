@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hub Brain | Laboratório Virtual</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="menu.css">
+<style>
+:root {
+    --p:#8a2be2;--p2:#c084fc;--pd:rgba(138,43,226,0.1);
+    --bg:#060608;--card:#0c0c10;--border:rgba(138,43,226,0.15);
+    --t:#e8e0f0;--td:#3a3a3a;--mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--t);font-family:'Space Grotesk',sans-serif;display:flex;flex-direction:column;}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:56px;background:rgba(6,6,8,0.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);flex-shrink:0;z-index:100;}
+.hdr-c{display:flex;align-items:center;gap:8px;}
+.hdr-icon{width:30px;height:30px;background:var(--pd);border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.hdr-icon i{width:15px;height:15px;color:var(--p);}
+.hdr-title{font-size:13px;font-weight:900;letter-spacing:2px;color:white;}
+.btn-menu{background:rgba(255,255,255,0.03);border:1px solid #1a1a1a;color:white;padding:8px;border-radius:10px;cursor:pointer;display:flex;align-items:center;}
+.btn-menu i{width:16px;height:16px;}
+.btn-reset{display:flex;align-items:center;gap:5px;background:rgba(255,68,85,0.08);border:1px solid rgba(255,68,85,0.2);color:#ff6677;padding:7px 12px;border-radius:10px;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;letter-spacing:0.5px;}
+.btn-reset i{width:12px;height:12px;}
+
+.lab-layout{display:flex;flex-direction:column;flex:1;overflow:hidden;}
+
+.bancada{flex:1;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 0%,rgba(138,43,226,0.04) 0%,transparent 60%),linear-gradient(180deg,#080810 0%,#06060a 100%);min-height:0;}
+.bancada-surface{position:absolute;bottom:0;left:0;right:0;height:22px;background:linear-gradient(180deg,#1a1a28,#111120);border-top:1px solid rgba(138,43,226,0.12);}
+.bancada-surface::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(192,132,252,0.15),transparent);}
+
+.recipientes-area{position:absolute;inset:0;bottom:22px;display:flex;align-items:flex-end;justify-content:center;gap:20px;padding:20px 16px 16px;overflow-x:auto;}
+.recipientes-area::-webkit-scrollbar{display:none;}
+
+.recipiente{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:transform 0.15s;position:relative;flex-shrink:0;}
+.recipiente:active{transform:scale(0.97);}
+.recipiente.selecionado .rec-svg-wrap{filter:drop-shadow(0 0 14px var(--cor-reagente,rgba(138,43,226,0.7)));}
+.rec-svg-wrap{position:relative;transition:filter 0.3s;}
+.rec-label{font-size:8px;font-weight:800;letter-spacing:0.5px;color:#333;text-align:center;}
+.recipiente.selecionado .rec-label{color:var(--p2);}
+.rec-tag{font-size:8px;font-weight:800;padding:2px 7px;border-radius:6px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.05);color:#444;text-align:center;max-width:75px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:0.3s;}
+.recipiente.tem-reagente .rec-tag{color:#bbb;border-color:rgba(255,255,255,0.1);}
+.sel-badge{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:7px;font-weight:800;letter-spacing:1px;color:var(--p2);background:var(--pd);border:1px solid var(--border);padding:2px 7px;border-radius:5px;white-space:nowrap;display:none;}
+.recipiente.selecionado .sel-badge{display:block;}
+
+.btn-add-rec{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;opacity:0.25;transition:opacity 0.2s;padding-bottom:14px;flex-shrink:0;}
+.btn-add-rec:hover{opacity:0.5;}
+.btn-add-rec .circle{width:42px;height:42px;border-radius:50%;border:2px dashed #222;display:flex;align-items:center;justify-content:center;color:#333;}
+.btn-add-rec .circle i{width:16px;height:16px;}
+.btn-add-rec span{font-size:7px;color:#2a2a2a;font-weight:800;letter-spacing:1px;}
+
+.bancada-hint{position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+.bancada-hint-icon{font-size:28px;margin-bottom:6px;}
+.bancada-hint-text{font-size:10px;font-weight:800;color:#1e1e2e;letter-spacing:2px;}
+
+.overlay-reacao{position:absolute;inset:0;pointer-events:none;z-index:10;}
+.particula{position:absolute;border-radius:50%;animation:explodir var(--dur) ease-out forwards;animation-delay:var(--delay);}
+@keyframes explodir{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0;}}
+.bolha-gas{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,0.25);animation:subir-gas var(--dur) ease-in forwards;animation-delay:var(--delay);}
+@keyframes subir-gas{0%{transform:translateY(0);opacity:0.7;}100%{transform:translateY(-90px);opacity:0;}}
+.prec-anim{position:absolute;border-radius:2px;animation:precipitar var(--dur) ease-in forwards;animation-delay:var(--delay);}
+@keyframes precipitar{0%{transform:translateY(-20px);opacity:0.8;}100%{transform:translateY(30px);opacity:0;}}
+
+.painel-inf{flex-shrink:0;background:#0a0a10;border-top:1px solid rgba(255,255,255,0.04);display:flex;flex-direction:column;max-height:50vh;overflow:hidden;}
+.ctrl-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;}
+.ctrl-tab{flex:1;padding:11px 6px;font-size:9px;font-weight:800;letter-spacing:0.3px;border:none;background:none;color:#2a2a2a;cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;transition:0.2s;}
+.ctrl-tab.active{color:var(--p2);border-bottom-color:var(--p);}
+
+.ctrl-panel{display:none;overflow-y:auto;flex:1;}
+.ctrl-panel.active{display:block;}
+
+/* VIDRARIA */
+.vidraria-grid{display:flex;gap:8px;padding:12px;overflow-x:auto;}
+.vidraria-grid::-webkit-scrollbar{display:none;}
+.vid-item{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 10px;background:rgba(255,255,255,0.02);border:1px solid #111;border-radius:12px;cursor:pointer;transition:0.2s;min-width:64px;}
+.vid-item:active{transform:scale(0.95);}
+.vid-item.em-uso{border-color:rgba(138,43,226,0.3);background:var(--pd);}
+.vid-emoji{font-size:20px;}
+.vid-nome{font-size:8px;font-weight:800;color:#444;letter-spacing:0.3px;text-align:center;}
+.vid-count{font-size:7px;font-family:var(--mono);color:#2a2a2a;}
+
+/* REAGENTES */
+.reag-header{padding:10px 12px 4px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.reag-header-title{font-size:8px;font-weight:800;letter-spacing:2px;color:var(--td);}
+.reag-alvo{font-size:9px;color:#333;}
+.reag-search{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.3);border:1px solid #111;border-radius:10px;padding:0 10px;margin:0 12px 6px;flex-shrink:0;}
+.reag-search i{width:12px;height:12px;color:#333;flex-shrink:0;}
+.reag-search input{background:none;border:none;outline:none;color:var(--t);font-family:inherit;font-size:12px;padding:8px 0;width:100%;}
+.reag-search input::placeholder{color:#222;}
+.cats{display:flex;gap:5px;padding:0 12px 6px;overflow-x:auto;flex-shrink:0;}
+.cats::-webkit-scrollbar{display:none;}
+.cat{flex-shrink:0;padding:4px 11px;border-radius:20px;font-size:8px;font-weight:800;letter-spacing:0.3px;cursor:pointer;border:1px solid #111;background:rgba(255,255,255,0.02);color:#333;font-family:inherit;transition:0.2s;}
+.cat.active{background:var(--pd);border-color:var(--border);color:var(--p2);}
+.reag-lista{display:flex;flex-direction:column;gap:1px;padding:0 12px 16px;}
+.reag-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;transition:background 0.15s;}
+.reag-item:active{background:rgba(255,255,255,0.03);}
+.reag-cor{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.reag-info{flex:1;min-width:0;}
+.reag-nome{font-size:12px;font-weight:700;color:white;}
+.reag-formula{font-family:var(--mono);font-size:9px;color:#444;}
+.reag-tipo{font-size:7px;font-weight:800;letter-spacing:1px;padding:2px 6px;border-radius:4px;}
+.t-acido{background:rgba(255,100,0,0.1);color:#ff8833;border:1px solid rgba(255,100,0,0.2);}
+.t-base{background:rgba(85,100,255,0.1);color:#8899ff;border:1px solid rgba(85,100,255,0.2);}
+.t-sal{background:rgba(0,200,150,0.1);color:#00cc99;border:1px solid rgba(0,200,150,0.2);}
+.t-indicador{background:rgba(200,100,255,0.1);color:#cc66ff;border:1px solid rgba(200,100,255,0.2);}
+.t-metal{background:rgba(180,140,0,0.1);color:#ccaa00;border:1px solid rgba(180,140,0,0.2);}
+.t-organico{background:rgba(0,180,100,0.1);color:#00bb66;border:1px solid rgba(0,180,100,0.2);}
+.t-gas{background:rgba(100,180,255,0.1);color:#66bbff;border:1px solid rgba(100,180,255,0.2);}
+
+/* CONFIG */
+.cfg-body{padding:12px;}
+.cfg-rec-nome{font-size:11px;font-weight:800;color:white;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.cfg-row{margin-bottom:12px;}
+.cfg-lbl{font-size:8px;font-weight:800;letter-spacing:1px;color:var(--td);margin-bottom:5px;display:flex;justify-content:space-between;}
+.cfg-lbl span{font-family:var(--mono);color:#555;}
+.cfg-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:10px;outline:none;cursor:pointer;background:rgba(255,255,255,0.06);}
+.cfg-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--p2);border:2px solid #111;cursor:pointer;box-shadow:0 2px 8px rgba(138,43,226,0.4);}
+.btn-reagir{width:100%;padding:13px;border-radius:13px;font-size:12px;font-weight:900;cursor:pointer;border:none;font-family:inherit;letter-spacing:1px;background:linear-gradient(135deg,var(--p),#6a1cb2);color:white;box-shadow:0 4px 20px rgba(138,43,226,0.35);transition:0.2s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn-reagir:disabled{opacity:0.3;cursor:not-allowed;box-shadow:none;}
+.btn-reagir i{width:15px;height:15px;}
+.btn-remover{background:none;border:none;color:#2a2a2a;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;display:block;width:100%;text-align:center;}
+
+/* RESULTADO */
+.res-area{padding:12px;}
+.res-vazio{text-align:center;padding:24px;color:#222;font-size:11px;font-weight:700;}
+.res-card{background:rgba(0,0,0,0.3);border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.04);}
+.res-bar{height:5px;transition:background 0.5s;}
+.res-body{padding:14px;}
+.res-eq{font-family:var(--mono);font-size:10px;color:#777;margin-bottom:10px;line-height:1.5;}
+.res-efeitos{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.ef{font-size:9px;font-weight:800;padding:3px 9px;border-radius:20px;}
+.ef-calor{background:rgba(255,150,0,0.08);color:#ffaa33;border:1px solid rgba(255,150,0,0.15);}
+.ef-gas{background:rgba(100,200,255,0.08);color:#66bbff;border:1px solid rgba(100,200,255,0.15);}
+.ef-prec{background:rgba(255,255,255,0.05);color:#aaa;border:1px solid #2a2a2a;}
+.ef-cor{border:1px solid rgba(255,255,255,0.08);color:#ddd;}
+.res-exp{font-size:11px;color:#555;line-height:1.65;}
+.res-exp strong{color:#888;}
+.res-ph{margin-top:10px;padding:8px 12px;background:rgba(0,0,0,0.3);border-radius:8px;display:flex;align-items:center;gap:8px;}
+.res-ph-lbl{font-size:8px;font-weight:800;letter-spacing:1px;color:#2a2a2a;}
+.res-ph-val{font-family:var(--mono);font-size:14px;font-weight:700;}
+.res-ph-txt{font-size:9px;color:#333;}
+
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(20px);background:#111116;border:1px solid rgba(138,43,226,0.3);color:var(--t);font-size:12px;font-weight:700;padding:10px 20px;border-radius:20px;z-index:9999;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+    <button id="open-menu" class="btn-menu"><i data-lucide="menu"></i></button>
+    <div class="hdr-c">
+        <div class="hdr-icon"><i data-lucide="microscope"></i></div>
+        <span class="hdr-title">LABORATÓRIO</span>
+    </div>
+    <button class="btn-reset" onclick="resetarLab()"><i data-lucide="rotate-ccw"></i> LIMPAR</button>
+</header>
+
+<div class="lab-layout">
+    <div class="bancada" id="bancada">
+        <div class="bancada-hint" id="bancada-hint">
+            <div class="bancada-hint-icon">🧪</div>
+            <div class="bancada-hint-text">ADICIONE VIDRARIA ABAIXO</div>
+        </div>
+        <div class="overlay-reacao" id="overlay-reacao"></div>
+        <div class="recipientes-area" id="recipientes-area">
+            <div class="btn-add-rec" onclick="adicionarRecipiente()">
+                <div class="circle"><i data-lucide="plus"></i></div>
+                <span>VIDRARIA</span>
+            </div>
+        </div>
+        <div class="bancada-surface"></div>
+    </div>
+
+    <div class="painel-inf">
+        <div class="ctrl-tabs">
+            <button class="ctrl-tab active" onclick="trocarTab('vidraria',this)">🔬 VIDRARIA</button>
+            <button class="ctrl-tab" onclick="trocarTab('reagentes',this)">⚗️ REAGENTES</button>
+            <button class="ctrl-tab" onclick="trocarTab('config',this)">⚙️ CONFIG</button>
+            <button class="ctrl-tab" onclick="trocarTab('reacao',this)" id="tab-reacao">🧨 REAÇÃO</button>
+        </div>
+        <div class="ctrl-panel active" id="panel-vidraria">
+            <div class="vidraria-grid" id="vidraria-grid"></div>
+        </div>
+        <div class="ctrl-panel" id="panel-reagentes">
+            <div class="reag-header">
+                <div class="reag-header-title">SELECIONAR REAGENTE</div>
+                <div class="reag-alvo" id="alvo-label">— selecione um recipiente</div>
+            </div>
+            <div class="reag-search">
+                <i data-lucide="search"></i>
+                <input type="text" placeholder="Buscar..." oninput="filtrarReagentes(this.value)">
+            </div>
+            <div class="cats" id="cats"></div>
+            <div class="reag-lista" id="reag-lista"></div>
+        </div>
+        <div class="ctrl-panel" id="panel-config">
+            <div class="cfg-body" id="cfg-body">
+                <div style="text-align:center;padding:20px;color:#222;font-size:11px;font-weight:700;">Selecione um recipiente na bancada</div>
+            </div>
+        </div>
+        <div class="ctrl-panel" id="panel-reacao">
+            <div class="res-area" id="res-area">
+                <div class="res-vazio">Configure os reagentes e clique em REAGIR</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="menu.js"></script>
+<script>
+const VIDRARIA=[
+    {id:'bequer',emoji:'🫙',nome:'Béquer'},
+    {id:'erlenmeyer',emoji:'⚗️',nome:'Erlenmeyer'},
+    {id:'tubo',emoji:'🧪',nome:'Tubo de Ensaio'},
+    {id:'proveta',emoji:'📏',nome:'Proveta'},
+    {id:'bureta',emoji:'🌡️',nome:'Bureta'},
+];
+
+const REAGENTES=[
+    {id:'hcl',nome:'Ácido Clorídrico',formula:'HCl',tipo:'acido',cor:'rgba(255,180,50,0.7)',ph:1},
+    {id:'h2so4',nome:'Ácido Sulfúrico',formula:'H₂SO₄',tipo:'acido',cor:'rgba(255,220,80,0.6)',ph:0},
+    {id:'hno3',nome:'Ácido Nítrico',formula:'HNO₃',tipo:'acido',cor:'rgba(255,240,100,0.5)',ph:1},
+    {id:'h3po4',nome:'Ácido Fosfórico',formula:'H₃PO₄',tipo:'acido',cor:'rgba(240,230,180,0.5)',ph:2},
+    {id:'ch3cooh',nome:'Ácido Acético',formula:'CH₃COOH',tipo:'acido',cor:'rgba(230,230,200,0.4)',ph:3},
+    {id:'hf',nome:'Ácido Fluorídrico',formula:'HF',tipo:'acido',cor:'rgba(200,230,255,0.4)',ph:2},
+    {id:'naoh',nome:'Hidróxido de Sódio',formula:'NaOH',tipo:'base',cor:'rgba(100,150,255,0.5)',ph:14},
+    {id:'koh',nome:'Hidróxido de Potássio',formula:'KOH',tipo:'base',cor:'rgba(120,160,255,0.5)',ph:14},
+    {id:'nh3',nome:'Hidróxido de Amônio',formula:'NH₃(aq)',tipo:'base',cor:'rgba(180,200,255,0.4)',ph:11},
+    {id:'ca_oh2',nome:'Hidróxido de Cálcio',formula:'Ca(OH)₂',tipo:'base',cor:'rgba(240,245,255,0.5)',ph:12},
+    {id:'mgoh2',nome:'Hidróxido de Magnésio',formula:'Mg(OH)₂',tipo:'base',cor:'rgba(245,245,255,0.4)',ph:10},
+    {id:'nacl',nome:'Cloreto de Sódio',formula:'NaCl',tipo:'sal',cor:'rgba(240,245,255,0.3)',ph:7},
+    {id:'cuso4',nome:'Sulfato de Cobre',formula:'CuSO₄',tipo:'sal',cor:'rgba(30,100,220,0.75)',ph:4},
+    {id:'fecl3',nome:'Cloreto Férrico',formula:'FeCl₃',tipo:'sal',cor:'rgba(180,80,20,0.7)',ph:3},
+    {id:'bacl2',nome:'Cloreto de Bário',formula:'BaCl₂',tipo:'sal',cor:'rgba(230,240,255,0.4)',ph:7},
+    {id:'agno3',nome:'Nitrato de Prata',formula:'AgNO₃',tipo:'sal',cor:'rgba(250,250,255,0.4)',ph:6},
+    {id:'na2so4',nome:'Sulfato de Sódio',formula:'Na₂SO₄',tipo:'sal',cor:'rgba(235,245,255,0.3)',ph:7},
+    {id:'pb_no3',nome:'Nitrato de Chumbo',formula:'Pb(NO₃)₂',tipo:'sal',cor:'rgba(240,245,250,0.4)',ph:6},
+    {id:'ki',nome:'Iodeto de Potássio',formula:'KI',tipo:'sal',cor:'rgba(240,245,255,0.3)',ph:7},
+    {id:'kmno4',nome:'Permanganato de Potássio',formula:'KMnO₄',tipo:'sal',cor:'rgba(100,0,100,0.85)',ph:7},
+    {id:'na2co3',nome:'Carbonato de Sódio',formula:'Na₂CO₃',tipo:'sal',cor:'rgba(235,245,255,0.4)',ph:11},
+    {id:'fenolf',nome:'Fenolftaleína',formula:'C₂₀H₁₄O₄',tipo:'indicador',cor:'rgba(255,255,255,0.05)',ph:7},
+    {id:'tornass',nome:'Papel Tornassol',formula:'–',tipo:'indicador',cor:'rgba(150,100,200,0.4)',ph:7},
+    {id:'lugol',nome:'Lugol (I₂/KI)',formula:'I₂/KI',tipo:'indicador',cor:'rgba(80,40,0,0.85)',ph:7},
+    {id:'fehling',nome:'Solução de Fehling',formula:'CuSO₄+NaOH',tipo:'indicador',cor:'rgba(20,60,200,0.75)',ph:14},
+    {id:'zn',nome:'Zinco (granulado)',formula:'Zn',tipo:'metal',cor:'rgba(200,210,200,0.6)',ph:7},
+    {id:'fe',nome:'Ferro (limalha)',formula:'Fe',tipo:'metal',cor:'rgba(150,140,130,0.7)',ph:7},
+    {id:'cu_metal',nome:'Cobre (fita)',formula:'Cu',tipo:'metal',cor:'rgba(180,100,40,0.7)',ph:7},
+    {id:'mg',nome:'Magnésio (fita)',formula:'Mg',tipo:'metal',cor:'rgba(220,225,220,0.6)',ph:7},
+    {id:'al',nome:'Alumínio (folha)',formula:'Al',tipo:'metal',cor:'rgba(210,215,220,0.6)',ph:7},
+    {id:'amido',nome:'Amido (solução)',formula:'(C₆H₁₀O₅)ₙ',tipo:'organico',cor:'rgba(240,235,220,0.5)',ph:7},
+    {id:'glicose',nome:'Glicose',formula:'C₆H₁₂O₆',tipo:'organico',cor:'rgba(245,235,200,0.5)',ph:7},
+    {id:'etanol',nome:'Etanol',formula:'C₂H₅OH',tipo:'organico',cor:'rgba(240,245,255,0.3)',ph:7},
+    {id:'sacarose',nome:'Sacarose',formula:'C₁₂H₂₂O₁₁',tipo:'organico',cor:'rgba(255,245,220,0.4)',ph:7},
+    {id:'h2o2',nome:'Água Oxigenada',formula:'H₂O₂',tipo:'gas',cor:'rgba(230,245,255,0.4)',ph:5},
+    {id:'cl2_aq',nome:'Água de Cloro',formula:'Cl₂(aq)',tipo:'gas',cor:'rgba(200,230,200,0.5)',ph:3},
+    {id:'h2o',nome:'Água Destilada',formula:'H₂O',tipo:'gas',cor:'rgba(200,230,255,0.2)',ph:7},
+];
+
+const REACOES=[
+    {r:['hcl','naoh'],equacao:'HCl + NaOH → NaCl + H₂O',efeitos:['calor'],cor:'rgba(200,230,255,0.2)',prec:false,gas:false,exp:'Reação de <strong>neutralização</strong>. O ácido e a base se cancelam formando sal (NaCl) e água. Libera calor — reação exotérmica.',ph:7},
+    {r:['hcl','koh'],equacao:'HCl + KOH → KCl + H₂O',efeitos:['calor'],cor:'rgba(200,230,255,0.2)',prec:false,gas:false,exp:'Neutralização formando <strong>cloreto de potássio (KCl)</strong> e água. Reação exotérmica.',ph:7},
+    {r:['h2so4','naoh'],equacao:'H₂SO₄ + 2NaOH → Na₂SO₄ + 2H₂O',efeitos:['calor'],cor:'rgba(220,235,255,0.25)',prec:false,gas:false,exp:'Neutralização do ácido sulfúrico com soda cáustica. Reação <strong>muito exotérmica</strong> — cuidado real em laboratório!',ph:7},
+    {r:['h2so4','ca_oh2'],equacao:'H₂SO₄ + Ca(OH)₂ → CaSO₄↓ + 2H₂O',efeitos:['prec','calor'],cor:'rgba(255,255,255,0.2)',prec:true,gas:false,exp:'Forma <strong>sulfato de cálcio (gesso)</strong>, precipitado branco insolúvel. É assim que o gesso natural se forma!',ph:7},
+    {r:['ch3cooh','naoh'],equacao:'CH₃COOH + NaOH → CH₃COONa + H₂O',efeitos:['calor'],cor:'rgba(220,235,255,0.2)',prec:false,gas:false,exp:'Neutralização do vinagre formando <strong>acetato de sódio</strong>. Usado em aquecedores de bolso!',ph:8},
+    {r:['hcl','nh3'],equacao:'HCl + NH₃ → NH₄Cl',efeitos:['prec'],cor:'rgba(255,255,255,0.15)',prec:true,gas:false,exp:'Forma <strong>cloreto de amônio</strong> como névoa branca. Você vê a fumaça ao misturar os gases!',ph:7},
+    {r:['zn','hcl'],equacao:'Zn + 2HCl → ZnCl₂ + H₂↑',efeitos:['gas','calor'],cor:'rgba(230,245,255,0.25)',prec:false,gas:true,exp:'O zinco reage com HCl liberando <strong>gás hidrogênio (H₂)</strong> — você vê as bolhas! Clássico da aula de química.',ph:5},
+    {r:['fe','hcl'],equacao:'Fe + 2HCl → FeCl₂ + H₂↑',efeitos:['gas','calor'],cor:'rgba(200,230,200,0.3)',prec:false,gas:true,exp:'O ferro dissolve no HCl formando <strong>cloreto de ferro(II)</strong> e gás H₂. Solução fica esverdeada.',ph:4},
+    {r:['mg','hcl'],equacao:'Mg + 2HCl → MgCl₂ + H₂↑',efeitos:['gas','calor'],cor:'rgba(230,245,255,0.2)',prec:false,gas:true,exp:'O magnésio reage <strong>muito vigorosamente</strong> com HCl. O tubo aquece bastante — Mg é mais reativo que Zn e Fe.',ph:5},
+    {r:['zn','h2so4'],equacao:'Zn + H₂SO₄ → ZnSO₄ + H₂↑',efeitos:['gas','calor'],cor:'rgba(240,245,225,0.3)',prec:false,gas:true,exp:'Zinco no ácido sulfúrico produz <strong>sulfato de zinco</strong> e H₂. Usado em pilhas galvânicas!',ph:5},
+    {r:['cu_metal','hno3'],equacao:'3Cu + 8HNO₃ → 3Cu(NO₃)₂ + 2NO↑ + 4H₂O',efeitos:['gas','cor'],cor:'rgba(30,120,50,0.5)',prec:false,gas:true,exp:'O cobre com HNO₃ produz <strong>gás NO</strong> e solução azul-esverdeada (Cu²⁺). Reação perigosa no laboratório real!',ph:3},
+    {r:['fe','h2so4'],equacao:'Fe + H₂SO₄ → FeSO₄ + H₂↑',efeitos:['gas','calor'],cor:'rgba(210,240,210,0.3)',prec:false,gas:true,exp:'Ferro no ácido sulfúrico diluído produz <strong>sulfato de ferro(II)</strong> (verde-pálido) e H₂.',ph:4},
+    {r:['al','naoh'],equacao:'2Al + 2NaOH + 2H₂O → 2NaAlO₂ + 3H₂↑',efeitos:['gas','calor'],cor:'rgba(220,235,255,0.2)',prec:false,gas:true,exp:'O alumínio reage com base forte liberando <strong>H₂</strong>! Diferente dos outros metais que reagem com ácidos. Alumínio é anfótero.',ph:12},
+    {r:['bacl2','na2so4'],equacao:'BaCl₂ + Na₂SO₄ → BaSO₄↓ + 2NaCl',efeitos:['prec'],cor:'rgba(245,250,255,0.6)',prec:true,gas:false,exp:'<strong>Sulfato de bário (BaSO₄)</strong> — precipitado branco leitoso insolúvel. Teste clássico para identificar o íon SO₄²⁻!',ph:7},
+    {r:['agno3','hcl'],equacao:'AgNO₃ + HCl → AgCl↓ + HNO₃',efeitos:['prec'],cor:'rgba(255,255,255,0.6)',prec:true,gas:false,exp:'<strong>Cloreto de prata (AgCl)</strong> — precipitado branco que escurece com a luz. É como funcionava o filme fotográfico!',ph:3},
+    {r:['agno3','ki'],equacao:'AgNO₃ + KI → AgI↓ + KNO₃',efeitos:['prec'],cor:'rgba(255,220,0,0.8)',prec:true,gas:false,exp:'<strong>Iodeto de prata (AgI)</strong> — precipitado amarelo brilhante. Muito insolúvel e visualmente marcante!',ph:7},
+    {r:['pb_no3','ki'],equacao:'Pb(NO₃)₂ + 2KI → PbI₂↓ + 2KNO₃',efeitos:['prec'],cor:'rgba(255,215,0,0.9)',prec:true,gas:false,exp:'<strong>Iodeto de chumbo (PbI₂)</strong> — precipitado amarelo-ouro deslumbrante! Uma das reações mais bonitas da química. ATENÇÃO: Pb é tóxico!',ph:7},
+    {r:['fecl3','naoh'],equacao:'FeCl₃ + 3NaOH → Fe(OH)₃↓ + 3NaCl',efeitos:['prec'],cor:'rgba(160,60,0,0.75)',prec:true,gas:false,exp:'<strong>Hidróxido de ferro(III)</strong> — precipitado marrom-avermelhado gelatinoso. É assim que o ferro enferruja em água alcalina!',ph:9},
+    {r:['cuso4','naoh'],equacao:'CuSO₄ + 2NaOH → Cu(OH)₂↓ + Na₂SO₄',efeitos:['prec'],cor:'rgba(30,100,200,0.7)',prec:true,gas:false,exp:'<strong>Hidróxido de cobre(II)</strong> — precipitado azul gelatinoso e bonito. A mudança do azul escuro para esse precipitado é marcante!',ph:10},
+    {r:['na2co3','hcl'],equacao:'Na₂CO₃ + 2HCl → 2NaCl + H₂O + CO₂↑',efeitos:['gas'],cor:'rgba(220,235,255,0.3)',prec:false,gas:true,exp:'Efervescência intensa de <strong>CO₂</strong>! É exatamente a reação do vulcão de bicarbonato com vinagre!',ph:5},
+    {r:['fenolf','naoh'],equacao:'Fenolftaleína em base → rosa intenso',efeitos:['cor'],cor:'rgba(220,0,120,0.7)',prec:false,gas:false,exp:'A <strong>fenolftaleína</strong> muda de incolor para rosa intenso em pH > 8.2. É o indicador da titulação ácido-base.',ph:14},
+    {r:['fenolf','hcl'],equacao:'Fenolftaleína em ácido → incolor',efeitos:['cor'],cor:'rgba(200,230,255,0.08)',prec:false,gas:false,exp:'Em meio ácido a fenolftaleína fica <strong>completamente incolor</strong>. Se o rosa desaparecer, tem ácido em excesso.',ph:1},
+    {r:['lugol','amido'],equacao:'I₂ + amido → complexo azul-escuro',efeitos:['cor'],cor:'rgba(10,0,40,0.95)',prec:false,gas:false,exp:'O lugol entra na hélice do amido formando um <strong>complexo azul-escuro quase preto</strong>. Teste definitivo de amido em alimentos!',ph:7},
+    {r:['fehling','glicose'],equacao:'Cu²⁺ + glicose → Cu₂O↓ + ac. glucônico',efeitos:['prec','cor'],cor:'rgba(180,60,0,0.8)',prec:true,gas:false,exp:'A glicose <strong>reduz</strong> o Cu²⁺ azul a Cu₂O <strong>vermelho-tijolo</strong>. Teste de Fehling — detecta açúcares redutores. Base do diagnóstico antigo de diabetes!',ph:7},
+    {r:['lugol','etanol'],equacao:'Sem amido → cor laranja-marrom mantida',efeitos:['cor'],cor:'rgba(80,40,0,0.65)',prec:false,gas:false,exp:'Sem amido, o lugol mantém sua cor <strong>laranja-marrom</strong> original — confirma ausência de amido.',ph:7},
+    {r:['h2o2','fecl3'],equacao:'2H₂O₂ → 2H₂O + O₂↑  (cat: Fe³⁺)',efeitos:['gas','calor'],cor:'rgba(200,230,240,0.3)',prec:false,gas:true,exp:'O FeCl₃ é <strong>catalisador</strong> — acelera a decomposição do H₂O₂ sem ser consumido. Libera <strong>O₂</strong> com forte efervescência!',ph:5},
+    {r:['kmno4','h2o2'],equacao:'2KMnO₄ + 5H₂O₂ → MnO₂↓ + 3O₂↑ + ...',efeitos:['gas','cor','prec'],cor:'rgba(60,30,10,0.8)',prec:true,gas:true,exp:'O KMnO₄ roxo reage com H₂O₂ com <strong>forte efervescência</strong> e o roxo desaparece deixando MnO₂ marrom. Reação dramática!',ph:8},
+    {r:['cuso4','fe'],equacao:'CuSO₄ + Fe → FeSO₄ + Cu↓',efeitos:['cor','prec'],cor:'rgba(100,160,200,0.5)',prec:true,gas:false,exp:'<strong>Deslocamento</strong>: o ferro é mais reativo que o cobre. O Fe dissolve e o cobre metálico se deposita vermelho. Eletroquímica na prática!',ph:5},
+    {r:['cl2_aq','ki'],equacao:'Cl₂ + 2KI → 2KCl + I₂',efeitos:['cor'],cor:'rgba(60,30,0,0.65)',prec:false,gas:false,exp:'A água de cloro oxida I⁻ a <strong>I₂</strong>, deixando a solução amarelo-marrom. Reatividade dos halogênios: F>Cl>Br>I.',ph:3},
+    {r:['na2co3','ca_oh2'],equacao:'Na₂CO₃ + Ca(OH)₂ → CaCO₃↓ + 2NaOH',efeitos:['prec'],cor:'rgba(255,255,255,0.3)',prec:true,gas:false,exp:'<strong>Carbonato de cálcio (calcário)</strong> — precipitado branco. É a reação do amaciamento de água dura e da formação de estalactites!',ph:11},
+    {r:['hcl','na2co3'],equacao:'2HCl + Na₂CO₃ → 2NaCl + H₂O + CO₂↑',efeitos:['gas'],cor:'rgba(220,235,255,0.3)',prec:false,gas:true,exp:'Efervescência de <strong>CO₂</strong>. Reação parecida com o vinagre no bicarbonato — o ácido mais forte desloca o CO₂ do carbonato.',ph:5},
+    {r:['mg','h2so4'],equacao:'Mg + H₂SO₄ → MgSO₄ + H₂↑',efeitos:['gas','calor'],cor:'rgba(230,245,255,0.2)',prec:false,gas:true,exp:'Magnésio no ácido sulfúrico — reação <strong>muito vigorosa</strong> com muito H₂. Magnésio é um dos metais mais reativos do ensino médio.',ph:5},
+];
+
+// ESTADO
+let recipientes=[];
+let recSel=null;
+let catAtiva='todos';
+let busca='';
+
+// INIT
+function init(){
+    buildVidraria();
+    buildCats();
+    renderReagentes();
+    if(window.lucide)lucide.createIcons();
+}
+
+// TABS
+function trocarTab(id,el){
+    document.querySelectorAll('.ctrl-panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.ctrl-tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('panel-'+id).classList.add('active');
+    el.classList.add('active');
+    if(window.lucide)lucide.createIcons();
+}
+
+function toast(msg,dur=2200){
+    const el=document.getElementById('toast');
+    el.innerText=msg;el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'),dur);
+}
+
+// VIDRARIA
+function buildVidraria(){
+    document.getElementById('vidraria-grid').innerHTML=VIDRARIA.map(v=>`
+        <div class="vid-item" id="vid-${v.id}" onclick="addTipo('${v.id}')">
+            <div class="vid-emoji">${v.emoji}</div>
+            <div class="vid-nome">${v.nome}</div>
+            <div class="vid-count" id="cnt-${v.id}">0 na bancada</div>
+        </div>
+    `).join('');
+}
+
+function updateCountVidraria(){
+    VIDRARIA.forEach(v=>{
+        const n=recipientes.filter(r=>r.tipo===v.id).length;
+        const el=document.getElementById('cnt-'+v.id);
+        if(el)el.innerText=n>0?n+' na bancada':'0 na bancada';
+        const item=document.getElementById('vid-'+v.id);
+        if(item)item.classList.toggle('em-uso',n>0);
+    });
+}
+
+function addTipo(tipoId){
+    if(recipientes.length>=5){toast('⚠️ Máximo 5 recipientes');return;}
+    const v=VIDRARIA.find(x=>x.id===tipoId);
+    recipientes.push({uid:Date.now(),tipo:tipoId,emoji:v.emoji,nome:v.nome,reagente:null,volume:50,conc:0.1});
+    renderBancada();
+    selecionar(recipientes.length-1);
+    document.querySelectorAll('.ctrl-tab')[1].click();
+    updateCountVidraria();
+}
+
+function adicionarRecipiente(){
+    document.querySelectorAll('.ctrl-tab')[0].click();
+    toast('Escolha a vidraria abaixo 👇');
+}
+
+// BANCADA
+function renderBancada(){
+    const area=document.getElementById('recipientes-area');
+    document.getElementById('bancada-hint').style.display=recipientes.length>0?'none':'block';
+    area.innerHTML='';
+    recipientes.forEach((rec,i)=>{
+        const reag=rec.reagente?REAGENTES.find(r=>r.id===rec.reagente):null;
+        const cor=reag?reag.cor:'rgba(20,20,35,0.5)';
+        const div=document.createElement('div');
+        div.className='recipiente'+(recSel===i?' selecionado':'')+(reag?' tem-reagente':'');
+        if(reag)div.style.setProperty('--cor-reagente',cor);
+        div.onclick=()=>selecionar(i);
+        div.innerHTML=`
+            <div class="sel-badge">ATIVO</div>
+            <div class="rec-svg-wrap">${buildSVG(rec,reag,cor)}</div>
+            <div class="rec-label">${rec.nome}</div>
+            <div class="rec-tag">${reag?reag.formula:'— vazio —'}</div>
+        `;
+        area.appendChild(div);
+    });
+    if(recipientes.length<5){
+        const btn=document.createElement('div');
+        btn.className='btn-add-rec';
+        btn.innerHTML=`<div class="circle"><i data-lucide="plus"></i></div><span>VIDRARIA</span>`;
+        btn.onclick=adicionarRecipiente;
+        area.appendChild(btn);
+    }
+    if(window.lucide)lucide.createIcons();
+}
+
+function buildSVG(rec,reag,cor){
+    const liq=reag?cor:'rgba(15,15,30,0.6)';
+    const pct=Math.min(rec.volume/200,1);
+    const uid=rec.uid;
+    switch(rec.tipo){
+        case'bequer':return`<svg width="64" height="90" viewBox="0 0 64 90" fill="none">
+            <defs><clipPath id="bq${uid}"><rect x="8" y="10" width="48" height="72" rx="4"/></clipPath></defs>
+            <rect x="8" y="${10+72*(1-pct)}" width="48" height="${72*pct}" fill="${liq}" clip-path="url(#bq${uid})" style="transition:all 0.4s"/>
+            <path d="M8 10L8 82Q8 86 12 86L52 86Q56 86 56 82L56 10Z" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+            <line x1="4" y1="10" x2="60" y2="10" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+            <path d="M56 18Q62 18 62 22" stroke="rgba(255,255,255,0.07)" stroke-width="1.5" fill="none"/>
+            <line x1="8" y1="35" x2="16" y2="35" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <line x1="8" y1="55" x2="16" y2="55" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        </svg>`;
+        case'erlenmeyer':return`<svg width="64" height="90" viewBox="0 0 64 90" fill="none">
+            <defs><clipPath id="er${uid}"><path d="M26 8L26 38L4 78Q4 86 12 86L52 86Q60 86 60 78L38 38L38 8Z"/></clipPath></defs>
+            <rect x="0" y="${8+78*(1-pct)}" width="64" height="${78*pct}" fill="${liq}" clip-path="url(#er${uid})" style="transition:all 0.4s"/>
+            <path d="M26 8L26 38L4 78Q4 86 12 86L52 86Q60 86 60 78L38 38L38 8Z" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+            <line x1="22" y1="8" x2="42" y2="8" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+        </svg>`;
+        case'tubo':return`<svg width="34" height="110" viewBox="0 0 34 110" fill="none">
+            <defs><clipPath id="tb${uid}"><rect x="5" y="8" width="24" height="96" rx="12"/></clipPath></defs>
+            <rect x="5" y="${8+96*(1-pct)}" width="24" height="${96*pct}" fill="${liq}" clip-path="url(#tb${uid})" style="transition:all 0.4s"/>
+            <rect x="5" y="8" width="24" height="96" rx="12" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+            <line x1="3" y1="8" x2="31" y2="8" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+            <line x1="5" y1="38" x2="12" y2="38" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <line x1="5" y1="65" x2="12" y2="65" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        </svg>`;
+        case'proveta':return`<svg width="38" height="110" viewBox="0 0 38 110" fill="none">
+            <defs><clipPath id="pv${uid}"><path d="M10 8L10 95Q10 105 19 105Q28 105 28 95L28 8Z"/></clipPath></defs>
+            <rect x="0" y="${8+97*(1-pct)}" width="38" height="${97*pct}" fill="${liq}" clip-path="url(#pv${uid})" style="transition:all 0.4s"/>
+            <path d="M10 8L10 95Q10 105 19 105Q28 105 28 95L28 8Z" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+            <line x1="6" y1="8" x2="32" y2="8" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+            ${[25,42,59,76,93].map(y=>`<line x1="10" y1="${y}" x2="18" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`).join('')}
+        </svg>`;
+        case'bureta':return`<svg width="22" height="130" viewBox="0 0 22 130" fill="none">
+            <defs><clipPath id="bu${uid}"><rect x="5" y="5" width="12" height="112" rx="2"/></clipPath></defs>
+            <rect x="5" y="5" width="12" height="${112*pct}" fill="${liq}" clip-path="url(#bu${uid})" style="transition:all 0.4s"/>
+            <rect x="5" y="5" width="12" height="112" rx="2" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+            <rect x="8" y="117" width="6" height="10" fill="rgba(255,255,255,0.06)" rx="1"/>
+            ${[22,44,66,88,110].map(y=>`<line x1="5" y1="${y}" x2="11" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`).join('')}
+        </svg>`;
+    }return'';
+}
+
+// SELEÇÃO
+function selecionar(i){
+    recSel=i;
+    renderBancada();
+    atualizarAlvo();
+    atualizarConfig();
+}
+
+function atualizarAlvo(){
+    const el=document.getElementById('alvo-label');
+    if(recSel===null||!recipientes[recSel]){el.innerText='— selecione um recipiente';return;}
+    const rec=recipientes[recSel];
+    el.innerText=`→ ${rec.nome} ${rec.reagente?'(trocar)':'(vazio)'}`;
+}
+
+// REAGENTES PANEL
+function buildCats(){
+    const cats=['todos','acido','base','sal','indicador','metal','organico','gas'];
+    const nomes={todos:'Todos',acido:'Ácidos',base:'Bases',sal:'Sais',indicador:'Indicadores',metal:'Metais',organico:'Orgânicos',gas:'Outros'};
+    document.getElementById('cats').innerHTML=cats.map(c=>`
+        <button class="cat ${c==='todos'?'active':''}" onclick="setCat('${c}',this)">${nomes[c]}</button>
+    `).join('');
+}
+
+function setCat(cat,el){
+    catAtiva=cat;
+    document.querySelectorAll('.cat').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+    renderReagentes();
+}
+
+function filtrarReagentes(val){
+    busca=val.toLowerCase().trim();
+    renderReagentes();
+}
+
+function renderReagentes(){
+    let arr=REAGENTES;
+    if(catAtiva!=='todos')arr=arr.filter(r=>r.tipo===catAtiva);
+    if(busca)arr=arr.filter(r=>r.nome.toLowerCase().includes(busca)||r.formula.toLowerCase().includes(busca));
+    document.getElementById('reag-lista').innerHTML=arr.map(r=>`
+        <div class="reag-item" onclick="selecionarReagente('${r.id}')">
+            <div class="reag-cor" style="background:${r.cor};border:1px solid rgba(255,255,255,0.1);"></div>
+            <div class="reag-info">
+                <div class="reag-nome">${r.nome}</div>
+                <div class="reag-formula">${r.formula}</div>
+            </div>
+            <span class="reag-tipo t-${r.tipo}">${r.tipo.toUpperCase()}</span>
+        </div>
+    `).join('');
+}
+
+function selecionarReagente(id){
+    if(recSel===null||!recipientes[recSel]){toast('⚠️ Selecione um recipiente primeiro!');return;}
+    recipientes[recSel].reagente=id;
+    renderBancada();
+    selecionar(recSel);
+    atualizarAlvo();
+    const r=REAGENTES.find(x=>x.id===id);
+    toast(`✅ ${r.nome} adicionado!`);
+    document.querySelectorAll('.ctrl-tab')[2].click();
+}
+
+// CONFIG
+function atualizarConfig(){
+    const body=document.getElementById('cfg-body');
+    if(recSel===null||!recipientes[recSel]){
+        body.innerHTML=`<div style="text-align:center;padding:20px;color:#222;font-size:11px;font-weight:700;">Selecione um recipiente na bancada</div>`;
+        return;
+    }
+    const rec=recipientes[recSel];
+    const reag=rec.reagente?REAGENTES.find(r=>r.id===rec.reagente):null;
+    const podeConc=reag&&reag.tipo!=='metal'&&reag.tipo!=='indicador';
+
+    body.innerHTML=`
+        <div class="cfg-rec-nome"><span>${rec.emoji}</span>${rec.nome}${reag?' — '+reag.formula:''}</div>
+        <div class="cfg-row">
+            <div class="cfg-lbl">VOLUME <span id="vol-val">${rec.volume} mL</span></div>
+            <input type="range" class="cfg-slider" min="5" max="200" value="${rec.volume}"
+                oninput="if(recSel!==null){recipientes[recSel].volume=+this.value;document.getElementById('vol-val').innerText=this.value+' mL';renderBancada();}">
+        </div>
+        ${podeConc?`
+        <div class="cfg-row">
+            <div class="cfg-lbl">CONCENTRAÇÃO <span id="conc-val">${rec.conc} mol/L</span></div>
+            <input type="range" class="cfg-slider" min="0.01" max="5" step="0.01" value="${rec.conc}"
+                oninput="if(recSel!==null){recipientes[recSel].conc=+parseFloat(this.value).toFixed(2);document.getElementById('conc-val').innerText=parseFloat(this.value).toFixed(2)+' mol/L';}">
+        </div>`:''}
+        <button class="btn-reagir" onclick="reagir()" ${recipientes.length<2?'disabled':''}>
+            <i data-lucide="zap"></i>
+            ${recipientes.length<2?'ADICIONE MAIS REAGENTES':'REAGIR!'}
+        </button>
+        <button class="btn-remover" onclick="removerRec(${recSel})">✕ Remover este recipiente</button>
+    `;
+    if(window.lucide)lucide.createIcons();
+}
+
+function removerRec(i){
+    recipientes.splice(i,1);
+    recSel=null;
+    renderBancada();
+    atualizarConfig();
+    updateCountVidraria();
+}
+
+// REAGIR
+function reagir(){
+    if(recipientes.length<2){toast('⚠️ Adicione ao menos 2 recipientes!');return;}
+    const comReag=recipientes.filter(r=>r.reagente);
+    if(comReag.length<2){toast('⚠️ Adicione reagentes nos recipientes!');return;}
+    const ids=comReag.map(r=>r.reagente);
+
+    let resultado=null;
+    for(const reac of REACOES){
+        if(ids.includes(reac.r[0])&&ids.includes(reac.r[1])){resultado=reac;break;}
+    }
+    if(!resultado)resultado=gerarGenerica(comReag);
+
+    animarReacao(resultado);
+    mostrarResultado(resultado);
+    document.getElementById('tab-reacao').click();
+}
+
+function gerarGenerica(recs){
+    const tipos=recs.map(r=>REAGENTES.find(x=>x.id===r.reagente)?.tipo);
+    if(tipos.includes('acido')&&tipos.includes('base'))
+        return{equacao:'Ácido + Base → Sal + H₂O',efeitos:['calor'],cor:'rgba(220,235,255,0.2)',prec:false,gas:false,exp:'<strong>Neutralização:</strong> ácido + base → sal + água. Reação exotérmica.',ph:7};
+    if(tipos.includes('metal')&&tipos.includes('acido'))
+        return{equacao:'Metal + Ácido → Sal + H₂↑',efeitos:['gas','calor'],cor:'rgba(220,240,255,0.25)',prec:false,gas:true,exp:'<strong>Metal com ácido:</strong> o metal se dissolve e libera gás hidrogênio (H₂). Você vê as bolhas!',ph:5};
+    if(tipos.includes('sal')&&tipos.includes('sal'))
+        return{equacao:'Sal + Sal → possível precipitado',efeitos:['prec'],cor:'rgba(240,245,255,0.2)',prec:true,gas:false,exp:'Dois sais podem formar um <strong>precipitado</strong> se os íons combinados forem insolúveis em água.',ph:7};
+    return{equacao:recs.map(r=>REAGENTES.find(x=>x.id===r.reagente)?.formula||'?').join(' + ')+' → Produtos',efeitos:[],cor:'rgba(200,220,240,0.15)',prec:false,gas:false,exp:'Reação entre os reagentes. Consulte seu professor para os produtos específicos desta combinação!',ph:7};
+}
+
+function mostrarResultado(res){
+    const efMap={
+        calor:`<span class="ef ef-calor">🔥 Exotérmica</span>`,
+        gas:`<span class="ef ef-gas">💨 Libera gás</span>`,
+        prec:`<span class="ef ef-prec">⬇️ Precipitado</span>`,
+        cor:`<span class="ef ef-cor" style="background:${res.cor};">🎨 Muda cor</span>`,
+    };
+    const efsHtml=res.efeitos.map(e=>efMap[e]||'').join('');
+    const phColor=res.ph<7?'#ff8833':res.ph===7?'#33cc66':'#8899ff';
+    const phTxt=res.ph<7?'Ácido':res.ph===7?'Neutro':'Básico';
+
+    document.getElementById('res-area').innerHTML=`
+        <div class="res-card">
+            <div class="res-bar" style="background:${res.cor};"></div>
+            <div class="res-body">
+                <div class="res-eq">${res.equacao}</div>
+                <div class="res-efeitos">${efsHtml||'<span style="color:#222;font-size:9px;">Sem efeitos especiais</span>'}</div>
+                <div class="res-exp">${res.exp}</div>
+                <div class="res-ph">
+                    <span class="res-ph-lbl">pH FINAL</span>
+                    <span class="res-ph-val" style="color:${phColor};">${res.ph}</span>
+                    <span class="res-ph-txt">${phTxt}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ANIMAÇÃO
+function animarReacao(res){
+    const overlay=document.getElementById('overlay-reacao');
+    overlay.innerHTML='';
+    for(let i=0;i<20;i++){
+        const p=document.createElement('div');
+        p.className='particula';
+        const sz=3+Math.random()*10;
+        const ang=Math.random()*Math.PI*2;
+        const dist=30+Math.random()*90;
+        p.style.cssText=`width:${sz}px;height:${sz}px;background:${res.cor};left:50%;top:55%;--tx:${Math.cos(ang)*dist}px;--ty:${Math.sin(ang)*dist-50}px;--dur:${0.35+Math.random()*0.5}s;--delay:${Math.random()*0.12}s;margin-left:${-sz/2}px;margin-top:${-sz/2}px;`;
+        overlay.appendChild(p);
+    }
+    if(res.gas){
+        for(let i=0;i<10;i++){
+            const b=document.createElement('div');
+            b.className='bolha-gas';
+            const sz=5+Math.random()*10;
+            b.style.cssText=`width:${sz}px;height:${sz}px;left:${35+Math.random()*30}%;top:58%;--dur:${0.5+Math.random()*0.8}s;--delay:${Math.random()*0.35}s;`;
+            overlay.appendChild(b);
+        }
+    }
+    if(res.prec){
+        for(let i=0;i<14;i++){
+            const p=document.createElement('div');
+            p.className='prec-anim';
+            const sz=3+Math.random()*5;
+            p.style.cssText=`width:${sz}px;height:${sz}px;background:${res.cor};left:${32+Math.random()*36}%;top:48%;--dur:${0.4+Math.random()*0.5}s;--delay:${Math.random()*0.25}s;`;
+            overlay.appendChild(p);
+        }
+    }
+    setTimeout(()=>{overlay.innerHTML='';},1600);
+}
+
+// RESET
+function resetarLab(){
+    recipientes=[];recSel=null;
+    renderBancada();atualizarConfig();updateCountVidraria();
+    document.getElementById('res-area').innerHTML='<div class="res-vazio">Configure os reagentes e clique em REAGIR</div>';
+    document.querySelectorAll('.ctrl-tab')[0].click();
+    toast('🧹 Bancada limpa!');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{init();});
+</script>
+</body>
+</html>

@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Brain | Banco de Amostras</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="menu.css">
+    <style>
+        /* ── TOKENS ─────────────────────────────── */
+        :root {
+            --p: #8a2be2; --p2: #c084fc; --pd: rgba(138,43,226,0.1);
+            --bg: #060608; --card: #0c0c10; --border: rgba(138,43,226,0.15);
+            --t: #e8e0f0; --td: #444; --mono: 'DM Mono', monospace;
+            --green: #00e5a0; --green-d: rgba(0,229,160,0.08);
+            --red: #ff4455; --red-d: rgba(255,68,85,0.08);
+        }
+        * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+        body { background:var(--bg); color:var(--t); font-family:'Space Grotesk',sans-serif; min-height:100vh; overflow-x:hidden; }
+
+        /* AURA DE FUNDO */
+        body::before {
+            content:''; position:fixed; top:-150px; left:50%; transform:translateX(-50%);
+            width:700px; height:500px;
+            background:radial-gradient(ellipse, rgba(138,43,226,0.06) 0%, transparent 65%);
+            pointer-events:none; z-index:0;
+        }
+        body::after {
+            content:''; position:fixed; bottom:-100px; right:-100px;
+            width:400px; height:400px;
+            background:radial-gradient(ellipse, rgba(0,229,160,0.04) 0%, transparent 65%);
+            pointer-events:none; z-index:0;
+        }
+
+        /* ── HEADER ─────────────────────────────── */
+        .glass-header {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:0 16px; height:60px;
+            background:rgba(6,6,8,0.96); backdrop-filter:blur(20px);
+            border-bottom:1px solid var(--border);
+            position:sticky; top:0; z-index:1000;
+        }
+        .header-center { display:flex; align-items:center; gap:8px; }
+        .header-icon {
+            width:32px; height:32px; background:var(--pd); border:1px solid var(--border);
+            border-radius:10px; display:flex; align-items:center; justify-content:center;
+        }
+        .header-icon i { width:16px; height:16px; color:var(--p); }
+        .header-title { font-size:14px; font-weight:900; letter-spacing:2px; color:white; }
+        .btn-menu {
+            background:rgba(255,255,255,0.03); border:1px solid #1a1a1a;
+            color:white; padding:9px; border-radius:11px; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .btn-nova {
+            display:flex; align-items:center; gap:5px;
+            background:linear-gradient(135deg,var(--p),#6a1cb2);
+            color:white; border:none; padding:8px 14px; border-radius:11px;
+            font-size:11px; font-weight:800; letter-spacing:0.5px;
+            cursor:pointer; font-family:inherit; transition:0.2s;
+            box-shadow:0 4px 14px rgba(138,43,226,0.3);
+        }
+        .btn-nova i { width:13px; height:13px; }
+
+        /* ── CONTAINER ──────────────────────────── */
+        .container { max-width:500px; margin:0 auto; padding:20px 16px 100px; position:relative; z-index:1; }
+
+        /* ── STATS TOPO ─────────────────────────── */
+        .stats-topo {
+            display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:20px;
+        }
+        .stat-topo {
+            background:var(--card); border:1px solid var(--border); border-radius:16px;
+            padding:14px 12px; text-align:center; position:relative; overflow:hidden;
+        }
+        .stat-topo::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:2px;
+            background:linear-gradient(90deg,transparent,var(--p),transparent);
+            opacity:0.5;
+        }
+        .stat-topo-val { font-family:var(--mono); font-size:22px; font-weight:700; color:white; }
+        .stat-topo-label { font-size:8px; font-weight:800; letter-spacing:2px; color:var(--td); margin-top:3px; }
+
+        /* ── BARRA DE BUSCA E FILTROS ───────────── */
+        .search-bar {
+            display:flex; align-items:center; gap:10px;
+            background:var(--card); border:1px solid #1a1a1a;
+            border-radius:14px; padding:0 14px; margin-bottom:10px;
+            transition:0.2s;
+        }
+        .search-bar:focus-within { border-color:rgba(138,43,226,0.4); }
+        .search-bar i { width:14px; height:14px; color:var(--td); flex-shrink:0; }
+        .search-bar input {
+            flex:1; background:none; border:none; outline:none;
+            color:var(--t); font-family:inherit; font-size:13px;
+            padding:13px 0;
+        }
+        .search-bar input::placeholder { color:#333; }
+
+        .filtros-row { display:flex; gap:6px; margin-bottom:20px; overflow-x:auto; padding-bottom:2px; }
+        .filtros-row::-webkit-scrollbar { display:none; }
+        .filtro-chip {
+            flex-shrink:0; font-size:10px; font-weight:800; letter-spacing:0.5px;
+            padding:7px 13px; border-radius:20px; cursor:pointer; border:none;
+            font-family:inherit; transition:0.2s;
+            background:rgba(255,255,255,0.03); border:1px solid #1a1a1a; color:#555;
+        }
+        .filtro-chip.active {
+            background:var(--pd); border-color:var(--border); color:var(--p2);
+        }
+
+        /* ── EMPTY STATE ────────────────────────── */
+        .empty-state {
+            text-align:center; padding:60px 20px;
+            display:flex; flex-direction:column; align-items:center; gap:12px;
+        }
+        .empty-icon {
+            width:72px; height:72px; border-radius:20px;
+            background:var(--pd); border:1px solid var(--border);
+            display:flex; align-items:center; justify-content:center;
+            font-size:28px; margin-bottom:4px;
+        }
+        .empty-title { font-size:15px; font-weight:800; color:white; }
+        .empty-sub { font-size:12px; color:var(--td); line-height:1.6; max-width:260px; }
+        .btn-empty {
+            display:flex; align-items:center; gap:6px;
+            background:var(--pd); border:1px solid var(--border);
+            color:var(--p2); padding:11px 20px; border-radius:12px;
+            font-size:12px; font-weight:800; cursor:pointer; border-style:solid;
+            font-family:inherit; transition:0.2s; margin-top:4px;
+            text-decoration:none;
+        }
+        .btn-empty i { width:14px; height:14px; }
+
+        /* ── LISTA DE AMOSTRAS ──────────────────── */
+        .amostras-lista { display:flex; flex-direction:column; gap:10px; }
+
+        .amostra-card {
+            background:var(--card); border:1px solid #111;
+            border-radius:18px; overflow:hidden;
+            transition:border-color 0.2s, transform 0.2s;
+            animation:entrar 0.35s ease both;
+        }
+        .amostra-card:active { transform:scale(0.99); }
+        @keyframes entrar {
+            from { opacity:0; transform:translateY(12px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+
+        /* LINHA SUPERIOR COLORIDA */
+        .amostra-color-bar { height:3px; width:100%; transition:0.3s; }
+
+        .amostra-main { display:flex; gap:14px; padding:14px; align-items:flex-start; }
+
+        /* SWATCH GRANDE */
+        .amostra-swatch {
+            width:56px; height:56px; border-radius:14px; flex-shrink:0;
+            border:2px solid rgba(255,255,255,0.08);
+            box-shadow:0 4px 16px rgba(0,0,0,0.5);
+            position:relative; overflow:hidden;
+        }
+        .amostra-swatch-shine {
+            position:absolute; top:0; left:0; right:0; height:40%;
+            background:linear-gradient(180deg,rgba(255,255,255,0.15),transparent);
+            border-radius:inherit;
+        }
+
+        .amostra-info { flex:1; min-width:0; }
+        .amostra-nome { font-size:14px; font-weight:800; color:white; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .amostra-desc { font-size:11px; color:#555; margin-bottom:8px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+        .amostra-tags { display:flex; gap:5px; flex-wrap:wrap; }
+        .amostra-tag {
+            font-size:9px; font-weight:800; letter-spacing:0.5px;
+            padding:2px 8px; border-radius:6px;
+        }
+        .tag-hex { background:rgba(255,255,255,0.04); border:1px solid #1a1a1a; color:#555; font-family:var(--mono); }
+        .tag-materia { background:var(--pd); border:1px solid var(--border); color:var(--p2); }
+        .tag-data { background:rgba(0,229,160,0.06); border:1px solid rgba(0,229,160,0.12); color:#00a870; }
+
+        /* RGB MINI */
+        .amostra-rgb-mini {
+            display:flex; gap:3px; padding:0 14px 12px;
+        }
+        .rgb-mini-bar { flex:1; height:4px; border-radius:4px; }
+
+        /* EXPANDIDO */
+        .amostra-expandido { display:none; border-top:1px solid #0f0f0f; }
+        .amostra-expandido.open { display:block; animation:expandir 0.25s ease; }
+        @keyframes expandir { from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);} }
+
+        .expand-body { padding:14px; }
+
+        /* VALORES RGB DETALHADOS */
+        .rgb-detalhe { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+        .rgb-row-det { display:flex; align-items:center; gap:10px; }
+        .rgb-lbl { font-family:var(--mono); font-size:11px; font-weight:700; min-width:14px; }
+        .rgb-track { flex:1; height:6px; border-radius:10px; background:rgba(255,255,255,0.04); overflow:hidden; }
+        .rgb-fill { height:100%; border-radius:10px; transition:width 0.5s ease; }
+        .rgb-num { font-family:var(--mono); font-size:11px; color:#555; min-width:34px; text-align:right; }
+
+        /* STATS EXPAND */
+        .expand-stats { display:grid; grid-template-columns:repeat(2,1fr); gap:6px; margin-bottom:14px; }
+        .expand-stat { background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; border:1px solid rgba(255,255,255,0.03); }
+        .expand-stat-val { font-family:var(--mono); font-size:14px; font-weight:700; color:white; }
+        .expand-stat-lbl { font-size:8px; font-weight:800; letter-spacing:1px; color:var(--td); margin-top:2px; }
+
+        /* INTERPRETAÇÃO */
+        .expand-interp { background:rgba(138,43,226,0.05); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:14px; }
+        .expand-interp-title { font-size:8px; font-weight:800; letter-spacing:2px; color:var(--p2); margin-bottom:6px; }
+        .expand-interp-text { font-size:11px; color:#666; line-height:1.6; }
+        .expand-interp-text strong { color:#aaa; }
+
+        /* AÇÕES DO CARD */
+        .expand-acoes { display:flex; gap:6px; }
+        .btn-card {
+            flex:1; display:flex; align-items:center; justify-content:center; gap:5px;
+            padding:10px; border-radius:10px; font-size:11px; font-weight:800;
+            cursor:pointer; border:none; font-family:inherit; transition:0.2s; letter-spacing:0.3px;
+        }
+        .btn-card i { width:13px; height:13px; }
+        .btn-card:active { transform:scale(0.96); }
+        .btn-card-lab { background:rgba(0,229,160,0.08); border:1px solid rgba(0,229,160,0.15); color:#00a870; }
+        .btn-card-comp { background:var(--pd); border:1px solid var(--border); color:var(--p2); }
+        .btn-card-del { background:var(--red-d); border:1px solid rgba(255,68,85,0.15); color:var(--red); }
+
+        /* ── MODAL SALVAR ───────────────────────── */
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.75);
+            z-index:3000; display:none; align-items:flex-end;
+            backdrop-filter:blur(6px);
+        }
+        .modal-overlay.open { display:flex; }
+        .modal-panel {
+            width:100%; max-width:500px; margin:0 auto;
+            background:#0e0e14; border:1px solid var(--border);
+            border-bottom:none; border-radius:24px 24px 0 0;
+            padding:24px 20px 40px; animation:slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;} }
+
+        .modal-drag { width:36px; height:4px; background:#1a1a1a; border-radius:4px; margin:0 auto 20px; }
+        .modal-title { font-size:13px; font-weight:900; letter-spacing:2px; color:white; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+        .modal-title i { width:16px; height:16px; color:var(--p2); }
+
+        /* PREVIEW DA COR NO MODAL */
+        .modal-cor-preview {
+            display:flex; align-items:center; gap:14px;
+            background:rgba(0,0,0,0.3); border-radius:14px; padding:14px;
+            margin-bottom:16px; border:1px solid rgba(255,255,255,0.04);
+        }
+        .modal-swatch { width:52px; height:52px; border-radius:12px; border:2px solid rgba(255,255,255,0.1); flex-shrink:0; }
+        .modal-cor-info { flex:1; }
+        .modal-hex { font-family:var(--mono); font-size:18px; font-weight:700; color:white; }
+        .modal-cor-nome { font-size:11px; color:var(--td); margin-top:2px; }
+
+        /* CAMPOS DO MODAL */
+        .campo-grupo { margin-bottom:14px; }
+        .campo-label { font-size:9px; font-weight:800; letter-spacing:2px; color:var(--td); margin-bottom:6px; display:block; }
+        .campo-input {
+            width:100%; background:rgba(0,0,0,0.3); border:1px solid #1a1a1a;
+            border-radius:12px; padding:12px 14px; color:var(--t);
+            font-family:inherit; font-size:13px; outline:none; transition:0.2s;
+        }
+        .campo-input:focus { border-color:rgba(138,43,226,0.4); }
+        .campo-input::placeholder { color:#333; }
+        textarea.campo-input { resize:none; height:80px; line-height:1.5; }
+
+        .modal-acoes { display:flex; gap:8px; margin-top:20px; }
+        .btn-modal-cancel {
+            flex:1; padding:13px; border-radius:14px; font-size:12px; font-weight:800;
+            cursor:pointer; border:1px solid #1a1a1a; background:rgba(255,255,255,0.03);
+            color:var(--td); font-family:inherit; transition:0.2s;
+        }
+        .btn-modal-save {
+            flex:2; padding:13px; border-radius:14px; font-size:12px; font-weight:800;
+            cursor:pointer; border:none;
+            background:linear-gradient(135deg,var(--p),#6a1cb2);
+            color:white; font-family:inherit; transition:0.2s;
+            box-shadow:0 4px 16px rgba(138,43,226,0.3);
+            display:flex; align-items:center; justify-content:center; gap:6px;
+        }
+        .btn-modal-save i { width:14px; height:14px; }
+
+        /* ── MODAL COMPARAR ─────────────────────── */
+        .comp-select-mode { display:none; }
+        .comp-select-mode.ativo { display:block; }
+        .comp-select-banner {
+            background:rgba(138,43,226,0.08); border:1px solid var(--border);
+            border-radius:14px; padding:14px; margin-bottom:16px;
+            display:flex; align-items:center; gap:10px;
+        }
+        .comp-select-banner-icon { font-size:18px; flex-shrink:0; }
+        .comp-select-banner-text { font-size:11px; color:#888; line-height:1.5; }
+        .comp-select-banner-text strong { color:white; }
+        .btn-cancelar-comp {
+            display:block; width:100%; padding:11px;
+            background:var(--red-d); border:1px solid rgba(255,68,85,0.15);
+            color:var(--red); border-radius:12px; font-family:inherit;
+            font-size:11px; font-weight:800; cursor:pointer; margin-bottom:16px;
+            transition:0.2s;
+        }
+
+        /* RESULTADO COMPARAÇÃO */
+        .comp-resultado-modal {
+            position:fixed; inset:0; background:rgba(0,0,0,0.8);
+            z-index:4000; display:none; align-items:flex-end;
+            backdrop-filter:blur(8px);
+        }
+        .comp-resultado-modal.open { display:flex; }
+        .comp-resultado-panel {
+            width:100%; max-width:500px; margin:0 auto;
+            background:#0e0e14; border:1px solid var(--border);
+            border-bottom:none; border-radius:24px 24px 0 0;
+            padding:24px 20px 44px; max-height:85vh; overflow-y:auto;
+            animation:slideUp 0.3s ease;
+        }
+        .comp-res-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+        .comp-res-title { font-size:12px; font-weight:900; letter-spacing:2px; color:white; }
+        .btn-fechar-comp {
+            background:rgba(255,255,255,0.04); border:1px solid #1a1a1a;
+            color:#555; width:32px; height:32px; border-radius:10px;
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
+        }
+        .btn-fechar-comp i { width:14px; height:14px; }
+
+        /* SIDE BY SIDE */
+        .comp-side { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+        .comp-side-card { border-radius:14px; overflow:hidden; border:1px solid #1a1a1a; }
+        .comp-side-swatch { width:100%; height:70px; }
+        .comp-side-body { padding:10px; background:#0a0a0a; }
+        .comp-side-nome { font-size:11px; font-weight:800; color:white; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .comp-side-hex { font-family:var(--mono); font-size:10px; color:#555; }
+        .comp-side-label { font-size:8px; font-weight:800; letter-spacing:2px; margin-bottom:6px; }
+
+        /* DIFF BARS */
+        .comp-diff-section { margin-bottom:14px; }
+        .comp-diff-title { font-size:9px; font-weight:800; letter-spacing:2px; color:#333; margin-bottom:10px; }
+        .comp-diff-row { display:grid; grid-template-columns:14px 1fr 52px; gap:8px; align-items:center; margin-bottom:6px; }
+        .comp-diff-ch { font-family:var(--mono); font-size:10px; font-weight:800; }
+        .comp-diff-track { height:6px; border-radius:10px; background:rgba(255,255,255,0.04); overflow:hidden; position:relative; }
+        .comp-diff-fill { height:100%; border-radius:10px; transition:width 0.5s; position:absolute; top:0; }
+        .comp-diff-val { font-family:var(--mono); font-size:10px; text-align:right; }
+
+        .comp-conclusao-box { background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.04); border-radius:12px; padding:14px; }
+        .comp-badge { display:inline-block; font-size:9px; font-weight:800; letter-spacing:1px; padding:3px 9px; border-radius:6px; margin-bottom:8px; }
+        .badge-similar { background:rgba(0,229,160,0.1); color:#00e5a0; border:1px solid rgba(0,229,160,0.2); }
+        .badge-moderado { background:rgba(255,200,0,0.1); color:#ffc800; border:1px solid rgba(255,200,0,0.2); }
+        .badge-diferente { background:var(--red-d); color:var(--red); border:1px solid rgba(255,68,85,0.2); }
+        .comp-conclusao-text { font-size:11px; color:#666; line-height:1.65; }
+        .comp-conclusao-text strong { color:#aaa; }
+        .comp-insight-item { display:flex; gap:8px; margin-top:8px; padding:8px 10px; background:rgba(255,255,255,0.02); border-radius:8px; }
+        .comp-insight-item-text { font-size:10px; color:#555; line-height:1.5; }
+        .comp-insight-item-text strong { color:#888; }
+
+        /* ── TOAST ──────────────────────────────── */
+        .toast {
+            position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px);
+            background:#111116; border:1px solid rgba(138,43,226,0.3);
+            color:var(--t); font-size:12px; font-weight:700;
+            padding:10px 20px; border-radius:20px; z-index:9999;
+            opacity:0; transition:all 0.3s ease; pointer-events:none;
+            white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.5);
+        }
+        .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+        /* ── LOADING ────────────────────────────── */
+        .loading-state { text-align:center; padding:50px 20px; }
+        .loading-spinner {
+            width:36px; height:36px; border:3px solid rgba(138,43,226,0.2);
+            border-top-color:var(--p); border-radius:50%;
+            animation:spin 0.8s linear infinite; margin:0 auto 12px;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .loading-text { font-size:11px; color:var(--td); font-weight:700; letter-spacing:1px; }
+
+        /* LABEL SEÇÃO */
+        .section-label {
+            font-size:9px; font-weight:800; letter-spacing:3px; color:var(--td);
+            text-transform:uppercase; margin-bottom:10px;
+            display:flex; align-items:center; gap:8px;
+        }
+        .section-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.04); }
+    </style>
+</head>
+<body>
+
+<header class="glass-header">
+    <button id="open-menu" class="btn-menu"><i data-lucide="menu"></i></button>
+    <div class="header-center">
+        <div class="header-icon"><i data-lucide="flask-conical"></i></div>
+        <span class="header-title">BANCO DE AMOSTRAS</span>
+    </div>
+    <button class="btn-nova" onclick="window.location.href='rgb-roi.html'">
+        <i data-lucide="plus"></i> Nova
+    </button>
+</header>
+
+<div class="container">
+
+    <!-- STATS TOPO -->
+    <div class="stats-topo">
+        <div class="stat-topo">
+            <div class="stat-topo-val" id="stat-total">0</div>
+            <div class="stat-topo-label">AMOSTRAS</div>
+        </div>
+        <div class="stat-topo">
+            <div class="stat-topo-val" id="stat-esta-semana">0</div>
+            <div class="stat-topo-label">ESTA SEMANA</div>
+        </div>
+        <div class="stat-topo">
+            <div class="stat-topo-val" id="stat-materias">0</div>
+            <div class="stat-topo-label">MATÉRIAS</div>
+        </div>
+    </div>
+
+    <!-- BUSCA -->
+    <div class="search-bar">
+        <i data-lucide="search"></i>
+        <input type="text" id="busca-input" placeholder="Buscar amostra..." oninput="filtrarAmostras()">
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filtros-row" id="filtros-row">
+        <button class="filtro-chip active" data-filtro="todas" onclick="setFiltro(this,'todas')">Todas</button>
+        <button class="filtro-chip" data-filtro="semana" onclick="setFiltro(this,'semana')">Esta semana</button>
+        <button class="filtro-chip" data-filtro="mes" onclick="setFiltro(this,'mes')">Este mês</button>
+    </div>
+
+    <!-- MODO COMPARAR BANNER -->
+    <div class="comp-select-mode" id="comp-select-mode">
+        <div class="comp-select-banner">
+            <div class="comp-select-banner-icon">🔬</div>
+            <div class="comp-select-banner-text">
+                <strong>Selecione a segunda amostra</strong> para comparar com <strong id="comp-select-nome-a">—</strong>
+            </div>
+        </div>
+        <button class="btn-cancelar-comp" onclick="cancelarComparacao()">✕ Cancelar comparação</button>
+    </div>
+
+    <!-- LABEL LISTA -->
+    <div class="section-label">
+        <span id="lista-label">EXPERIMENTOS</span>
+    </div>
+
+    <!-- LISTA -->
+    <div id="amostras-lista" class="amostras-lista">
+        <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">CARREGANDO AMOSTRAS...</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- MODAL SALVAR NOVA AMOSTRA (chamado via URL param ou botão externo) -->
+<div class="modal-overlay" id="modal-salvar" onclick="fecharModalSalvarOverlay(event)">
+    <div class="modal-panel">
+        <div class="modal-drag"></div>
+        <div class="modal-title"><i data-lucide="save"></i> SALVAR AMOSTRA</div>
+
+        <div class="modal-cor-preview">
+            <div class="modal-swatch" id="modal-swatch"></div>
+            <div class="modal-cor-info">
+                <div class="modal-hex" id="modal-hex">#000000</div>
+                <div class="modal-cor-nome" id="modal-cor-nome">—</div>
+            </div>
+        </div>
+
+        <div class="campo-grupo">
+            <label class="campo-label">NOME DO EXPERIMENTO</label>
+            <input type="text" class="campo-input" id="campo-nome" placeholder="Ex: Solução de sulfato de cobre" maxlength="60">
+        </div>
+        <div class="campo-grupo">
+            <label class="campo-label">MATÉRIA / DISCIPLINA</label>
+            <input type="text" class="campo-input" id="campo-materia" placeholder="Ex: Química, Biologia..." maxlength="40">
+        </div>
+        <div class="campo-grupo">
+            <label class="campo-label">OBSERVAÇÕES</label>
+            <textarea class="campo-input" id="campo-desc" placeholder="Condições do experimento, hipóteses, conclusões..."></textarea>
+        </div>
+
+        <div class="modal-acoes">
+            <button class="btn-modal-cancel" onclick="fecharModalSalvar()">Cancelar</button>
+            <button class="btn-modal-save" onclick="salvarAmostra()">
+                <i data-lucide="save"></i> SALVAR
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL RESULTADO COMPARAÇÃO -->
+<div class="comp-resultado-modal" id="comp-resultado-modal">
+    <div class="comp-resultado-panel">
+        <div class="comp-res-header">
+            <div class="comp-res-title">COMPARAÇÃO DE AMOSTRAS</div>
+            <button class="btn-fechar-comp" onclick="fecharCompResultado()"><i data-lucide="x"></i></button>
+        </div>
+        <div id="comp-resultado-body"></div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="menu.js"></script>
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+    authDomain: "dt-scho0l.firebaseapp.com",
+    projectId: "dt-scho0l",
+    storageBucket: "dt-scho0l.firebasestorage.app",
+    messagingSenderId: "78578509391",
+    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+};
+
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const db = getFirestore(app);
+const userEmail = localStorage.getItem('dt_user_email');
+const userType  = localStorage.getItem('dt_user_type');
+
+// ── ESTADO GLOBAL ────────────────────────
+let amostrasGlobal = [];
+let filtroAtivo = 'todas';
+let buscaAtiva = '';
+let modoComparar = false;
+let amostraCompA = null;
+let dadosPendentes = null; // dados vindos da rgb-roi via sessionStorage
+
+// ── UTILS ────────────────────────────────
+function toast(msg, dur = 2500) {
+    const el = document.getElementById('toast');
+    el.innerText = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), dur);
+}
+
+function formatData(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function getInicioSemana() {
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(0,0,0,0);
+    return d;
+}
+
+function getInicioMes() {
+    const d = new Date();
+    d.setDate(1); d.setHours(0,0,0,0);
+    return d;
+}
+
+// ── CARREGAR AMOSTRAS ────────────────────
+async function carregarAmostras() {
+    if (userType === 'local' || !userEmail) {
+        amostrasGlobal = JSON.parse(localStorage.getItem('hb_amostras_rgb') || '[]');
+    } else {
+        try {
+            const q = query(
+                collection(db, 'amostras-rgb'),
+                where('usuario', '==', userEmail)
+            );
+            const snap = await getDocs(q);
+            amostrasGlobal = snap.docs.map(d => ({ id_firebase: d.id, ...d.data() }));
+            // Ordena por data desc
+            amostrasGlobal.sort((a,b) => new Date(b.criadoEm) - new Date(a.criadoEm));
+        } catch(e) {
+            console.error(e);
+            amostrasGlobal = JSON.parse(localStorage.getItem('hb_amostras_rgb') || '[]');
+            toast('⚠️ Modo offline — dados locais');
+        }
+    }
+    atualizarStats();
+    atualizarFiltrosMateria();
+    renderAmostras();
+}
+
+// ── STATS ────────────────────────────────
+function atualizarStats() {
+    const total = amostrasGlobal.length;
+    const semana = amostrasGlobal.filter(a => new Date(a.criadoEm) >= getInicioSemana()).length;
+    const materias = new Set(amostrasGlobal.map(a => a.materia).filter(Boolean)).size;
+
+    document.getElementById('stat-total').innerText = total;
+    document.getElementById('stat-esta-semana').innerText = semana;
+    document.getElementById('stat-materias').innerText = materias;
+}
+
+// ── FILTROS DINÂMICOS (matérias) ─────────
+function atualizarFiltrosMateria() {
+    const row = document.getElementById('filtros-row');
+    // Remove chips de matérias antigas
+    row.querySelectorAll('[data-materia]').forEach(el => el.remove());
+
+    const materias = [...new Set(amostrasGlobal.map(a => a.materia).filter(Boolean))];
+    materias.forEach(m => {
+        const btn = document.createElement('button');
+        btn.className = 'filtro-chip';
+        btn.dataset.materia = m;
+        btn.innerText = m;
+        btn.onclick = () => setFiltroMateria(btn, m);
+        row.appendChild(btn);
+    });
+}
+
+// ── FILTRAR ──────────────────────────────
+window.setFiltro = function(el, tipo) {
+    document.querySelectorAll('.filtro-chip[data-filtro]').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filtro-chip[data-materia]').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    filtroAtivo = tipo;
+    renderAmostras();
+};
+
+function setFiltroMateria(el, materia) {
+    document.querySelectorAll('.filtro-chip').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    filtroAtivo = 'materia:' + materia;
+    renderAmostras();
+}
+
+window.filtrarAmostras = function() {
+    buscaAtiva = document.getElementById('busca-input').value.toLowerCase().trim();
+    renderAmostras();
+};
+
+function getAmostrasVisiveis() {
+    let arr = [...amostrasGlobal];
+    // Filtro temporal/matéria
+    if (filtroAtivo === 'semana') {
+        arr = arr.filter(a => new Date(a.criadoEm) >= getInicioSemana());
+    } else if (filtroAtivo === 'mes') {
+        arr = arr.filter(a => new Date(a.criadoEm) >= getInicioMes());
+    } else if (filtroAtivo.startsWith('materia:')) {
+        const m = filtroAtivo.replace('materia:','');
+        arr = arr.filter(a => a.materia === m);
+    }
+    // Busca
+    if (buscaAtiva) {
+        arr = arr.filter(a =>
+            (a.nome || '').toLowerCase().includes(buscaAtiva) ||
+            (a.desc || '').toLowerCase().includes(buscaAtiva) ||
+            (a.materia || '').toLowerCase().includes(buscaAtiva) ||
+            (a.hex || '').toLowerCase().includes(buscaAtiva)
+        );
+    }
+    return arr;
+}
+
+// ── RENDER LISTA ─────────────────────────
+function renderAmostras() {
+    const lista = document.getElementById('amostras-lista');
+    const arr = getAmostrasVisiveis();
+
+    document.getElementById('lista-label').innerText =
+        `EXPERIMENTOS (${arr.length})`;
+
+    if (arr.length === 0) {
+        lista.innerHTML = buildEmptyState();
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+
+    lista.innerHTML = arr.map((a, i) => buildCard(a, i)).join('');
+    if (window.lucide) lucide.createIcons();
+}
+
+function buildEmptyState() {
+    if (amostrasGlobal.length === 0) {
+        return `
+        <div class="empty-state">
+            <div class="empty-icon">🧪</div>
+            <div class="empty-title">Nenhuma amostra ainda</div>
+            <div class="empty-sub">Faça uma análise RGB e salve aqui para montar seu caderno de experimentos.</div>
+            <a href="rgb-roi.html" class="btn-empty">
+                <i data-lucide="scan-eye"></i> Ir para Análise RGB
+            </a>
+        </div>`;
+    }
+    return `
+    <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">Nenhum resultado</div>
+        <div class="empty-sub">Tente outro filtro ou termo de busca.</div>
+    </div>`;
+}
+
+function buildCard(a, idx) {
+    const r = a.r || 0, g = a.g || 0, b = a.b || 0;
+    const hex = a.hex || '#000000';
+    const bright = Math.round((r + g + b) / 3);
+    const textColor = bright > 128 ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)';
+
+    // Mini bars RGB
+    const pR = Math.round(r/255*100), pG = Math.round(g/255*100), pB = Math.round(b/255*100);
+
+    return `
+    <div class="amostra-card" id="card-${a.id_firebase || a.criadoEm}" style="animation-delay:${idx * 0.05}s">
+        <div class="amostra-color-bar" style="background:${hex};"></div>
+        <div class="amostra-main" onclick="toggleCard('${a.id_firebase || a.criadoEm}')">
+            <div class="amostra-swatch" style="background:${hex};">
+                <div class="amostra-swatch-shine"></div>
+            </div>
+            <div class="amostra-info">
+                <div class="amostra-nome">${a.nome || 'Amostra sem nome'}</div>
+                ${a.desc ? `<div class="amostra-desc">${a.desc}</div>` : ''}
+                <div class="amostra-tags">
+                    <span class="amostra-tag tag-hex">${hex.toUpperCase()}</span>
+                    ${a.materia ? `<span class="amostra-tag tag-materia">${a.materia}</span>` : ''}
+                    <span class="amostra-tag tag-data">${formatData(a.criadoEm)}</span>
+                </div>
+            </div>
+        </div>
+        <div class="amostra-rgb-mini">
+            <div class="rgb-mini-bar" style="background:linear-gradient(90deg,rgba(255,85,85,0.2),rgba(255,85,85,${pR/100}));height:3px;flex:${pR} 0 0;border-radius:4px;"></div>
+            <div style="width:4px;"></div>
+            <div class="rgb-mini-bar" style="background:linear-gradient(90deg,rgba(85,255,85,0.2),rgba(85,255,85,${pG/100}));height:3px;flex:${pG} 0 0;border-radius:4px;"></div>
+            <div style="width:4px;"></div>
+            <div class="rgb-mini-bar" style="background:linear-gradient(90deg,rgba(85,153,255,0.2),rgba(85,153,255,${pB/100}));height:3px;flex:${pB} 0 0;border-radius:4px;"></div>
+        </div>
+        <div class="amostra-expandido" id="exp-${a.id_firebase || a.criadoEm}">
+            <div class="expand-body">
+
+                <div class="rgb-detalhe">
+                    <div class="rgb-row-det">
+                        <span class="rgb-lbl" style="color:#ff5555;">R</span>
+                        <div class="rgb-track"><div class="rgb-fill" style="width:${pR}%;background:linear-gradient(90deg,#cc0000,#ff5555);"></div></div>
+                        <span class="rgb-num">${r.toFixed(1)}</span>
+                    </div>
+                    <div class="rgb-row-det">
+                        <span class="rgb-lbl" style="color:#55ff55;">G</span>
+                        <div class="rgb-track"><div class="rgb-fill" style="width:${pG}%;background:linear-gradient(90deg,#006600,#55ff55);"></div></div>
+                        <span class="rgb-num">${g.toFixed(1)}</span>
+                    </div>
+                    <div class="rgb-row-det">
+                        <span class="rgb-lbl" style="color:#5599ff;">B</span>
+                        <div class="rgb-track"><div class="rgb-fill" style="width:${pB}%;background:linear-gradient(90deg,#000099,#5599ff);"></div></div>
+                        <span class="rgb-num">${b.toFixed(1)}</span>
+                    </div>
+                </div>
+
+                <div class="expand-stats">
+                    <div class="expand-stat">
+                        <div class="expand-stat-val">${bright}</div>
+                        <div class="expand-stat-lbl">BRILHO MÉDIO</div>
+                    </div>
+                    <div class="expand-stat">
+                        <div class="expand-stat-val">${a.sat || 0}%</div>
+                        <div class="expand-stat-lbl">SATURAÇÃO</div>
+                    </div>
+                    <div class="expand-stat">
+                        <div class="expand-stat-val">${a.hue || 0}°</div>
+                        <div class="expand-stat-lbl">MATIZ (HUE)</div>
+                    </div>
+                    <div class="expand-stat">
+                        <div class="expand-stat-val">${(a.pixels || 0).toLocaleString('pt-BR')}</div>
+                        <div class="expand-stat-lbl">PIXELS</div>
+                    </div>
+                </div>
+
+                ${a.interpretacao ? `
+                <div class="expand-interp">
+                    <div class="expand-interp-title">INTERPRETAÇÃO</div>
+                    <div class="expand-interp-text">${a.interpretacao}</div>
+                </div>` : ''}
+
+                <div class="expand-acoes">
+                    <button class="btn-card btn-card-comp" onclick="iniciarComparacao('${a.id_firebase || a.criadoEm}')">
+                        <i data-lucide="git-compare-arrows"></i> Comparar
+                    </button>
+                    <button class="btn-card btn-card-del" onclick="deletarAmostra('${a.id_firebase || a.criadoEm}', event)">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+// ── TOGGLE CARD ──────────────────────────
+window.toggleCard = function(id) {
+    if (modoComparar) {
+        // Em modo comparar, clique seleciona a amostra B
+        const amostra = amostrasGlobal.find(a => (a.id_firebase || a.criadoEm) == id);
+        if (!amostra || (amostraCompA && (amostraCompA.id_firebase || amostraCompA.criadoEm) == id)) return;
+        executarComparacao(amostraCompA, amostra);
+        return;
+    }
+    const exp = document.getElementById('exp-' + id);
+    if (!exp) return;
+    exp.classList.toggle('open');
+    if (exp.classList.contains('open') && window.lucide) lucide.createIcons();
+};
+
+// ── DELETAR ──────────────────────────────
+window.deletarAmostra = async function(id, e) {
+    e.stopPropagation();
+    if (!confirm('Remover esta amostra do banco?')) return;
+
+    if (userType !== 'local' && userEmail) {
+        try {
+            await deleteDoc(doc(db, 'amostras-rgb', id));
+        } catch(err) { console.error(err); }
+    }
+
+    amostrasGlobal = amostrasGlobal.filter(a => (a.id_firebase || a.criadoEm) !== id);
+    if (userType === 'local') localStorage.setItem('hb_amostras_rgb', JSON.stringify(amostrasGlobal));
+
+    atualizarStats();
+    atualizarFiltrosMateria();
+    renderAmostras();
+    toast('🗑️ Amostra removida');
+};
+
+// ── MODAL SALVAR ─────────────────────────
+window.abrirModalSalvar = function(dados) {
+    dadosPendentes = dados;
+    document.getElementById('modal-swatch').style.background = dados.hex;
+    document.getElementById('modal-hex').innerText = dados.hex.toUpperCase();
+    document.getElementById('modal-cor-nome').innerText = dados.corNome || '—';
+    document.getElementById('campo-materia').value = localStorage.getItem('hb_ultima_materia') || '';
+    document.getElementById('campo-nome').value = '';
+    document.getElementById('campo-desc').value = '';
+    document.getElementById('modal-salvar').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (window.lucide) lucide.createIcons();
+};
+
+window.fecharModalSalvar = function() {
+    document.getElementById('modal-salvar').classList.remove('open');
+    document.body.style.overflow = '';
+};
+
+window.fecharModalSalvarOverlay = function(e) {
+    if (e.target === document.getElementById('modal-salvar')) fecharModalSalvar();
+};
+
+window.salvarAmostra = async function() {
+    const nome = document.getElementById('campo-nome').value.trim();
+    const materia = document.getElementById('campo-materia').value.trim();
+    const desc = document.getElementById('campo-desc').value.trim();
+
+    if (!nome) { toast('⚠️ Dê um nome para a amostra'); return; }
+    if (!dadosPendentes) { toast('⚠️ Nenhum dado de análise'); return; }
+
+    localStorage.setItem('hb_ultima_materia', materia);
+
+    const amostra = {
+        usuario: userEmail || 'local',
+        nome, materia, desc,
+        hex:    dadosPendentes.hex,
+        r:      dadosPendentes.r,
+        g:      dadosPendentes.g,
+        b:      dadosPendentes.b,
+        sat:    dadosPendentes.sat,
+        hue:    dadosPendentes.hue,
+        pixels: dadosPendentes.pixels,
+        interpretacao: dadosPendentes.interpretacao || '',
+        criadoEm: new Date().toISOString(),
+    };
+
+    const btnSalvar = document.querySelector('.btn-modal-save');
+    btnSalvar.innerHTML = '<i data-lucide="loader-2"></i> Salvando...';
+    btnSalvar.disabled = true;
+    if (window.lucide) lucide.createIcons();
+
+    if (userType !== 'local' && userEmail) {
+        try {
+            const ref = await addDoc(collection(db, 'amostras-rgb'), amostra);
+            amostra.id_firebase = ref.id;
+        } catch(e) {
+            console.error(e);
+            toast('⚠️ Erro ao salvar na nuvem, salvo localmente');
+        }
+    }
+
+    // Sempre salva local como backup
+    const local = JSON.parse(localStorage.getItem('hb_amostras_rgb') || '[]');
+    local.unshift(amostra);
+    localStorage.setItem('hb_amostras_rgb', JSON.stringify(local));
+
+    amostrasGlobal.unshift(amostra);
+    atualizarStats();
+    atualizarFiltrosMateria();
+    renderAmostras();
+    fecharModalSalvar();
+    toast('✅ Amostra salva no banco!');
+
+    btnSalvar.innerHTML = '<i data-lucide="save"></i> SALVAR';
+    btnSalvar.disabled = false;
+    if (window.lucide) lucide.createIcons();
+};
+
+// ── COMPARAÇÃO ───────────────────────────
+window.iniciarComparacao = function(id) {
+    const amostra = amostrasGlobal.find(a => (a.id_firebase || a.criadoEm) == id);
+    if (!amostra) return;
+    amostraCompA = amostra;
+    modoComparar = true;
+    document.getElementById('comp-select-nome-a').innerText = amostra.nome;
+    document.getElementById('comp-select-mode').classList.add('ativo');
+    // Fecha todos os expandidos
+    document.querySelectorAll('.amostra-expandido').forEach(e => e.classList.remove('open'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    toast('Toque em outra amostra para comparar');
+};
+
+window.cancelarComparacao = function() {
+    modoComparar = false;
+    amostraCompA = null;
+    document.getElementById('comp-select-mode').classList.remove('ativo');
+};
+
+function executarComparacao(a, b) {
+    cancelarComparacao();
+    const dR = b.r - a.r, dG = b.g - a.g, dB = b.b - a.b;
+    const dist = Math.sqrt(dR*dR + dG*dG + dB*dB);
+
+    let badgeClass, badgeText, titulo;
+    if (dist < 15) { badgeClass='badge-similar'; badgeText='MUITO SIMILARES'; titulo='As amostras são praticamente idênticas'; }
+    else if (dist < 40) { badgeClass='badge-moderado'; badgeText='DIFERENÇA MODERADA'; titulo='Variação perceptível entre as amostras'; }
+    else { badgeClass='badge-diferente'; badgeText='DIFERENÇA SIGNIFICATIVA'; titulo='Alteração visual clara entre as amostras'; }
+
+    // Insights
+    const insights = [];
+    const brightA = (a.r+a.g+a.b)/3, brightB = (b.r+b.g+b.b)/3;
+    const dBright = brightB - brightA;
+    const maxD = Math.max(Math.abs(dR),Math.abs(dG),Math.abs(dB));
+
+    if (maxD > 18) {
+        if (Math.abs(dR)===maxD) insights.push(dR>0 ? `🔴 Canal <strong>Vermelho subiu ${dR.toFixed(1)} pts</strong> — B está mais avermelhado/amarronzado.` : `🔵 Canal <strong>Vermelho caiu ${Math.abs(dR).toFixed(1)} pts</strong> — B está mais frio/azulado.`);
+        else if (Math.abs(dG)===maxD) insights.push(dG>0 ? `🟢 Canal <strong>Verde subiu ${dG.toFixed(1)} pts</strong> — B está mais esverdeado.` : `🍂 Canal <strong>Verde caiu ${Math.abs(dG).toFixed(1)} pts</strong> — B perdeu verde (amadurecimento?).`);
+        else insights.push(dB>0 ? `💙 Canal <strong>Azul subiu ${dB.toFixed(1)} pts</strong> em B.` : `🟤 Canal <strong>Azul caiu ${Math.abs(dB).toFixed(1)} pts</strong> em B.`);
+    }
+    if (Math.abs(dBright)>12) insights.push(dBright>0 ? `☀️ B é <strong>${Math.abs(dBright).toFixed(1)} pts mais claro</strong> — menor concentração ou mais reflexo.` : `🌑 B é <strong>${Math.abs(dBright).toFixed(1)} pts mais escuro</strong> — maior concentração ou escurecimento.`);
+
+    function buildDiffBar(delta, cor) {
+        const pct = Math.min(Math.abs(delta)/255*100, 100);
+        const sign = delta >= 0 ? '+' : '';
+        const barStyle = delta >= 0
+            ? `left:50%;width:${pct/2}%;background:${cor};`
+            : `left:${50-pct/2}%;width:${pct/2}%;background:#333;`;
+        const valColor = Math.abs(delta)>15 ? (delta>0?cor:'#ff4455') : '#444';
+        return { bar: barStyle, val: sign+delta.toFixed(1), color: valColor };
+    }
+    const dBarR = buildDiffBar(dR,'#ff5555');
+    const dBarG = buildDiffBar(dG,'#55ff55');
+    const dBarB = buildDiffBar(dB,'#5599ff');
+
+    document.getElementById('comp-resultado-body').innerHTML = `
+        <div class="comp-side">
+            <div class="comp-side-card">
+                <div class="comp-side-swatch" style="background:${a.hex};"></div>
+                <div class="comp-side-body">
+                    <div class="comp-side-label" style="color:#00e5a0;">AMOSTRA A</div>
+                    <div class="comp-side-nome">${a.nome}</div>
+                    <div class="comp-side-hex">${a.hex?.toUpperCase()}</div>
+                </div>
+            </div>
+            <div class="comp-side-card">
+                <div class="comp-side-swatch" style="background:${b.hex};"></div>
+                <div class="comp-side-body">
+                    <div class="comp-side-label" style="color:#c084fc;">AMOSTRA B</div>
+                    <div class="comp-side-nome">${b.nome}</div>
+                    <div class="comp-side-hex">${b.hex?.toUpperCase()}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comp-diff-section">
+            <div class="comp-diff-title">DIFERENÇA (B − A)</div>
+            ${['R','G','B'].map((ch,i) => {
+                const bars = [dBarR,dBarG,dBarB][i];
+                const colors = ['#ff5555','#55ff55','#5599ff'];
+                return `<div class="comp-diff-row">
+                    <span class="comp-diff-ch" style="color:${colors[i]};">${ch}</span>
+                    <div class="comp-diff-track">
+                        <div class="comp-diff-fill" style="${bars.bar}"></div>
+                    </div>
+                    <span class="comp-diff-val" style="color:${bars.color};">${bars.val}</span>
+                </div>`;
+            }).join('')}
+        </div>
+
+        <div class="comp-conclusao-box">
+            <span class="comp-badge ${badgeClass}">${badgeText} · dist: ${dist.toFixed(1)}</span>
+            <div class="comp-conclusao-text">
+                <strong>${titulo}</strong>
+                ${insights.map(i => `<div class="comp-insight-item"><span class="comp-insight-item-text">${i}</span></div>`).join('')}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('comp-resultado-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (window.lucide) lucide.createIcons();
+}
+
+window.fecharCompResultado = function() {
+    document.getElementById('comp-resultado-modal').classList.remove('open');
+    document.body.style.overflow = '';
+};
+
+// ── VERIFICAR DADOS VINDOS DO RGB-ROI ────
+// rgb-roi.html vai salvar em sessionStorage antes de redirecionar
+function verificarDadosPendentes() {
+    const raw = sessionStorage.getItem('hb_salvar_amostra');
+    if (!raw) return;
+    sessionStorage.removeItem('hb_salvar_amostra');
+    try {
+        const dados = JSON.parse(raw);
+        abrirModalSalvar(dados);
+    } catch(e) {}
+}
+
+// ── INIT ─────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    await carregarAmostras();
+    verificarDadosPendentes();
+    if (window.lucide) lucide.createIcons();
+});
+</script>
+</body>
+</html>
