@@ -1,214 +1,342 @@
-const criarMenuGlobal = () => {
-    const nome = localStorage.getItem('dt_user_name') || 'Estudante';
-    const email = (localStorage.getItem('dt_user_email') || '').toLowerCase();
-    const avatar = localStorage.getItem('dt_user_avatar') || 'user';
-    const primeiroNome = nome.split(' ')[0];
+/* ════════════════════════════════════════════════════════════════════════
+   MENU LATERAL - Hub Brain
+   ════════════════════════════════════════════════════════════════════════ */
 
-    const menuHTML = `
-        <div id="side-menu" class="side-menu">
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 280px;
+    height: 100%;
+    background: rgba(10, 10, 15, 0.98);
+    backdrop-filter: blur(20px);
+    z-index: 2000;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(138, 43, 226, 0.2);
+}
 
-            <!-- MINI CARD PERFIL -->
-            <div class="menu-profile-card" onclick="window.location.href='perfil.html'">
-                <div class="menu-avatar">
-                    <i data-lucide="${avatar}" id="menu-avatar-icon"></i>
-                </div>
-                <div class="menu-profile-info">
-                    <div class="menu-profile-nome">${primeiroNome}</div>
-                    <div class="menu-profile-email">${email || 'Visitante'}</div>
-                </div>
-                <div class="menu-profile-arrow">
-                    <i data-lucide="chevron-right"></i>
-                </div>
-            </div>
+.side-menu.open {
+    left: 0;
+}
 
-            <nav class="menu-links" id="nav-links-container">
-                <div class="menu-section-label">GERAL</div>
-                <a href="index.html" id="link-home"><i data-lucide="home"></i> Início</a>
-                <a href="perfil.html" id="link-perfil"><i data-lucide="user"></i> Perfil</a>
-                <a href="ranking.html" id="link-ranking"><i data-lucide="trophy"></i> Ranking</a>
-                <a href="configuracoes.html" id="link-configuracoes"><i data-lucide="settings-2"></i> Configurações</a>
+.menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
 
-                <div class="menu-section-label">ESTUDOS</div>
-                <a href="notas.html" id="link-notas"><i data-lucide="layout-dashboard"></i> Notas</a>
-                <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
-                <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
-                
-                <!-- SUB-MENU QUÍMICA -->
-                <div class="menu-item-expandable" id="quimica-expandable">
-                    <div class="menu-item-header" onclick="toggleSubMenu('quimica')">
-                        <div class="menu-item-content">
-                            <i data-lucide="flask-conical"></i>
-                            <span>Química</span>
-                        </div>
-                        <i data-lucide="chevron-down" class="menu-chevron" id="chevron-quimica"></i>
-                    </div>
-                    <div class="sub-menu" id="submenu-quimica">
-                        <a href="quimica.html" id="link-quimica-geral" class="sub-menu-link">
-                            <i data-lucide="atom"></i> Química Geral
-                        </a>
-                        <a href="rgb-roi.html" id="link-rgb" class="sub-menu-link">
-                            <i data-lucide="scan-eye"></i> RGB & ROI
-                        </a>
-                        <a href="laboratorio.html" id="link-laboratorio" class="sub-menu-link">
-                            <i data-lucide="microscope"></i> Laboratório
-                        </a>
-                        <a href="banco-amostras.html" id="link-banco-amostras" class="sub-menu-link">
-                            <i data-lucide="database"></i> Banco de Amostras
-                        </a>
-                    </div>
-                </div>
+.menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
 
-                <div class="menu-section-label">PRODUTIVIDADE</div>
-                <a href="foco.html" id="link-foco"><i data-lucide="timer"></i> Modo Foco <small class="xp-badge">+XP</small></a>
-                <a href="estudos.html" id="link-estudos"><i data-lucide="brain-circuit"></i> Estudos & IA</a>
-            </nav>
+/* ════════════════════════════════════════════════════════════════════════
+   PROFILE CARD
+   ════════════════════════════════════════════════════════════════════════ */
 
-            <div class="menu-footer">
-                <button id="install-app-btn" class="btn-install-menu" style="display:none;">
-                    <i data-lucide="download-cloud"></i> Baixar App
-                </button>
-                <button id="btn-logout-sidebar" class="btn-logout-menu">
-                    <i data-lucide="log-out"></i> Sair da Conta
-                </button>
-            </div>
-        </div>
-        <div id="menu-overlay" class="menu-overlay"></div>
-    `;
+.menu-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 20px;
+    background: rgba(138, 43, 226, 0.08);
+    border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+    cursor: pointer;
+    transition: all 0.2s;
+}
 
-    document.body.insertAdjacentHTML('afterbegin', menuHTML);
+.menu-profile-card:active {
+    background: rgba(138, 43, 226, 0.12);
+}
 
-    const sideMenu = document.getElementById('side-menu');
-    const menuOverlay = document.getElementById('menu-overlay');
-    const btnOpen = document.getElementById('open-menu');
-    const btnClose = document.getElementById('close-menu');
-    const btnLogout = document.getElementById('btn-logout-sidebar');
-    const btnInstall = document.getElementById('install-app-btn');
-    const navLinks = document.getElementById('nav-links-container');
+.menu-avatar {
+    width: 48px;
+    height: 48px;
+    background: rgba(138, 43, 226, 0.15);
+    border: 2px solid rgba(138, 43, 226, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
 
-    // ADMIN
-    const emailMestre = "ditoh2008@gmail.com";
-    if (email === emailMestre && navLinks) {
-        const adminLink = document.createElement('a');
-        adminLink.href = "admin.html";
-        adminLink.id = "link-admin";
-        adminLink.style.cssText = "color:#a052ff;border-left:3px solid #a052ff;margin-top:4px;";
-        adminLink.innerHTML = `<i data-lucide="shield-check"></i> Painel do Mestre`;
-        navLinks.appendChild(adminLink);
+.menu-avatar i {
+    width: 24px;
+    height: 24px;
+    color: #8a2be2;
+}
+
+.menu-profile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.menu-profile-nome {
+    font-size: 15px;
+    font-weight: 800;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.menu-profile-email {
+    font-size: 11px;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.menu-profile-arrow {
+    flex-shrink: 0;
+}
+
+.menu-profile-arrow i {
+    width: 18px;
+    height: 18px;
+    color: #666;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   LINKS
+   ════════════════════════════════════════════════════════════════════════ */
+
+.menu-links {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(138, 43, 226, 0.3) transparent;
+}
+
+.menu-links::-webkit-scrollbar {
+    width: 4px;
+}
+
+.menu-links::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.menu-links::-webkit-scrollbar-thumb {
+    background: rgba(138, 43, 226, 0.3);
+    border-radius: 10px;
+}
+
+.menu-section-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #444;
+    padding: 16px 20px 8px;
+    text-transform: uppercase;
+}
+
+.menu-links a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: #888;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.menu-links a:hover {
+    background: rgba(255, 255, 255, 0.02);
+    color: #aaa;
+}
+
+.menu-links a.active {
+    background: rgba(138, 43, 226, 0.12);
+    border-left-color: #8a2be2;
+    color: #8a2be2;
+}
+
+.menu-links a i {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.xp-badge {
+    background: rgba(255, 184, 0, 0.15);
+    color: #ffb800;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 800;
+    margin-left: auto;
+    border: 1px solid rgba(255, 184, 0, 0.3);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   SUB-MENU EXPANSÍVEL
+   ════════════════════════════════════════════════════════════════════════ */
+
+.menu-item-expandable {
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.menu-item-expandable.active {
+    background: rgba(138, 43, 226, 0.08);
+    border-left-color: rgba(138, 43, 226, 0.5);
+}
+
+.menu-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.menu-item-header:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.menu-item-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #888;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.menu-item-expandable.active .menu-item-content {
+    color: #8a2be2;
+}
+
+.menu-item-content i {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.menu-chevron {
+    width: 16px;
+    height: 16px;
+    color: #666;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.sub-menu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.sub-menu.open {
+    max-height: 500px;
+}
+
+.sub-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px 10px 52px;
+    color: #777;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.sub-menu-link:hover {
+    background: rgba(255, 255, 255, 0.02);
+    color: #999;
+}
+
+.sub-menu-link.active {
+    background: rgba(138, 43, 226, 0.15);
+    border-left-color: #8a2be2;
+    color: #8a2be2;
+}
+
+.sub-menu-link i {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   FOOTER
+   ════════════════════════════════════════════════════════════════════════ */
+
+.menu-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(138, 43, 226, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-install-menu,
+.btn-logout-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.btn-install-menu {
+    background: rgba(138, 43, 226, 0.15);
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    color: #8a2be2;
+}
+
+.btn-install-menu:hover {
+    background: rgba(138, 43, 226, 0.2);
+}
+
+.btn-logout-menu {
+    background: rgba(255, 68, 85, 0.1);
+    border: 1px solid rgba(255, 68, 85, 0.2);
+    color: #ff4455;
+}
+
+.btn-logout-menu:hover {
+    background: rgba(255, 68, 85, 0.15);
+}
+
+.btn-install-menu i,
+.btn-logout-menu i {
+    width: 16px;
+    height: 16px;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   RESPONSIVO
+   ════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+    .side-menu {
+        width: 100%;
+        max-width: 320px;
     }
-
-    const abrirMenu = () => { sideMenu.classList.add('open'); menuOverlay.classList.add('active'); };
-    const fecharMenu = () => { sideMenu.classList.remove('open'); menuOverlay.classList.remove('active'); };
-
-    if (btnOpen) btnOpen.onclick = abrirMenu;
-    if (btnClose) btnClose.onclick = fecharMenu;
-    if (menuOverlay) menuOverlay.onclick = fecharMenu;
-    if (btnLogout) btnLogout.onclick = () => { localStorage.clear(); window.location.href = 'login.html'; };
-
-    // INSTALAR APP
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault(); deferredPrompt = e;
-        if (btnInstall) btnInstall.style.display = 'flex';
-    });
-    if (btnInstall) {
-        btnInstall.onclick = async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') btnInstall.style.display = 'none';
-                deferredPrompt = null;
-            }
-        };
-    }
-
-    // TOGGLE SUB-MENU
-    window.toggleSubMenu = function(menuId) {
-        const submenu = document.getElementById(`submenu-${menuId}`);
-        const chevron = document.getElementById(`chevron-${menuId}`);
-        const expandable = document.getElementById(`${menuId}-expandable`);
-        
-        if (submenu.classList.contains('open')) {
-            submenu.classList.remove('open');
-            chevron.style.transform = 'rotate(0deg)';
-            expandable.classList.remove('active');
-        } else {
-            submenu.classList.add('open');
-            chevron.style.transform = 'rotate(180deg)';
-            expandable.classList.add('active');
-        }
-        
-        if (window.lucide) lucide.createIcons();
-    };
-
-    // MARCAR LINK ATIVO
-    const path = window.location.pathname;
-    const paginasQuimica = ['quimica', 'rgb-roi', 'rgb', 'laboratorio', 'banco-amostras'];
-    
-    // Se tá em alguma página de química, abre o submenu automaticamente
-    if (paginasQuimica.some(pg => path.includes(pg))) {
-        const submenu = document.getElementById('submenu-quimica');
-        const chevron = document.getElementById('chevron-quimica');
-        const expandable = document.getElementById('quimica-expandable');
-        
-        if (submenu) submenu.classList.add('open');
-        if (chevron) chevron.style.transform = 'rotate(180deg)';
-        if (expandable) expandable.classList.add('active');
-    }
-
-    // Marcar página ativa
-    if (path === '/' || path.endsWith('index.html')) {
-        document.getElementById('link-home')?.classList.add('active');
-    }
-
-    const paginas = [
-        'home', 'perfil', 'notas', 'agenda', 'estudos', 'horario',
-        'ranking', 'foco', 'admin', 'configuracoes'
-    ];
-
-    paginas.forEach(pg => {
-        if (path.includes(pg)) {
-            document.getElementById(`link-${pg}`)?.classList.add('active');
-        }
-    });
-
-    // Marcar sub-links de química
-    if (path.includes('quimica') && !path.includes('rgb')) {
-        document.getElementById('link-quimica-geral')?.classList.add('active');
-    } else if (path.includes('rgb')) {
-        document.getElementById('link-rgb')?.classList.add('active');
-    } else if (path.includes('laboratorio')) {
-        document.getElementById('link-laboratorio')?.classList.add('active');
-    } else if (path.includes('banco-amostras')) {
-        document.getElementById('link-banco-amostras')?.classList.add('active');
-    }
-
-    // FADE ENTRADA
-    document.body.style.opacity = '0';
-    document.body.style.transition = 'opacity 0.3s ease';
-    setTimeout(() => { document.body.style.opacity = '1'; }, 50);
-
-    // FADE SAÍDA
-    document.querySelectorAll('.menu-links a, .sub-menu-link').forEach(link => {
-        link.addEventListener('click', e => {
-            const href = link.getAttribute('href');
-            if (!href || href.startsWith('#') || href.startsWith('javascript')) return;
-            e.preventDefault();
-            document.body.style.opacity = '0';
-            setTimeout(() => { window.location.href = href; }, 260);
-        });
-    });
-
-    if (window.lucide) lucide.createIcons();
-};
-
-window.navegarPara = function(url) {
-    document.body.style.opacity = '0';
-    document.body.style.transition = 'opacity 0.25s ease';
-    setTimeout(() => { window.location.href = url; }, 250);
-};
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', criarMenuGlobal);
-} else {
-    criarMenuGlobal();
 }
