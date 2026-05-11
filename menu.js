@@ -32,9 +32,31 @@ const criarMenuGlobal = () => {
                 <a href="notas.html" id="link-notas"><i data-lucide="layout-dashboard"></i> Notas</a>
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
                 <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
-                <a href="quimica.html" id="link-quimica"><i data-lucide="flask-conical"></i> Química</a>
-                <a href="rgb-roi.html" id="link-rgb"><i data-lucide="scan-eye"></i> Análise RGB</a>
-                <a href="cronograma.html" id="link-cronograma"><i data-lucide="calendar-days"></i> Cronograma</a>
+                
+                <!-- SUB-MENU QUÍMICA -->
+                <div class="menu-item-expandable" id="quimica-expandable">
+                    <div class="menu-item-header" onclick="toggleSubMenu('quimica')">
+                        <div class="menu-item-content">
+                            <i data-lucide="flask-conical"></i>
+                            <span>Química</span>
+                        </div>
+                        <i data-lucide="chevron-down" class="menu-chevron" id="chevron-quimica"></i>
+                    </div>
+                    <div class="sub-menu" id="submenu-quimica">
+                        <a href="quimica.html" id="link-quimica-geral" class="sub-menu-link">
+                            <i data-lucide="atom"></i> Química Geral
+                        </a>
+                        <a href="rgb-roi.html" id="link-rgb" class="sub-menu-link">
+                            <i data-lucide="scan-eye"></i> RGB & ROI
+                        </a>
+                        <a href="laboratorio.html" id="link-laboratorio" class="sub-menu-link">
+                            <i data-lucide="microscope"></i> Laboratório
+                        </a>
+                        <a href="banco-amostras.html" id="link-banco-amostras" class="sub-menu-link">
+                            <i data-lucide="database"></i> Banco de Amostras
+                        </a>
+                    </div>
+                </div>
 
                 <div class="menu-section-label">PRODUTIVIDADE</div>
                 <a href="foco.html" id="link-foco"><i data-lucide="timer"></i> Modo Foco <small class="xp-badge">+XP</small></a>
@@ -99,17 +121,49 @@ const criarMenuGlobal = () => {
         };
     }
 
+    // TOGGLE SUB-MENU
+    window.toggleSubMenu = function(menuId) {
+        const submenu = document.getElementById(`submenu-${menuId}`);
+        const chevron = document.getElementById(`chevron-${menuId}`);
+        const expandable = document.getElementById(`${menuId}-expandable`);
+        
+        if (submenu.classList.contains('open')) {
+            submenu.classList.remove('open');
+            chevron.style.transform = 'rotate(0deg)';
+            expandable.classList.remove('active');
+        } else {
+            submenu.classList.add('open');
+            chevron.style.transform = 'rotate(180deg)';
+            expandable.classList.add('active');
+        }
+        
+        if (window.lucide) lucide.createIcons();
+    };
+
     // MARCAR LINK ATIVO
     const path = window.location.pathname;
-    const paginas = [
-        'home', 'perfil', 'notas', 'agenda', 'estudos', 'horario',
-        'ranking', 'foco', 'admin', 'cronograma', 'quimica',
-        'rgb', 'configuracoes'
-    ];
+    const paginasQuimica = ['quimica', 'rgb-roi', 'rgb', 'laboratorio', 'banco-amostras'];
+    
+    // Se tá em alguma página de química, abre o submenu automaticamente
+    if (paginasQuimica.some(pg => path.includes(pg))) {
+        const submenu = document.getElementById('submenu-quimica');
+        const chevron = document.getElementById('chevron-quimica');
+        const expandable = document.getElementById('quimica-expandable');
+        
+        if (submenu) submenu.classList.add('open');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+        if (expandable) expandable.classList.add('active');
+    }
 
+    // Marcar página ativa
     if (path === '/' || path.endsWith('index.html')) {
         document.getElementById('link-home')?.classList.add('active');
     }
+
+    const paginas = [
+        'home', 'perfil', 'notas', 'agenda', 'estudos', 'horario',
+        'ranking', 'foco', 'admin', 'configuracoes'
+    ];
 
     paginas.forEach(pg => {
         if (path.includes(pg)) {
@@ -117,13 +171,24 @@ const criarMenuGlobal = () => {
         }
     });
 
+    // Marcar sub-links de química
+    if (path.includes('quimica') && !path.includes('rgb')) {
+        document.getElementById('link-quimica-geral')?.classList.add('active');
+    } else if (path.includes('rgb')) {
+        document.getElementById('link-rgb')?.classList.add('active');
+    } else if (path.includes('laboratorio')) {
+        document.getElementById('link-laboratorio')?.classList.add('active');
+    } else if (path.includes('banco-amostras')) {
+        document.getElementById('link-banco-amostras')?.classList.add('active');
+    }
+
     // FADE ENTRADA
     document.body.style.opacity = '0';
     document.body.style.transition = 'opacity 0.3s ease';
     setTimeout(() => { document.body.style.opacity = '1'; }, 50);
 
     // FADE SAÍDA
-    document.querySelectorAll('.menu-links a').forEach(link => {
+    document.querySelectorAll('.menu-links a, .sub-menu-link').forEach(link => {
         link.addEventListener('click', e => {
             const href = link.getAttribute('href');
             if (!href || href.startsWith('#') || href.startsWith('javascript')) return;
