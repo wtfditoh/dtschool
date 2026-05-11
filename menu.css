@@ -1,147 +1,214 @@
-/* ── MENU LATERAL ── */
-.side-menu {
-    position: fixed;
-    top: 0; left: -275px;
-    width: 275px; height: 100%;
-    background: #08080f;
-    z-index: 20000;
-    transition: left 0.35s cubic-bezier(0.4,0,0.2,1);
-    border-right: 1px solid rgba(138,43,226,0.12);
-    display: flex; flex-direction: column;
-    box-sizing: border-box;
-}
-.side-menu.open {
-    left: 0;
-    box-shadow: 20px 0 60px rgba(0,0,0,0.9);
-}
+const criarMenuGlobal = () => {
+    const nome = localStorage.getItem('dt_user_name') || 'Estudante';
+    const email = (localStorage.getItem('dt_user_email') || '').toLowerCase();
+    const avatar = localStorage.getItem('dt_user_avatar') || 'user';
+    const primeiroNome = nome.split(' ')[0];
 
-/* ── MINI CARD PERFIL ── */
-.menu-profile-card {
-    display: flex; align-items: center; gap: 12px;
-    padding: 18px 16px 14px;
-    border-bottom: 1px solid rgba(138,43,226,0.1);
-    cursor: pointer;
-    transition: background 0.2s;
-    flex-shrink: 0;
-    -webkit-tap-highlight-color: transparent;
-}
-.menu-profile-card:hover { background: rgba(138,43,226,0.05); }
-.menu-profile-card:active { background: rgba(138,43,226,0.08); }
+    const menuHTML = `
+        <div id="side-menu" class="side-menu">
 
-.menu-avatar {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: rgba(138,43,226,0.1);
-    border: 1.5px solid rgba(138,43,226,0.3);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    box-shadow: 0 0 12px rgba(138,43,226,0.15);
-}
-.menu-avatar i { width: 18px; height: 18px; color: #8a2be2; }
+            <!-- MINI CARD PERFIL -->
+            <div class="menu-profile-card" onclick="window.location.href='perfil.html'">
+                <div class="menu-avatar">
+                    <i data-lucide="${avatar}" id="menu-avatar-icon"></i>
+                </div>
+                <div class="menu-profile-info">
+                    <div class="menu-profile-nome">${primeiroNome}</div>
+                    <div class="menu-profile-email">${email || 'Visitante'}</div>
+                </div>
+                <div class="menu-profile-arrow">
+                    <i data-lucide="chevron-right"></i>
+                </div>
+            </div>
 
-.menu-profile-info { flex: 1; min-width: 0; }
-.menu-profile-nome {
-    font-size: 13px; font-weight: 800;
-    color: white; letter-spacing: 0.3px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.menu-profile-email {
-    font-size: 10px; color: #333; font-weight: 500;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    margin-top: 1px;
-}
+            <nav class="menu-links" id="nav-links-container">
+                <div class="menu-section-label">GERAL</div>
+                <a href="index.html" id="link-home"><i data-lucide="home"></i> Início</a>
+                <a href="perfil.html" id="link-perfil"><i data-lucide="user"></i> Perfil</a>
+                <a href="ranking.html" id="link-ranking"><i data-lucide="trophy"></i> Ranking</a>
+                <a href="configuracoes.html" id="link-configuracoes"><i data-lucide="settings-2"></i> Configurações</a>
 
-.menu-profile-arrow i { width: 14px; height: 14px; color: #2a2a3a; }
+                <div class="menu-section-label">ESTUDOS</div>
+                <a href="notas.html" id="link-notas"><i data-lucide="layout-dashboard"></i> Notas</a>
+                <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
+                <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
+                
+                <!-- SUB-MENU QUÍMICA -->
+                <div class="menu-item-expandable" id="quimica-expandable">
+                    <div class="menu-item-header" onclick="toggleSubMenu('quimica')">
+                        <div class="menu-item-content">
+                            <i data-lucide="flask-conical"></i>
+                            <span>Química</span>
+                        </div>
+                        <i data-lucide="chevron-down" class="menu-chevron" id="chevron-quimica"></i>
+                    </div>
+                    <div class="sub-menu" id="submenu-quimica">
+                        <a href="quimica.html" id="link-quimica-geral" class="sub-menu-link">
+                            <i data-lucide="atom"></i> Química Geral
+                        </a>
+                        <a href="rgb-roi.html" id="link-rgb" class="sub-menu-link">
+                            <i data-lucide="scan-eye"></i> RGB & ROI
+                        </a>
+                        <a href="laboratorio.html" id="link-laboratorio" class="sub-menu-link">
+                            <i data-lucide="microscope"></i> Laboratório
+                        </a>
+                        <a href="banco-amostras.html" id="link-banco-amostras" class="sub-menu-link">
+                            <i data-lucide="database"></i> Banco de Amostras
+                        </a>
+                    </div>
+                </div>
 
-/* ── NAV ── */
-.menu-links {
-    flex: 1; overflow-y: auto;
-    padding: 8px 12px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(138,43,226,0.15) transparent;
-}
-.menu-links::-webkit-scrollbar { width: 3px; }
-.menu-links::-webkit-scrollbar-track { background: transparent; }
-.menu-links::-webkit-scrollbar-thumb { background: rgba(138,43,226,0.15); border-radius: 10px; }
+                <div class="menu-section-label">PRODUTIVIDADE</div>
+                <a href="foco.html" id="link-foco"><i data-lucide="timer"></i> Modo Foco <small class="xp-badge">+XP</small></a>
+                <a href="estudos.html" id="link-estudos"><i data-lucide="brain-circuit"></i> Estudos & IA</a>
+            </nav>
 
-/* SEÇÕES */
-.menu-section-label {
-    font-size: 8px; font-weight: 800; letter-spacing: 3px;
-    color: #1e1e28; padding: 10px 6px 4px;
-    text-transform: uppercase;
-}
+            <div class="menu-footer">
+                <button id="install-app-btn" class="btn-install-menu" style="display:none;">
+                    <i data-lucide="download-cloud"></i> Baixar App
+                </button>
+                <button id="btn-logout-sidebar" class="btn-logout-menu">
+                    <i data-lucide="log-out"></i> Sair da Conta
+                </button>
+            </div>
+        </div>
+        <div id="menu-overlay" class="menu-overlay"></div>
+    `;
 
-.menu-links a {
-    display: flex; align-items: center; gap: 11px;
-    color: #4a4a6a; text-decoration: none;
-    padding: 10px 12px; border-radius: 12px;
-    margin-bottom: 1px; font-weight: 700; font-size: 13px;
-    transition: 0.18s; position: relative;
-}
-.menu-links a i { width: 16px; height: 16px; flex-shrink: 0; }
+    document.body.insertAdjacentHTML('afterbegin', menuHTML);
 
-.menu-links a.active {
-    background: rgba(138,43,226,0.1);
-    color: #c084fc;
-    border: 1px solid rgba(138,43,226,0.2);
-}
-.menu-links a.active i { color: #8a2be2; }
+    const sideMenu = document.getElementById('side-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const btnOpen = document.getElementById('open-menu');
+    const btnClose = document.getElementById('close-menu');
+    const btnLogout = document.getElementById('btn-logout-sidebar');
+    const btnInstall = document.getElementById('install-app-btn');
+    const navLinks = document.getElementById('nav-links-container');
 
-.menu-links a:hover:not(.active) {
-    color: #aaa; background: rgba(255,255,255,0.03);
-}
+    // ADMIN
+    const emailMestre = "ditoh2008@gmail.com";
+    if (email === emailMestre && navLinks) {
+        const adminLink = document.createElement('a');
+        adminLink.href = "admin.html";
+        adminLink.id = "link-admin";
+        adminLink.style.cssText = "color:#a052ff;border-left:3px solid #a052ff;margin-top:4px;";
+        adminLink.innerHTML = `<i data-lucide="shield-check"></i> Painel do Mestre`;
+        navLinks.appendChild(adminLink);
+    }
 
-/* XP BADGE */
-.xp-badge {
-    background: rgba(138,43,226,0.2);
-    border: 1px solid rgba(138,43,226,0.3);
-    color: #c084fc; font-size: 8px; font-weight: 800;
-    padding: 2px 7px; border-radius: 20px; letter-spacing: 1px;
-    margin-left: 2px;
-}
+    const abrirMenu = () => { sideMenu.classList.add('open'); menuOverlay.classList.add('active'); };
+    const fecharMenu = () => { sideMenu.classList.remove('open'); menuOverlay.classList.remove('active'); };
 
-/* ── FOOTER ── */
-.menu-footer {
-    flex-shrink: 0;
-    padding: 10px 12px 24px;
-    border-top: 1px solid rgba(255,255,255,0.04);
-    display: flex; flex-direction: column; gap: 8px;
-}
+    if (btnOpen) btnOpen.onclick = abrirMenu;
+    if (btnClose) btnClose.onclick = fecharMenu;
+    if (menuOverlay) menuOverlay.onclick = fecharMenu;
+    if (btnLogout) btnLogout.onclick = () => { localStorage.clear(); window.location.href = 'login.html'; };
 
-.btn-install-menu {
-    width: 100%; background: rgba(138,43,226,0.08);
-    border: 1px solid rgba(138,43,226,0.2); color: #8a2be2;
-    padding: 11px; border-radius: 12px; cursor: pointer;
-    font-weight: 800; font-size: 11px; letter-spacing: 1px;
-    display: none; align-items: center; justify-content: center; gap: 8px;
-    transition: 0.2s; font-family: inherit;
-}
-.btn-install-menu:hover { background: rgba(138,43,226,0.14); }
-.btn-install-menu i { width: 15px; height: 15px; }
+    // INSTALAR APP
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault(); deferredPrompt = e;
+        if (btnInstall) btnInstall.style.display = 'flex';
+    });
+    if (btnInstall) {
+        btnInstall.onclick = async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') btnInstall.style.display = 'none';
+                deferredPrompt = null;
+            }
+        };
+    }
 
-.btn-logout-menu {
-    width: 100%; background: rgba(255,68,68,0.05);
-    border: 1px solid rgba(255,68,68,0.1); color: #ff4444;
-    padding: 11px; border-radius: 12px; cursor: pointer;
-    font-weight: 800; font-size: 11px; letter-spacing: 1px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: 0.2s; font-family: inherit;
-}
-.btn-logout-menu:hover { background: rgba(255,68,68,0.1); }
-.btn-logout-menu i { width: 15px; height: 15px; }
+    // TOGGLE SUB-MENU
+    window.toggleSubMenu = function(menuId) {
+        const submenu = document.getElementById(`submenu-${menuId}`);
+        const chevron = document.getElementById(`chevron-${menuId}`);
+        const expandable = document.getElementById(`${menuId}-expandable`);
+        
+        if (submenu.classList.contains('open')) {
+            submenu.classList.remove('open');
+            chevron.style.transform = 'rotate(0deg)';
+            expandable.classList.remove('active');
+        } else {
+            submenu.classList.add('open');
+            chevron.style.transform = 'rotate(180deg)';
+            expandable.classList.add('active');
+        }
+        
+        if (window.lucide) lucide.createIcons();
+    };
 
-/* ── OVERLAY ── */
-.menu-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.65);
-    backdrop-filter: blur(4px);
-    display: none; z-index: 19999;
-}
-.menu-overlay.active { display: block; }
+    // MARCAR LINK ATIVO
+    const path = window.location.pathname;
+    const paginasQuimica = ['quimica', 'rgb-roi', 'rgb', 'laboratorio', 'banco-amostras'];
+    
+    // Se tá em alguma página de química, abre o submenu automaticamente
+    if (paginasQuimica.some(pg => path.includes(pg))) {
+        const submenu = document.getElementById('submenu-quimica');
+        const chevron = document.getElementById('chevron-quimica');
+        const expandable = document.getElementById('quimica-expandable');
+        
+        if (submenu) submenu.classList.add('open');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+        if (expandable) expandable.classList.add('active');
+    }
 
-/* ── BTN ABRIR ── */
-.btn-menu {
-    background: rgba(255,255,255,0.03); border: 1px solid #1a1a1a;
-    color: white; padding: 9px; border-radius: 12px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    // Marcar página ativa
+    if (path === '/' || path.endsWith('index.html')) {
+        document.getElementById('link-home')?.classList.add('active');
+    }
+
+    const paginas = [
+        'home', 'perfil', 'notas', 'agenda', 'estudos', 'horario',
+        'ranking', 'foco', 'admin', 'configuracoes'
+    ];
+
+    paginas.forEach(pg => {
+        if (path.includes(pg)) {
+            document.getElementById(`link-${pg}`)?.classList.add('active');
+        }
+    });
+
+    // Marcar sub-links de química
+    if (path.includes('quimica') && !path.includes('rgb')) {
+        document.getElementById('link-quimica-geral')?.classList.add('active');
+    } else if (path.includes('rgb')) {
+        document.getElementById('link-rgb')?.classList.add('active');
+    } else if (path.includes('laboratorio')) {
+        document.getElementById('link-laboratorio')?.classList.add('active');
+    } else if (path.includes('banco-amostras')) {
+        document.getElementById('link-banco-amostras')?.classList.add('active');
+    }
+
+    // FADE ENTRADA
+    document.body.style.opacity = '0';
+    document.body.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => { document.body.style.opacity = '1'; }, 50);
+
+    // FADE SAÍDA
+    document.querySelectorAll('.menu-links a, .sub-menu-link').forEach(link => {
+        link.addEventListener('click', e => {
+            const href = link.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript')) return;
+            e.preventDefault();
+            document.body.style.opacity = '0';
+            setTimeout(() => { window.location.href = href; }, 260);
+        });
+    });
+
+    if (window.lucide) lucide.createIcons();
+};
+
+window.navegarPara = function(url) {
+    document.body.style.opacity = '0';
+    document.body.style.transition = 'opacity 0.25s ease';
+    setTimeout(() => { window.location.href = url; }, 250);
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', criarMenuGlobal);
+} else {
+    criarMenuGlobal();
 }
