@@ -1,236 +1,147 @@
-/* ════════════════════════════════════════════════════════════════════════
-   MENU LATERAL - Hub Brain
-   ════════════════════════════════════════════════════════════════════════ */
-
+/* ── MENU LATERAL ── */
 .side-menu {
     position: fixed;
-    top: 0;
-    left: -100%;
-    width: 280px;
-    height: 100%;
-    background: rgba(10, 10, 15, 0.98);
-    backdrop-filter: blur(20px);
-    z-index: 2000;
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid rgba(138, 43, 226, 0.2);
+    top: 0; left: -275px;
+    width: 275px; height: 100%;
+    background: #08080f;
+    z-index: 20000;
+    transition: left 0.35s cubic-bezier(0.4,0,0.2,1);
+    border-right: 1px solid rgba(138,43,226,0.12);
+    display: flex; flex-direction: column;
+    box-sizing: border-box;
 }
-
 .side-menu.open {
     left: 0;
+    box-shadow: 20px 0 60px rgba(0,0,0,0.9);
 }
 
-.menu-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
-    z-index: 1999;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.menu-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* ════════════════════════════════════════════════════════════════════════
-   PROFILE CARD
-   ════════════════════════════════════════════════════════════════════════ */
-
+/* ── MINI CARD PERFIL ── */
 .menu-profile-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 24px 20px;
-    background: rgba(138, 43, 226, 0.08);
-    border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 16px 14px;
+    border-bottom: 1px solid rgba(138,43,226,0.1);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
 }
-
-.menu-profile-card:active {
-    background: rgba(138, 43, 226, 0.12);
-}
+.menu-profile-card:hover { background: rgba(138,43,226,0.05); }
+.menu-profile-card:active { background: rgba(138,43,226,0.08); }
 
 .menu-avatar {
-    width: 48px;
-    height: 48px;
-    background: rgba(138, 43, 226, 0.15);
-    border: 2px solid rgba(138, 43, 226, 0.4);
+    width: 40px; height: 40px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: rgba(138,43,226,0.1);
+    border: 1.5px solid rgba(138,43,226,0.3);
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(138,43,226,0.15);
 }
+.menu-avatar i { width: 18px; height: 18px; color: #8a2be2; }
 
-.menu-avatar i {
-    width: 24px;
-    height: 24px;
-    color: #8a2be2;
-}
-
-.menu-profile-info {
-    flex: 1;
-    min-width: 0;
-}
-
+.menu-profile-info { flex: 1; min-width: 0; }
 .menu-profile-nome {
-    font-size: 15px;
-    font-weight: 800;
-    color: white;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 13px; font-weight: 800;
+    color: white; letter-spacing: 0.3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
 .menu-profile-email {
-    font-size: 11px;
-    color: #666;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 10px; color: #333; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-top: 1px;
 }
 
-.menu-profile-arrow {
-    flex-shrink: 0;
-}
+.menu-profile-arrow i { width: 14px; height: 14px; color: #2a2a3a; }
 
-.menu-profile-arrow i {
-    width: 18px;
-    height: 18px;
-    color: #666;
-}
-
-/* ════════════════════════════════════════════════════════════════════════
-   LINKS
-   ════════════════════════════════════════════════════════════════════════ */
-
+/* ── NAV ── */
 .menu-links {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px 0;
+    flex: 1; overflow-y: auto;
+    padding: 8px 12px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(138, 43, 226, 0.3) transparent;
+    scrollbar-color: rgba(138,43,226,0.15) transparent;
 }
+.menu-links::-webkit-scrollbar { width: 3px; }
+.menu-links::-webkit-scrollbar-track { background: transparent; }
+.menu-links::-webkit-scrollbar-thumb { background: rgba(138,43,226,0.15); border-radius: 10px; }
 
-.menu-links::-webkit-scrollbar {
-    width: 4px;
-}
-
-.menu-links::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.menu-links::-webkit-scrollbar-thumb {
-    background: rgba(138, 43, 226, 0.3);
-    border-radius: 10px;
-}
-
+/* SEÇÕES */
 .menu-section-label {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    color: #444;
-    padding: 16px 20px 8px;
+    font-size: 8px; font-weight: 800; letter-spacing: 3px;
+    color: #1e1e28; padding: 10px 6px 4px;
     text-transform: uppercase;
 }
 
 .menu-links a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
-    color: #888;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.2s;
-    border-left: 3px solid transparent;
+    display: flex; align-items: center; gap: 11px;
+    color: #4a4a6a; text-decoration: none;
+    padding: 10px 12px; border-radius: 12px;
+    margin-bottom: 1px; font-weight: 700; font-size: 13px;
+    transition: 0.18s; position: relative;
 }
-
-.menu-links a:hover {
-    background: rgba(255, 255, 255, 0.02);
-    color: #aaa;
-}
+.menu-links a i { width: 16px; height: 16px; flex-shrink: 0; }
 
 .menu-links a.active {
-    background: rgba(138, 43, 226, 0.12);
-    border-left-color: #8a2be2;
-    color: #8a2be2;
+    background: rgba(138,43,226,0.1);
+    color: #c084fc;
+    border: 1px solid rgba(138,43,226,0.2);
+}
+.menu-links a.active i { color: #8a2be2; }
+
+.menu-links a:hover:not(.active) {
+    color: #aaa; background: rgba(255,255,255,0.03);
 }
 
-.menu-links a i {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-}
-
+/* XP BADGE */
 .xp-badge {
-    background: rgba(255, 184, 0, 0.15);
-    color: #ffb800;
-    padding: 2px 6px;
-    border-radius: 8px;
-    font-size: 9px;
-    font-weight: 800;
-    margin-left: auto;
-    border: 1px solid rgba(255, 184, 0, 0.3);
+    background: rgba(138,43,226,0.2);
+    border: 1px solid rgba(138,43,226,0.3);
+    color: #c084fc; font-size: 8px; font-weight: 800;
+    padding: 2px 7px; border-radius: 20px; letter-spacing: 1px;
+    margin-left: 2px;
 }
 
-/* ════════════════════════════════════════════════════════════════════════
-   SUB-MENU EXPANSÍVEL
-   ════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════
+   SUB-MENU EXPANSÍVEL (NOVO)
+   ════════════════════════════════════════════════════════════════ */
 
 .menu-item-expandable {
-    border-left: 3px solid transparent;
-    transition: all 0.2s;
-}
-
-.menu-item-expandable.active {
-    background: rgba(138, 43, 226, 0.08);
-    border-left-color: rgba(138, 43, 226, 0.5);
+    margin-bottom: 1px;
 }
 
 .menu-item-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    cursor: pointer;
-    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border-radius: 12px;
+    cursor: pointer; transition: 0.18s;
 }
 
 .menu-item-header:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255,255,255,0.03);
+}
+
+.menu-item-expandable.active .menu-item-header {
+    background: rgba(138,43,226,0.08);
 }
 
 .menu-item-content {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: #888;
-    font-size: 14px;
-    font-weight: 600;
+    display: flex; align-items: center; gap: 11px;
+    color: #4a4a6a; font-weight: 700; font-size: 13px;
 }
 
 .menu-item-expandable.active .menu-item-content {
-    color: #8a2be2;
+    color: #c084fc;
 }
 
 .menu-item-content i {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
+    width: 16px; height: 16px; flex-shrink: 0;
+}
+
+.menu-item-expandable.active .menu-item-content i {
+    color: #8a2be2;
 }
 
 .menu-chevron {
-    width: 16px;
-    height: 16px;
-    color: #666;
+    width: 14px; height: 14px;
+    color: #2a2a3a;
     transition: transform 0.3s ease;
     flex-shrink: 0;
 }
@@ -239,7 +150,6 @@
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease;
-    background: rgba(0, 0, 0, 0.2);
 }
 
 .sub-menu.open {
@@ -247,96 +157,77 @@
 }
 
 .sub-menu-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 20px 10px 52px;
-    color: #777;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.2s;
-    border-left: 3px solid transparent;
-}
-
-.sub-menu-link:hover {
-    background: rgba(255, 255, 255, 0.02);
-    color: #999;
-}
-
-.sub-menu-link.active {
-    background: rgba(138, 43, 226, 0.15);
-    border-left-color: #8a2be2;
-    color: #8a2be2;
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px 9px 40px;
+    color: #3a3a5a; text-decoration: none;
+    border-radius: 10px; margin-bottom: 1px;
+    font-weight: 700; font-size: 12px;
+    transition: 0.18s;
 }
 
 .sub-menu-link i {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
+    width: 14px; height: 14px; flex-shrink: 0;
 }
 
-/* ════════════════════════════════════════════════════════════════════════
-   FOOTER
-   ════════════════════════════════════════════════════════════════════════ */
-
-.menu-footer {
-    padding: 16px 20px;
-    border-top: 1px solid rgba(138, 43, 226, 0.2);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.sub-menu-link:hover {
+    background: rgba(255,255,255,0.03);
+    color: #888;
 }
 
-.btn-install-menu,
-.btn-logout-menu {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
+.sub-menu-link.active {
+    background: rgba(138,43,226,0.12);
+    color: #c084fc;
+    border: 1px solid rgba(138,43,226,0.25);
 }
 
-.btn-install-menu {
-    background: rgba(138, 43, 226, 0.15);
-    border: 1px solid rgba(138, 43, 226, 0.3);
+.sub-menu-link.active i {
     color: #8a2be2;
 }
 
-.btn-install-menu:hover {
-    background: rgba(138, 43, 226, 0.2);
+/* ══════════════════════════════════════════════════════════════ */
+
+/* ── FOOTER ── */
+.menu-footer {
+    flex-shrink: 0;
+    padding: 10px 12px 24px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    display: flex; flex-direction: column; gap: 8px;
 }
+
+.btn-install-menu {
+    width: 100%; background: rgba(138,43,226,0.08);
+    border: 1px solid rgba(138,43,226,0.2); color: #8a2be2;
+    padding: 11px; border-radius: 12px; cursor: pointer;
+    font-weight: 800; font-size: 11px; letter-spacing: 1px;
+    display: none; align-items: center; justify-content: center; gap: 8px;
+    transition: 0.2s; font-family: inherit;
+}
+.btn-install-menu:hover { background: rgba(138,43,226,0.14); }
+.btn-install-menu i { width: 15px; height: 15px; }
 
 .btn-logout-menu {
-    background: rgba(255, 68, 85, 0.1);
-    border: 1px solid rgba(255, 68, 85, 0.2);
-    color: #ff4455;
+    width: 100%; background: rgba(255,68,68,0.05);
+    border: 1px solid rgba(255,68,68,0.1); color: #ff4444;
+    padding: 11px; border-radius: 12px; cursor: pointer;
+    font-weight: 800; font-size: 11px; letter-spacing: 1px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: 0.2s; font-family: inherit;
 }
+.btn-logout-menu:hover { background: rgba(255,68,68,0.1); }
+.btn-logout-menu i { width: 15px; height: 15px; }
 
-.btn-logout-menu:hover {
-    background: rgba(255, 68, 85, 0.15);
+/* ── OVERLAY ── */
+.menu-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    display: none; z-index: 19999;
 }
+.menu-overlay.active { display: block; }
 
-.btn-install-menu i,
-.btn-logout-menu i {
-    width: 16px;
-    height: 16px;
-}
-
-/* ════════════════════════════════════════════════════════════════════════
-   RESPONSIVO
-   ════════════════════════════════════════════════════════════════════════ */
-
-@media (max-width: 480px) {
-    .side-menu {
-        width: 100%;
-        max-width: 320px;
-    }
+/* ── BTN ABRIR ── */
+.btn-menu {
+    background: rgba(255,255,255,0.03); border: 1px solid #1a1a1a;
+    color: white; padding: 9px; border-radius: 12px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
