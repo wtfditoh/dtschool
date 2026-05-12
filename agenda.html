@@ -10,11 +10,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="header.css">
     <link rel="stylesheet" href="agenda.css">
 </head>
 <body>
 
-    <div id="toast-agenda"></div>
+    <header class="header-main">
+        <div class="logo-container" onclick="window.location.href='index.html'">
+            <span class="logo-text-left">HUB</span>
+            <div class="brain-icon">
+                <img src="icon-514_20260512_161420_0000.png" alt="Hub Brain">
+            </div>
+            <span class="logo-text-right">BRAIN</span>
+        </div>
+
+        <div class="header-actions">
+            <button class="btn-menu" id="open-menu">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </header>
+    <div id="toast-agenda" style="margin-top: 70px;">
 
     <!-- HEADER -->
     <header class="glass-header">
