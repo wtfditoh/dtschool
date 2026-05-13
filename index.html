@@ -975,5 +975,27 @@
         if (manClicks >= 5) { manClicks = 0; abrirSobreDono(); }
       });
     </script>
+
+    <script>
+    // Gira ao passar o mouse OU tocar (mobile)
+    const logo = document.querySelector('.header-logo-animated');
+    if (logo) {
+        // DESKTOP - mouseenter
+        logo.addEventListener('mouseenter', function() {
+            this.classList.add('spinning');
+            setTimeout(() => {
+                this.classList.remove('spinning');
+            }, 800);
+        });
+        
+        // MOBILE - touch
+        logo.addEventListener('touchstart', function() {
+            this.classList.add('spinning');
+            setTimeout(() => {
+                this.classList.remove('spinning');
+            }, 800);
+        });
+    }
+</script>
 </body>
 </html>
