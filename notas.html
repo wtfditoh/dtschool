@@ -131,29 +131,18 @@
             }
         }
  
-       /* Hover no logo completo */
-.header-logo-animated:hover .logo-brain-icon {
-    animation: brainSpin 0.6s ease-out;
-}
-
+/* Hover - Cérebro gira UMA VEZ ao passar o mouse */
 .header-logo-animated:hover .logo-brain-icon img {
-    animation: brainSpin 0.6s ease-out;
+    animation: brainSpinOnce 0.8s ease-in-out;
 }
 
-@keyframes brainSpin {
-    0% { transform: rotateY(0deg) scale(1); }
-    50% { transform: rotateY(180deg) scale(1.2); }
-    100% { transform: rotateY(360deg) scale(1); }
-}
-
-.header-logo-animated:hover .logo-hub,
-.header-logo-animated:hover .logo-brain {
-    animation: textBounce 0.4s ease-out;
-}
-
-@keyframes textBounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+@keyframes brainSpinOnce {
+    0% { 
+        transform: rotateY(0deg);
+    }
+    100% { 
+        transform: rotateY(360deg);
+    }
 }
  
         /* Responsivo */
