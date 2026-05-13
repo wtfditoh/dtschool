@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="menu.css">
     <link rel="stylesheet" href="agenda.css">
 
-      <style>
+   <style>
         /* ═══════════════════════════════════════════════════════════
            HEADER LOGO ANIMADO CENTRALIZADO
            ═══════════════════════════════════════════════════════════ */
@@ -31,12 +31,8 @@
         /* ANIMAÇÃO DE ENTRADA PRINCIPAL */
         @keyframes logoEntrance {
             0% {
-                transform: translateX(-50%) scale(3) rotate(720deg);
+                transform: translateX(-50%) scale(3) rotate(360deg);
                 opacity: 0;
-            }
-            50% {
-                transform: translateX(-50%) scale(1.2) rotate(360deg);
-                opacity: 1;
             }
             100% {
                 transform: translateX(-50%) scale(1) rotate(0deg);
@@ -119,26 +115,15 @@
             }
         }
  
-        /* Hover no logo completo */
-        .header-logo-animated:hover .logo-brain-icon img {
-            animation: brainSpin 0.6s ease-out, brainPulse 2s ease-in-out infinite;
-        }
- 
-        @keyframes brainSpin {
-            0% { transform: rotateY(0deg) scale(1); }
-            50% { transform: rotateY(180deg) scale(1.2); }
-            100% { transform: rotateY(360deg) scale(1); }
-        }
- 
-        .header-logo-animated:hover .logo-hub,
-        .header-logo-animated:hover .logo-brain {
-            animation: textBounce 0.4s ease-out;
-        }
- 
-        @keyframes textBounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
+/* Giro ativado por classe JS */
+.header-logo-animated.spinning .logo-brain-icon img {
+    animation: brainSpinOnce 0.8s ease-in-out;
+}
+
+@keyframes brainSpinOnce {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+}
  
         /* Responsivo */
         @media (max-width: 768px) {
@@ -510,5 +495,27 @@
             if(window.lucide) lucide.createIcons(); 
         });
     </script>
+
+    <script>
+    // Gira ao passar o mouse OU tocar (mobile)
+    const logo = document.querySelector('.header-logo-animated');
+    if (logo) {
+        // DESKTOP - mouseenter
+        logo.addEventListener('mouseenter', function() {
+            this.classList.add('spinning');
+            setTimeout(() => {
+                this.classList.remove('spinning');
+            }, 800);
+        });
+        
+        // MOBILE - touch
+        logo.addEventListener('touchstart', function() {
+            this.classList.add('spinning');
+            setTimeout(() => {
+                this.classList.remove('spinning');
+            }, 800);
+        });
+    }
+</script>
 </body>
 </html>
