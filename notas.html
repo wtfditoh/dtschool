@@ -361,5 +361,18 @@
         
         if (window.lucide) lucide.createIcons();
     </script>
+
+    <script>
+    // Gira ao passar o mouse rapidamente
+    const logo = document.querySelector('.header-logo-animated');
+    if (logo) {
+        logo.addEventListener('mouseenter', function() {
+            this.classList.add('spinning');
+            setTimeout(() => {
+                this.classList.remove('spinning');
+            }, 800); // Mesmo tempo da animação
+        });
+    }
+</script>
 </body>
 </html>
