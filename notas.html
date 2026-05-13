@@ -131,18 +131,14 @@
             }
         }
  
-/* Hover - Cérebro gira UMA VEZ ao passar o mouse */
-.header-logo-animated:hover .logo-brain-icon img {
+/* Giro ativado por classe JS */
+.header-logo-animated.spinning .logo-brain-icon img {
     animation: brainSpinOnce 0.8s ease-in-out;
 }
 
 @keyframes brainSpinOnce {
-    0% { 
-        transform: rotateY(0deg);
-    }
-    100% { 
-        transform: rotateY(360deg);
-    }
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
 }
  
         /* Responsivo */
