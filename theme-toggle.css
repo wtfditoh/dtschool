@@ -1,0 +1,317 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   DARK MODE / LIGHT MODE - Hub Brain
+   Sistema de temas com transição suave
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ────────────────────────────────────────────────────────────────────────────
+   VARIÁVEIS CSS - DARK MODE (padrão atual)
+   ──────────────────────────────────────────────────────────────────────────── */
+
+:root {
+    /* Cores principais */
+    --bg-primary: #050508;
+    --bg-secondary: #0a0a0e;
+    --bg-tertiary: #111116;
+    
+    /* Superfícies */
+    --surface: rgba(255, 255, 255, 0.02);
+    --surface-hover: rgba(255, 255, 255, 0.04);
+    --surface-active: rgba(255, 255, 255, 0.06);
+    
+    /* Bordas */
+    --border: rgba(255, 255, 255, 0.06);
+    --border-hover: rgba(255, 255, 255, 0.1);
+    
+    /* Texto */
+    --text-primary: #ffffff;
+    --text-secondary: #888888;
+    --text-tertiary: #444444;
+    
+    /* Destaque (roxo) */
+    --primary: #8a2be2;
+    --primary-dark: #6a1fc2;
+    --primary-light: #c084fc;
+    --primary-glow: rgba(138, 43, 226, 0.3);
+    
+    /* Status */
+    --success: #00e5a0;
+    --warning: #ffb800;
+    --error: #ff4455;
+    --info: #00d2ff;
+    
+    /* Sombras */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(138, 43, 226, 0.4);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   LIGHT MODE - Ativa quando body.light-mode
+   ──────────────────────────────────────────────────────────────────────────── */
+
+body.light-mode {
+    /* Cores principais */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f8f8;
+    --bg-tertiary: #f0f0f0;
+    
+    /* Superfícies */
+    --surface: rgba(0, 0, 0, 0.03);
+    --surface-hover: rgba(0, 0, 0, 0.05);
+    --surface-active: rgba(0, 0, 0, 0.08);
+    
+    /* Bordas */
+    --border: rgba(0, 0, 0, 0.08);
+    --border-hover: rgba(0, 0, 0, 0.12);
+    
+    /* Texto */
+    --text-primary: #1a1a1a;
+    --text-secondary: #666666;
+    --text-tertiary: #999999;
+    
+    /* Destaque (roxo - ajustado pro light) */
+    --primary: #7b1fa2;
+    --primary-dark: #6a1fc2;
+    --primary-light: #9c27b0;
+    --primary-glow: rgba(123, 31, 162, 0.2);
+    
+    /* Status - ajustados */
+    --success: #00c853;
+    --warning: #ff9800;
+    --error: #f44336;
+    --info: #00bcd4;
+    
+    /* Sombras */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+    --shadow-glow: 0 0 20px rgba(123, 31, 162, 0.2);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   TRANSIÇÃO SUAVE ENTRE TEMAS
+   ──────────────────────────────────────────────────────────────────────────── */
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Todos os elementos que usam cores do tema */
+*,
+*::before,
+*::after {
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+/* Elementos que NÃO devem ter transição */
+.no-transition,
+.skeleton,
+input,
+textarea,
+select {
+    transition: none !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   TOGGLE BUTTON - Botão de troca de tema
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.theme-toggle {
+    position: relative;
+    width: 56px;
+    height: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+}
+
+.theme-toggle:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-hover);
+}
+
+.theme-toggle-slider {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: var(--primary);
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-glow);
+    left: 4px;
+}
+
+body.light-mode .theme-toggle-slider {
+    left: 28px;
+    background: var(--primary);
+}
+
+.theme-toggle-icon {
+    width: 14px;
+    height: 14px;
+    color: white;
+    opacity: 0;
+    position: absolute;
+    transition: opacity 0.3s ease;
+}
+
+/* Ícone de lua (dark mode) */
+.theme-toggle-icon.moon {
+    opacity: 1;
+}
+
+body.light-mode .theme-toggle-icon.moon {
+    opacity: 0;
+}
+
+/* Ícone de sol (light mode) */
+.theme-toggle-icon.sun {
+    opacity: 0;
+}
+
+body.light-mode .theme-toggle-icon.sun {
+    opacity: 1;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   AJUSTES ESPECÍFICOS PARA LIGHT MODE
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Glassmorphism no light mode */
+body.light-mode .glass-header,
+body.light-mode .modal-overlay,
+body.light-mode .side-menu {
+    backdrop-filter: blur(20px) brightness(1.1);
+}
+
+/* Cards no light mode */
+body.light-mode .stat-card,
+body.light-mode .nota-card,
+body.light-mode .tarefa-item,
+body.light-mode .ranking-item,
+body.light-mode .modal-card {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+/* Skeletons no light mode */
+body.light-mode .skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.04) 0%,
+        rgba(0, 0, 0, 0.08) 50%,
+        rgba(0, 0, 0, 0.04) 100%
+    );
+}
+
+body.light-mode .skeleton::after {
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(123, 31, 162, 0.1) 50%,
+        transparent 100%
+    );
+}
+
+/* Inputs no light mode */
+body.light-mode input,
+body.light-mode textarea,
+body.light-mode select {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-primary);
+}
+
+body.light-mode input::placeholder,
+body.light-mode textarea::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* Botões no light mode */
+body.light-mode .btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+body.light-mode .btn-secondary {
+    background: var(--surface);
+    color: var(--text-primary);
+    border-color: var(--border);
+}
+
+/* Scrollbar no light mode */
+body.light-mode ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   SEÇÃO DE CONFIGURAÇÕES - Layout do toggle
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.config-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.config-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.config-item:last-child {
+    border-bottom: none;
+}
+
+.config-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.config-label-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.config-label-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   RESPONSIVO
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    .config-section {
+        padding: 16px;
+    }
+    
+    .config-item {
+        padding: 12px 0;
+    }
+}
