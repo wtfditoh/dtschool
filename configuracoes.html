@@ -166,11 +166,11 @@
                     <div class="cfg-desc">Visual do aplicativo</div>
                 </div>
                 <div class="theme-pills">
-                    <button class="theme-pill active" id="theme-dark" onclick="setTema('dark')">
-                        <i data-lucide="moon" style="width:13px;height:13px;"></i> Escuro
-                    </button>
-                    <button class="theme-pill" id="theme-light" onclick="setTema('light')">
-                        <i data-lucide="sun" style="width:13px;height:13px;"></i> Claro
+                    <button class="theme-toggle" onclick="toggleTheme()">
+    <div class="theme-toggle-slider">
+        <i data-lucide="moon" class="theme-toggle-icon moon"></i>
+        <i data-lucide="sun" class="theme-toggle-icon sun"></i>
+    </div>
                     </button>
                 </div>
             </div>
