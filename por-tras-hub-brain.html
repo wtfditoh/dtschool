@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Por Trás do Hub Brain 🧠</title>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="theme-toggle.css">
+    <script src="theme-manager.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            font-family: 'Outfit', -apple-system, sans-serif;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           HEADER SIMPLES
+           ════════════════════════════════════════════════════════════════ */
+        
+        .simple-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(8, 8, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+        }
+
+        .btn-back {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: var(--surface-hover);
+            transform: translateX(-4px);
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           HERO SECTION
+           ════════════════════════════════════════════════════════════════ */
+        
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 24px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 30%, rgba(138, 43, 226, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-emoji {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .hero-title {
+            font-size: clamp(36px, 8vw, 64px);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(18px, 3vw, 24px);
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 32px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-text {
+            font-size: clamp(16px, 2.5vw, 20px);
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-hero {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--primary);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 8px 24px var(--primary-glow);
+        }
+
+        .btn-hero:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px var(--primary-glow);
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           SEÇÃO HISTÓRIA
+           ════════════════════════════════════════════════════════════════ */
+        
+        .section {
+            padding: 100px 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 900;
+            margin-bottom: 32px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .story-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 32px;
+            animation: fadeInUp 0.8s ease-out;
+            transition: all 0.3s;
+        }
+
+        .story-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .story-text {
+            font-size: 18px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .story-text:last-child {
+            margin-bottom: 0;
+        }
+
+        .story-highlight {
+            background: var(--surface-active);
+            border-left: 4px solid var(--primary);
+            padding: 24px;
+            border-radius: 12px;
+            margin: 32px 0;
+        }
+
+        .story-highlight-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-style: italic;
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           GALERIA DE VERSÕES ANTIGAS
+           ════════════════════════════════════════════════════════════════ */
+        
+        .gallery-section {
+            padding: 100px 24px;
+            background: var(--bg-secondary);
+        }
+
+        .gallery-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .gallery-title {
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 900;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .gallery-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .gallery-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+        }
+
+        .gallery-image-placeholder {
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, var(--surface) 0%, var(--surface-active) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-tertiary);
+            font-size: 14px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .gallery-caption {
+            padding: 20px;
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           O QUE É O HUB BRAIN
+           ════════════════════════════════════════════════════════════════ */
+        
+        .purpose-section {
+            padding: 100px 24px;
+        }
+
+        .purpose-container {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .purpose-card {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1) 0%, rgba(138, 43, 226, 0.05) 100%);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            border-radius: 24px;
+            padding: 48px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .purpose-icon {
+            font-size: 48px;
+            margin-bottom: 24px;
+        }
+
+        .purpose-text {
+            font-size: 20px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .purpose-emphasis {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: 32px;
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           FINAL EMOCIONAL
+           ════════════════════════════════════════════════════════════════ */
+        
+        .final-section {
+            padding: 100px 24px;
+            background: var(--bg-secondary);
+        }
+
+        .final-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .final-emoji {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .final-title {
+            font-size: clamp(32px, 6vw, 48px);
+            font-weight: 900;
+            margin-bottom: 32px;
+        }
+
+        .final-text {
+            font-size: 20px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .final-cta {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            margin: 48px 0;
+        }
+
+        .final-cta-text {
+            font-size: 18px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .final-signature {
+            margin-top: 64px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .signature-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+        }
+
+        .signature-name {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           ANIMAÇÕES
+           ════════════════════════════════════════════════════════════════ */
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Animação de scroll reveal */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s ease-out;
+        }
+
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           RESPONSIVO
+           ════════════════════════════════════════════════════════════════ */
+        
+        @media (max-width: 768px) {
+            .story-card,
+            .purpose-card,
+            .final-cta {
+                padding: 28px;
+            }
+
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="simple-header">
+        <a href="index.html" class="btn-back">
+            <i data-lucide="arrow-left"></i>
+            Voltar
+        </a>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content">
+            <span class="hero-emoji">🧠</span>
+            <h1 class="hero-title">Por Trás do Hub Brain</h1>
+            <p class="hero-subtitle">Feito por um aluno. Pensado pra estudantes.</p>
+            <p class="hero-text">
+                O Hub Brain não nasceu numa empresa gigante. Ele começou com um aluno do ensino médio tentando resolver um problema simples: encontrar um jeito melhor de estudar e se organizar.
+            </p>
+            <button class="btn-hero" onclick="document.getElementById('historia').scrollIntoView({behavior: 'smooth'})">
+                <i data-lucide="book-open"></i>
+                Conhecer a história
+            </button>
+        </div>
+    </section>
+
+    <!-- HISTÓRIA -->
+    <section class="section" id="historia">
+        <h2 class="section-title scroll-reveal">Como tudo começou</h2>
+        
+        <div class="story-card scroll-reveal">
+            <p class="story-text">
+                A ideia do Hub Brain surgiu em 2025. Eu tava procurando um app pra organizar estudos, notas e atividades — mas sempre faltava alguma coisa.
+            </p>
+            <p class="story-text">
+                Um app tinha uma função boa, outro fazia algo diferente, mas tudo era muito fragmentado. Nunca existia um lugar que realmente juntasse tudo do jeito que eu precisava.
+            </p>
+        </div>
+
+        <div class="story-highlight scroll-reveal">
+            <p class="story-highlight-text">
+                "E se eu criasse o app que eu queria usar?"
+            </p>
+        </div>
+
+        <div class="story-card scroll-reveal">
+            <p class="story-text">
+                No começo, era algo bem simples. A ideia era basicamente organizar minhas notas e atividades escolares.
+            </p>
+            <p class="story-text">
+                Mas quanto mais eu construía, mais fui entrando no projeto. Aprendi, testei ideias, quebrei tudo, refiz de novo… e o Hub Brain foi evoluindo junto comigo.
+            </p>
+        </div>
+    </section>
+
+    <!-- GALERIA -->
+    <section class="gallery-section">
+        <div class="gallery-container">
+            <h2 class="gallery-title scroll-reveal">Você não faz ideia do quanto isso já mudou 😅</h2>
+            <p class="gallery-subtitle scroll-reveal">Cada versão foi uma lição. Cada erro foi um passo.</p>
+            
+            <div class="gallery-grid">
+                <div class="gallery-item scroll-reveal">
+                    <div class="gallery-image-placeholder">
+                        [Adicionar imagem #1]
+                    </div>
+                    <p class="gallery-caption">Uma das primeiras versões</p>
+                </div>
+
+                <div class="gallery-item scroll-reveal">
+                    <div class="gallery-image-placeholder">
+                        [Adicionar imagem #2]
+                    </div>
+                    <p class="gallery-caption">Quando tudo ainda era bem simples</p>
+                </div>
+
+                <div class="gallery-item scroll-reveal">
+                    <div class="gallery-image-placeholder">
+                        [Adicionar imagem #3]
+                    </div>
+                    <p class="gallery-caption">Muita coisa mudou desde aqui</p>
+                </div>
+
+                <div class="gallery-item scroll-reveal">
+                    <div class="gallery-image-placeholder">
+                        [Adicionar imagem #4]
+                    </div>
+                    <p class="gallery-caption">Cada update foi um aprendizado</p>
+                </div>
+
+                <div class="gallery-item scroll-reveal">
+                    <div class="gallery-image-placeholder">
+                        [Adicionar imagem #5]
+                    </div>
+                    <p class="gallery-caption">E ainda tem muito mais vindo</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- O QUE É -->
+    <section class="purpose-section">
+        <div class="purpose-container">
+            <div class="purpose-card scroll-reveal">
+                <div class="purpose-icon">📚</div>
+                <p class="purpose-text">
+                    O Hub Brain é focado principalmente em <strong>estudos e organização da vida escolar</strong>.
+                </p>
+                <p class="purpose-text">
+                    Não é sobre produtividade perfeita ou pressão.
+                </p>
+                <p class="purpose-text">
+                    É sobre ajudar estudantes a terem um lugar melhor para organizar rotina, atividades, estudos e não se perder na correria.
+                </p>
+                <p class="purpose-emphasis">
+                    Feito pra quem estuda. Por quem estuda.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FINAL -->
+    <section class="final-section">
+        <div class="final-container">
+            <div class="final-emoji scroll-reveal">🚧</div>
+            <h2 class="final-title scroll-reveal">Ainda em construção</h2>
+            
+            <p class="final-text scroll-reveal">
+                O Hub Brain continua evoluindo.
+            </p>
+            <p class="final-text scroll-reveal">
+                Ele nasceu de uma necessidade real e continua mudando conforme novas ideias aparecem.
+            </p>
+
+            <div class="final-cta scroll-reveal">
+                <p class="final-cta-text">
+                    Se você sentir falta de algo ou tiver uma ideia, me chama.
+                </p>
+                <p class="final-cta-text">
+                    Talvez a próxima melhoria do Hub Brain comece exatamente com uma ideia <strong>sua</strong>.
+                </p>
+                <a href="https://www.instagram.com/wtfditoh" target="_blank" class="btn-hero" style="display:inline-flex;margin-top:16px;">
+                    <i data-lucide="instagram"></i>
+                    @wtfditoh
+                </a>
+            </div>
+
+            <div class="final-signature scroll-reveal">
+                <p class="signature-label">FOUNDER & DEV</p>
+                <p class="signature-name">DITOH</p>
+            </div>
+        </div>
+    </section>
+
+    <script src="menu.js"></script>
+    <script>
+        // Animação de scroll reveal
+        const scrollRevealElements = document.querySelectorAll('.scroll-reveal');
+        
+        const revealOnScroll = () => {
+            scrollRevealElements.forEach(el => {
+                const elementTop = el.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (elementTop < windowHeight * 0.85) {
+                    el.classList.add('revealed');
+                }
+            });
+        };
+        
+        window.addEventListener('scroll', revealOnScroll);
+        window.addEventListener('load', revealOnScroll);
+        
+        // Inicializa Lucide icons
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
