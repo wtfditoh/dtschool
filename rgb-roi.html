@@ -59,6 +59,46 @@
         .help-badge.roxo { background:var(--pd); color:var(--p2); border:1px solid var(--border); }
         .help-badge.vermelho { background:rgba(255,80,80,0.1); color:#ff5555; border:1px solid rgba(255,80,80,0.2); }
 
+        /* BOTÕES DE MODO */
+.mode-selector {
+    display: flex;
+    gap: 6px;
+    background: rgba(0,0,0,0.3);
+    padding: 5px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 20px;
+}
+.mode-btn {
+    flex: 1;
+    padding: 11px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: 0.2s;
+    background: transparent;
+    color: #444;
+}
+.mode-btn.active {
+    background: linear-gradient(135deg, var(--p), #6a1cb2);
+    color: white;
+    box-shadow: 0 3px 14px rgba(138,43,226,0.4);
+}
+.mode-btn:hover:not(.active) {
+    background: rgba(255,255,255,0.03);
+    color: #666;
+}
+ 
+/* Labels dinâmicos para HSV/GRAY */
+.rgb-bar-label.mode-h { color: var(--p2) !important; }
+.rgb-bar-label.mode-s { color: #00e5a0 !important; }
+.rgb-bar-label.mode-v { color: #ffffff !important; }
+.rgb-bar-label.mode-gray { color: #aaa !important; }
+        
         /* CONTAINER */
         .container { max-width:500px; margin:0 auto; padding:20px 16px 100px; position:relative; z-index:1; }
 
@@ -468,6 +508,19 @@
 
 <div class="container">
 
+    <!-- SELETOR DE MODO -->
+<div class="mode-selector">
+    <button class="mode-btn active" data-mode="rgb" onclick="trocarModo('rgb')">
+        RGB
+    </button>
+    <button class="mode-btn" data-mode="hsv" onclick="trocarModo('hsv')">
+        HSV
+    </button>
+    <button class="mode-btn" data-mode="gray" onclick="trocarModo('gray')">
+        GRAYSCALE
+    </button>
+</div>
+
     <!-- STEP 1 -->
     <div class="step-label">
         <div class="step-num">1</div>
@@ -688,32 +741,20 @@
 
                 <div class="comp-diff-title">DIFERENÇA (B − A)</div>
 
-                <!-- BARRAS DE DIFERENÇA -->
-                <div class="diff-bars">
-                    <div class="diff-bar-row">
-                        <span class="diff-bar-ch" style="color:#ff5555;">R</span>
-                        <div class="diff-bar-track">
-                            <div class="diff-bar-center"></div>
-                            <div id="diff-bar-r" class="diff-bar-fill"></div>
-                        </div>
-                        <span class="diff-bar-val" id="diff-val-r">—</span>
-                    </div>
-                    <div class="diff-bar-row">
-                        <span class="diff-bar-ch" style="color:#55ff55;">G</span>
-                        <div class="diff-bar-track">
-                            <div class="diff-bar-center"></div>
-                            <div id="diff-bar-g" class="diff-bar-fill"></div>
-                        </div>
-                        <span class="diff-bar-val" id="diff-val-g">—</span>
-                    </div>
-                    <div class="diff-bar-row">
-                        <span class="diff-bar-ch" style="color:#5599ff;">B</span>
-                        <div class="diff-bar-track">
-                            <div class="diff-bar-center"></div>
-                            <div id="diff-bar-b" class="diff-bar-fill"></div>
-                        </div>
-                        <span class="diff-bar-val" id="diff-val-b">—</span>
-                    </div>
+             // BARRA R:
+<div class="rgb-bar-label" id="lbl-ch1" style="color:#ff5555;">R</div>
+<div class="rgb-bar-fill" id="bar-1" style="background:#ff5555;"></div>
+<div class="rgb-bar-val" id="val-1">0</div>
+ 
+// BARRA G:
+<div class="rgb-bar-label" id="lbl-ch2" style="color:#55ff55;">G</div>
+<div class="rgb-bar-fill" id="bar-2" style="background:#55ff55;"></div>
+<div class="rgb-bar-val" id="val-2">0</div>
+ 
+// BARRA B:
+<div class="rgb-bar-label" id="lbl-ch3" style="color:#5599ff;">B</div>
+<div class="rgb-bar-fill" id="bar-3" style="background:#5599ff;"></div>
+<div class="rgb-bar-val" id="val-3">0</div>
                 </div>
 
                 <!-- CONCLUSÃO -->
@@ -740,6 +781,7 @@ let isDragging = false;
 let startX, startY;
 let canvasScale = 1;
 let ultimaAnalise = null; // dados da última análise para salvar no banco
+let modoAnalise = 'rgb'; // 'rgb', 'hsv' ou 'gray'
 
 const canvasMain = document.getElementById('canvas-main');
 const ctx = canvasMain.getContext('2d');
@@ -864,34 +906,188 @@ function finalizarROI(clientX, clientY, rect) {
     }
 }
 
-// ── ANALISAR ─────────────────────────────
+// ═══ CONVERSÕES DE COR ═══
+ 
+function rgbToHsv(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const diff = max - min;
+    
+    let h = 0;
+    if (diff !== 0) {
+        if (max === r) h = ((g - b) / diff) % 6;
+        else if (max === g) h = (b - r) / diff + 2;
+        else h = (r - g) / diff + 4;
+    }
+    h = Math.round(h * 60);
+    if (h < 0) h += 360;
+    
+    const s = max === 0 ? 0 : (diff / max);
+    const v = max;
+    
+    return {
+        h: h,
+        s: Math.round(s * 100),
+        v: Math.round(v * 100)
+    };
+}
+ 
+function rgbToGray(r, g, b) {
+    return Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+}
+ 
+function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(x => {
+        const hex = Math.round(x).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    }).join('');
+}
+ 
+function trocarModo(modo) {
+    modoAnalise = modo;
+    
+    // Atualiza botões
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-mode="${modo}"]`).classList.add('active');
+    
+    // Re-exibe resultados se já analisou
+    if (ultimaAnalise) {
+        exibirResultadosPorModo(ultimaAnalise);
+    }
+}
+ 
+function exibirResultadosPorModo(dados) {
+    const { r, g, b, hex, sat, hue, pixels } = dados;
+    
+    // Calcula HSV e Gray
+    const hsv = rgbToHsv(r, g, b);
+    const gray = rgbToGray(r, g, b);
+    
+    // ═══ PREVIEW DE COR (sempre igual) ═══
+    document.getElementById('cor-swatch').style.background = hex;
+    document.getElementById('cor-hex').textContent = hex.toUpperCase();
+    
+    if (modoAnalise === 'rgb') {
+        // ═══ MODO RGB ═══
+        document.getElementById('cor-nome').textContent = dados.corNome || nomearCor(hue, sat, hsv.v/100);
+        
+        // Labels
+        document.getElementById('lbl-ch1').textContent = 'R';
+        document.getElementById('lbl-ch1').className = 'rgb-bar-label';
+        document.getElementById('lbl-ch1').style.color = '#ff5555';
+        
+        document.getElementById('lbl-ch2').textContent = 'G';
+        document.getElementById('lbl-ch2').className = 'rgb-bar-label';
+        document.getElementById('lbl-ch2').style.color = '#55ff55';
+        
+        document.getElementById('lbl-ch3').textContent = 'B';
+        document.getElementById('lbl-ch3').className = 'rgb-bar-label';
+        document.getElementById('lbl-ch3').style.color = '#5599ff';
+        
+        // Barras
+        document.getElementById('bar-1').style.width = (r / 255 * 100) + '%';
+        document.getElementById('bar-1').style.background = '#ff5555';
+        document.getElementById('val-1').textContent = r.toFixed(1);
+        
+        document.getElementById('bar-2').style.width = (g / 255 * 100) + '%';
+        document.getElementById('bar-2').style.background = '#55ff55';
+        document.getElementById('val-2').textContent = g.toFixed(1);
+        
+        document.getElementById('bar-3').style.width = (b / 255 * 100) + '%';
+        document.getElementById('bar-3').style.background = '#5599ff';
+        document.getElementById('val-3').textContent = b.toFixed(1);
+        
+        // Mostra barras 2 e 3
+        document.querySelectorAll('.rgb-bar-row')[1].style.display = 'flex';
+        document.querySelectorAll('.rgb-bar-row')[2].style.display = 'flex';
+        
+    } else if (modoAnalise === 'hsv') {
+        // ═══ MODO HSV ═══
+        document.getElementById('cor-nome').textContent = 'HSV Color Space';
+        
+        // Labels
+        document.getElementById('lbl-ch1').textContent = 'H';
+        document.getElementById('lbl-ch1').className = 'rgb-bar-label mode-h';
+        
+        document.getElementById('lbl-ch2').textContent = 'S';
+        document.getElementById('lbl-ch2').className = 'rgb-bar-label mode-s';
+        
+        document.getElementById('lbl-ch3').textContent = 'V';
+        document.getElementById('lbl-ch3').className = 'rgb-bar-label mode-v';
+        
+        // Barras
+        document.getElementById('bar-1').style.width = (hsv.h / 360 * 100) + '%';
+        document.getElementById('bar-1').style.background = 'linear-gradient(90deg,red,yellow,lime,cyan,blue,magenta,red)';
+        document.getElementById('val-1').textContent = hsv.h + '°';
+        
+        document.getElementById('bar-2').style.width = hsv.s + '%';
+        document.getElementById('bar-2').style.background = '#00e5a0';
+        document.getElementById('val-2').textContent = hsv.s + '%';
+        
+        document.getElementById('bar-3').style.width = hsv.v + '%';
+        document.getElementById('bar-3').style.background = '#ffffff';
+        document.getElementById('val-3').textContent = hsv.v + '%';
+        
+        // Mostra barras 2 e 3
+        document.querySelectorAll('.rgb-bar-row')[1].style.display = 'flex';
+        document.querySelectorAll('.rgb-bar-row')[2].style.display = 'flex';
+        
+    } else if (modoAnalise === 'gray') {
+        // ═══ MODO GRAYSCALE ═══
+        const grayHex = rgbToHex(gray, gray, gray);
+        document.getElementById('cor-swatch').style.background = grayHex;
+        document.getElementById('cor-hex').textContent = grayHex.toUpperCase();
+        document.getElementById('cor-nome').textContent = 'Escala de Cinza';
+        
+        // Labels (mostra só 1 barra)
+        document.getElementById('lbl-ch1').textContent = 'GRAY';
+        document.getElementById('lbl-ch1').className = 'rgb-bar-label mode-gray';
+        
+        // Barra 1
+        document.getElementById('bar-1').style.width = (gray / 255 * 100) + '%';
+        document.getElementById('bar-1').style.background = 'linear-gradient(90deg,#000,#fff)';
+        document.getElementById('val-1').textContent = gray;
+        
+        // Esconde barras 2 e 3
+        document.querySelectorAll('.rgb-bar-row')[1].style.display = 'none';
+        document.querySelectorAll('.rgb-bar-row')[2].style.display = 'none';
+    }
+}
+    
+    // ── ANALISAR ─────────────────────────────
 function analisarROI() {
     if (!imgOriginal || !roi) return;
-
+ 
     const tmpCanvas = document.createElement('canvas');
     tmpCanvas.width = roi.w;
     tmpCanvas.height = roi.h;
     const tmpCtx = tmpCanvas.getContext('2d');
     tmpCtx.drawImage(imgOriginal, roi.x, roi.y, roi.w, roi.h, 0, 0, roi.w, roi.h);
-
+ 
     const data = tmpCtx.getImageData(0, 0, roi.w, roi.h).data;
     const totalPx = roi.w * roi.h;
-
+ 
     const histR = new Array(256).fill(0);
     const histG = new Array(256).fill(0);
     const histB = new Array(256).fill(0);
-
+ 
     let sumR = 0, sumG = 0, sumB = 0;
     for (let i = 0; i < data.length; i += 4) {
         const r = data[i], g = data[i+1], b = data[i+2];
         sumR += r; sumG += g; sumB += b;
         histR[r]++; histG[g]++; histB[b]++;
     }
-
+ 
     const mR = sumR / totalPx;
     const mG = sumG / totalPx;
     const mB = sumB / totalPx;
-
+ 
     const r1 = mR/255, g1 = mG/255, b1 = mB/255;
     const max = Math.max(r1,g1,b1), min = Math.min(r1,g1,b1);
     const d = max - min;
@@ -905,48 +1101,50 @@ function analisarROI() {
     const sat = Math.round(s * 100);
     const bright = Math.round((mR + mG + mB) / 3);
     const hexStr = '#' + [mR,mG,mB].map(v => Math.round(v).toString(16).padStart(2,'0')).join('');
-
-    document.getElementById('val-r').innerText = mR.toFixed(1);
-    document.getElementById('val-g').innerText = mG.toFixed(1);
-    document.getElementById('val-b').innerText = mB.toFixed(1);
-    document.getElementById('bar-r').style.width = (mR/255*100) + '%';
-    document.getElementById('bar-g').style.width = (mG/255*100) + '%';
-    document.getElementById('bar-b').style.width = (mB/255*100) + '%';
-    document.getElementById('cor-swatch').style.background = `rgb(${Math.round(mR)},${Math.round(mG)},${Math.round(mB)})`;
-    document.getElementById('cor-hex').innerText = hexStr.toUpperCase();
-    document.getElementById('cor-nome').innerText = nomearCor(hue, sat, v);
+ 
+    // ═══ EXIBIR CONFORME MODO ═══
+    const dados = {
+        r: mR,
+        g: mG,
+        b: mB,
+        hex: hexStr.toUpperCase(),
+        sat: sat,
+        hue: hue,
+        pixels: totalPx,
+        corNome: nomearCor(hue, sat, v)
+    };
+    
+    exibirResultadosPorModo(dados);
+    
+    // ═══ CONTINUA IGUAL ═══
     document.getElementById('stat-pixels').innerText = totalPx.toLocaleString('pt-BR');
     document.getElementById('stat-bright').innerText = bright;
     document.getElementById('stat-sat').innerText = sat + '%';
     document.getElementById('stat-hue').innerText = hue + '°';
     document.getElementById('int-texto').innerHTML = interpretarCor(mR, mG, mB, hue, sat, v);
-
+ 
     const canvasRoi = document.getElementById('canvas-roi');
     canvasRoi.width = roi.w;
     canvasRoi.height = roi.h;
     canvasRoi.getContext('2d').drawImage(tmpCanvas, 0, 0);
     document.getElementById('roi-preview-wrap').style.display = 'block';
-
-    // FIX: Histograma agora usa requestAnimationFrame pra garantir que o canvas está visível
+ 
     document.getElementById('resultado-card').classList.add('visible');
     document.getElementById('step3-label').style.opacity = '1';
-
-    // Guarda dados pra desenhar depois que o card for visível
+ 
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             desenharHistograma(histR, histG, histB, totalPx);
             if (window.lucide) lucide.createIcons();
         });
     });
-
+ 
     document.getElementById('resultado-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    // Habilitar botões de comparação
+ 
     document.getElementById('btn-salvar-a').disabled = false;
     document.getElementById('btn-salvar-b').disabled = false;
     document.getElementById('comp-hint').style.display = 'none';
-
-    // Guardar dados para salvar no banco
+ 
     ultimaAnalise = {
         hex: hexStr.toUpperCase(),
         r: parseFloat(mR.toFixed(1)),
