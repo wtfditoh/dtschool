@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Física & Matemática - Hub Brain</title>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://www.desmos.com/api/v1.7/calculator.js"></script>
+    
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="theme-toggle.css">
+    <link rel="stylesheet" href="fismat.css">
+    
+    <script src="theme-manager.js"></script>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="glass-header">
+        <button id="open-menu" class="btn-menu">
+            <i data-lucide="menu"></i>
+        </button>
+        
+        <div class="header-logo" onclick="window.location.href='index.html'">
+            <span class="logo-hub">HUB</span>
+            <div class="logo-brain-icon">
+                <img src="icon-514_20260512_161420_0000.png" alt="Brain">
+            </div>
+            <span class="logo-brain">BRAIN</span>
+        </div>
+
+        <div style="width:44px;"></div>
+    </header>
+
+    <!-- CONTAINER -->
+    <div class="container">
+
+        <!-- SELETOR DE ABAS -->
+        <div class="tabs-selector">
+            <button class="tab-btn active" onclick="trocarAba(event, 'gases')">🔬 Gases</button>
+            <button class="tab-btn" onclick="trocarAba(event, 'trigonometria')">📐 Trig</button>
+            <button class="tab-btn" onclick="trocarAba(event, 'combinatoria')">🎲 Combo</button>
+            <button class="tab-btn" onclick="trocarAba(event, 'probabilidade')">📊 Prob</button>
+            <button class="tab-btn" onclick="trocarAba(event, 'cinematica')">🚀 Cinema</button>
+            <button class="tab-btn" onclick="trocarAba(event, 'energia')">⚡ Energia</button>
+            <button class="tab-btn" onclick="trocarAba(event, 'ondas')">〰️ Ondas</button>
+            <button class="tab-btn" onclick="trocarAba(event, 'optica')">💡 Óptica</button>
+            <button class="tab-btn" onclick="trocarAba(event, 'eletricidade')">🔌 Elet</button>
+        </div>
+
+        <!-- ABA: GASES -->
+        <div id="gases" class="tab-content active">
+            <div class="section">
+                <h2 class="section-title">Lei dos Gases Ideais</h2>
+                <div class="card">
+                    <p style="margin-bottom: 24px; color: #aaa;">Ajuste os sliders para ver como P, V e T se relacionam! (PV = nRT)</p>
+                    <div class="slider-group">
+                        <div class="slider-item">
+                            <span class="slider-label">🌡️ Temperatura (K)</span>
+                            <input type="range" id="slider-temp" min="100" max="500" value="300" step="10" oninput="atualizarGases()">
+                            <span class="slider-value" id="val-temp">300 K</span>
+                        </div>
+                        <div class="slider-item">
+                            <span class="slider-label">📦 Volume (L)</span>
+                            <input type="range" id="slider-vol" min="1" max="10" value="5" step="0.5" oninput="atualizarGases()">
+                            <span class="slider-value" id="val-vol">5 L</span>
+                        </div>
+                        <div class="slider-item">
+                            <span class="slider-label">💨 Moles (mol)</span>
+                            <input type="range" id="slider-mol" min="0.5" max="5" value="1" step="0.1" oninput="atualizarGases()">
+                            <span class="slider-value" id="val-mol">1 mol</span>
+                        </div>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="canvas-gases" width="600" height="300"></canvas>
+                    </div>
+                    <div class="result-box">
+                        <div class="result-title">Pressão (P = nRT/V)</div>
+                        <div class="result-value" id="result-pressao">101 kPa</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: TRIGONOMETRIA -->
+        <div id="trigonometria" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Funções Trigonométricas</h2>
+                <div class="card">
+                    <p style="margin-bottom: 24px; color: #aaa;">Visualize sen(x), cos(x) e tan(x) no círculo unitário</p>
+                    <div class="slider-group">
+                        <div class="slider-item">
+                            <span class="slider-label">∠ Ângulo (°)</span>
+                            <input type="range" id="slider-angulo" min="0" max="360" value="45" step="1" oninput="atualizarTrigonometria()">
+                            <span class="slider-value" id="val-angulo">45°</span>
+                        </div>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="canvas-trig" width="300" height="300"></canvas>
+                    </div>
+                    <div class="grid-3">
+                        <div class="result-box">
+                            <div class="result-title">sen(θ)</div>
+                            <div class="result-value" id="result-sen">0.707</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-title">cos(θ)</div>
+                            <div class="result-value" id="result-cos">0.707</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-title">tan(θ)</div>
+                            <div class="result-value" id="result-tan">1.000</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: COMBINATÓRIA -->
+        <div id="combinatoria" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Análise Combinatória</h2>
+                <div class="card">
+                    <p style="margin-bottom: 24px; color: #aaa;">Calcule Combinações, Arranjos e Permutações</p>
+                    <div style="display: grid; gap: 16px; grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 700; font-size: 12px;">N</label>
+                            <input type="number" id="input-n" min="1" max="20" value="5">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 700; font-size: 12px;">K</label>
+                            <input type="number" id="input-k" min="1" max="20" value="3">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="calcularCombinatoria()" style="width: 100%;">Calcular</button>
+                    <div class="grid-3" style="margin-top: 24px;">
+                        <div class="result-box">
+                            <div class="result-title">C(n,k)</div>
+                            <div class="result-value" id="result-comb">10</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-title">A(n,k)</div>
+                            <div class="result-value" id="result-arr">60</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-title">P(n)</div>
+                            <div class="result-value" id="result-perm">120</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: PROBABILIDADE -->
+        <div id="probabilidade" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Probabilidade & Estatística</h2>
+                <div class="card">
+                    <p style="margin-bottom: 24px; color: #aaa;">Simule lançamentos e veja frequências</p>
+                    <div style="display: grid; gap: 16px; grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
+                        <button class="btn btn-primary" onclick="simularDados()">🎲 Dado</button>
+                        <button class="btn btn-primary" onclick="simularMoeda()">🪙 Moeda</button>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="canvas-prob" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: CINEMÁTICA -->
+        <div id="cinematica" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Movimento & Cinemática</h2>
+                <div class="card">
+                    <p style="margin-bottom: 24px; color: #aaa;">Simule lançamento de projétil</p>
+                    <div class="slider-group">
+                        <div class="slider-item">
+                            <span class="slider-label">🎯 Ângulo (°)</span>
+                            <input type="range" id="slider-angulo-lan" min="0" max="90" value="45" step="1" oninput="atualizarCinematica()">
+                            <span class="slider-value" id="val-angulo-lan">45°</span>
+                        </div>
+                        <div class="slider-item">
+                            <span class="slider-label">💨 Velocidade (m/s)</span>
+                            <input type="range" id="slider-vel" min="5" max="50" value="20" step="1" oninput="atualizarCinematica()">
+                            <span class="slider-value" id="val-vel">20 m/s</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="simularLancamento()" style="width: 100%; margin-bottom: 24px;">Simular</button>
+                    <div class="canvas-container">
+                        <canvas id="canvas-cine" width="500" height="350"></canvas>
+                    </div>
+                    <div class="grid-2">
+                        <div class="result-box">
+                            <div class="result-title">H Máxima</div>
+                            <div class="result-value" id="result-hmax">0 m</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-title">Alcance</div>
+                            <div class="result-value" id="result-alcance">0 m</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: ENERGIA -->
+        <div id="energia" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Energia & Trabalho</h2>
+                <div class="card">
+                    <p style="margin-bottom: 24px; color: #aaa;">Explore Ec, Ep e Energia Total</p>
+                    <div class="slider-group">
+                        <div class="slider-item">
+                            <span class="slider-label">⚖️ Massa (kg)</span>
+                            <input type="range" id="slider-massa" min="1" max="100" value="10" step="1" oninput="atualizarEnergia()">
+                            <span class="slider-value" id="val-massa">10 kg</span>
+                        </div>
+                        <div class="slider-item">
+                            <span class="slider-label">🚀 Velocidade (m/s)</span>
+                            <input type="range" id="slider-vel-en" min="0" max="30" value="10" step="1" oninput="atualizarEnergia()">
+                            <span class="slider-value" id="val-vel-en">10 m/s</span>
+                        </div>
+                        <div class="slider-item">
+                            <span class="slider-label">📈 Altura (m)</span>
+                            <input type="range" id="slider-altura" min="0" max="50" value="10" step="1" oninput="atualizarEnergia()">
+                            <span class="slider-value" id="val-altura">10 m</span>
+                        </div>
+                    </div>
+                    <div class="grid-3" style="margin-top: 24px;">
+                        <div class="result-box">
+                            <div class="result-title">Ec</div>
+                            <div class="result-value" id="result-ec">500 J</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-title">Ep</div>
+                            <div class="result-value" id="result-ep">980 J</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-title">E Total</div>
+                            <div class="result-value" id="result-etotal">1480 J</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: ONDAS -->
+        <div id="ondas" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Ondas & Vibrações</h2>
+                <div class="card">
+                    <p style="margin-bottom: 24px; color: #aaa;">Amplitude, Frequência e Comprimento de Onda</p>
+                    <div class="slider-group">
+                        <div class="slider-item">
+                            <span class="slider-label">📏 Amplitude</span>
+                            <input type="range" id="slider-amp" min="10" max="80" value="40" step="5" oninput="atualizarOndas()">
+                            <span class="slider-value" id="val-amp">40</span>
+                        </div>
+                        <div class="slider-item">
+                            <span class="slider-label">🔊 Frequência (Hz)</span>
+                            <input type="range" id="slider-freq" min="1" max="10" value="3" step="0.5" oninput="atualizarOndas()">
+                            <span class="slider-value" id="val-freq">3 Hz</span>
+                        </div>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="canvas-ondas" width="600" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: ÓPTICA -->
+        <div id="optica" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Óptica & Lei de Snell</h2>
+                <div class="card">
+                    <p style="margin-bottom: 24px; color: #aaa;">Reflexão, Refração e Lei de Snell</p>
+                    <div class="slider-group">
+                        <div class="slider-item">
+                            <span class="slider-label">∠ Ângulo Incidência</span>
+                            <input type="range" id="slider-ang-inci" min="0" max="80" value="30" step="5" oninput="atualizarOptica()">
+                            <span class="slider-value" id="val-ang-inci">30°</span>
+                        </div>
+                        <div class="slider-item">
+                            <span class="slider-label">🔷 Índice (n2)</span>
+                            <input type="range" id="slider-n2" min="1" max="2.4" value="1.5" step="0.1" oninput="atualizarOptica()">
+                            <span class="slider-value" id="val-n2">1.5</span>
+                        </div>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="canvas-optica" width="500" height="300"></canvas>
+                    </div>
+                    <div class="result-box" style="margin-top: 24px;">
+                        <div class="result-title">Ângulo de Refração</div>
+                        <div class="result-value" id="result-ang-refr">19°</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: ELETRICIDADE -->
+        <div id="eletricidade" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Eletricidade & Lei de Ohm</h2>
+                <div class="card">
+                    <p style="margin-bottom: 24px; color: #aaa;">Tensão, Corrente e Resistência (V = IR)</p>
+                    <div class="slider-group">
+                        <div class="slider-item">
+                            <span class="slider-label">⚡ Tensão (V)</span>
+                            <input type="range" id="slider-tensao" min="0" max="24" value="12" step="0.5" oninput="atualizarEletricidade()">
+                            <span class="slider-value" id="val-tensao">12 V</span>
+                        </div>
+                        <div class="slider-item">
+                            <span class="slider-label">🔌 Resistência (Ω)</span>
+                            <input type="range" id="slider-resist" min="1" max="100" value="10" step="1" oninput="atualizarEletricidade()">
+                            <span class="slider-value" id="val-resist">10 Ω</span>
+                        </div>
+                    </div>
+                    <div class="grid-2" style="margin-top: 24px;">
+                        <div class="result-box">
+                            <div class="result-title">Corrente (I)</div>
+                            <div class="result-value" id="result-corrente">1.20 A</div>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-title">Potência (P)</div>
+                            <div class="result-value" id="result-potencia">14.4 W</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="menu.js"></script>
+    <script src="fismat.js"></script>
+    <script>
+        if (window.lucide) lucide.createIcons();
+        
+        function trocarAba(event, nomeAba) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(nomeAba).classList.add('active');
+            event.target.classList.add('active');
+            if (window.lucide) setTimeout(() => lucide.createIcons(), 50);
+        }
+    </script>
+</body>
+</html>
