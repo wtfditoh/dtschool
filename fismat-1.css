@@ -1,0 +1,774 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   FÍSICA E MATEMÁTICA - CSS COMPARTILHADO
+   Hub Brain Edition
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg-primary, #050508);
+    color: var(--text-primary, #ffffff);
+    font-family: 'Outfit', -apple-system, sans-serif;
+    overflow-x: hidden;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   HEADER
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.glass-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: rgba(5, 5, 8, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    justify-content: space-between;
+}
+
+.header-logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    cursor: pointer;
+}
+
+.logo-hub {
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: white;
+}
+
+.logo-brain-icon {
+    width: 36px;
+    height: 36px;
+    margin: 0 8px;
+}
+
+.logo-brain-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.logo-brain {
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #8a2be2 0%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.btn-menu {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #1a1a1a;
+    color: white;
+    padding: 9px;
+    border-radius: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.btn-menu:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   CONTAINER
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 100px 24px 100px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   SELETOR DE ABAS
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.tabs-selector {
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 32px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+}
+
+.tabs-selector::-webkit-scrollbar {
+    height: 4px;
+}
+
+.tabs-selector::-webkit-scrollbar-thumb {
+    background: rgba(138, 43, 226, 0.3);
+    border-radius: 2px;
+}
+
+.tab-btn {
+    flex-shrink: 0;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: 0.3s;
+    background: transparent;
+    color: #555;
+    white-space: nowrap;
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, #8a2be2 0%, #6a1fc2 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(138, 43, 226, 0.4);
+}
+
+.tab-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.05);
+    color: #888;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   CONTEÚDO DAS ABAS
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   CARDS E SEÇÕES
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.section {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, var(--text-primary, white) 0%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 24px;
+    transition: 0.3s;
+}
+
+.card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(138, 43, 226, 0.3);
+    transform: translateY(-4px);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   SLIDERS
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.slider-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.slider-label {
+    font-size: 14px;
+    font-weight: 700;
+    min-width: 100px;
+}
+
+.slider-track {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+input[type="range"] {
+    flex: 1;
+    height: 8px;
+    cursor: pointer;
+    background: linear-gradient(90deg, #8a2be2 0%, #6a1fc2 100%);
+    border-radius: 10px;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8a2be2 0%, #c084fc 100%);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(138, 43, 226, 0.4);
+    transition: 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    box-shadow: 0 4px 16px rgba(138, 43, 226, 0.6);
+    transform: scale(1.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8a2be2 0%, #c084fc 100%);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 8px rgba(138, 43, 226, 0.4);
+    transition: 0.2s;
+}
+
+.slider-value {
+    font-size: 14px;
+    font-weight: 800;
+    min-width: 80px;
+    text-align: right;
+    color: #c084fc;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   CANVAS (para simulações)
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.canvas-container {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(138, 43, 226, 0.2);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 24px 0;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   GRÁFICOS (Desmos)
+   ──────────────────────────────────────────────────────────────────────────── */
+
+#desmos-calculator {
+    width: 100%;
+    height: 400px;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   RESULTADOS E INPUTS
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.result-box {
+    background: rgba(138, 43, 226, 0.1);
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.result-title {
+    font-weight: 800;
+    color: #c084fc;
+    margin-bottom: 8px;
+}
+
+.result-value {
+    font-size: 20px;
+    font-weight: 900;
+    color: #00e5a0;
+}
+
+input[type="number"],
+input[type="text"],
+select {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
+    outline: none;
+    border-color: #8a2be2;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 16px rgba(138, 43, 226, 0.2);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   BOTÕES
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: 0.3s;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #8a2be2 0%, #6a1fc2 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(138, 43, 226, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(138, 43, 226, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #888;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   GRID
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   EXPLICAÇÃO
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.explanation {
+    background: rgba(0, 229, 160, 0.05);
+    border-left: 4px solid #00e5a0;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #aaa;
+}
+
+.explanation strong {
+    color: #00e5a0;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   RESPONSIVO
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    .container {
+        padding: 90px 16px 100px;
+    }
+
+    .section-title {
+        font-size: 24px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .slider-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .slider-label {
+        width: 100%;
+    }
+
+    .tabs-selector {
+        gap: 6px;
+    }
+
+    .tab-btn {
+        padding: 10px 14px;
+        font-size: 11px;
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   GASES — NOVOS ESTILOS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.card-desc {
+    margin-bottom: 20px;
+    color: #888;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.gas-formula-banner {
+    background: rgba(138, 43, 226, 0.12);
+    border: 1px solid rgba(138, 43, 226, 0.35);
+    border-radius: 12px;
+    padding: 14px 20px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #c084fc;
+    margin-bottom: 24px;
+}
+
+.gas-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.gas-estado {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.gas-estado-label {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.gas-seta {
+    font-size: 24px;
+    color: #555;
+    text-align: center;
+    user-select: none;
+}
+
+.gas-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #ccc;
+}
+
+.gas-unit {
+    font-weight: 500;
+    color: #666;
+    font-size: 11px;
+}
+
+.gas-field input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    transition: 0.2s;
+}
+
+.gas-field input:focus {
+    outline: none;
+    border-color: #8a2be2;
+    background: rgba(138,43,226,0.08);
+    box-shadow: 0 0 12px rgba(138,43,226,0.2);
+}
+
+.gas-field input::placeholder {
+    color: #444;
+    font-weight: 500;
+}
+
+.gas-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 0;
+}
+
+.gas-result-box {
+    margin-top: 20px;
+    background: rgba(0, 229, 160, 0.07);
+    border: 1px solid rgba(0, 229, 160, 0.3);
+    border-radius: 14px;
+    padding: 20px 24px;
+}
+
+.gas-result-label {
+    font-size: 13px;
+    font-weight: 800;
+    color: #00e5a0;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+
+.gas-result-value {
+    font-size: 32px;
+    font-weight: 900;
+    color: #00e5a0;
+    margin-bottom: 8px;
+}
+
+.gas-result-eq {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+@media (max-width: 600px) {
+    .gas-grid {
+        grid-template-columns: 1fr;
+    }
+    .gas-seta {
+        transform: rotate(90deg);
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   TRIGONOMETRIA — NOVOS ESTILOS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.trig-mode-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    background: rgba(0,0,0,0.3);
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+    width: fit-content;
+}
+
+.trig-mode-btn {
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: 0.3s;
+    background: transparent;
+    color: #555;
+    letter-spacing: 0.5px;
+}
+
+.trig-mode-btn.active {
+    background: linear-gradient(135deg, #8a2be2, #6a1fc2);
+    color: white;
+    box-shadow: 0 3px 12px rgba(138,43,226,0.4);
+}
+
+.trig-formula-display {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 900;
+    color: #c084fc;
+    background: rgba(138,43,226,0.1);
+    border: 1px solid rgba(138,43,226,0.25);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+}
+
+.trig-controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 4px;
+}
+
+.trig-ctrl label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #777;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.trig-ctrl select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.trig-ctrl select:focus {
+    outline: none;
+    border-color: #8a2be2;
+}
+
+.trig-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.trig-info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.trig-info-card {
+    background: rgba(138,43,226,0.08);
+    border: 1px solid rgba(138,43,226,0.2);
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+/* Tabela trigonométrica */
+.trig-table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+
+.trig-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.trig-table thead tr {
+    background: rgba(138,43,226,0.25);
+}
+
+.trig-table th {
+    padding: 12px 16px;
+    font-weight: 900;
+    font-size: 13px;
+    color: #c084fc;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+.trig-table td {
+    padding: 10px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: #ddd;
+    font-weight: 600;
+}
+
+.trig-table tr:first-child td { border-top: none; }
+.trig-table tr:hover td { background: rgba(138,43,226,0.08); }
+
+.trig-row-selected td {
+    background: rgba(0,229,160,0.1) !important;
+    color: #00e5a0 !important;
+    font-weight: 800;
+}
+
+.trig-table td:first-child {
+    color: #c084fc;
+    font-weight: 800;
+}
+
+@media (max-width: 640px) {
+    .trig-controls-grid { grid-template-columns: 1fr; }
+    .trig-info-grid { grid-template-columns: 1fr 1fr; }
+}
