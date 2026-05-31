@@ -772,3 +772,351 @@ select:focus {
     .trig-controls-grid { grid-template-columns: 1fr; }
     .trig-info-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   TRIGONOMETRIA — MODO PROFESSOR (RESOLVER EXERCÍCIO)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.trig-mode-btn[data-mode="resolver"] { }
+
+/* Banner de função */
+.solver-fn-display {
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(138,43,226,0.35);
+    border-radius: 14px;
+    padding: 18px 24px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: #c084fc;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+    min-height: 62px;
+    font-family: 'Georgia', serif;
+    word-break: break-word;
+}
+
+.solver-fn-display.placeholder { color: #444; font-size: 15px; font-weight: 500; font-family: inherit; }
+
+/* Grid de inputs da função */
+.solver-inputs-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.solver-row {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr 1fr;
+}
+
+.solver-row.row-4 {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.solver-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.solver-field label {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #666;
+}
+
+.solver-field label span.hint {
+    font-weight: 500;
+    color: #444;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 10px;
+}
+
+.solver-field input,
+.solver-field select {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    color: white;
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    transition: 0.2s;
+    width: 100%;
+}
+
+.solver-field input:focus,
+.solver-field select:focus {
+    outline: none;
+    border-color: #8a2be2;
+    background: rgba(138,43,226,0.09);
+    box-shadow: 0 0 14px rgba(138,43,226,0.2);
+}
+
+.solver-field input::placeholder { color: #3a3a3a; font-weight: 500; }
+
+.solver-pi-hint {
+    font-size: 11px;
+    color: #555;
+    margin-top: -10px;
+    margin-bottom: 4px;
+}
+
+/* Botões */
+.solver-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 0;
+}
+
+/* ── Passo a Passo ── */
+.solver-output {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.solver-section-title {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #555;
+    margin: 20px 0 10px;
+}
+
+/* Cards de resultado (período, amplitude, etc.) */
+.solver-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.solver-result-card {
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.solver-result-card.purple {
+    background: rgba(138,43,226,0.1);
+    border: 1px solid rgba(138,43,226,0.3);
+}
+.solver-result-card.green {
+    background: rgba(0,229,160,0.07);
+    border: 1px solid rgba(0,229,160,0.25);
+}
+.solver-result-card.blue {
+    background: rgba(96,165,250,0.07);
+    border: 1px solid rgba(96,165,250,0.25);
+}
+.solver-result-card.orange {
+    background: rgba(251,146,60,0.07);
+    border: 1px solid rgba(251,146,60,0.25);
+}
+.solver-result-card.red {
+    background: rgba(248,113,113,0.07);
+    border: 1px solid rgba(248,113,113,0.25);
+}
+
+.src-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+.src-value {
+    font-size: 22px;
+    font-weight: 900;
+}
+.src-sub {
+    font-size: 11px;
+    opacity: 0.55;
+    margin-top: 2px;
+}
+
+.solver-result-card.purple .src-label  { color: #c084fc; }
+.solver-result-card.purple .src-value  { color: #c084fc; }
+.solver-result-card.green  .src-label  { color: #00e5a0; }
+.solver-result-card.green  .src-value  { color: #00e5a0; }
+.solver-result-card.blue   .src-label  { color: #60a5fa; }
+.solver-result-card.blue   .src-value  { color: #60a5fa; }
+.solver-result-card.orange .src-label  { color: #fb923c; }
+.solver-result-card.orange .src-value  { color: #fb923c; }
+.solver-result-card.red    .src-label  { color: #f87171; }
+.solver-result-card.red    .src-value  { color: #f87171; }
+
+/* Passo a passo detalhado */
+.solver-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-left: 2px solid rgba(138,43,226,0.25);
+    margin-left: 8px;
+}
+
+.solver-step {
+    position: relative;
+    padding: 14px 18px 14px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.solver-step:last-child { border-bottom: none; }
+
+.solver-step::before {
+    content: attr(data-n);
+    position: absolute;
+    left: -13px;
+    top: 16px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #1a0a2e;
+    border: 2px solid rgba(138,43,226,0.5);
+    color: #c084fc;
+    font-size: 11px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: grid;
+    place-items: center;
+}
+
+.step-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #bbb;
+    margin-bottom: 6px;
+}
+
+.step-body {
+    font-size: 13px;
+    color: #777;
+    line-height: 1.7;
+}
+
+.step-body .math {
+    display: inline-block;
+    background: rgba(138,43,226,0.12);
+    border: 1px solid rgba(138,43,226,0.22);
+    border-radius: 6px;
+    padding: 2px 8px;
+    color: #c084fc;
+    font-weight: 800;
+    font-size: 13px;
+    margin: 2px 2px;
+}
+
+.step-body .math.green {
+    background: rgba(0,229,160,0.1);
+    border-color: rgba(0,229,160,0.25);
+    color: #00e5a0;
+}
+.step-body .math.blue {
+    background: rgba(96,165,250,0.1);
+    border-color: rgba(96,165,250,0.25);
+    color: #93c5fd;
+}
+.step-body .math.orange {
+    background: rgba(251,146,60,0.1);
+    border-color: rgba(251,146,60,0.25);
+    color: #fb923c;
+}
+.step-body .math.red {
+    background: rgba(248,113,113,0.1);
+    border-color: rgba(248,113,113,0.25);
+    color: #fca5a5;
+}
+
+.step-body .highlight {
+    color: white;
+    font-weight: 700;
+}
+
+/* Caixa de resposta final */
+.solver-answer-box {
+    margin-top: 20px;
+    background: linear-gradient(135deg, rgba(138,43,226,0.15), rgba(0,229,160,0.08));
+    border: 1.5px solid rgba(138,43,226,0.4);
+    border-radius: 16px;
+    padding: 20px 24px;
+}
+
+.solver-answer-title {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 12px;
+}
+
+.solver-answer-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.solver-answer-line {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sal-key {
+    font-size: 13px;
+    font-weight: 900;
+    color: #c084fc;
+    min-width: 110px;
+}
+
+.sal-val {
+    font-size: 18px;
+    font-weight: 900;
+    color: white;
+}
+
+.sal-unit {
+    font-size: 12px;
+    color: #555;
+}
+
+/* Canvas solver */
+.solver-canvas-wrap {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(138,43,226,0.2);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+/* Erro */
+.solver-error {
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    color: #fca5a5;
+    font-size: 14px;
+    margin-top: 16px;
+}
+
+@media (max-width: 640px) {
+    .solver-row.row-4 { grid-template-columns: 1fr 1fr; }
+    .solver-row { grid-template-columns: 1fr; }
+    .solver-results-grid { grid-template-columns: 1fr 1fr; }
+}
