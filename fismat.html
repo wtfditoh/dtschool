@@ -137,6 +137,7 @@
                 <div class="trig-mode-bar">
                     <button class="trig-mode-btn active" data-mode="grafico" onclick="switchTrigMode('grafico')">📈 Gráfico</button>
                     <button class="trig-mode-btn" data-mode="tabela" onclick="switchTrigMode('tabela')">📋 Tabela</button>
+                    <button class="trig-mode-btn" data-mode="resolver" onclick="switchTrigMode('resolver')">🧑‍🏫 Professor</button>
                 </div>
 
                 <!-- PAINEL GRÁFICO -->
@@ -241,6 +242,89 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ══ PAINEL PROFESSOR ══ -->
+                <div id="trig-panel-resolver" style="display:none;">
+                  <div class="card">
+
+                    <!-- Cabeçalho explicativo -->
+                    <div style="margin-bottom:18px;">
+                      <p class="card-desc" style="margin-bottom:8px;">
+                        Digite os coeficientes da função <strong style="color:#c084fc">f(x) = a + b · func(cx + d)</strong> e resolvo tudo passo a passo — período, amplitude, máximo, mínimo e gráfico.
+                      </p>
+                      <p class="solver-pi-hint">💡 Nos campos de <strong>c</strong> e <strong>d</strong> você pode escrever expressões como <code>pi/4</code>, <code>2pi</code>, <code>pi/6</code>…</p>
+                    </div>
+
+                    <!-- Preview da fórmula -->
+                    <div class="solver-fn-display placeholder" id="sv-fn-preview">f(x) = a + b · func(cx + d)</div>
+
+                    <!-- Inputs -->
+                    <div class="solver-inputs-wrap">
+                      <!-- Função e a -->
+                      <div class="solver-row">
+                        <div class="solver-field">
+                          <label>Função</label>
+                          <select id="sv-func" oninput="svPreview()">
+                            <option value="sen">sen(x)</option>
+                            <option value="cos">cos(x)</option>
+                          </select>
+                        </div>
+                        <div class="solver-field">
+                          <label>a <span class="hint">— desloc. vertical</span></label>
+                          <input type="text" id="sv-a" placeholder="ex: 0" value="0" oninput="svPreview()">
+                        </div>
+                      </div>
+                      <!-- b, c, d -->
+                      <div class="solver-row row-4">
+                        <div class="solver-field" style="grid-column: span 1;">
+                          <label>b <span class="hint">— amplitude</span></label>
+                          <input type="text" id="sv-b" placeholder="ex: 1" value="1" oninput="svPreview()">
+                        </div>
+                        <div class="solver-field" style="grid-column: span 1;">
+                          <label>c <span class="hint">— frequência</span></label>
+                          <input type="text" id="sv-c" placeholder="ex: pi/4" value="1" oninput="svPreview()">
+                        </div>
+                        <div class="solver-field" style="grid-column: span 2;">
+                          <label>d <span class="hint">— desloc. horiz. (rad ou grau)</span></label>
+                          <input type="text" id="sv-d" placeholder="ex: -pi/6  ou  0" value="0" oninput="svPreview()">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="solver-actions">
+                      <button class="btn btn-primary" onclick="svResolver()" style="flex:1;">🧑‍🏫 Resolver com passo a passo</button>
+                      <button class="btn btn-secondary" onclick="svLimpar()">Limpar</button>
+                    </div>
+
+                    <!-- OUTPUT -->
+                    <div id="sv-output" style="display:none;">
+
+                      <!-- Cards de resultado rápido -->
+                      <div class="solver-section-title">📊 Resultados</div>
+                      <div class="solver-results-grid" id="sv-results-grid"></div>
+
+                      <!-- Gráfico -->
+                      <div class="solver-section-title">📈 Gráfico</div>
+                      <div class="solver-canvas-wrap">
+                        <canvas id="canvas-solver" width="700" height="280"></canvas>
+                      </div>
+
+                      <!-- Passo a passo -->
+                      <div class="solver-section-title">📝 Passo a Passo</div>
+                      <div class="solver-steps" id="sv-steps"></div>
+
+                      <!-- Resposta Final -->
+                      <div class="solver-answer-box">
+                        <div class="solver-answer-title">✅ Resposta Final</div>
+                        <div class="solver-answer-lines" id="sv-answer-lines"></div>
+                      </div>
+
+                    </div>
+
+                    <div id="sv-error" class="solver-error" style="display:none;"></div>
+
+                  </div>
+                </div><!-- /resolver -->
 
             </div>
         </div>
