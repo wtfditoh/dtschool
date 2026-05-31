@@ -660,3 +660,614 @@ document.addEventListener('DOMContentLoaded', () => {
     atualizarOptica();
     atualizarEletricidade();
 });
+
+// ════════════════════════════════════════════════════════════════════════════
+// MODO PROFESSOR — RESOLVER EXERCÍCIO COM PASSO A PASSO
+// ════════════════════════════════════════════════════════════════════════════
+
+// ── Parser de expressões com π ──────────────────────────────────────────────
+function parseExpr(str) {
+    if (str === null || str === undefined) return NaN;
+    let s = String(str).trim().toLowerCase();
+    if (s === '' || s === '0') return 0;
+
+    // Substituições
+    s = s.replace(/\bpi\b/g, '(' + Math.PI + ')');
+    s = s.replace(/π/g, '(' + Math.PI + ')');
+    s = s.replace(/×/g, '*');
+    s = s.replace(/÷/g, '/');
+    // Implícito: 2pi → 2*pi
+    s = s.replace(/(\d)\s*\(/g, '$1*(');
+    s = s.replace(/\)\s*(\d)/g, ')*$1');
+
+    try {
+        // eslint-disable-next-line no-new-func
+        const result = Function('"use strict"; return (' + s + ')')();
+        return isFinite(result) ? result : NaN;
+    } catch (e) {
+        return NaN;
+    }
+}
+
+// ── Formatar número bonito (detecta múltiplos de π) ─────────────────────────
+function fmtNum(val, usePi = false) {
+    if (!isFinite(val)) return '∞';
+    if (Math.abs(val) < 1e-10) return '0';
+
+    if (usePi) {
+        const pi = Math.PI;
+        // Testa frações simples de π: n/d * π
+        const denoms = [1, 2, 3, 4, 6, 8, 12];
+        for (const d of denoms) {
+            for (const n of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
+                const candidate = (n / d) * pi;
+                if (Math.abs(val - candidate) < 1e-9) {
+                    return n === d ? 'π' : (d === 1 ? n + 'π' : (n === 1 ? `π/${d}` : `${n}π/${d}`));
+                }
+                if (Math.abs(val + candidate) < 1e-9) {
+                    return n === d ? '-π' : (d === 1 ? `-${n}π` : (n === 1 ? `-π/${d}` : `-${n}π/${d}`));
+                }
+            }
+        }
+    }
+
+    // Número normal
+    if (Number.isInteger(val)) return String(val);
+    // Frações simples
+    const denoms2 = [2, 3, 4, 5, 6, 7, 8];
+    for (const d of denoms2) {
+        const n = val * d;
+        if (Math.abs(n - Math.round(n)) < 1e-9) {
+            const ni = Math.round(n);
+            const g = gcd(Math.abs(ni), d);
+            return `${ni / g}/${d / g}`;
+        }
+    }
+    return val.toFixed(4).replace(/\.?0+$/, '');
+}
+
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+// ── Formatar coeficiente para exibição na fórmula ───────────────────────────
+function fmtCoef(val, isC = false) {
+    if (!isFinite(val)) return '?';
+    const s = fmtNum(val, isC);
+    return s;
+}
+
+// ── Preview da fórmula enquanto digita ──────────────────────────────────────
+function svPreview() {
+    const func = document.getElementById('sv-func')?.value ?? 'sen';
+    const aRaw = document.getElementById('sv-a')?.value ?? '0';
+    const bRaw = document.getElementById('sv-b')?.value ?? '1';
+    const cRaw = document.getElementById('sv-c')?.value ?? '1';
+    const dRaw = document.getElementById('sv-d')?.value ?? '0';
+
+    const a = parseExpr(aRaw);
+    const b = parseExpr(bRaw);
+    const c = parseExpr(cRaw);
+    const d = parseExpr(dRaw);
+
+    const el = document.getElementById('sv-fn-preview');
+    if (!el) return;
+
+    if ([a, b, c, d].some(isNaN)) {
+        el.textContent = 'f(x) = a + b · func(cx + d)';
+        el.className = 'solver-fn-display placeholder';
+        return;
+    }
+
+    const fA  = fmtCoef(a);
+    const fB  = fmtCoef(b);
+    const fC  = fmtCoef(c, true);
+    const fD  = fmtCoef(d, true);
+
+    let inside = '';
+    if (fC === '1') inside = 'x';
+    else if (fC === '-1') inside = '-x';
+    else inside = fC + 'x';
+
+    if (Math.abs(d) > 1e-10) {
+        const dSign = d > 0 ? ' + ' : ' - ';
+        inside += dSign + fmtNum(Math.abs(d), true);
+    }
+
+    let expr = `${func}(${inside})`;
+    if (Math.abs(b - 1) > 1e-10 || fB !== '1') {
+        expr = (fB === '-1' ? '-' : fB + '·') + expr;
+    }
+
+    let full = 'f(x) = ';
+    if (Math.abs(a) < 1e-10) {
+        full += expr;
+    } else {
+        const aSign = a > 0 ? ' + ' : ' - ';
+        full += expr + aSign + fmtNum(Math.abs(a));
+    }
+
+    el.textContent = full;
+    el.className = 'solver-fn-display';
+}
+
+// ── Limpar ───────────────────────────────────────────────────────────────────
+function svLimpar() {
+    ['sv-a','sv-b','sv-c','sv-d'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = id === 'sv-a' ? '0' : (id === 'sv-b' || id === 'sv-c') ? '1' : '0';
+    });
+    document.getElementById('sv-func').value = 'sen';
+    document.getElementById('sv-output').style.display = 'none';
+    document.getElementById('sv-error').style.display = 'none';
+    svPreview();
+}
+
+// ── Criar elemento de passo ──────────────────────────────────────────────────
+function mkStep(n, title, bodyHTML) {
+    const div = document.createElement('div');
+    div.className = 'solver-step';
+    div.setAttribute('data-n', n);
+    div.innerHTML = `<div class="step-title">${title}</div><div class="step-body">${bodyHTML}</div>`;
+    return div;
+}
+
+function math(txt, cls = '') { return `<span class="math ${cls}">${txt}</span>`; }
+function hl(txt) { return `<span class="highlight">${txt}</span>`; }
+
+// ── RESOLVER PRINCIPAL ───────────────────────────────────────────────────────
+function svResolver() {
+    const errEl  = document.getElementById('sv-error');
+    const outEl  = document.getElementById('sv-output');
+    errEl.style.display = 'none';
+    outEl.style.display = 'none';
+
+    const func = document.getElementById('sv-func').value;
+    const aRaw = document.getElementById('sv-a').value;
+    const bRaw = document.getElementById('sv-b').value;
+    const cRaw = document.getElementById('sv-c').value;
+    const dRaw = document.getElementById('sv-d').value;
+
+    const a = parseExpr(aRaw);
+    const b = parseExpr(bRaw);
+    const c = parseExpr(cRaw);
+    const d = parseExpr(dRaw);
+
+    // Validar
+    if ([a, b, c].some(v => isNaN(v) || !isFinite(v))) {
+        errEl.textContent = '❌ Algum coeficiente está inválido. Verifique os valores digitados. Use "pi" para π (ex: pi/4, 2pi).';
+        errEl.style.display = 'block';
+        return;
+    }
+    if (Math.abs(c) < 1e-10) {
+        errEl.textContent = '❌ O coeficiente c não pode ser zero (causaria período infinito).';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    const dVal = isNaN(d) ? 0 : d; // d pode ser 0
+
+    // ── Cálculos ────────────────────────────────────────────────────────────
+    const amplitude  = Math.abs(b);
+    const periodo    = (2 * Math.PI) / Math.abs(c);
+    const maximo     = a + amplitude;
+    const minimo     = a - amplitude;
+    const deslHoriz  = -dVal / c; // x onde começa o ciclo
+
+    // Eixo de simetria
+    const eixoY = a;
+
+    // Zeros (aprox. para sen: cx + d = nπ; para cos: cx + d = π/2 + nπ)
+    // Não calcular zeros explicitamente aqui, mas mencionar no passo a passo
+
+    // ── Nomes formatados ────────────────────────────────────────────────────
+    const fA  = fmtNum(a);
+    const fB  = fmtNum(b);
+    const fAmp = fmtNum(amplitude);
+    const fC  = fmtNum(c, true);
+    const fD  = fmtNum(Math.abs(dVal), true);
+    const fDSigned = fmtNum(dVal, true);
+    const fP  = fmtNum(periodo, true);
+    const fMax = fmtNum(maximo);
+    const fMin = fmtNum(minimo);
+    const fEixo = fmtNum(eixoY);
+
+    const funcName = func === 'sen' ? 'sen' : 'cos';
+    const funcBase = func === 'sen' ? 'seno' : 'cosseno';
+
+    // Monta fórmula formatada
+    let insideStr = '';
+    if (Math.abs(c - 1) < 1e-10) insideStr = 'x';
+    else if (Math.abs(c + 1) < 1e-10) insideStr = '-x';
+    else insideStr = fC + 'x';
+    if (Math.abs(dVal) > 1e-10) {
+        insideStr += (dVal > 0 ? ' + ' : ' - ') + fmtNum(Math.abs(dVal), true);
+    }
+    const bPart = (Math.abs(b - 1) < 1e-10) ? '' : (Math.abs(b + 1) < 1e-10 ? '-' : fB + '·');
+    let fnStr = `f(x) = `;
+    if (Math.abs(a) < 1e-10) {
+        fnStr += `${bPart}${funcName}(${insideStr})`;
+    } else {
+        const aSign = a > 0 ? ' + ' : ' - ';
+        fnStr += `${bPart}${funcName}(${insideStr})${aSign}${fmtNum(Math.abs(a))}`;
+    }
+
+    // ── Montar resultados rápidos ────────────────────────────────────────────
+    const grid = document.getElementById('sv-results-grid');
+    grid.innerHTML = `
+      <div class="solver-result-card purple">
+        <div class="src-label">Período</div>
+        <div class="src-value">${fP}</div>
+        <div class="src-sub">radianos</div>
+      </div>
+      <div class="solver-result-card blue">
+        <div class="src-label">Amplitude</div>
+        <div class="src-value">${fAmp}</div>
+        <div class="src-sub">|b|</div>
+      </div>
+      <div class="solver-result-card green">
+        <div class="src-label">Máximo</div>
+        <div class="src-value">${fMax}</div>
+        <div class="src-sub">a + |b|</div>
+      </div>
+      <div class="solver-result-card red">
+        <div class="src-label">Mínimo</div>
+        <div class="src-value">${fMin}</div>
+        <div class="src-sub">a - |b|</div>
+      </div>
+      <div class="solver-result-card orange">
+        <div class="src-label">Eixo de sim.</div>
+        <div class="src-value">${fEixo}</div>
+        <div class="src-sub">y = a</div>
+      </div>
+    `;
+
+    // ── Passo a passo ────────────────────────────────────────────────────────
+    const stepsEl = document.getElementById('sv-steps');
+    stepsEl.innerHTML = '';
+
+    // Passo 0 — identificar a forma geral
+    stepsEl.appendChild(mkStep(1,
+        'Identificar a forma geral',
+        `A forma geral de uma função trigonométrica é:<br>
+        ${math('f(x) = a + b · func(cx + d)')} <br><br>
+        Na sua função ${math(fnStr)} identificamos:<br>
+        • ${math('a = ' + fA)} → deslocamento vertical (eixo de simetria)<br>
+        • ${math('b = ' + fB)} → controla a amplitude<br>
+        • ${math('c = ' + fC, 'blue')} → controla a frequência (e o período)<br>
+        • ${math('d = ' + fDSigned, 'orange')} → deslocamento horizontal`
+    ));
+
+    // Passo 1 — Período
+    const periodoFormula = func === 'sen'
+        ? `Para o ${funcBase}, o período padrão é ${math('2π')}. Com o coeficiente c, o período fica:`
+        : `Para o ${funcBase}, o período padrão é ${math('2π')}. Com o coeficiente c, o período fica:`;
+
+    stepsEl.appendChild(mkStep(2,
+        'Calcular o Período (P)',
+        `${periodoFormula}<br><br>
+        ${math('P = 2π / |c|', 'blue')}<br><br>
+        ${math('P = 2π / |' + fC + '|', 'blue')}<br><br>
+        ${math('P = ' + fP, 'blue green')}<br><br>
+        <strong>Interpretação:</strong> a função completa um ciclo completo a cada ${hl(fP + ' rad')}. 
+        ${Math.abs(c) > 1 
+            ? `Como |c| = ${fmtNum(Math.abs(c))} > 1, o período é ${hl('menor')} que 2π — a função oscila ${hl('mais rápido')}.`
+            : Math.abs(c) < 1 
+                ? `Como |c| = ${fmtNum(Math.abs(c))} < 1, o período é ${hl('maior')} que 2π — a função oscila ${hl('mais devagar')}.`
+                : `Como |c| = 1, o período é exatamente ${hl('2π')} (período padrão).`
+        }`
+    ));
+
+    // Passo 2 — Amplitude
+    stepsEl.appendChild(mkStep(3,
+        'Calcular a Amplitude (A)',
+        `A amplitude é o valor absoluto de b — ela mede ${hl('quanto a função sobe e desce')} em relação ao eixo de simetria:<br><br>
+        ${math('A = |b|')}<br><br>
+        ${math('A = |' + fB + '| = ' + fAmp, 'blue')}<br><br>
+        ${b < 0
+            ? `⚠️ Como b é negativo ${math('(b = ' + fB + ')')}, o gráfico fica ${hl('invertido')} (reflexão em relação ao eixo de simetria), mas a amplitude continua sendo ${math(fAmp + ' (positiva)','green')}.`
+            : `A função oscila ${math(fAmp)} unidades acima e abaixo do eixo de simetria.`
+        }`
+    ));
+
+    // Passo 3 — Eixo de simetria
+    stepsEl.appendChild(mkStep(4,
+        'Eixo de Simetria (y = a)',
+        `O coeficiente ${math('a = ' + fA)} desloca a função ${hl('verticalmente')}. O eixo de simetria é a reta horizontal:<br><br>
+        ${math('y = a = ' + fA, 'orange')}<br><br>
+        ${Math.abs(a) < 1e-10
+            ? `Como a = 0, o eixo de simetria é o próprio eixo x — a função oscila simetricamente em torno do zero.`
+            : a > 0
+                ? `A função está deslocada ${math(fA + ' unidades para cima', 'orange')}.`
+                : `A função está deslocada ${math(fA + ' unidades para baixo', 'orange')}.`
+        }`
+    ));
+
+    // Passo 4 — Máximo e Mínimo
+    stepsEl.appendChild(mkStep(5,
+        'Calcular Máximo e Mínimo',
+        `O ${funcBase} puro varia entre -1 e +1. Multiplicando por b e somando a:<br><br>
+        ${math('Máximo = a + |b|')}<br>
+        ${math('Máximo = ' + fA + ' + ' + fAmp + ' = ' + fMax, 'green')}<br><br>
+        ${math('Mínimo = a - |b|')}<br>
+        ${math('Mínimo = ' + fA + ' - ' + fAmp + ' = ' + fMin, 'red')}<br><br>
+        Então a função fica sempre entre ${math(fMin,'red')} e ${math(fMax,'green')}.`
+    ));
+
+    // Passo 5 — Deslocamento horizontal
+    if (Math.abs(dVal) > 1e-10) {
+        const fDesl = fmtNum(Math.abs(deslHoriz), true);
+        stepsEl.appendChild(mkStep(6,
+            'Deslocamento Horizontal (fase)',
+            `O termo ${math('d = ' + fDSigned, 'orange')} dentro do argumento causa um deslocamento horizontal.<br><br>
+            O deslocamento é calculado como:<br><br>
+            ${math('Δx = -d / c = -(' + fDSigned + ') / (' + fC + ')', 'orange')}<br><br>
+            ${math('Δx = ' + fmtNum(deslHoriz, true), 'orange')}<br><br>
+            ${deslHoriz > 0
+                ? `O gráfico está deslocado ${hl(fDesl + ' rad para a direita')}.`
+                : `O gráfico está deslocado ${hl(fDesl + ' rad para a esquerda')}.`
+            }<br><br>
+            <strong>Interpretação:</strong> o ciclo que normalmente começa em x=0 agora começa em ${math('x = ' + fmtNum(deslHoriz, true), 'orange')}.`
+        ));
+    } else {
+        stepsEl.appendChild(mkStep(6,
+            'Deslocamento Horizontal (fase)',
+            `Como ${math('d = 0')}, ${hl('não há deslocamento horizontal')}. O ciclo começa normalmente em x = 0.`
+        ));
+    }
+
+    // Passo 6 — Sinal de b (inversão)
+    if (b < 0) {
+        stepsEl.appendChild(mkStep(7,
+            'Atenção: b negativo → gráfico invertido',
+            `Como ${math('b = ' + fB)} é negativo, a função está ${hl('refletida verticalmente')}.<br><br>
+            Isso significa que:<br>
+            • Onde o ${funcBase} padrão teria ${hl('máximo')}, esta função tem ${hl('mínimo')} (e vice-versa)<br>
+            • O gráfico está "de cabeça pra baixo" em relação ao eixo de simetria<br><br>
+            Mas atenção: ${hl('amplitude, período e eixo de simetria não mudam')} com o sinal de b!`
+        ));
+    }
+
+    // Passo 7 — Como montar o gráfico
+    stepsEl.appendChild(mkStep(b < 0 ? 8 : 7,
+        'Como montar o gráfico (5 pontos fundamentais)',
+        `Para esboçar um ciclo, use os ${hl('5 pontos fundamentais')} espaçados de ${math('P/4 = ' + fmtNum(periodo/4, true))}:<br><br>
+        ${func === 'sen'
+            ? `Para ${math('b > 0')} (seno padrão): ${math('(0, a)')} → ${math('(P/4, a+|b|)')} → ${math('(P/2, a)')} → ${math('(3P/4, a-|b|)')} → ${math('(P, a)')}<br>
+               ${b < 0 ? `<br>Como b < 0, inverta os pontos 2 e 4: ${math('(P/4, a-|b|)')} e ${math('(3P/4, a+|b|)')}` : ''}`
+            : `Para ${math('b > 0')} (cosseno padrão): ${math('(0, a+|b|)')} → ${math('(P/4, a)')} → ${math('(P/2, a-|b|)')} → ${math('(3P/4, a)')} → ${math('(P, a+|b|)')}<br>
+               ${b < 0 ? `<br>Como b < 0, inverta: ${math('(0, a-|b|)')} e ${math('(P/2, a+|b|)')}` : ''}`
+        }<br><br>
+        Esses pontos com os valores calculados:<br>
+        ${buildFundamentalPoints(func, a, b, c, dVal, periodo, maximo, minimo)}`
+    ));
+
+    // ── Gráfico ──────────────────────────────────────────────────────────────
+    desenharGraficoSolver(func, a, b, c, dVal, periodo, maximo, minimo);
+
+    // ── Resposta final ────────────────────────────────────────────────────────
+    const ansEl = document.getElementById('sv-answer-lines');
+    ansEl.innerHTML = `
+      <div class="solver-answer-line">
+        <span class="sal-key">Função:</span>
+        <span class="sal-val" style="font-size:15px;">${fnStr}</span>
+      </div>
+      <div class="solver-answer-line">
+        <span class="sal-key">Período:</span>
+        <span class="sal-val">${fP}</span>
+        <span class="sal-unit">rad</span>
+      </div>
+      <div class="solver-answer-line">
+        <span class="sal-key">Amplitude:</span>
+        <span class="sal-val">${fAmp}</span>
+      </div>
+      <div class="solver-answer-line">
+        <span class="sal-key">Máximo:</span>
+        <span class="sal-val">${fMax}</span>
+      </div>
+      <div class="solver-answer-line">
+        <span class="sal-key">Mínimo:</span>
+        <span class="sal-val">${fMin}</span>
+      </div>
+      <div class="solver-answer-line">
+        <span class="sal-key">Eixo de sim.:</span>
+        <span class="sal-val">y = ${fEixo}</span>
+      </div>
+      ${Math.abs(dVal) > 1e-10 ? `
+      <div class="solver-answer-line">
+        <span class="sal-key">Desloc. horiz.:</span>
+        <span class="sal-val">${fmtNum(deslHoriz, true)}</span>
+        <span class="sal-unit">rad</span>
+      </div>` : ''}
+    `;
+
+    outEl.style.display = 'block';
+}
+
+// ── Montar texto dos 5 pontos fundamentais ───────────────────────────────────
+function buildFundamentalPoints(func, a, b, c, d, periodo, maximo, minimo) {
+    const P = periodo;
+    const pts = [];
+    const offsets = [0, P/4, P/2, 3*P/4, P];
+
+    offsets.forEach((t, i) => {
+        // x ajustado pelo deslocamento horizontal
+        const xBase = t - d / c;
+        const xFmt = fmtNum(xBase, true);
+        const rad = c * xBase + d;
+        const yRaw = a + b * (func === 'sen' ? Math.sin(rad) : Math.cos(rad));
+        const yFmt = fmtNum(yRaw);
+        const isMax = Math.abs(yRaw - maximo) < 1e-9;
+        const isMin = Math.abs(yRaw - minimo) < 1e-9;
+        const color = isMax ? 'green' : isMin ? 'red' : '';
+        pts.push(`${math('(' + xFmt + ', ' + yFmt + ')', color)}`);
+    });
+
+    return pts.join(' → ');
+}
+
+// ── Gráfico do solver ────────────────────────────────────────────────────────
+function desenharGraficoSolver(func, a, b, c, d, periodo, maximo, minimo) {
+    const canvas = document.getElementById('canvas-solver');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(5,5,15,0.97)';
+    ctx.fillRect(0, 0, W, H);
+
+    const PAD_L = 50, PAD_R = 20, PAD_T = 24, PAD_B = 32;
+    const gW = W - PAD_L - PAD_R;
+    const gH = H - PAD_T - PAD_B;
+
+    // Mostrar 2 ciclos completos
+    const xMin = 0, xMax = 2 * periodo;
+    const yPad = Math.max(0.5, Math.abs(b) * 0.3);
+    const yMax = maximo + yPad;
+    const yMin = minimo - yPad;
+
+    function toX(v) { return PAD_L + ((v - xMin) / (xMax - xMin)) * gW; }
+    function toY(v) { return PAD_T + ((yMax - v) / (yMax - yMin)) * gH; }
+
+    // Grade vertical (a cada P/4)
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    const step = periodo / 4;
+    for (let x = 0; x <= xMax + 1e-9; x += step) {
+        ctx.beginPath(); ctx.moveTo(toX(x), PAD_T); ctx.lineTo(toX(x), PAD_T + gH); ctx.stroke();
+    }
+
+    // Grade horizontal
+    const yRange = yMax - yMin;
+    const yStepRef = yRange / 6;
+    const yStepNice = Math.ceil(yStepRef * 10) / 10;
+    for (let y = Math.ceil(yMin / yStepNice) * yStepNice; y <= yMax + 1e-9; y += yStepNice) {
+        const py = toY(y);
+        if (py < PAD_T || py > PAD_T + gH) continue;
+        ctx.beginPath(); ctx.moveTo(PAD_L, py); ctx.lineTo(PAD_L + gW, py); ctx.stroke();
+    }
+
+    // Eixo y=0
+    if (0 >= yMin && 0 <= yMax) {
+        const py0 = toY(0);
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(PAD_L, py0); ctx.lineTo(PAD_L + gW, py0); ctx.stroke();
+    }
+
+    // Eixo de simetria y=a (tracejado laranja)
+    if (Math.abs(a) > 1e-10 && a >= yMin && a <= yMax) {
+        const pya = toY(a);
+        ctx.strokeStyle = 'rgba(251,146,60,0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(PAD_L, pya); ctx.lineTo(PAD_L + gW, pya); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(251,146,60,0.8)';
+        ctx.font = 'bold 10px Outfit';
+        ctx.textAlign = 'right';
+        ctx.fillText('y=' + fmtNum(a), PAD_L - 4, pya + 4);
+    }
+
+    // Eixo Y
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(PAD_L, PAD_T); ctx.lineTo(PAD_L, PAD_T + gH); ctx.stroke();
+
+    // Rótulos X
+    ctx.fillStyle = 'rgba(180,160,255,0.75)';
+    ctx.font = '10px Outfit';
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= 8; i++) {
+        const xv = i * step;
+        if (xv > xMax + 1e-9) break;
+        const px = toX(xv);
+        const lbl = fmtNum(xv, true);
+        ctx.fillText(lbl, px, PAD_T + gH + 18);
+    }
+
+    // Rótulos Y
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(180,160,255,0.65)';
+    for (let y = Math.ceil(yMin / yStepNice) * yStepNice; y <= yMax + 1e-9; y += yStepNice) {
+        const py = toY(y);
+        if (py < PAD_T || py > PAD_T + gH) continue;
+        ctx.fillText(fmtNum(y), PAD_L - 6, py + 4);
+    }
+
+    // Curva
+    const gradC = ctx.createLinearGradient(PAD_L, 0, PAD_L + gW, 0);
+    gradC.addColorStop(0, '#a855f7');
+    gradC.addColorStop(0.5, '#c084fc');
+    gradC.addColorStop(1, '#818cf8');
+    ctx.strokeStyle = gradC;
+    ctx.lineWidth = 2.8;
+    ctx.shadowColor = '#a855f7';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    let firstPt = true;
+    for (let px = 0; px <= gW; px++) {
+        const xv = xMin + (px / gW) * (xMax - xMin);
+        const yv = a + b * (func === 'sen' ? Math.sin(c * xv + d) : Math.cos(c * xv + d));
+        const cx2 = PAD_L + px;
+        const cy2 = toY(yv);
+        if (cy2 < PAD_T - 5 || cy2 > PAD_T + gH + 5) { firstPt = true; continue; }
+        if (firstPt) { ctx.moveTo(cx2, cy2); firstPt = false; }
+        else ctx.lineTo(cx2, cy2);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Pontos dos máximos e mínimos
+    for (let i = 0; i <= 8; i++) {
+        const xv = i * step;
+        if (xv > xMax + 1e-10) break;
+        const yv = a + b * (func === 'sen' ? Math.sin(c * xv + d) : Math.cos(c * xv + d));
+        const px = toX(xv);
+        const py = toY(yv);
+
+        const isMax = Math.abs(yv - maximo) < 1e-9;
+        const isMin2 = Math.abs(yv - minimo) < 1e-9;
+
+        if (isMax || isMin2) {
+            const col = isMax ? '#00e5a0' : '#f87171';
+            ctx.fillStyle = col;
+            ctx.shadowColor = col;
+            ctx.shadowBlur = 8;
+            ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = col;
+            ctx.font = 'bold 10px Outfit';
+            ctx.textAlign = 'center';
+            ctx.fillText(fmtNum(yv), px, isMax ? py - 10 : py + 18);
+        }
+    }
+
+    // Anotações período
+    const pxP = toX(periodo);
+    ctx.strokeStyle = 'rgba(96,165,250,0.35)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(pxP, PAD_T + 5); ctx.lineTo(pxP, PAD_T + gH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(96,165,250,0.75)';
+    ctx.font = 'bold 10px Outfit';
+    ctx.textAlign = 'center';
+    ctx.fillText('P = ' + fmtNum(periodo, true), pxP, PAD_T + 14);
+}
+
+// Registrar no switchTrigMode
+const _origSwitch = switchTrigMode;
+function switchTrigMode(mode) {
+    document.getElementById('trig-panel-grafico').style.display = 'none';
+    document.getElementById('trig-panel-tabela').style.display  = 'none';
+    document.getElementById('trig-panel-resolver').style.display = 'none';
+
+    if (mode === 'grafico')  { document.getElementById('trig-panel-grafico').style.display  = 'block'; setTimeout(desenharGraficoTrig, 50); }
+    if (mode === 'tabela')   { document.getElementById('trig-panel-tabela').style.display   = 'block'; atualizarTabelaTrig(); }
+    if (mode === 'resolver') { document.getElementById('trig-panel-resolver').style.display = 'block'; svPreview(); }
+
+    document.querySelectorAll('.trig-mode-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.trig-mode-btn[data-mode="${mode}"]`)?.classList.add('active');
+    trigState.mode = mode;
+}
