@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Concursos - Hub Brain</title>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+    
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="theme-toggle.css">
+    <link rel="stylesheet" href="admin-concursos.css">
+    
+    <script src="theme-manager.js"></script>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="glass-header">
+        <button id="open-menu" class="btn-menu">
+            <i data-lucide="menu"></i>
+        </button>
+        
+        <div class="header-logo" onclick="window.location.href='index.html'">
+            <span class="logo-hub">HUB</span>
+            <div class="logo-brain-icon">
+                <img src="icon-514_20260512_161420_0000.png" alt="Brain">
+            </div>
+            <span class="logo-brain">BRAIN</span>
+        </div>
+
+        <div style="width:44px;"></div>
+    </header>
+
+    <!-- CONTAINER -->
+    <div class="container">
+
+        <!-- HERO -->
+        <div class="admin-hero">
+            <h1 class="admin-title">⚙️ Painel Admin - Concursos</h1>
+            <button class="btn-novo" onclick="abrirFormulario()">
+                <i data-lucide="plus"></i>
+                Nova Prova
+            </button>
+        </div>
+
+        <!-- ALERTAS -->
+        <div class="alert alert-sucesso" id="alert-sucesso">
+            <i data-lucide="check-circle" class="alert-icon"></i>
+            <span id="alert-msg">Operação realizada com sucesso!</span>
+        </div>
+
+        <div class="alert alert-erro" id="alert-erro">
+            <i data-lucide="alert-circle" class="alert-icon"></i>
+            <span id="alert-erro-msg">Erro ao processar a operação</span>
+        </div>
+
+        <!-- TABS -->
+        <div class="tabs-admin">
+            <button class="tab-admin ativo" onclick="mudarTab('adicionar')">
+                <i data-lucide="plus" style="width: 16px; height: 16px; display: inline; margin-right: 6px;"></i>
+                Adicionar Prova
+            </button>
+            <button class="tab-admin" onclick="mudarTab('gerenciar')">
+                <i data-lucide="list" style="width: 16px; height: 16px; display: inline; margin-right: 6px;"></i>
+                Gerenciar Provas
+            </button>
+        </div>
+
+        <!-- ABA 1: ADICIONAR PROVA -->
+        <div id="adicionar" class="form-section ativo">
+            <div class="form-container">
+                <form id="form-prova" onsubmit="salvarProva(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">📝 Título</label>
+                            <input type="text" class="form-input" id="input-titulo" placeholder="Ex: ENEM 2023 - Matemática" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">🏢 Instituição</label>
+                            <select class="form-select" id="input-inst" required>
+                                <option value="">Selecione...</option>
+                                <option value="ENEM">ENEM</option>
+                                <option value="IFCE">IFCE</option>
+                                <option value="UECE">UECE</option>
+                                <option value="UFC">UFC</option>
+                                <option value="UERJ">UERJ</option>
+                                <option value="PUC">PUC</option>
+                                <option value="Concurso">Concursos Públicos</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">📚 Disciplina</label>
+                            <select class="form-select" id="input-disc" required>
+                                <option value="">Selecione...</option>
+                                <option value="Matemática">Matemática</option>
+                                <option value="Física">Física</option>
+                                <option value="Química">Química</option>
+                                <option value="Biologia">Biologia</option>
+                                <option value="Português">Português</option>
+                                <option value="História">História</option>
+                                <option value="Geografia">Geografia</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">📋 Tipo</label>
+                            <select class="form-select" id="input-tipo" required>
+                                <option value="">Selecione...</option>
+                                <option value="prova">Prova</option>
+                                <option value="simulado">Simulado</option>
+                                <option value="gabarito">Gabarito</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">📅 Ano</label>
+                            <input type="number" class="form-input" id="input-ano" min="2000" max="2099" placeholder="Ex: 2023" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">📏 Tamanho (MB)</label>
+                            <input type="number" class="form-input" id="input-tamanho" step="0.1" min="0.1" placeholder="Ex: 2.4" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">📝 Descrição</label>
+                        <textarea class="form-textarea" id="input-desc" placeholder="Descreva brevemente o conteúdo da prova..."></textarea>
+                    </div>
+
+                    <div class="form-group form-file">
+                        <label class="form-label">📄 Arquivo PDF</label>
+                        <label class="file-label" for="input-pdf">
+                            <div class="file-icon">📁</div>
+                            <div class="file-text">Clique para selecionar ou arraste um arquivo PDF aqui</div>
+                            <div class="file-name" id="file-name"></div>
+                        </label>
+                        <input type="file" id="input-pdf" class="file-input" accept=".pdf" required onchange="atualizarNomeArquivo()">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-form btn-form-submit">
+                            <i data-lucide="save"></i>
+                            Salvar Prova
+                        </button>
+                        <button type="reset" class="btn-form btn-form-cancel">
+                            <i data-lucide="x"></i>
+                            Limpar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ABA 2: GERENCIAR PROVAS -->
+        <div id="gerenciar" class="form-section">
+            <div style="margin-bottom: 20px;">
+                <input type="text" class="form-input" id="input-busca-admin" placeholder="🔍 Buscar provas..." style="max-width: 400px;">
+            </div>
+
+            <table class="provas-table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Instituição</th>
+                        <th>Disciplina</th>
+                        <th>Tipo</th>
+                        <th>Ano</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="table-provas">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px;">
+                            <div class="loading" style="display: inline-block;"></div>
+                            <p style="margin-top: 12px; color: #666;">Carregando provas...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="menu.js"></script>
+    <script src="admin-concursos.js"></script>
+    
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
