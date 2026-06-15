@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin - Concursos · Hub Brain</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="theme-toggle.css">
+    <link rel="stylesheet" href="admin-concursos.css">
+    <script src="theme-manager.js"></script>
+</head>
+<body>
+
+<header class="glass-header">
+    <button id="open-menu" class="btn-icon"><i data-lucide="menu"></i></button>
+    <div class="header-logo" onclick="window.location.href='index.html'">
+        <span class="logo-hub">HUB</span>
+        <div class="logo-brain-icon"><img src="icon-514_20260512_161420_0000.png" alt="Brain"></div>
+        <span class="logo-brain">BRAIN</span>
+    </div>
+    <div style="width:40px;"></div>
+</header>
+
+<div class="page">
+<div class="container">
+
+    <!-- TOPO -->
+    <div class="page-top">
+        <div>
+            <div class="page-title">⚙️ Admin <span>Concursos</span></div>
+        </div>
+        <button class="btn-novo" onclick="irParaAba('adicionar')">
+            <i data-lucide="plus" style="width:16px;height:16px;"></i>
+            Nova Prova
+        </button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-val" id="stat-total">--</div>
+            <div class="stat-lbl">Total de Materiais</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" id="stat-provas">--</div>
+            <div class="stat-lbl">Provas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" id="stat-simulados">--</div>
+            <div class="stat-lbl">Simulados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" id="stat-outros">--</div>
+            <div class="stat-lbl">Outros</div>
+        </div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div class="alert alert-ok"  id="alert-ok"><i data-lucide="check-circle" style="width:16px;height:16px;flex-shrink:0;"></i><span id="alert-ok-msg">Sucesso!</span></div>
+    <div class="alert alert-err" id="alert-err"><i data-lucide="alert-circle" style="width:16px;height:16px;flex-shrink:0;"></i><span id="alert-err-msg">Erro!</span></div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab ativo" id="tab-adicionar" onclick="irParaAba('adicionar')">
+            <i data-lucide="plus" style="width:14px;height:14px;"></i> Adicionar
+        </button>
+        <button class="tab" id="tab-gerenciar" onclick="irParaAba('gerenciar')">
+            <i data-lucide="list" style="width:14px;height:14px;"></i> Gerenciar
+        </button>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         ABA: ADICIONAR
+         ══════════════════════════════════════ -->
+    <div class="secao ativa" id="secao-adicionar">
+
+        <!-- INFORMAÇÕES BÁSICAS -->
+        <div class="form-card">
+            <div class="form-card-title">
+                <i data-lucide="info" style="width:14px;height:14px;"></i>
+                Informações da Prova
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label class="form-lbl">Título *</label>
+                    <input type="text" class="form-input" id="f-titulo" placeholder="Ex: ENEM 2023 - Caderno Azul" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Instituição *</label>
+                    <select class="form-select" id="f-inst" required>
+                        <option value="">Selecione...</option>
+                        <option>ENEM</option>
+                        <option>IFCE</option>
+                        <option>UECE</option>
+                        <option>UFC</option>
+                        <option>UERJ</option>
+                        <option>FUVEST</option>
+                        <option>Concurso Público</option>
+                        <option>Militar</option>
+                        <option>Outros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Tipo *</label>
+                    <select class="form-select" id="f-tipo" required>
+                        <option value="">Selecione...</option>
+                        <option value="prova">📝 Prova</option>
+                        <option value="simulado">✏️ Simulado</option>
+                        <option value="gabarito">✅ Gabarito</option>
+                        <option value="questoes">🎯 Banco de Questões</option>
+                        <option value="resumo">📌 Resumo</option>
+                        <option value="apostila">📚 Apostila</option>
+                        <option value="redacao">✍️ Redação</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Disciplina</label>
+                    <select class="form-select" id="f-disc">
+                        <option value="Geral">Geral (todas)</option>
+                        <option>Matemática</option>
+                        <option>Física</option>
+                        <option>Química</option>
+                        <option>Biologia</option>
+                        <option>Português</option>
+                        <option>História</option>
+                        <option>Geografia</option>
+                        <option>Inglês</option>
+                        <option>Artes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Ano *</label>
+                    <input type="number" class="form-input" id="f-ano" min="2000" max="2099" placeholder="Ex: 2023" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Nº de Questões</label>
+                    <input type="number" class="form-input" id="f-questoes" min="0" placeholder="Ex: 45">
+                </div>
+                <div class="form-group full">
+                    <label class="form-lbl">Descrição</label>
+                    <textarea class="form-textarea" id="f-desc" placeholder="Descreva o conteúdo, banca, nível de dificuldade..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- UPLOAD DO ARQUIVO -->
+        <div class="form-card">
+            <div class="form-card-title">
+                <i data-lucide="upload" style="width:14px;height:14px;"></i>
+                Arquivo PDF
+                <span class="ia-badge">✨ IA</span>
+            </div>
+
+            <!-- Tabs de upload -->
+            <div class="upload-tabs">
+                <button class="upload-tab ativo" id="tab-pdf" onclick="trocarUpload('pdf')">
+                    <i data-lucide="file" style="width:13px;height:13px;"></i>
+                    Upload PDF
+                </button>
+                <button class="upload-tab" id="tab-csv" onclick="trocarUpload('csv')">
+                    <i data-lucide="table" style="width:13px;height:13px;"></i>
+                    Importar CSV
+                </button>
+                <button class="upload-tab" id="tab-url" onclick="trocarUpload('url')">
+                    <i data-lucide="link" style="width:13px;height:13px;"></i>
+                    URL do PDF
+                </button>
+            </div>
+
+            <!-- PDF Upload -->
+            <div class="upload-section ativa" id="upload-pdf">
+                <div class="upload-area" id="drop-area">
+                    <input type="file" id="f-pdf" accept=".pdf" onchange="arquivoSelecionado(this)">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-title">Arraste o PDF aqui ou clique</div>
+                    <div class="upload-sub">Máximo 50MB · Somente .pdf</div>
+                    <div class="upload-filename" id="f-pdf-nome"></div>
+                </div>
+                <div class="progress-bar-wrap" id="progress-wrap">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <!-- CSV Upload -->
+            <div class="upload-section" id="upload-csv">
+                <div class="upload-area">
+                    <input type="file" id="f-csv" accept=".csv" onchange="csvSelecionado(this)">
+                    <div class="upload-icon">📊</div>
+                    <div class="upload-title">Importar questões via CSV</div>
+                    <div class="upload-sub">Importe várias questões de uma vez</div>
+                    <div class="upload-filename" id="f-csv-nome"></div>
+                </div>
+                <div class="csv-format">
+                    <strong>Formato esperado (com cabeçalho):</strong><br>
+                    titulo, enunciado, a, b, c, d, e, gabarito, disciplina, nivel<br><br>
+                    <strong>Exemplo:</strong><br>
+                    "Questão 1","Se x + 2 = 5, então x =","1","2","3","4","5","C","Matemática","facil"
+                </div>
+            </div>
+
+            <!-- URL -->
+            <div class="upload-section" id="upload-url">
+                <div class="form-group">
+                    <label class="form-lbl">URL direta do PDF</label>
+                    <input type="url" class="form-input" id="f-url" placeholder="https://exemplo.com/prova.pdf">
+                </div>
+                <p style="font-size:12px;color:var(--t3);margin-top:8px;">Use quando o PDF já estiver hospedado em algum lugar (Google Drive, site do INEP, etc).</p>
+            </div>
+        </div>
+
+        <!-- AÇÕES -->
+        <div class="form-actions">
+            <button class="btn-submit" id="btn-salvar" onclick="salvar()">
+                <i data-lucide="save" style="width:16px;height:16px;"></i>
+                Salvar Prova
+            </button>
+            <button class="btn-cancel" onclick="limparForm()">Limpar</button>
+        </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════
+         ABA: GERENCIAR
+         ══════════════════════════════════════ -->
+    <div class="secao" id="secao-gerenciar">
+
+        <div class="table-header">
+            <div class="table-search">
+                <i data-lucide="search" style="width:14px;height:14px;color:#555;"></i>
+                <input type="text" id="tbl-busca" placeholder="Buscar..." oninput="filtrarTabela()">
+            </div>
+            <button class="btn-novo" onclick="carregarTabela()" style="padding:10px 16px;font-size:12px;">
+                <i data-lucide="refresh-cw" style="width:13px;height:13px;"></i>
+                Atualizar
+            </button>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Instituição</th>
+                        <th>Tipo</th>
+                        <th>Disciplina</th>
+                        <th>Ano</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tbl-body">
+                    <tr><td colspan="6" class="table-empty">
+                        <div class="spinner"></div>
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="menu.js"></script>
+<script src="admin-concursos.js"></script>
+<script>
+    if (window.lucide) lucide.createIcons();
+    // Drag and drop
+    const drop = document.getElementById('drop-area');
+    drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+    drop.addEventListener('drop', e => {
+        e.preventDefault(); drop.classList.remove('dragover');
+        const f = e.dataTransfer.files[0];
+        if (f && f.type === 'application/pdf') {
+            document.getElementById('f-pdf').files = e.dataTransfer.files;
+            arquivoSelecionado({ files: [f] });
+        }
+    });
+</script>
+</body>
+</html>

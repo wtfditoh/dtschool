@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Concursos & Questões - Hub Brain</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="theme-toggle.css">
+    <link rel="stylesheet" href="concurso.css">
+    <script src="theme-manager.js"></script>
+</head>
+<body>
+
+<header class="glass-header">
+    <button id="open-menu" class="btn-icon"><i data-lucide="menu"></i></button>
+    <div class="header-logo" onclick="window.location.href='index.html'">
+        <span class="logo-hub">HUB</span>
+        <div class="logo-brain-icon"><img src="icon-514_20260512_161420_0000.png" alt="Brain"></div>
+        <span class="logo-brain">BRAIN</span>
+    </div>
+    <div style="width:40px;"></div>
+</header>
+
+<div class="page">
+<div class="container">
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-tag">📚 Biblioteca de Estudos</div>
+        <h1>Provas, Simulados &<br>Banco de Questões</h1>
+        <p>Estude pra ENEM, IFCE, concursos públicos e muito mais. Tudo organizado num só lugar.</p>
+        <div class="hero-stats">
+            <div>
+                <div class="hero-stat-val" id="stat-total">--</div>
+                <div class="hero-stat-lbl">Materiais</div>
+            </div>
+            <div>
+                <div class="hero-stat-val" id="stat-inst">--</div>
+                <div class="hero-stat-lbl">Instituições</div>
+            </div>
+            <div>
+                <div class="hero-stat-val" id="stat-favs">--</div>
+                <div class="hero-stat-lbl">Salvos</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BUSCA -->
+    <div class="search-wrap">
+        <div class="search-box">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="input-busca" placeholder="Buscar por título, instituição, disciplina...">
+        </div>
+        <button class="btn-buscar" onclick="buscar()">
+            <i data-lucide="search" style="width:15px;height:15px;"></i>
+            Buscar
+        </button>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filtros-row" id="filtros-row">
+
+        <div class="filtro-pill" id="pill-inst" onclick="togglePill(event,'pill-inst')">
+            <i data-lucide="building-2" style="width:13px;height:13px;"></i>
+            <span id="lbl-inst">Instituição</span>
+            <i data-lucide="chevron-down" style="width:12px;height:12px;"></i>
+            <div class="filtro-dropdown" id="dd-inst">
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'inst','')">Todas</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'inst','ENEM')">🎓 ENEM</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'inst','IFCE')">🏫 IFCE</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'inst','UECE')">🏛 UECE</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'inst','UFC')">🎯 UFC</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'inst','UERJ')">🏙 UERJ</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'inst','FUVEST')">⭐ FUVEST</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'inst','Concurso Público')">📋 Concurso Público</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'inst','Militar')">🎖 Militar</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'inst','Outros')">📁 Outros</div>
+            </div>
+        </div>
+
+        <div class="filtro-pill" id="pill-tipo" onclick="togglePill(event,'pill-tipo')">
+            <i data-lucide="file-text" style="width:13px;height:13px;"></i>
+            <span id="lbl-tipo">Tipo</span>
+            <i data-lucide="chevron-down" style="width:12px;height:12px;"></i>
+            <div class="filtro-dropdown" id="dd-tipo">
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'tipo','')">Todos</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'tipo','prova')">📝 Prova</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'tipo','simulado')">✏️ Simulado</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'tipo','gabarito')">✅ Gabarito</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'tipo','questoes')">🎯 Banco de Questões</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'tipo','resumo')">📌 Resumo</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'tipo','apostila')">📚 Apostila</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'tipo','redacao')">✍️ Redação</div>
+            </div>
+        </div>
+
+        <div class="filtro-pill" id="pill-disc" onclick="togglePill(event,'pill-disc')">
+            <i data-lucide="book-open" style="width:13px;height:13px;"></i>
+            <span id="lbl-disc">Disciplina</span>
+            <i data-lucide="chevron-down" style="width:12px;height:12px;"></i>
+            <div class="filtro-dropdown" id="dd-disc">
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'disc','')">Todas</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'disc','Matemática')">📐 Matemática</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'disc','Física')">⚡ Física</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'disc','Química')">🧪 Química</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'disc','Biologia')">🌿 Biologia</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'disc','Português')">📖 Português</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'disc','História')">🏛 História</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'disc','Geografia')">🌍 Geografia</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'disc','Inglês')">🌐 Inglês</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'disc','Artes')">🎨 Artes</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'disc','Geral')">📋 Geral</div>
+            </div>
+        </div>
+
+        <div class="filtro-pill" id="pill-ano" onclick="togglePill(event,'pill-ano')">
+            <i data-lucide="calendar" style="width:13px;height:13px;"></i>
+            <span id="lbl-ano">Ano</span>
+            <i data-lucide="chevron-down" style="width:12px;height:12px;"></i>
+            <div class="filtro-dropdown" id="dd-ano">
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'ano','')">Todos</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'ano','2025')">2025</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'ano','2024')">2024</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'ano','2023')">2023</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'ano','2022')">2022</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'ano','2021')">2021</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'ano','2020')">2020</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'ano','2019')">2019</div>
+                <div class="filtro-opt" onclick="selecionarFiltro(event,'ano','Anterior')">Anterior a 2019</div>
+            </div>
+        </div>
+
+        <button class="btn-limpar-filtros" id="btn-limpar" onclick="limparFiltros()">✕ Limpar filtros</button>
+    </div>
+
+    <!-- CHIPS ATIVOS -->
+    <div class="chips-row" id="chips-row"></div>
+
+    <!-- RESULTS BAR -->
+    <div class="results-bar">
+        <div class="results-count"><strong id="total-count">0</strong> resultados</div>
+        <select class="sort-select" id="sort-select" onchange="renderizar()">
+            <option value="recente">Mais recente</option>
+            <option value="antigo">Mais antigo</option>
+            <option value="nome">Nome (A-Z)</option>
+        </select>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state ativo" id="loading-state">
+        <div class="spinner"></div>
+        <div style="color:#666;font-size:14px;">Carregando materiais...</div>
+    </div>
+
+    <!-- GRID -->
+    <div class="cards-grid" id="cards-grid"></div>
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state" id="empty-state">
+        <div class="empty-icon">📭</div>
+        <h2 class="empty-title">Nada encontrado</h2>
+        <p class="empty-text">Tenta ajustar os filtros ou a busca</p>
+    </div>
+
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-header-info">
+                <div class="modal-title" id="modal-titulo">--</div>
+                <div class="modal-sub" id="modal-sub">--</div>
+            </div>
+            <button class="btn-modal-close" onclick="fecharModal()">
+                <i data-lucide="x" style="width:20px;height:20px;"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-info-grid">
+                <div class="modal-info-item">
+                    <div class="modal-info-lbl">Instituição</div>
+                    <div class="modal-info-val" id="modal-inst">--</div>
+                </div>
+                <div class="modal-info-item">
+                    <div class="modal-info-lbl">Ano</div>
+                    <div class="modal-info-val" id="modal-ano">--</div>
+                </div>
+                <div class="modal-info-item">
+                    <div class="modal-info-lbl">Disciplina</div>
+                    <div class="modal-info-val" id="modal-disc">--</div>
+                </div>
+                <div class="modal-info-item">
+                    <div class="modal-info-lbl">Tamanho</div>
+                    <div class="modal-info-val" id="modal-tam">--</div>
+                </div>
+            </div>
+            <div class="modal-desc" id="modal-desc">--</div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal btn-modal-primary" id="btn-modal-download" onclick="downloadAtual()">
+                <i data-lucide="download" style="width:16px;height:16px;"></i>
+                Download
+            </button>
+            <button class="btn-modal btn-modal-secondary" onclick="fecharModal()">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="menu.js"></script>
+<script src="concurso.js"></script>
+<script>
+    if (window.lucide) lucide.createIcons();
+    document.getElementById('input-busca').addEventListener('keypress', e => {
+        if (e.key === 'Enter') buscar();
+    });
+    // Fecha dropdown ao clicar fora
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.filtro-pill')) {
+            document.querySelectorAll('.filtro-pill').forEach(p => p.classList.remove('aberto'));
+        }
+    });
+    // Fecha modal ao clicar fora
+    document.getElementById('modal').addEventListener('click', e => {
+        if (e.target === document.getElementById('modal')) fecharModal();
+    });
+</script>
+</body>
+</html>
