@@ -174,14 +174,21 @@
     </div>
     <span class="logo-brain">BRAIN</span>
 </div>
-        <button class="dt-btn-lixeira" onclick="abrirModalLixeira()">
-            <i data-lucide="trash-2" style="width:22px; height:22px;"></i>
-        </button>
+        <div style="display:flex; align-items:center;">
+            <button class="dt-btn-lixeira" onclick="HBIA.abrirModalChave('manual')" title="Chave da Groq">
+                <i data-lucide="key" style="width:22px; height:22px;"></i>
+            </button>
+            <button class="dt-btn-lixeira" onclick="abrirModalLixeira()" title="Limpar histórico">
+                <i data-lucide="trash-2" style="width:22px; height:22px;"></i>
+            </button>
+        </div>
     </header>
 
     <nav class="dt-nav-tabs">
         <button id="tab-simulado" class="dt-tab-button active" onclick="trocarAba('simulado')">🎯 Simulado</button>
-        <button id="tab-chat" class="dt-tab-button" onclick="trocarAba('chat')">💬 Tira-Dúvidas</button>
+        <button id="tab-chat" class="dt-tab-button" onclick="trocarAba('chat')">💬 Dúvidas</button>
+        <button id="tab-explicador" class="dt-tab-button" onclick="trocarAba('explicador')">📖 Explicar</button>
+        <button id="tab-resumidor" class="dt-tab-button" onclick="trocarAba('resumidor')">📝 Resumir</button>
     </nav>
 
     <main>
@@ -192,8 +199,26 @@
                 <span class="dt-welcome-sub">Digite um tema e gere questões instantaneamente</span>
             </div>
             <div class="dt-card-form">
-                <input type="text" id="campo-tema" placeholder="Ex: Segunda Guerra Mundial, Equações..." class="dt-input">
-                <button class="dt-btn-gerar" onclick="gerarSimulado()">GERAR QUESTÕES</button>
+                <input type="text" id="campo-tema" placeholder="Ex: Segunda Guerra Mundial, Equações..." class="dt-input" maxlength="200">
+                <div class="hbia-opcoes">
+                    <div class="hbia-grupo">
+                        <span class="hbia-label">Questões</span>
+                        <div class="hbia-chips" data-grupo="qtd">
+                            <button type="button" class="hbia-chip" data-valor="5">5</button>
+                            <button type="button" class="hbia-chip active" data-valor="10">10</button>
+                            <button type="button" class="hbia-chip" data-valor="15">15</button>
+                        </div>
+                    </div>
+                    <div class="hbia-grupo">
+                        <span class="hbia-label">Nível</span>
+                        <div class="hbia-chips" data-grupo="nivel">
+                            <button type="button" class="hbia-chip" data-valor="facil">Fácil</button>
+                            <button type="button" class="hbia-chip active" data-valor="medio">Médio</button>
+                            <button type="button" class="hbia-chip" data-valor="dificil">Difícil</button>
+                        </div>
+                    </div>
+                </div>
+                <button id="btn-gerar" class="dt-btn-gerar" onclick="gerarSimulado()">GERAR QUESTÕES</button>
             </div>
             <div id="container-questoes"></div>
         </section>
@@ -206,6 +231,44 @@
                     <i data-lucide="send" style="width:18px; height:18px;"></i>
                 </button>
             </div>
+        </section>
+
+        <section id="painel-explicador" class="dt-aba">
+            <div class="dt-simulado-welcome">
+                <div class="dt-welcome-icon">📖</div>
+                <span class="dt-welcome-title">Explicador</span>
+                <span class="dt-welcome-sub">Cole um texto, exercício ou dúvida e receba a explicação completa</span>
+            </div>
+            <div class="dt-card-form">
+                <textarea id="explicador-texto" class="dt-input dt-textarea" data-contador="explicador-contador" placeholder="Cole aqui o texto, o exercício ou a sua dúvida..."></textarea>
+                <span id="explicador-contador" class="hbia-contador"></span>
+                <button id="btn-explicar" class="dt-btn-gerar" onclick="explicar()">EXPLICAR</button>
+            </div>
+            <div id="resultado-explicador"></div>
+        </section>
+
+        <section id="painel-resumidor" class="dt-aba">
+            <div class="dt-simulado-welcome">
+                <div class="dt-welcome-icon">📝</div>
+                <span class="dt-welcome-title">Resumidor</span>
+                <span class="dt-welcome-sub">Cole um texto grande e escolha como quer o resumo</span>
+            </div>
+            <div class="dt-card-form">
+                <textarea id="resumidor-texto" class="dt-input dt-textarea" data-contador="resumidor-contador" placeholder="Cole aqui o texto que você quer resumir..."></textarea>
+                <span id="resumidor-contador" class="hbia-contador"></span>
+                <div class="hbia-opcoes">
+                    <div class="hbia-grupo">
+                        <span class="hbia-label">Formato</span>
+                        <div class="hbia-chips" data-grupo="formato">
+                            <button type="button" class="hbia-chip active" data-valor="bullets">Bullets</button>
+                            <button type="button" class="hbia-chip" data-valor="mapa">Mapa mental</button>
+                            <button type="button" class="hbia-chip" data-valor="paragrafo">Parágrafo</button>
+                        </div>
+                    </div>
+                </div>
+                <button id="btn-resumir" class="dt-btn-gerar" onclick="resumir()">RESUMIR</button>
+            </div>
+            <div id="resultado-resumidor"></div>
         </section>
     </main>
 
@@ -250,7 +313,8 @@
     </div>
 
     <script src="menu.js"></script>
-    <script type="module" src="ia-logica.js"></script>
+    <script src="ia-config.js"></script>
+    <script src="ia-logica.js"></script>
     <script>
         function abrirSobreDono() { document.getElementById('modal-dono').style.display='flex'; if(window.lucide) lucide.createIcons(); }
         function fecharSobreDono() { document.getElementById('modal-dono').style.display='none'; }
