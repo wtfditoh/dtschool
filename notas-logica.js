@@ -448,6 +448,22 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// PONTE para scripts normais (notas-esquema.js)
+// `materias` é privada deste módulo; sem esta ponte, qualquer script externo
+// editaria uma cópia e a próxima salvarNota() apagaria as mudanças.
+// ═══════════════════════════════════════════════════════════════════════════
+window.HBNotas = {
+    getMaterias: () => materias,          // sempre a referência atual
+    getCfg,
+    toast: showToast,
+    persistir: () => {                    // salva local + redesenha; devolve a Promise da nuvem
+        localStorage.setItem('materias', JSON.stringify(materias));
+        window.atualizarLista();
+        return salvarNaNuvem();
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
