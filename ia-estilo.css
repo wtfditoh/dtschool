@@ -143,3 +143,117 @@ body { background: #050508 !important; color: #fff; font-family: 'Inter', -apple
 .dt-btn-confirmar { flex: 1; background: rgba(255,68,68,0.15); color: #ff4444; border: 1px solid rgba(255,68,68,0.3); padding: 12px; border-radius: 12px; font-weight: 800; cursor: pointer; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+
+/* ═══════════════════════════════════════════════════════════
+   NOVO — IA v2: 4 abas, chips, explicador/resumidor, modal da chave
+   (tudo com prefixo hbia- para não esbarrar no resto do app)
+   ═══════════════════════════════════════════════════════════ */
+
+/* 4 abas cabem em tela de celular */
+.dt-nav-tabs { gap: 6px; padding: 12px; }
+.dt-tab-button { padding: 10px 4px; font-size: 12px; min-width: 0; white-space: nowrap; }
+
+/* opções do simulado (quantidade / nível) */
+.hbia-opcoes { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.hbia-grupo { display: flex; align-items: center; gap: 10px; }
+.hbia-label { font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #666; text-transform: uppercase; min-width: 62px; }
+.hbia-chips { display: flex; gap: 6px; flex: 1; }
+.hbia-chip {
+    flex: 1; padding: 9px 4px; border-radius: 12px; cursor: pointer;
+    font-size: 12px; font-weight: 700; transition: 0.15s;
+    background: rgba(255,255,255,0.03) !important; color: #777 !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+}
+.hbia-chip.active {
+    background: rgba(138,43,226,0.18) !important; color: #c084fc !important;
+    border-color: rgba(138,43,226,0.55) !important;
+}
+
+.dt-btn-gerar:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+/* textarea do explicador / resumidor */
+.dt-textarea { min-height: 150px; resize: vertical; line-height: 1.5; margin-bottom: 6px !important; display: block; }
+.hbia-contador { display: block; text-align: right; font-size: 11px; color: #555; margin-bottom: 14px; }
+.hbia-contador.estourou { color: #ff6b6b; }
+
+/* feedback das alternativas do simulado */
+.dt-opt-btn.hbia-certa { background-color: #1b4d2e !important; border-color: #2ecc71 !important; color: #fff !important; }
+.dt-opt-btn.hbia-errada { background-color: #4d1b1b !important; border-color: #ff4444 !important; color: #fff !important; }
+.dt-opt-btn.hbia-gabarito { border: 2px solid #2ecc71 !important; }
+.dt-opt-btn:disabled { cursor: default; }
+
+/* resultado final do simulado */
+.hbia-final { text-align: center; padding: 24px 18px; }
+.hbia-score { font-size: 44px; font-weight: 900; color: #c084fc; letter-spacing: 1px; }
+.hbia-final-linha { margin-top: 6px; font-size: 13px; color: #aaa; }
+
+/* carregando / erro / aviso */
+.hbia-loading { text-align: center; color: #aaa; font-size: 13px; }
+.hbia-spinner {
+    display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px;
+    border: 2px solid rgba(138,43,226,0.3); border-top-color: #8a2be2; border-radius: 50%;
+    animation: hbiaSpin 0.8s linear infinite;
+}
+@keyframes hbiaSpin { to { transform: rotate(360deg); } }
+.hbia-erro { border-color: rgba(255,68,68,0.35) !important; color: #ff9a9a; font-size: 13px; line-height: 1.5; }
+.hbia-aviso { font-size: 12px; color: #f1c40f; margin-bottom: 12px; padding: 8px 12px; background: rgba(241,196,15,0.08); border-radius: 10px; }
+
+/* texto renderizado do markdown (chat, explicador, resumidor) */
+.hbia-md, .dt-bolha.ia { word-wrap: break-word; overflow-wrap: anywhere; }
+.hbia-md { font-size: 14px; line-height: 1.65; color: #ccc; }
+.hbia-md h2, .hbia-md h3, .hbia-md h4 { color: #c084fc; font-weight: 900; margin: 18px 0 8px; line-height: 1.3; }
+.hbia-md h2 { font-size: 18px; margin-top: 4px; }
+.hbia-md h3 { font-size: 15px; }
+.hbia-md h4 { font-size: 14px; }
+.hbia-md > :first-child, .dt-bolha.ia > :first-child { margin-top: 0; }
+.hbia-md p, .dt-bolha.ia p { margin: 0 0 10px; }
+.hbia-md ul, .hbia-md ol, .dt-bolha.ia ul, .dt-bolha.ia ol { margin: 0 0 10px; padding-left: 20px; }
+.hbia-md li, .dt-bolha.ia li { margin: 4px 0; }
+.hbia-md li.sub, .dt-bolha.ia li.sub { margin-left: 18px; list-style: circle; }
+.hbia-md strong, .dt-bolha.ia strong { color: #fff; }
+.hbia-md code, .dt-bolha.ia code { background: rgba(138,43,226,0.15); padding: 1px 6px; border-radius: 6px; font-size: 12.5px; }
+.hbia-md hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 14px 0; }
+.dt-bolha.ia p:last-child, .dt-bolha.ia ul:last-child, .dt-bolha.ia ol:last-child { margin-bottom: 0; }
+
+.hbia-acoes { margin-top: 14px; display: flex; gap: 8px; }
+.hbia-btn-mini {
+    padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;
+    background: rgba(138,43,226,0.12) !important; color: #c084fc !important;
+    border: 1px solid rgba(138,43,226,0.3) !important;
+}
+
+/* modal da chave da Groq */
+.hbia-overlay {
+    display: none; position: fixed; inset: 0; z-index: 100000; padding: 20px;
+    background: rgba(0,0,0,0.88); backdrop-filter: blur(10px);
+    align-items: center; justify-content: center;
+}
+.hbia-overlay.aberto { display: flex; }
+.hbia-modal-box {
+    width: 100%; max-width: 380px; padding: 26px 22px; border-radius: 24px;
+    background: #0e0e12; border: 1px solid rgba(138,43,226,0.3); text-align: left;
+    animation: fadeIn 0.25s;
+}
+.hbia-modal-box h3 { color: #fff; font-size: 18px; font-weight: 900; margin-bottom: 8px; }
+.hbia-modal-txt { color: #aaa; font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+.hbia-modal-atual { color: #2ecc71; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+.hbia-modal-atual:empty { display: none; }
+.hbia-input-chave {
+    width: 100%; padding: 14px; border-radius: 12px; font-size: 14px; margin-bottom: 10px;
+    background: #07070a !important; color: #fff !important; font-family: monospace;
+    border: 1px solid rgba(138,43,226,0.25) !important;
+}
+.hbia-input-chave:focus { border-color: rgba(138,43,226,0.6) !important; }
+.hbia-link { display: block; color: #c084fc; font-size: 12px; font-weight: 700; text-decoration: none; margin-bottom: 12px; }
+.hbia-modal-status { min-height: 18px; font-size: 12px; color: #aaa; margin-bottom: 8px; }
+.hbia-modal-status.erro { color: #ff6b6b; }
+.hbia-modal-acoes { display: flex; gap: 10px; }
+.hbia-btn-sec, .hbia-btn-pri { flex: 1; padding: 13px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; }
+.hbia-btn-sec { background: rgba(255,255,255,0.04) !important; color: #888 !important; border: 1px solid #222 !important; }
+.hbia-btn-pri { background: #8a2be2 !important; color: #fff !important; border: none !important; box-shadow: 0 4px 16px rgba(138,43,226,0.3); }
+.hbia-btn-pri:disabled { opacity: 0.55; }
+.hbia-btn-remover {
+    display: none; width: 100%; margin-top: 12px; padding: 8px; background: none !important;
+    border: none !important; color: #ff6b6b !important; font-size: 12px; font-weight: 700; cursor: pointer;
+}
