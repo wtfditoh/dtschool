@@ -1,0 +1,125 @@
+/* notas-esquema.css — Hub Brain · esquema de avaliação por matéria
+   Tudo com prefixo esq- para não esbarrar no estilo.css */
+
+/* ───────── botão ⚙️ ao lado do nome da matéria ───────── */
+.esq-nome-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; margin-right: 8px; }
+.esq-nome-wrap .materia-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.esq-btn-cfg {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 10px; border-radius: 10px; cursor: pointer;
+    font-family: inherit; font-size: 11px; font-weight: 800; letter-spacing: 0.2px;
+    background: rgba(255,255,255,0.04); color: #888;
+    border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s;
+}
+.esq-btn-cfg:active { transform: scale(0.95); }
+.esq-btn-cfg.ativo { background: rgba(138,43,226,0.14); color: #c084fc; border-color: rgba(138,43,226,0.4); }
+.esq-ico { font-size: 13px; line-height: 1; }
+@media (max-width: 420px) { .esq-lbl { display: none; } .esq-btn-cfg { padding: 6px 8px; } }
+
+.esq-card-resumo {
+    margin: -6px 0 14px; font-size: 11px; font-weight: 700; color: #a78bfa;
+    background: rgba(138,43,226,0.08); border-radius: 10px; padding: 7px 10px;
+}
+.nota-input.esq-lock { background: rgba(138,43,226,0.08); border-style: dashed; cursor: pointer; }
+
+/* ───────── bottom sheet ───────── */
+body.esq-travado { overflow: hidden; }
+.esq-overlay {
+    position: fixed; inset: 0; z-index: 20000; display: flex; align-items: flex-end; justify-content: center;
+    background: rgba(0,0,0,0); visibility: hidden; transition: background 0.25s, visibility 0s 0.25s;
+}
+.esq-overlay.aberto { background: rgba(0,0,0,0.72); backdrop-filter: blur(6px); visibility: visible; transition: background 0.25s; }
+
+.esq-sheet {
+    width: 100%; max-width: 520px; max-height: 90vh; max-height: 90dvh;
+    display: flex; flex-direction: column; outline: none;
+    background: #0d0d12; border: 1px solid rgba(138,43,226,0.25); border-bottom: none;
+    border-radius: 28px 28px 0 0; box-shadow: 0 -20px 60px rgba(0,0,0,0.6);
+    transform: translateY(100%); transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    font-family: 'Outfit', -apple-system, sans-serif; color: #fff;
+}
+.esq-overlay.aberto .esq-sheet { transform: translateY(0); }
+.esq-handle { width: 42px; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.15); margin: 10px auto 2px; flex-shrink: 0; }
+
+.esq-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 10px 20px 8px; flex-shrink: 0; }
+.esq-head-txt { min-width: 0; }
+.esq-head h3 { font-size: 19px; font-weight: 800; letter-spacing: -0.3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.esq-head p { font-size: 11px; font-weight: 700; color: #666; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+.esq-x { background: rgba(255,255,255,0.05); border: none; color: #888; width: 34px; height: 34px; border-radius: 50%; font-size: 14px; cursor: pointer; flex-shrink: 0; }
+
+.esq-body { flex: 1; overflow-y: auto; padding: 4px 20px 16px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.esq-sec { font-size: 10px; font-weight: 800; letter-spacing: 1.4px; color: #555; text-transform: uppercase; margin: 14px 0 8px; }
+
+/* templates */
+.esq-templates { display: flex; flex-wrap: wrap; gap: 8px; }
+.esq-chip {
+    padding: 8px 13px; border-radius: 20px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 700;
+    background: rgba(138,43,226,0.1); color: #c084fc; border: 1px solid rgba(138,43,226,0.3); transition: 0.15s;
+}
+.esq-chip:active { transform: scale(0.95); background: rgba(138,43,226,0.25); }
+.esq-chip-limpar { background: rgba(255,68,85,0.08); color: #ff7a85; border-color: rgba(255,68,85,0.3); }
+
+/* lista de componentes */
+.esq-vazio { padding: 22px 14px; text-align: center; font-size: 13px; line-height: 1.5; color: #666; border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; }
+.esq-comp { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); border-radius: 18px; padding: 12px; margin-bottom: 10px; }
+.esq-comp-topo { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+.esq-comp-grade { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 8px; }
+.esq-campo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.esq-campo span { font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #555; text-transform: uppercase; padding-left: 2px; }
+
+.esq-in {
+    width: 100%; min-width: 0; padding: 10px 12px; border-radius: 12px; outline: none;
+    background: rgba(0,0,0,0.45); color: #fff; border: 1px solid rgba(255,255,255,0.09);
+    font-family: inherit; font-size: 16px; font-weight: 600; -webkit-appearance: none; appearance: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.esq-in:focus { border-color: var(--primary, #8a2be2); box-shadow: 0 0 0 3px rgba(138,43,226,0.15); }
+.esq-in.invalido { border-color: var(--error, #ff4455); background: rgba(255,68,85,0.08); }
+.esq-nome { flex: 1; font-weight: 700; }
+.esq-peso, .esq-nota { text-align: center; }
+.esq-tipo {
+    padding-right: 26px; font-size: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+}
+.esq-del {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    background: rgba(255,68,85,0.08); color: rgba(255,68,85,0.75); border: 1px solid rgba(255,68,85,0.2);
+}
+.esq-del:active { background: rgba(255,68,85,0.2); }
+
+.esq-add {
+    width: 100%; padding: 13px; border-radius: 16px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 800;
+    background: transparent; color: #c084fc; border: 1px dashed rgba(138,43,226,0.45); margin-top: 2px;
+}
+.esq-add:active { background: rgba(138,43,226,0.1); }
+
+.esq-periodo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; font-size: 12px; font-weight: 700; color: #888; }
+.esq-periodo .esq-in { width: auto; min-width: 120px; font-size: 14px; padding: 9px 30px 9px 12px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; }
+
+/* avisos */
+.esq-aviso { margin-top: 14px; font-size: 12px; font-weight: 700; line-height: 1.5; border-radius: 12px; }
+.esq-aviso:empty { display: none; }
+.esq-aviso.ok { color: var(--success, #00e5a0); background: rgba(0,229,160,0.08); padding: 10px 12px; }
+.esq-aviso.aviso { color: var(--warning, #ffb800); background: rgba(255,184,0,0.09); padding: 10px 12px; }
+.esq-aviso.erro { color: var(--error, #ff4455); background: rgba(255,68,85,0.09); padding: 10px 12px; }
+
+/* resumo + rodapé fixos */
+.esq-resumo {
+    display: flex; align-items: center; gap: 14px; padding: 12px 20px; flex-shrink: 0;
+    background: rgba(138,43,226,0.07); border-top: 1px solid rgba(138,43,226,0.2);
+}
+.esq-media { font-size: 34px; font-weight: 900; color: #c084fc; letter-spacing: -1px; min-width: 76px; text-align: center; line-height: 1; }
+.esq-media.vazio { color: #444; }
+.esq-resumo-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.esq-det { font-size: 13px; font-weight: 800; color: #fff; }
+.esq-destino { font-size: 11px; font-weight: 600; color: #777; }
+
+.esq-footer { display: flex; gap: 10px; padding: 12px 20px calc(14px + env(safe-area-inset-bottom, 0px)); flex-shrink: 0; background: #0d0d12; }
+.esq-bt { flex: 1; padding: 15px; border-radius: 16px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 800; border: none; transition: 0.15s; }
+.esq-bt:active { transform: scale(0.97); }
+.esq-bt-sec { background: rgba(255,255,255,0.05); color: #999; border: 1px solid rgba(255,255,255,0.08); }
+.esq-bt-pri { flex: 1.4; background: var(--primary, #8a2be2); color: #fff; box-shadow: 0 6px 22px rgba(138,43,226,0.35); }
+.esq-bt-pri:disabled { opacity: 0.4; box-shadow: none; cursor: not-allowed; }
