@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salvar em Conteúdos - Hub Brain</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background:#050508; color:#fff;
+            font-family:'Outfit',sans-serif;
+            min-height:100vh;
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            padding:20px;
+        }
+        .st-preview {
+            width:100%; max-width:340px;
+            aspect-ratio:1; border-radius:20px;
+            overflow:hidden; background:#16161a;
+            border:1px solid rgba(138,43,226,0.3);
+            margin-bottom:20px;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .st-preview img { width:100%; height:100%; object-fit:contain; }
+        .st-titulo { font-size:22px; font-weight:900; margin-bottom:4px; text-align:center; }
+        .st-sub { font-size:13px; color:#666; margin-bottom:24px; text-align:center; }
+        .st-mats {
+            width:100%; max-width:340px;
+            display:flex; flex-direction:column; gap:8px;
+            margin-bottom:18px;
+            max-height:50vh; overflow-y:auto;
+        }
+        .st-mat {
+            padding:16px; border-radius:16px;
+            background:#16161a; border:1px solid rgba(138,43,226,0.2);
+            color:#fff; font-family:inherit; font-size:15px; font-weight:700;
+            cursor:pointer; text-align:left;
+            display:flex; align-items:center; gap:12px;
+            transition:all 0.15s;
+        }
+        .st-mat:active { transform:scale(0.98); }
+        .st-mat.on { border-color:#8a2be2; background:rgba(138,43,226,0.15); }
+        .st-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+        .st-salvar {
+            width:100%; max-width:340px;
+            padding:16px; border-radius:16px; border:none;
+            background:#8a2be2; color:#fff;
+            font-family:inherit; font-size:15px; font-weight:900;
+            cursor:pointer; box-shadow:0 6px 20px rgba(138,43,226,0.4);
+        }
+        .st-salvar:disabled { opacity:0.5; cursor:not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="st-preview"><img id="st-img" alt=""></div>
+    <div class="st-titulo">📷 Salvar em Conteúdos</div>
+    <div class="st-sub">Escolha a matéria dessa foto</div>
+    <div class="st-mats" id="st-mats"></div>
+    <button class="st-salvar" id="st-salvar" disabled>Salvar</button>
+    <script type="module" src="share-target.js"></script>
+</body>
+</html>
