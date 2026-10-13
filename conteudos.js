@@ -1,11 +1,11 @@
 /* conteudos.js — Hub Brain · Página de Conteúdos
    Lê a coleção `conteudos` do Firestore, agrupa por matéria, mostra grid,
-   permite ver em tela cheia, excluir e adicionar novas fotos. */
+   permite ver em tela cheia, excluir, compartilhar a imagem e adicionar novas fotos. */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const IMGBB_KEY = 'b329a89d2327b3957464d6d27a3c275b';
+const IMGBB_KEY = 'COLE_SUA_CHAVE_AQUI';   // ← sua chave do ImgBB
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -20,7 +20,7 @@ const db = getFirestore(app);
 const userEmail = localStorage.getItem('dt_user_email');
 
 const $ = (id) => document.getElementById(id);
-let fotos = [];          // todas as fotos do usuário
+let fotos = [];
 let filtroMat = 'todas';
 let materias = ['Geral'];
 let viewerIdx = 0;
@@ -95,7 +95,6 @@ function render() {
 
     const todasMats = [...new Set(fotos.map(f => f.materia || 'Geral'))].sort();
 
-    // chips
     let html = '<div class="ct-filtros">';
     html += `<button class="ct-chip ${filtroMat === 'todas' ? 'on' : ''}" data-mat="todas">Todas</button>`;
     todasMats.forEach(m => {
@@ -106,7 +105,6 @@ function render() {
     });
     html += '</div>';
 
-    // grupos
     const grupos = filtroMat === 'todas' ? todasMats : [filtroMat];
     grupos.forEach(m => {
         const doGrupo = fotos.filter(f => (f.materia || 'Geral') === m);
@@ -120,8 +118,11 @@ function render() {
             <div class="ct-grid">`;
         doGrupo.forEach(f => {
             const dataCurta = (f.data || '').slice(5).replace('-', '/');
+            const src = f.thumb || f.url || '';
+            const fallback = f.url || '';
             html += `<div class="ct-item" data-id="${f.id}">
-                <img src="${esc(f.thumb || f.url)}" alt="" loading="lazy" decoding="async">
+                <img src="${esc(src)}" alt="" loading="lazy" decoding="async"
+                     onerror="console.warn('[img falhou]', this.src); this.onerror=null; this.src='${esc(fallback)}'">
                 <span class="ct-data">${esc(dataCurta)}</span>
             </div>`;
         });
@@ -130,14 +131,12 @@ function render() {
 
     lista.innerHTML = html;
 
-    // listeners chips
     lista.querySelectorAll('.ct-chip').forEach(chip => {
         chip.addEventListener('click', () => {
             filtroMat = chip.dataset.mat;
             render();
         });
     });
-    // listeners fotos
     lista.querySelectorAll('.ct-item').forEach(it => {
         it.addEventListener('click', () => abrirViewer(it.dataset.id));
     });
@@ -166,7 +165,9 @@ function navViewer(delta) {
 function renderViewer() {
     const f = fotos[viewerIdx];
     if (!f) return fecharViewer();
-    $('ct-viewer-img').src = f.url;
+    const img = $('ct-viewer-img');
+    img.src = f.url;
+    img.onerror = () => { if (f.medium && img.src !== f.medium) img.src = f.medium; };
     const dataFmt = f.data ? f.data.split('-').reverse().join('/') : '';
     $('ct-viewer-info').innerHTML = esc(f.materia || 'Geral') + ' · ' + esc(f.nome || 'Foto') + `<small>${esc(dataFmt)} · ${viewerIdx + 1} de ${fotos.length}</small>`;
     const unica = fotos.length < 2;
@@ -207,16 +208,44 @@ async function excluirAtual() {
         resetConfirm();
     }
 }
+
+/* ───────── Compartilhar a IMAGEM (não o link) ───────── */
 async function compartilharAtual() {
     const f = fotos[viewerIdx];
     if (!f) return;
     const texto = '📷 Conteúdo — ' + (f.materia || 'Geral') + (f.data ? ' (' + f.data + ')' : '');
-    if (navigator.share) {
-        try { await navigator.share({ title: 'Hub Brain — Conteúdo', text: texto, url: f.url }); }
-        catch (e) {}
-    } else {
-        try { await navigator.clipboard.writeText(f.url); toast('✓ Link copiado'); } catch (e) {}
+
+    if (navigator.canShare && navigator.share) {
+        try {
+            toast('Preparando imagem…');
+            const resp = await fetch(f.url, { mode: 'cors' });
+            if (!resp.ok) throw new Error('download falhou');
+            const blob = await resp.blob();
+            const tipo = blob.type || 'image/jpeg';
+            const ext = tipo.split('/')[1].replace('jpeg', 'jpg') || 'jpg';
+            const nomeLimpo = (f.materia || 'Geral').replace(/[^\w\-]+/g, '-');
+            const file = new File([blob], 'conteudo-' + nomeLimpo + '-' + Date.now() + '.' + ext, { type: tipo });
+
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'Hub Brain — Conteúdo',
+                    text: texto
+                });
+                return;
+            }
+        } catch (e) {
+            if (e.name === 'AbortError') return;
+            console.warn('[share arquivo falhou]', e);
+        }
     }
+
+    if (navigator.share) {
+        try { await navigator.share({ title: 'Hub Brain — Conteúdo', text: texto, url: f.url }); return; }
+        catch (e) { if (e.name === 'AbortError') return; }
+    }
+
+    try { await navigator.clipboard.writeText(f.url); toast('✓ Link copiado'); } catch (e) {}
 }
 
 /* ───────── Adicionar foto ───────── */
@@ -272,8 +301,14 @@ async function uploadImgBB(blob) {
     fd.append('image', blob);
     const r = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, { method: 'POST', body: fd });
     const d = await r.json();
-    if (!d.success) throw new Error(d.error?.message || 'ImgBB recusou');
-    return d.data.url;
+    console.log('[ImgBB]', d);
+    if (!d.success || !d.data) throw new Error((d.error && d.error.message) || 'ImgBB recusou');
+    return {
+        url: d.data.url || (d.data.image && d.data.image.url) || '',
+        thumb: (d.data.thumb && d.data.thumb.url) || d.data.url || '',
+        medium: (d.data.medium && d.data.medium.url) || d.data.url || '',
+        display_url: d.data.display_url || ''
+    };
 }
 
 async function processarArquivo(file) {
@@ -286,12 +321,16 @@ async function processarArquivo(file) {
         if (!materia) return;
         toast('📤 Enviando…');
         const blob = await comprimir(file);
-        const url = await uploadImgBB(blob);
+        const urls = await uploadImgBB(blob);
+        if (!urls.url) throw new Error('ImgBB não devolveu URL');
         const hoje = new Date().toISOString().split('T')[0];
         await addDoc(collection(db, 'conteudos'), {
             usuario: userEmail,
             materia: materia,
-            url: url, thumb: url,
+            url: urls.url,
+            thumb: urls.thumb || urls.url,
+            medium: urls.medium || urls.url,
+            display_url: urls.display_url || '',
             nome: file.name || 'Foto do quadro',
             data: hoje,
             criadoEm: Date.now(),
@@ -328,7 +367,6 @@ async function iniciar() {
         else if (e.key === 'ArrowLeft') navViewer(-1);
         else if (e.key === 'ArrowRight') navViewer(1);
     });
-    // swipe
     let sx = 0, sy = 0;
     $('ct-viewer').addEventListener('touchstart', (e) => {
         if (e.touches.length !== 1) return;
