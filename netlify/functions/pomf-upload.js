@@ -1,11 +1,9 @@
 /**
- * Netlify Function: proxy para o catbox.moe
- * URL: /.netlify/functions/catbox-upload   (POST)
- * O catbox bloqueia uploads direto do navegador (CORS) e de servidores sem User-Agent.
- * Esta função recebe o arquivo e repassa pro catbox no servidor, "disfarçado" de navegador.
+ * Netlify Function: proxy para o Pomf.lain.la
+ * URL: /.netlify/functions/pomf-upload   (POST)
  */
 
-const CATBOX_URL = 'https://catbox.moe/user/api.php';
+const POMF_URL = 'https://pomf.lain.la/upload.php';
 const MAX_BYTES = 100 * 1024 * 1024; // 100MB
 
 const headers = {
@@ -36,36 +34,32 @@ exports.handler = async (event) => {
             return { statusCode: 413, headers, body: 'Arquivo grande demais (limite 100MB)' };
         }
 
-        // Monta o FormData pro catbox
+        // Monta o FormData pro Pomf
         const fd = new FormData();
-        fd.append('reqtype', 'fileupload');
         const blob = new Blob([bodyBuffer], { type: contentType });
-        // O nome do arquivo não importa muito para o catbox, mas é bom ter um.
-        fd.append('fileToUpload', blob, 'arquivo');
+        fd.append('files[]', blob, 'arquivo');
 
-        // 👇 A CORREÇÃO: Adiciona um User-Agent de navegador real
-        const catboxResponse = await fetch(CATBOX_URL, {
+        const r = await fetch(POMF_URL, {
             method: 'POST',
             body: fd,
             headers: {
-                // Simula um navegador real para evitar o bloqueio
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             }
         });
         
-        const texto = await catboxResponse.text();
+        const texto = await r.text();
 
         return {
-            statusCode: catboxResponse.status,
+            statusCode: r.status,
             headers: { ...headers, 'Content-Type': 'text/plain' },
             body: texto
         };
     } catch (e) {
-        console.error('[catbox-upload]', e);
+        console.error('[pomf-upload]', e);
         return {
             statusCode: 502,
             headers,
-            body: 'Falha ao falar com o catbox: ' + (e.message || 'erro')
+            body: 'Falha ao falar com o Pomf: ' + (e.message || 'erro')
         };
     }
 };
