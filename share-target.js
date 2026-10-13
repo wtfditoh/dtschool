@@ -1,11 +1,12 @@
 /* share-target.js — Hub Brain · Recebe imagem OU arquivo compartilhado
-   Agora com LOG NA TELA (sem precisar de Console). */
+   Imagem → ImgBB · PDF/doc → catbox via Netlify Function (proxy)
+   Log na tela pra debug sem Console. */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const IMGBB_KEY = 'b329a89d2327b3957464d6d27a3c275b';
-const CATBOX_URL = 'https://catbox.moe/user/api.php';
+const IMGBB_KEY = 'COLE_SUA_CHAVE_AQUI';
+const CATBOX_PROXY = '/.netlify/functions/catbox-upload';
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -154,16 +155,22 @@ async function uploadImgBB(blob) {
     };
 }
 
+/* Upload do arquivo via função Netlify (proxy que contorna o CORS do catbox) */
 async function uploadCatbox(file) {
-    log('📤 enviando pro catbox (' + Math.round(file.size / 1024) + 'KB)…', 'info');
-    const fd = new FormData();
-    fd.append('reqtype', 'fileupload');
-    fd.append('fileToUpload', file);
-    const r = await fetch(CATBOX_URL, { method: 'POST', body: fd });
-    log('catbox respondeu status ' + r.status, 'info');
-    if (!r.ok) throw new Error('catbox falhou (' + r.status + ')');
+    log('📤 enviando pro catbox via proxy (' + Math.round(file.size / 1024) + 'KB)…', 'info');
+    const r = await fetch(CATBOX_PROXY, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file
+    });
+    log('proxy respondeu status ' + r.status, 'info');
+    if (!r.ok) {
+        let detalhe = '';
+        try { detalhe = await r.text(); } catch (e) {}
+        throw new Error('proxy falhou (' + r.status + ') ' + detalhe.slice(0, 120));
+    }
     const txt = (await r.text()).trim();
-    if (!txt.startsWith('http')) throw new Error('catbox: ' + txt.slice(0, 80));
+    if (!txt.startsWith('http')) throw new Error('catbox: ' + txt.slice(0, 100));
     log('✓ catbox OK', 'ok');
     return { url: txt, thumb: '', medium: '', display_url: '' };
 }
@@ -176,7 +183,7 @@ async function salvar() {
     const btn = $('st-salvar');
     btn.disabled = true;
     btn.textContent = 'Enviando…';
-    $('st-log').innerHTML = '';   // limpa log antigo
+    $('st-log').innerHTML = '';
 
     try {
         log('═══ INÍCIO ═══', 'info');
