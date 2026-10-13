@@ -1,11 +1,12 @@
 /* conteudos.js — Hub Brain · Página de Conteúdos
    Lê a coleção `conteudos` do Firestore, agrupa por matéria, mostra grid,
-   permite ver em tela cheia, excluir, compartilhar a imagem e adicionar novas fotos. */
+   permite ver em tela cheia com ZOOM (pinch + double-tap), excluir,
+   compartilhar a imagem e adicionar novas fotos. */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const IMGBB_KEY = 'b329a89d2327b3957464d6d27a3c275b';   // ← sua chave do ImgBB
+const IMGBB_KEY = 'COLE_SUA_CHAVE_AQUI';
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -47,7 +48,56 @@ function toast(msg) {
     toast._t = setTimeout(() => el.classList.remove('on'), 2400);
 }
 
-/* ───────── Carrega matérias ───────── */
+/* ═══════════════ ESTADO DE ZOOM ═══════════════ */
+const zoom = {
+    scale: 1,
+    min: 1,
+    max: 5,
+    x: 0,          // deslocamento horizontal
+    y: 0,          // deslocamento vertical
+    ativo: false
+};
+
+function resetZoom() {
+    zoom.scale = 1;
+    zoom.x = 0;
+    zoom.y = 0;
+    zoom.ativo = false;
+    aplicarZoom();
+}
+
+function aplicarZoom(anim) {
+    const img = $('ct-viewer-img');
+    if (!img) return;
+    img.style.transition = anim ? 'transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94)' : 'none';
+    img.style.transform = `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.scale})`;
+    img.style.cursor = zoom.ativo ? 'grab' : 'zoom-in';
+    if (anim) setTimeout(() => { if (img) img.style.transition = 'none'; }, 260);
+}
+
+/* Limita o deslocamento pra imagem não sair da tela */
+function clampXY() {
+    if (zoom.scale <= 1) { zoom.x = 0; zoom.y = 0; return; }
+    const img = $('ct-viewer-img');
+    if (!img) return;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    // tamanho da imagem renderizada (object-fit: contain)
+    const rect = img.getBoundingClientRect();
+    const natW = img.naturalWidth || rect.width;
+    const natH = img.naturalHeight || rect.height;
+    const escalaContain = Math.min(vw / natW, vh / natH);
+    const baseW = natW * escalaContain;
+    const baseH = natH * escalaContain;
+    const visW = baseW * zoom.scale;
+    const visH = baseH * zoom.scale;
+    const maxX = Math.max(0, (visW - vw) / 2);
+    const maxY = Math.max(0, (visH - vh) / 2);
+    zoom.x = Math.max(-maxX, Math.min(maxX, zoom.x));
+    zoom.y = Math.max(-maxY, Math.min(maxY, zoom.y));
+}
+
+/* ═══════════════ CARREGA MATÉRIAS ═══════════════ */
 async function carregarMaterias() {
     if (!userEmail) return;
     try {
@@ -64,7 +114,7 @@ async function carregarMaterias() {
     }
 }
 
-/* ───────── Carrega fotos ───────── */
+/* ═══════════════ CARREGA FOTOS ═══════════════ */
 async function carregarFotos() {
     if (!userEmail) return;
     $('ct-loading').style.display = 'flex';
@@ -83,7 +133,7 @@ async function carregarFotos() {
     render();
 }
 
-/* ───────── Render grid ───────── */
+/* ═══════════════ RENDER GRID ═══════════════ */
 function render() {
     const lista = $('ct-lista');
     if (!fotos.length) {
@@ -141,7 +191,7 @@ function render() {
     });
 }
 
-/* ───────── Viewer tela cheia ───────── */
+/* ═══════════════ VIEWER TELA CHEIA ═══════════════ */
 function abrirViewer(id) {
     const idx = fotos.findIndex(f => f.id === id);
     if (idx === -1) return;
@@ -150,10 +200,12 @@ function abrirViewer(id) {
     $('ct-viewer').classList.add('on');
     document.body.style.overflow = 'hidden';
 }
+
 function fecharViewer() {
     $('ct-viewer').classList.remove('on');
     document.body.style.overflow = '';
     resetConfirm();
+    resetZoom();
 }
 
 function renderViewer() {
@@ -161,12 +213,12 @@ function renderViewer() {
     if (!f) return fecharViewer();
     const img = $('ct-viewer-img');
 
-    // Monta uma cascata de URLs — tenta uma, se falhar tenta a próxima
-    const fontes = [f.url, f.display_url, f.medium, f.thumb].filter(Boolean);
+    // Sempre reseta o zoom ao trocar de foto
+    resetZoom();
 
+    const fontes = [f.url, f.display_url, f.medium, f.thumb].filter(Boolean);
     console.log('[viewer] abrindo foto:', f.materia, '| tentando:', fontes);
 
-    // Reseta imagem
     img.removeAttribute('src');
     img.onerror = null;
     img.onload = null;
@@ -177,9 +229,8 @@ function renderViewer() {
             console.error('[viewer] NENHUMA URL funcionou. Dados da foto:', f);
             return;
         }
-        const tentando = fontes[idx];
-        console.log('[viewer] tentando (' + (idx + 1) + '/' + fontes.length + '):', tentando);
-        img.src = tentando;
+        console.log('[viewer] tentando (' + (idx + 1) + '/' + fontes.length + '):', fontes[idx]);
+        img.src = fontes[idx];
     };
 
     img.onerror = () => {
@@ -190,6 +241,7 @@ function renderViewer() {
 
     img.onload = () => {
         console.log('[viewer] ✓ carregou:', fontes[idx]);
+        aplicarZoom(false);
     };
 
     tentar();
@@ -203,6 +255,8 @@ function renderViewer() {
 
 function navViewer(delta) {
     if (!fotos.length) return;
+    // Se tá com zoom ativo, o swipe não troca de foto
+    if (zoom.scale > 1) return;
     viewerIdx = (viewerIdx + delta + fotos.length) % fotos.length;
     resetConfirm();
     renderViewer();
@@ -244,13 +298,11 @@ async function excluirAtual() {
     }
 }
 
-/* ───────── Compartilhar a IMAGEM (não o link) ───────── */
+/* ═══════════════ COMPARTILHAR ═══════════════ */
 async function compartilharAtual() {
     const f = fotos[viewerIdx];
     if (!f) return;
     const texto = '📷 Conteúdo — ' + (f.materia || 'Geral') + (f.data ? ' (' + f.data + ')' : '');
-
-    // Tenta uma lista de URLs (a mesma cascata do viewer)
     const fontes = [f.url, f.display_url, f.medium, f.thumb].filter(Boolean);
 
     if (navigator.canShare && navigator.share) {
@@ -294,7 +346,7 @@ async function compartilharAtual() {
     try { await navigator.clipboard.writeText(f.url); toast('✓ Link copiado'); } catch (e) {}
 }
 
-/* ───────── Adicionar foto ───────── */
+/* ═══════════════ ADICIONAR FOTO ═══════════════ */
 function escolherMateria() {
     return new Promise((resolve) => {
         const modal = $('ct-modal');
@@ -395,7 +447,185 @@ async function processarArquivo(file) {
     }
 }
 
-/* ───────── Init ───────── */
+/* ═══════════════ GESTOS DE ZOOM NO VIEWER ═══════════════ */
+function instalarGestosZoom() {
+    const viewer = $('ct-viewer');
+    const img = $('ct-viewer-img');
+    if (!viewer || !img) return;
+
+    // Variáveis de gesto
+    let pinchInicial = null;    // { dist, scale }
+    let dragInicial = null;     // { x, y }
+    let swipeInicial = null;    // { x, y } — só pra swipe de trocar foto
+    let ultimoToque = 0;
+    let toqueRapidoTimer = null;
+    let suprimiuClick = false;
+
+    const dist = (t1, t2) => Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+    const meio = (t1, t2) => ({
+        x: (t1.clientX + t2.clientX) / 2,
+        y: (t1.clientY + t2.clientY) / 2
+    });
+
+    // ── touchstart ──
+    viewer.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            // PINCH — inicia zoom
+            e.preventDefault();
+            swipeInicial = null;
+            pinchInicial = {
+                dist: dist(e.touches[0], e.touches[1]),
+                scale: zoom.scale,
+                meio: meio(e.touches[0], e.touches[1]),
+                x0: zoom.x,
+                y0: zoom.y
+            };
+        } else if (e.touches.length === 1) {
+            const t = e.touches[0];
+            // 1 dedo — pode ser drag (se tem zoom) ou swipe (se não tem)
+            if (zoom.scale > 1) {
+                dragInicial = { x: t.clientX, y: t.clientY, x0: zoom.x, y0: zoom.y };
+                img.style.cursor = 'grabbing';
+            } else {
+                swipeInicial = { x: t.clientX, y: t.clientY };
+            }
+
+            // DOUBLE-TAP detection
+            const agora = Date.now();
+            if (agora - ultimoToque < 300) {
+                ultimoToque = 0;
+                clearTimeout(toqueRapidoTimer);
+                suprimiuClick = true;
+                setTimeout(() => { suprimiuClick = false; }, 400);
+                handleDoubleTap(t.clientX, t.clientY);
+            } else {
+                ultimoToque = agora;
+                clearTimeout(toqueRapidoTimer);
+                toqueRapidoTimer = setTimeout(() => { ultimoToque = 0; }, 320);
+            }
+        }
+    }, { passive: false });
+
+    // ── touchmove ──
+    viewer.addEventListener('touchmove', (e) => {
+        if (pinchInicial && e.touches.length === 2) {
+            // ZOOM por pinch
+            e.preventDefault();
+            const d = dist(e.touches[0], e.touches[1]);
+            const razao = d / pinchInicial.dist;
+            let novoScale = pinchInicial.scale * razao;
+            novoScale = Math.max(zoom.min, Math.min(zoom.max, novoScale));
+
+            // Zoom centrado no meio dos dedos (ajusta deslocamento)
+            const m = meio(e.touches[0], e.touches[1]);
+            const dx = m.x - pinchInicial.meio.x;
+            const dy = m.y - pinchInicial.meio.y;
+            zoom.scale = novoScale;
+            zoom.x = pinchInicial.x0 + dx;
+            zoom.y = pinchInicial.y0 + dy;
+            zoom.ativo = zoom.scale > 1.02;
+            clampXY();
+            aplicarZoom(false);
+            return;
+        }
+
+        if (dragInicial && e.touches.length === 1) {
+            // ARRASTAR com zoom
+            e.preventDefault();
+            const t = e.touches[0];
+            zoom.x = dragInicial.x0 + (t.clientX - dragInicial.x);
+            zoom.y = dragInicial.y0 + (t.clientY - dragInicial.y);
+            clampXY();
+            aplicarZoom(false);
+            return;
+        }
+
+         if (swipeInicial && e.touches.length === 1) {
+            // SWIPE pra trocar foto (só quando não tem zoom)
+            const t = e.touches[0];
+            const dx = t.clientX - swipeInicial.x;
+            const dy = t.clientY - swipeInicial.y;
+            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                navViewer(dx > 0 ? -1 : 1);
+                swipeInicial = null;
+            }
+        }
+    }, { passive: false });
+
+    // ── touchend ──
+    viewer.addEventListener('touchend', (e) => {
+        if (e.touches.length === 0) {
+            pinchInicial = null;
+            dragInicial = null;
+            swipeInicial = null;
+            // Se o zoom voltou pra ~1, zera tudo
+            if (zoom.scale < 1.05) {
+                zoom.scale = 1;
+                zoom.x = 0;
+                zoom.y = 0;
+                zoom.ativo = false;
+                aplicarZoom(true);
+            }
+            img.style.cursor = zoom.ativo ? 'grab' : 'zoom-in';
+        } else if (e.touches.length === 1 && pinchInicial) {
+            // Saiu de um pinch com 2 dedos, sobrou 1 → trata como drag
+            pinchInicial = null;
+            if (zoom.scale > 1) {
+                const t = e.touches[0];
+                dragInicial = { x: t.clientX, y: t.clientY, x0: zoom.x, y0: zoom.y };
+            }
+        }
+    }, { passive: true });
+
+    // ── toque único: clique fora fecha ──
+    viewer.addEventListener('click', (e) => {
+        if (suprimiuClick) { e.preventDefault(); e.stopPropagation(); return; }
+        if (e.target === viewer && zoom.scale <= 1) fecharViewer();
+    });
+
+    // ── desktop: scroll do mouse = zoom, arrastar = move ──
+    viewer.addEventListener('wheel', (e) => {
+        if (!$('ct-viewer').classList.contains('on')) return;
+        e.preventDefault();
+        const delta = -e.deltaY * 0.002;
+        let novo = zoom.scale * (1 + delta);
+        novo = Math.max(zoom.min, Math.min(zoom.max, novo));
+        zoom.scale = novo;
+        zoom.ativo = zoom.scale > 1.02;
+        clampXY();
+        aplicarZoom(false);
+    }, { passive: false });
+
+    // Desktop: clique com botão direito ou ctrl+clique? Não. Só dblclick.
+    img.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        handleDoubleTap(e.clientX, e.clientY);
+    });
+}
+
+function handleDoubleTap(x, y) {
+    if (zoom.scale > 1.05) {
+        // Volta ao normal
+        resetZoom();
+        aplicarZoom(true);
+        return;
+    }
+    // Zoom 2.5x centrado no ponto tocado
+    const img = $('ct-viewer-img');
+    if (!img) return;
+    const rect = img.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const escalaAlvo = 2.5;
+    zoom.scale = escalaAlvo;
+    zoom.x = (cx - x) * (escalaAlvo - 1) / escalaAlvo;
+    zoom.y = (cy - y) * (escalaAlvo - 1) / escalaAlvo;
+    zoom.ativo = true;
+    clampXY();
+    aplicarZoom(true);
+}
+
+/* ═══════════════ INIT ═══════════════ */
 async function iniciar() {
     $('ct-add').addEventListener('click', () => $('ct-file').click());
     $('ct-file').addEventListener('change', (e) => {
@@ -408,24 +638,14 @@ async function iniciar() {
     $('ct-viewer-prox').addEventListener('click', () => navViewer(1));
     $('ct-viewer-del').addEventListener('click', excluirAtual);
     $('ct-viewer-share').addEventListener('click', compartilharAtual);
-    $('ct-viewer').addEventListener('click', (e) => { if (e.target === $('ct-viewer')) fecharViewer(); });
     document.addEventListener('keydown', (e) => {
         if (!$('ct-viewer').classList.contains('on')) return;
         if (e.key === 'Escape') fecharViewer();
         else if (e.key === 'ArrowLeft') navViewer(-1);
         else if (e.key === 'ArrowRight') navViewer(1);
     });
-    let sx = 0, sy = 0;
-    $('ct-viewer').addEventListener('touchstart', (e) => {
-        if (e.touches.length !== 1) return;
-        sx = e.touches[0].clientX; sy = e.touches[0].clientY;
-    }, { passive: true });
-    $('ct-viewer').addEventListener('touchend', (e) => {
-        if (e.changedTouches.length !== 1) return;
-        const dx = e.changedTouches[0].clientX - sx;
-        const dy = e.changedTouches[0].clientY - sy;
-        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) navViewer(dx > 0 ? -1 : 1);
-    });
+
+    instalarGestosZoom();
 
     await carregarMaterias();
     await carregarFotos();
