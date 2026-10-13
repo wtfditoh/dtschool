@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script>if (!localStorage.getItem('dt_user_name')) { window.location.href = 'login.html'; }</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Conteúdos - Hub Brain</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="conteudos.css">
+    <link rel="stylesheet" href="theme-toggle.css">
+</head>
+<body>
+
+<header class="glass-header" style="display:flex;align-items:center;justify-content:space-between;padding:0 15px;height:70px;background:rgba(5,5,8,0.95);backdrop-filter:blur(15px);border-bottom:1px solid rgba(138,43,226,0.2);position:sticky;top:0;z-index:1000;">
+    <button id="open-menu" class="btn-menu" style="background:none;border:none;color:white;cursor:pointer;width:42px;height:42px;display:flex;align-items:center;justify-content:center;">
+        <i data-lucide="menu" style="width:22px;height:22px;"></i>
+    </button>
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:18px;font-weight:900;color:#fff;letter-spacing:1px;">CONTEÚDOS</span>
+    </div>
+    <button id="ct-add" style="background:rgba(138,43,226,0.15);border:1px solid rgba(138,43,226,0.3);color:#c084fc;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <i data-lucide="plus" style="width:20px;height:20px;"></i>
+    </button>
+    <input type="file" id="ct-file" accept="image/*" capture="environment" style="display:none;">
+</header>
+
+<main class="ct-wrap">
+    <div id="ct-loading" class="ct-loading">
+        <span class="ct-spin"></span> Carregando…
+    </div>
+    <div id="ct-vazio" class="ct-vazio" style="display:none;">
+        <div style="font-size:56px;margin-bottom:12px;">📭</div>
+        <b>Nenhum conteúdo ainda</b>
+        <span>Toque no <b>+</b> ou mande uma foto pelo WhatsApp</span>
+    </div>
+    <div id="ct-lista"></div>
+</main>
+
+<!-- Visualizador tela cheia -->
+<div id="ct-viewer" class="ct-viewer">
+    <div class="ct-viewer-top">
+        <div class="ct-viewer-info" id="ct-viewer-info"></div>
+        <button class="ct-viewer-btn" id="ct-viewer-share" title="Compartilhar">
+            <i data-lucide="share-2" style="width:18px;height:18px;"></i>
+        </button>
+        <button class="ct-viewer-btn" id="ct-viewer-del" title="Excluir">
+            <i data-lucide="trash-2" style="width:18px;height:18px;"></i>
+        </button>
+        <button class="ct-viewer-btn" id="ct-viewer-x" title="Fechar">✕</button>
+    </div>
+    <button class="ct-viewer-nav ct-viewer-ant" id="ct-viewer-ant">‹</button>
+    <button class="ct-viewer-nav ct-viewer-prox" id="ct-viewer-prox">›</button>
+    <img id="ct-viewer-img" alt="">
+</div>
+
+<!-- Modal escolher matéria -->
+<div id="ct-modal" class="ct-modal">
+    <div class="ct-modal-box">
+        <h3>Qual matéria?</h3>
+        <p id="ct-modal-sub">Da foto do quadro</p>
+        <div id="ct-mats" class="ct-mats"></div>
+        <button id="ct-cancelar" class="ct-btn-cancelar">Cancelar</button>
+    </div>
+</div>
+
+<script src="menu.js"></script>
+<script type="module" src="conteudos.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
+</script>
+</body>
+</html>
