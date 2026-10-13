@@ -201,3 +201,25 @@ body { background:#050508; color:#fff; font-family:'Outfit',-apple-system,sans-s
     pointer-events:none; max-width:80vw; text-align:center;
 }
 .ct-toast.on { transform:translateX(-50%) translateY(0); opacity:1; }
+
+/* Mini-menu escolher tipo (Foto / Arquivo) */
+.ct-tipos {
+    display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;
+}
+.ct-tipo-btn {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 18px; border-radius: 16px;
+    background: #16161a;
+    border: 1px solid rgba(138,43,226,0.2);
+    color: #fff; font-family: inherit;
+    cursor: pointer; text-align: left; transition: all 0.12s;
+}
+.ct-tipo-btn:active {
+    transform: scale(0.98);
+    background: rgba(138,43,226,0.15);
+    border-color: rgba(138,43,226,0.5);
+}
+.ct-tipo-em { font-size: 26px; flex-shrink: 0; }
+.ct-tipo-txt { display: flex; flex-direction: column; gap: 2px; }
+.ct-tipo-txt b { font-size: 15px; font-weight: 800; }
+.ct-tipo-txt i { font-size: 11px; font-style: normal; color: #666; font-weight: 600; }
