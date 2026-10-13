@@ -31,6 +31,7 @@ const criarMenuGlobal = () => {
                 <div class="menu-section-label">ESTUDOS</div>
                 <a href="notas.html" id="link-notas"><i data-lucide="layout-dashboard"></i> Notas</a>
                 <a href="agenda.html" id="link-agenda"><i data-lucide="list-todo"></i> Agenda</a>
+                <a href="conteudos.html" id="link-conteudos"><i data-lucide="image"></i> Conteúdos</a>
                 <a href="horario.html" id="link-horario"><i data-lucide="clock"></i> Horários</a>
                 
                 <!-- SUB-MENU QUÍMICA -->
@@ -161,7 +162,7 @@ const criarMenuGlobal = () => {
     }
 
     const paginas = [
-        'home', 'perfil', 'notas', 'agenda', 'estudos', 'horario',
+        'home', 'perfil', 'notas', 'agenda', 'conteudos', 'estudos', 'horario',
         'ranking', 'foco', 'admin', 'configuracoes'
     ];
 
