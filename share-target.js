@@ -1,10 +1,10 @@
 /* share-target.js — Hub Brain · Recebe imagem OU arquivo compartilhado
-   Imagem → ImgBB · PDF/doc → catbox.moe · decide pelo NOME real do arquivo. */
+   Agora com LOG NA TELA (sem precisar de Console). */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const IMGBB_KEY = 'b329a89d2327b3957464d6d27a3c275b';
+const IMGBB_KEY = 'COLE_SUA_CHAVE_AQUI';
 const CATBOX_URL = 'https://catbox.moe/user/api.php';
 
 const firebaseConfig = {
@@ -20,17 +20,23 @@ const db = getFirestore(app);
 const userEmail = localStorage.getItem('dt_user_email');
 const $ = (id) => document.getElementById(id);
 
-let arquivo = null;         // File pronto pra subir
-let ehImg = false;          // decidido depois
+let arquivo = null;
+let ehImg = false;
 let materiaSel = null;
 let materias = ['Geral'];
 
-const PALETA = ['#8a2be2','#00d2ff','#00e5a0','#ff8c32','#ff4455','#c084fc','#ffbb33','#3b82f6','#ec4899','#10b981'];
-const corMateria = (n) => {
-    if (!n || n === 'Geral') return '#8a2be2';
-    let h = 0; for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) | 0;
-    return PALETA[Math.abs(h) % PALETA.length];
-};
+/* ═══════════════ LOG NA TELA ═══════════════ */
+function log(msg, tipo) {
+    console.log('[share]', msg);
+    const box = $('st-log');
+    if (!box) return;
+    box.classList.add('on');
+    const ln = document.createElement('div');
+    ln.className = 'ln ' + (tipo || '');
+    ln.textContent = msg;
+    box.appendChild(ln);
+    box.scrollTop = box.scrollHeight;
+}
 
 /* ═══════════════ DETECÇÃO DE TIPO ═══════════════ */
 const EXTS_IMG = ['jpg','jpeg','png','gif','webp','bmp','heic','heif','avif'];
@@ -42,12 +48,9 @@ function extDe(nome) {
 }
 function decidirTipo(nome, mime) {
     const ext = extDe(nome);
-    // 1) Extensão é a fonte da verdade
     if (EXTS_IMG.indexOf(ext) !== -1) return 'imagem';
     if (EXTS_ARQ.indexOf(ext) !== -1) return 'arquivo';
-    // 2) Fallback: mime
     if (mime && mime.startsWith('image/')) return 'imagem';
-    // 3) Padrão: arquivo
     return 'arquivo';
 }
 function emojiPorExt(ext) {
@@ -56,23 +59,28 @@ function emojiPorExt(ext) {
     return map[ext] || '📎';
 }
 
+const PALETA = ['#8a2be2','#00d2ff','#00e5a0','#ff8c32','#ff4455','#c084fc','#ffbb33','#3b82f6','#ec4899','#10b981'];
+const corMateria = (n) => {
+    if (!n || n === 'Geral') return '#8a2be2';
+    let h = 0; for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) | 0;
+    return PALETA[Math.abs(h) % PALETA.length];
+};
+
 /* ═══════════════ PEGAR ARQUIVO DO CACHE ═══════════════ */
 async function pegarArquivo() {
-    if (!('caches' in window)) return null;
+    if (!('caches' in window)) { log('❌ caches API indisponível', 'err'); return null; }
     const cache = await caches.open('share-target-files');
     const resp = await cache.match('/shared-file');
-    if (!resp) return null;
+    if (!resp) { log('⚠️ nada no cache do service worker', 'warn'); return null; }
 
     const blob = await resp.blob();
-    // Lê o nome original dos headers
     const nomeHeader = resp.headers.get('X-Nome-Original');
     let nome = 'compartilhado';
-    if (nomeHeader) {
-        try { nome = decodeURIComponent(nomeHeader); } catch (e) {}
-    }
+    if (nomeHeader) { try { nome = decodeURIComponent(nomeHeader); } catch (e) {} }
     const mime = resp.headers.get('Content-Type') || blob.type || '';
 
     await cache.delete('/shared-file');
+    log('✓ arquivo recuperado do cache', 'ok');
     return { blob, nome, mime };
 }
 
@@ -83,8 +91,13 @@ async function carregarMaterias() {
         if (snap.exists() && Array.isArray(snap.data().materias)) {
             const nomes = snap.data().materias.map(m => m && m.nome).filter(Boolean);
             materias = ['Geral', ...new Set(nomes)];
+            log('✓ matérias carregadas: ' + materias.length, 'ok');
+        } else {
+            log('⚠️ sem matérias na conta, usando só "Geral"', 'warn');
         }
-    } catch (e) {}
+    } catch (e) {
+        log('⚠️ erro ao carregar matérias: ' + e.message, 'warn');
+    }
     $('st-mats').innerHTML = materias.map(m =>
         `<button class="st-mat" data-m="${m}">
             <span class="st-dot" style="background:${corMateria(m)}"></span>${m}
@@ -95,6 +108,7 @@ async function carregarMaterias() {
         materiaSel = b.dataset.m;
         document.querySelectorAll('.st-mat').forEach(x => x.classList.toggle('on', x === b));
         $('st-salvar').disabled = false;
+        log('matéria: ' + materiaSel, 'info');
     });
 }
 
@@ -114,21 +128,24 @@ function comprimir(file) {
                 const ctx = c.getContext('2d');
                 ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
                 ctx.drawImage(img, 0, 0, w, h);
-                c.toBlob(b => { URL.revokeObjectURL(url); b ? resolve(b) : reject(new Error('compress')); }, 'image/jpeg', Q);
+                c.toBlob(b => { URL.revokeObjectURL(url); b ? resolve(b) : reject(new Error('compress falhou')); }, 'image/jpeg', Q);
             } catch (e) { URL.revokeObjectURL(url); reject(e); }
         };
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img')); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('imagem inválida')); };
         img.src = url;
     });
 }
 
 /* ═══════════════ UPLOADS ═══════════════ */
 async function uploadImgBB(blob) {
+    log('📤 enviando pro ImgBB (' + Math.round(blob.size / 1024) + 'KB)…', 'info');
     const fd = new FormData();
     fd.append('image', blob);
     const r = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, { method: 'POST', body: fd });
+    log('ImgBB respondeu status ' + r.status, 'info');
     const d = await r.json();
-    if (!d.success || !d.data) throw new Error((d.error && d.error.message) || 'ImgBB falhou');
+    if (!d.success || !d.data) throw new Error('ImgBB: ' + ((d.error && d.error.message) || 'erro desconhecido'));
+    log('✓ ImgBB OK', 'ok');
     return {
         url: d.data.url || (d.data.image && d.data.image.url) || '',
         thumb: (d.data.thumb && d.data.thumb.url) || d.data.url || '',
@@ -138,43 +155,50 @@ async function uploadImgBB(blob) {
 }
 
 async function uploadCatbox(file) {
+    log('📤 enviando pro catbox (' + Math.round(file.size / 1024) + 'KB)…', 'info');
     const fd = new FormData();
     fd.append('reqtype', 'fileupload');
     fd.append('fileToUpload', file);
     const r = await fetch(CATBOX_URL, { method: 'POST', body: fd });
+    log('catbox respondeu status ' + r.status, 'info');
     if (!r.ok) throw new Error('catbox falhou (' + r.status + ')');
     const txt = (await r.text()).trim();
     if (!txt.startsWith('http')) throw new Error('catbox: ' + txt.slice(0, 80));
+    log('✓ catbox OK', 'ok');
     return { url: txt, thumb: '', medium: '', display_url: '' };
 }
 
 /* ═══════════════ SALVAR ═══════════════ */
 async function salvar() {
-    if (!arquivo || !materiaSel) return;
+    if (!arquivo) { log('❌ nenhum arquivo carregado', 'err'); return; }
+    if (!materiaSel) { log('❌ escolha uma matéria primeiro', 'err'); return; }
+
     const btn = $('st-salvar');
     btn.disabled = true;
     btn.textContent = 'Enviando…';
-
-    let erroEl = document.getElementById('st-erro');
-    if (!erroEl) {
-        erroEl = document.createElement('div');
-        erroEl.id = 'st-erro';
-        erroEl.style.cssText = 'width:100%;max-width:340px;margin-top:16px;padding:12px 14px;border-radius:12px;background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:#ff9a9a;font-size:12px;font-weight:600;line-height:1.5;word-break:break-word;white-space:pre-wrap;';
-        btn.parentNode.insertBefore(erroEl, btn.nextSibling);
-    }
-    erroEl.textContent = '';
+    $('st-log').innerHTML = '';   // limpa log antigo
 
     try {
+        log('═══ INÍCIO ═══', 'info');
+        log('tipo: ' + (ehImg ? 'IMAGEM' : 'ARQUIVO'), 'info');
+        log('nome: ' + arquivo.name, 'info');
+        log('tamanho: ' + Math.round(arquivo.size / 1024) + 'KB', 'info');
+        log('mime: ' + (arquivo.type || 'vazio'), 'info');
+        log('matéria: ' + materiaSel, 'info');
+
         if (!IMGBB_KEY || IMGBB_KEY === 'COLE_SUA_CHAVE_AQUI') {
             throw new Error('Chave do ImgBB não colada no share-target.js');
         }
-        if (!userEmail) throw new Error('Você não está logado');
-
-        console.log('[share] tipo:', ehImg ? 'IMAGEM' : 'ARQUIVO', '| nome:', arquivo.name, '| size:', arquivo.size);
+        if (!userEmail) {
+            throw new Error('Você não está logado (dt_user_email vazio)');
+        }
+        log('✓ chave e login OK', 'ok');
 
         let urls, tipoItem;
         if (ehImg) {
+            log('→ comprimindo imagem…', 'info');
             const blob = await comprimir(arquivo);
+            log('✓ comprimido: ' + Math.round(blob.size / 1024) + 'KB', 'ok');
             urls = await uploadImgBB(blob);
             tipoItem = 'imagem';
         } else {
@@ -182,7 +206,9 @@ async function salvar() {
             tipoItem = 'arquivo';
         }
         if (!urls.url) throw new Error('Serviço não devolveu URL');
+        log('URL: ' + urls.url.slice(0, 60) + '…', 'info');
 
+        log('→ salvando no Firestore…', 'info');
         const hoje = new Date().toISOString().split('T')[0];
         await addDoc(collection(db, 'conteudos'), {
             usuario: userEmail,
@@ -197,29 +223,38 @@ async function salvar() {
             criadoEm: Date.now(),
             origem: 'whatsapp'
         });
+        log('✓ Firestore OK', 'ok');
+        log('═══ SALVO COM SUCESSO ═══', 'ok');
 
         btn.textContent = '✓ Salvo!';
-        setTimeout(() => { window.location.href = 'conteudos.html'; }, 900);
+        setTimeout(() => { window.location.href = 'conteudos.html'; }, 1500);
     } catch (e) {
         console.error('[share] ERRO:', e);
+        log('❌ ' + (e && e.message ? e.message : 'Erro desconhecido'), 'err');
+        if (e && e.stack) log(e.stack.split('\n').slice(0, 2).join(' | '), 'err');
         btn.textContent = 'Tentar de novo';
         btn.disabled = false;
-        erroEl.textContent = '⚠️ ' + (e && e.message ? e.message : 'Erro desconhecido');
     }
 }
 
 /* ═══════════════ INIT ═══════════════ */
 async function iniciar() {
-    if (!userEmail) { window.location.href = 'login.html'; return; }
+    log('═══ INICIANDO ═══', 'info');
+
+    if (!userEmail) {
+        log('❌ não está logado, redirecionando…', 'err');
+        window.location.href = 'login.html';
+        return;
+    }
+    log('✓ usuário: ' + userEmail.slice(0, 20) + '…', 'ok');
+
     await carregarMaterias();
 
     const info = await pegarArquivo();
     if (info) {
-        // Monta o File preservando o nome E o mime originais
         arquivo = new File([info.blob], info.nome, { type: info.mime || info.blob.type || '' });
         ehImg = decidirTipo(info.nome, info.mime || info.blob.type) === 'imagem';
-
-        console.log('[share] recebido:', info.nome, '| mime:', info.mime, '| decidido:', ehImg ? 'IMAGEM' : 'ARQUIVO');
+        log('→ decidido: ' + (ehImg ? 'IMAGEM' : 'ARQUIVO'), 'ok');
 
         const preview = $('st-preview');
         if (ehImg) {
@@ -236,6 +271,7 @@ async function iniciar() {
             $('st-sub').textContent = 'Escolha a matéria do arquivo';
         }
     } else {
+        log('⚠️ nenhum arquivo recebido do compartilhamento', 'warn');
         $('st-preview').innerHTML = `<div class="st-ico" style="opacity:0.3;">📭</div>`;
         $('st-sub').textContent = 'Nenhum arquivo recebido';
     }
