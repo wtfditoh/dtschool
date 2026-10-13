@@ -41,7 +41,7 @@
             width:100%; max-width:340px;
             display:flex; flex-direction:column; gap:8px;
             margin-bottom:18px;
-            max-height:45vh; overflow-y:auto;
+            max-height:40vh; overflow-y:auto;
         }
         .st-mat {
             padding:16px; border-radius:16px;
@@ -62,14 +62,37 @@
             cursor:pointer; box-shadow:0 6px 20px rgba(138,43,226,0.4);
         }
         .st-salvar:disabled { opacity:0.5; cursor:not-allowed; }
+
+        /* Painel de status (mostra o que tá acontecendo) */
+        .st-log {
+            width:100%; max-width:340px;
+            margin-top:16px; padding:12px 14px;
+            border-radius:12px;
+            background:#16161a;
+            border:1px solid rgba(138,43,226,0.25);
+            font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+            font-size:11px;
+            line-height:1.55;
+            color:#c084fc;
+            max-height:180px;
+            overflow-y:auto;
+            display:none;
+        }
+        .st-log.on { display:block; }
+        .st-log .ln { padding:2px 0; word-break:break-word; }
+        .st-log .ok { color:#00e5a0; }
+        .st-log .err { color:#ff6b6b; font-weight:700; }
+        .st-log .warn { color:#ffbb33; }
+        .st-log .info { color:#888; }
     </style>
 </head>
 <body>
     <div class="st-preview" id="st-preview"></div>
     <div class="st-titulo">📚 Salvar em Conteúdos</div>
-    <div class="st-sub">Escolha a matéria</div>
+    <div class="st-sub" id="st-sub">Escolha a matéria</div>
     <div class="st-mats" id="st-mats"></div>
     <button class="st-salvar" id="st-salvar" disabled>Salvar</button>
+    <div class="st-log" id="st-log"></div>
     <script type="module" src="share-target.js"></script>
 </body>
 </html>
