@@ -5,7 +5,7 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const IMGBB_KEY = 'b329a89d2327b3957464d6d27a3c275b';   // ← sua chave do ImgBB
+const IMGBB_KEY = 'COLE_SUA_CHAVE_AQUI';   // ← sua chave do ImgBB
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -83,7 +83,7 @@ async function carregarFotos() {
     render();
 }
 
-/* ───────── Render ───────── */
+/* ───────── Render grid ───────── */
 function render() {
     const lista = $('ct-lista');
     if (!fotos.length) {
@@ -118,11 +118,10 @@ function render() {
             <div class="ct-grid">`;
         doGrupo.forEach(f => {
             const dataCurta = (f.data || '').slice(5).replace('-', '/');
-            const src = f.thumb || f.url || '';
-            const fallback = f.url || '';
+            const src = f.thumb || f.url || f.medium || '';
             html += `<div class="ct-item" data-id="${f.id}">
                 <img src="${esc(src)}" alt="" loading="lazy" decoding="async"
-                     onerror="console.warn('[img falhou]', this.src); this.onerror=null; this.src='${esc(fallback)}'">
+                     onerror="console.warn('[grid img falhou]', this.src); this.onerror=null;">
                 <span class="ct-data">${esc(dataCurta)}</span>
             </div>`;
         });
@@ -156,24 +155,59 @@ function fecharViewer() {
     document.body.style.overflow = '';
     resetConfirm();
 }
-function navViewer(delta) {
-    if (!fotos.length) return;
-    viewerIdx = (viewerIdx + delta + fotos.length) % fotos.length;
-    resetConfirm();
-    renderViewer();
-}
+
 function renderViewer() {
     const f = fotos[viewerIdx];
     if (!f) return fecharViewer();
     const img = $('ct-viewer-img');
-    img.src = f.url;
-    img.onerror = () => { if (f.medium && img.src !== f.medium) img.src = f.medium; };
+
+    // Monta uma cascata de URLs — tenta uma, se falhar tenta a próxima
+    const fontes = [f.url, f.display_url, f.medium, f.thumb].filter(Boolean);
+
+    console.log('[viewer] abrindo foto:', f.materia, '| tentando:', fontes);
+
+    // Reseta imagem
+    img.removeAttribute('src');
+    img.onerror = null;
+    img.onload = null;
+
+    let idx = 0;
+    const tentar = () => {
+        if (idx >= fontes.length) {
+            console.error('[viewer] NENHUMA URL funcionou. Dados da foto:', f);
+            return;
+        }
+        const tentando = fontes[idx];
+        console.log('[viewer] tentando (' + (idx + 1) + '/' + fontes.length + '):', tentando);
+        img.src = tentando;
+    };
+
+    img.onerror = () => {
+        console.warn('[viewer] falhou:', fontes[idx]);
+        idx++;
+        tentar();
+    };
+
+    img.onload = () => {
+        console.log('[viewer] ✓ carregou:', fontes[idx]);
+    };
+
+    tentar();
+
     const dataFmt = f.data ? f.data.split('-').reverse().join('/') : '';
     $('ct-viewer-info').innerHTML = esc(f.materia || 'Geral') + ' · ' + esc(f.nome || 'Foto') + `<small>${esc(dataFmt)} · ${viewerIdx + 1} de ${fotos.length}</small>`;
     const unica = fotos.length < 2;
     $('ct-viewer-ant').hidden = unica;
     $('ct-viewer-prox').hidden = unica;
 }
+
+function navViewer(delta) {
+    if (!fotos.length) return;
+    viewerIdx = (viewerIdx + delta + fotos.length) % fotos.length;
+    resetConfirm();
+    renderViewer();
+}
+
 function resetConfirm() {
     confirmandoDel = false;
     clearTimeout(confirmTimer);
@@ -183,6 +217,7 @@ function resetConfirm() {
     btn.innerHTML = '<i data-lucide="trash-2" style="width:18px;height:18px;"></i>';
     if (window.lucide) lucide.createIcons();
 }
+
 async function excluirAtual() {
     const f = fotos[viewerIdx];
     if (!f) return;
@@ -215,12 +250,23 @@ async function compartilharAtual() {
     if (!f) return;
     const texto = '📷 Conteúdo — ' + (f.materia || 'Geral') + (f.data ? ' (' + f.data + ')' : '');
 
+    // Tenta uma lista de URLs (a mesma cascata do viewer)
+    const fontes = [f.url, f.display_url, f.medium, f.thumb].filter(Boolean);
+
     if (navigator.canShare && navigator.share) {
         try {
             toast('Preparando imagem…');
-            const resp = await fetch(f.url, { mode: 'cors' });
-            if (!resp.ok) throw new Error('download falhou');
-            const blob = await resp.blob();
+            let blob = null;
+            for (const u of fontes) {
+                try {
+                    const resp = await fetch(u, { mode: 'cors' });
+                    if (!resp.ok) continue;
+                    blob = await resp.blob();
+                    if (blob && blob.size > 0) break;
+                } catch (err) { console.warn('[share] falhou baixar:', u, err); }
+            }
+            if (!blob) throw new Error('não consegui baixar a imagem');
+
             const tipo = blob.type || 'image/jpeg';
             const ext = tipo.split('/')[1].replace('jpeg', 'jpg') || 'jpg';
             const nomeLimpo = (f.materia || 'Geral').replace(/[^\w\-]+/g, '-');
@@ -301,14 +347,16 @@ async function uploadImgBB(blob) {
     fd.append('image', blob);
     const r = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, { method: 'POST', body: fd });
     const d = await r.json();
-    console.log('[ImgBB]', d);
+    console.log('[ImgBB resposta completa]', d);
     if (!d.success || !d.data) throw new Error((d.error && d.error.message) || 'ImgBB recusou');
-    return {
+    const out = {
         url: d.data.url || (d.data.image && d.data.image.url) || '',
         thumb: (d.data.thumb && d.data.thumb.url) || d.data.url || '',
         medium: (d.data.medium && d.data.medium.url) || d.data.url || '',
         display_url: d.data.display_url || ''
     };
+    console.log('[ImgBB URLs salvas]', out);
+    return out;
 }
 
 async function processarArquivo(file) {
