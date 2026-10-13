@@ -1,11 +1,11 @@
 /* conteudos.js — Hub Brain · Página de Conteúdos
-   Aceita múltiplas fotos de uma vez (mesma matéria),
-   viewer com zoom (pinch + double-tap), compartilhar, excluir. */
+   Imagem → ImgBB · PDF/doc → catbox.moe · múltiplos · zoom · compartilhar. */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const IMGBB_KEY = 'b329a89d2327b3957464d6d27a3c275b';
+const IMGBB_KEY = 'COLE_SUA_CHAVE_AQUI';
+const CATBOX_URL = 'https://catbox.moe/user/api.php';
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -35,8 +35,17 @@ function corMateria(nome) {
     for (let i = 0; i < nome.length; i++) h = (h * 31 + nome.charCodeAt(i)) | 0;
     return PALETA[Math.abs(h) % PALETA.length];
 }
-
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function extArquivo(nome) {
+    const m = String(nome || '').toLowerCase().match(/\.([a-z0-9]{1,6})$/);
+    return m ? m[1] : '';
+}
+function emojiPorExt(ext) {
+    const map = { pdf:'📕', doc:'📘', docx:'📘', txt:'📄', ppt:'📙', pptx:'📙',
+                  xls:'📗', xlsx:'📗', csv:'📗', zip:'🗜️', rar:'🗜️', mp3:'🎵', mp4:'🎬' };
+    return map[ext] || '📎';
+}
 
 function toast(msg, ms) {
     let el = document.querySelector('.ct-toast');
@@ -47,16 +56,11 @@ function toast(msg, ms) {
     toast._t = setTimeout(() => el.classList.remove('on'), ms || 2400);
 }
 
-/* ═══════════════ ZOOM ═══════════════ */
+/* ZOOM */
 const zoom = { scale: 1, min: 1, max: 5, x: 0, y: 0, ativo: false };
-
-function resetZoom() {
-    zoom.scale = 1; zoom.x = 0; zoom.y = 0; zoom.ativo = false;
-    aplicarZoom();
-}
+function resetZoom() { zoom.scale = 1; zoom.x = 0; zoom.y = 0; zoom.ativo = false; aplicarZoom(); }
 function aplicarZoom(anim) {
-    const img = $('ct-viewer-img');
-    if (!img) return;
+    const img = $('ct-viewer-img'); if (!img) return;
     img.style.transition = anim ? 'transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94)' : 'none';
     img.style.transform = `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.scale})`;
     img.style.cursor = zoom.ativo ? 'grab' : 'zoom-in';
@@ -64,8 +68,7 @@ function aplicarZoom(anim) {
 }
 function clampXY() {
     if (zoom.scale <= 1) { zoom.x = 0; zoom.y = 0; return; }
-    const img = $('ct-viewer-img');
-    if (!img) return;
+    const img = $('ct-viewer-img'); if (!img) return;
     const vw = window.innerWidth, vh = window.innerHeight;
     const rect = img.getBoundingClientRect();
     const natW = img.naturalWidth || rect.width;
@@ -79,7 +82,6 @@ function clampXY() {
     zoom.y = Math.max(-maxY, Math.min(maxY, zoom.y));
 }
 
-/* ═══════════════ CARREGAR MATÉRIAS ═══════════════ */
 async function carregarMaterias() {
     if (!userEmail) return;
     try {
@@ -95,8 +97,6 @@ async function carregarMaterias() {
         } catch (_) {}
     }
 }
-
-/* ═══════════════ CARREGAR FOTOS ═══════════════ */
 async function carregarFotos() {
     if (!userEmail) return;
     $('ct-loading').style.display = 'flex';
@@ -107,26 +107,17 @@ async function carregarFotos() {
         const snap = await getDocs(q);
         fotos = snap.docs.map(d => ({ id: d.id, ...d.data() }))
             .sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
-    } catch (e) {
-        console.error('[conteudos]', e);
-        fotos = [];
-    }
+    } catch (e) { console.error('[conteudos]', e); fotos = []; }
     $('ct-loading').style.display = 'none';
     render();
 }
 
-/* ═══════════════ RENDER ═══════════════ */
 function render() {
     const lista = $('ct-lista');
-    if (!fotos.length) {
-        lista.innerHTML = '';
-        $('ct-vazio').style.display = 'flex';
-        return;
-    }
+    if (!fotos.length) { lista.innerHTML = ''; $('ct-vazio').style.display = 'flex'; return; }
     $('ct-vazio').style.display = 'none';
 
     const todasMats = [...new Set(fotos.map(f => f.materia || 'Geral'))].sort();
-
     let html = '<div class="ct-filtros">';
     html += `<button class="ct-chip ${filtroMat === 'todas' ? 'on' : ''}" data-mat="todas">Todas</button>`;
     todasMats.forEach(m => {
@@ -150,30 +141,35 @@ function render() {
             <div class="ct-grid">`;
         doGrupo.forEach(f => {
             const dataCurta = (f.data || '').slice(5).replace('-', '/');
-            const src = f.thumb || f.url || f.medium || '';
-            html += `<div class="ct-item" data-id="${f.id}">
-                <img src="${esc(src)}" alt="" loading="lazy" decoding="async"
-                     onerror="console.warn('[grid img falhou]', this.src); this.onerror=null;">
-                <span class="ct-data">${esc(dataCurta)}</span>
-            </div>`;
+            if (f.tipo === 'arquivo') {
+                const ext = extArquivo(f.nome);
+                html += `<div class="ct-item ct-arquivo" data-id="${f.id}">
+                    <span class="ct-ico">${emojiPorExt(ext)}</span>
+                    <span class="ct-ext">${esc(ext || 'arquivo')}</span>
+                    <span class="ct-nome-mini">${esc(f.nome || '')}</span>
+                    <span class="ct-data">${esc(dataCurta)}</span>
+                </div>`;
+            } else {
+                const src = f.thumb || f.url || f.medium || '';
+                html += `<div class="ct-item" data-id="${f.id}">
+                    <img src="${esc(src)}" alt="" loading="lazy" decoding="async"
+                         onerror="console.warn('[grid]', this.src); this.onerror=null;">
+                    <span class="ct-data">${esc(dataCurta)}</span>
+                </div>`;
+            }
         });
         html += '</div></div>';
     });
 
     lista.innerHTML = html;
-
     lista.querySelectorAll('.ct-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            filtroMat = chip.dataset.mat;
-            render();
-        });
+        chip.addEventListener('click', () => { filtroMat = chip.dataset.mat; render(); });
     });
     lista.querySelectorAll('.ct-item').forEach(it => {
         it.addEventListener('click', () => abrirViewer(it.dataset.id));
     });
 }
 
-/* ═══════════════ VIEWER ═══════════════ */
 function abrirViewer(id) {
     const idx = fotos.findIndex(f => f.id === id);
     if (idx === -1) return;
@@ -194,32 +190,52 @@ function renderViewer() {
     const img = $('ct-viewer-img');
     resetZoom();
 
-    const fontes = [f.url, f.display_url, f.medium, f.thumb].filter(Boolean);
-    img.removeAttribute('src');
-    img.onerror = null;
-    img.onload = null;
-
-    let idx = 0;
-    const tentar = () => {
-        if (idx >= fontes.length) {
-            console.error('[viewer] NENHUMA URL funcionou:', f);
-            return;
+    if (f.tipo === 'arquivo') {
+        img.removeAttribute('src');
+        img.style.display = 'none';
+        let card = document.getElementById('ct-viewer-arquivo');
+        if (!card) {
+            card = document.createElement('div');
+            card.id = 'ct-viewer-arquivo';
+            card.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px;text-align:center;z-index:1;';
+            $('ct-viewer').appendChild(card);
         }
-        img.src = fontes[idx];
-    };
-    img.onerror = () => { idx++; tentar(); };
-    img.onload = () => { aplicarZoom(false); };
-    tentar();
+        const ext = extArquivo(f.nome);
+        card.style.display = 'flex';
+        card.innerHTML = `
+            <div style="font-size:80px;">${emojiPorExt(ext)}</div>
+            <div style="font-size:16px;font-weight:800;color:#fff;word-break:break-word;max-width:280px;">${esc(f.nome || 'Arquivo')}</div>
+            <div style="font-size:12px;color:#666;font-weight:600;letter-spacing:1px;text-transform:uppercase;">${esc(ext || 'arquivo')}</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
+                <a href="${esc(f.url)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:#8a2be2;color:#fff;text-decoration:none;border-radius:14px;font-weight:800;font-size:14px;box-shadow:0 6px 20px rgba(138,43,226,0.4);">
+                    📄 Abrir
+                </a>
+                <a href="${esc(f.url)}" download="${esc(f.nome || 'arquivo')}" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:rgba(255,255,255,0.06);color:#fff;text-decoration:none;border-radius:14px;font-weight:800;font-size:14px;border:1px solid rgba(255,255,255,0.1);">
+                    ⬇️ Baixar
+                </a>
+            </div>
+        `;
+    } else {
+        const card = document.getElementById('ct-viewer-arquivo');
+        if (card) card.style.display = 'none';
+        img.style.display = '';
+        const fontes = [f.url, f.display_url, f.medium, f.thumb].filter(Boolean);
+        img.removeAttribute('src'); img.onerror = null; img.onload = null;
+        let idx = 0;
+        const tentar = () => { if (idx >= fontes.length) return; img.src = fontes[idx]; };
+        img.onerror = () => { idx++; tentar(); };
+        img.onload = () => { aplicarZoom(false); };
+        tentar();
+    }
 
     const dataFmt = f.data ? f.data.split('-').reverse().join('/') : '';
-    $('ct-viewer-info').innerHTML = esc(f.materia || 'Geral') + ' · ' + esc(f.nome || 'Foto') + `<small>${esc(dataFmt)} · ${viewerIdx + 1} de ${fotos.length}</small>`;
+    $('ct-viewer-info').innerHTML = esc(f.materia || 'Geral') + ' · ' + esc(f.nome || 'Arquivo') + `<small>${esc(dataFmt)} · ${viewerIdx + 1} de ${fotos.length}</small>`;
     const unica = fotos.length < 2;
     $('ct-viewer-ant').hidden = unica;
     $('ct-viewer-prox').hidden = unica;
 }
 function navViewer(delta) {
-    if (!fotos.length) return;
-    if (zoom.scale > 1) return;
+    if (!fotos.length || zoom.scale > 1) return;
     viewerIdx = (viewerIdx + delta + fotos.length) % fotos.length;
     resetConfirm();
     renderViewer();
@@ -246,26 +262,31 @@ async function excluirAtual() {
     }
     try {
         await deleteDoc(doc(db, 'conteudos', f.id));
-        toast('🗑 Foto excluída');
+        toast('🗑 Excluído');
         fotos.splice(viewerIdx, 1);
         if (!fotos.length) { fecharViewer(); render(); return; }
         if (viewerIdx >= fotos.length) viewerIdx = fotos.length - 1;
         resetConfirm();
         renderViewer();
         render();
-    } catch (e) {
-        toast('Não consegui excluir');
-        resetConfirm();
-    }
+    } catch (e) { toast('Não consegui excluir'); resetConfirm(); }
 }
 
-/* ═══════════════ COMPARTILHAR ═══════════════ */
 async function compartilharAtual() {
     const f = fotos[viewerIdx];
     if (!f) return;
-    const texto = '📷 Conteúdo — ' + (f.materia || 'Geral') + (f.data ? ' (' + f.data + ')' : '');
-    const fontes = [f.url, f.display_url, f.medium, f.thumb].filter(Boolean);
+    const texto = '📚 Conteúdo — ' + (f.materia || 'Geral') + (f.data ? ' (' + f.data + ')' : '');
 
+    if (f.tipo === 'arquivo') {
+        if (navigator.share) {
+            try { await navigator.share({ title: 'Hub Brain — Conteúdo', text: texto + '\n' + f.nome, url: f.url }); return; }
+            catch (e) { if (e.name === 'AbortError') return; }
+        }
+        try { await navigator.clipboard.writeText(f.url); toast('✓ Link copiado'); } catch (e) {}
+        return;
+    }
+
+    const fontes = [f.url, f.display_url, f.medium, f.thumb].filter(Boolean);
     if (navigator.canShare && navigator.share) {
         try {
             toast('Preparando imagem…');
@@ -279,36 +300,48 @@ async function compartilharAtual() {
                 } catch (err) {}
             }
             if (!blob) throw new Error('não consegui baixar');
-
             const tipo = blob.type || 'image/jpeg';
             const ext = tipo.split('/')[1].replace('jpeg', 'jpg') || 'jpg';
             const nomeLimpo = (f.materia || 'Geral').replace(/[^\w\-]+/g, '-');
             const file = new File([blob], 'conteudo-' + nomeLimpo + '-' + Date.now() + '.' + ext, { type: tipo });
-
             if (navigator.canShare({ files: [file] })) {
                 await navigator.share({ files: [file], title: 'Hub Brain — Conteúdo', text: texto });
                 return;
             }
-        } catch (e) {
-            if (e.name === 'AbortError') return;
-        }
+        } catch (e) { if (e.name === 'AbortError') return; }
     }
-
     if (navigator.share) {
         try { await navigator.share({ title: 'Hub Brain — Conteúdo', text: texto, url: f.url }); return; }
         catch (e) { if (e.name === 'AbortError') return; }
     }
-
     try { await navigator.clipboard.writeText(f.url); toast('✓ Link copiado'); } catch (e) {}
 }
 
-/* ═══════════════ ESCOLHER MATÉRIA ═══════════════ */
-function escolherMateria(qtdFotos) {
+function escolherTipo() {
+    return new Promise((resolve) => {
+        const modal = $('ct-tipo');
+        modal.classList.add('on');
+        const fechar = (valor) => {
+            modal.classList.remove('on');
+            setTimeout(() => resolve(valor), 250);
+        };
+        const h = (e) => {
+            if (e.target === modal) { cleanup(); fechar(null); return; }
+            const b = e.target.closest('.ct-tipo-btn');
+            if (b) { cleanup(); fechar(b.dataset.tipo); return; }
+            if (e.target.id === 'ct-tipo-cancel') { cleanup(); fechar(null); }
+        };
+        const cleanup = () => modal.removeEventListener('click', h);
+        modal.addEventListener('click', h);
+    });
+}
+
+function escolherMateria(qtd) {
     return new Promise((resolve) => {
         const modal = $('ct-modal');
         const matsBox = $('ct-mats');
         const sub = $('ct-modal-sub');
-        if (sub) sub.textContent = qtdFotos > 1 ? qtdFotos + ' fotos — escolha a matéria' : 'Da foto do quadro';
+        if (sub) sub.textContent = qtd > 1 ? qtd + ' itens — escolha a matéria' : 'Do conteúdo';
 
         matsBox.innerHTML = materias.map(m =>
             `<button class="ct-mat" data-m="${esc(m)}">
@@ -330,7 +363,6 @@ function escolherMateria(qtdFotos) {
     });
 }
 
-/* ═══════════════ COMPRIMIR / UPLOAD ═══════════════ */
 function comprimir(file) {
     return new Promise((resolve, reject) => {
         const url = URL.createObjectURL(file);
@@ -368,52 +400,67 @@ async function uploadImgBB(blob) {
     };
 }
 
-/* ═══════════════ PROCESSA ARQUIVOS (múltiplos) ═══════════════ */
-async function processarArquivos(files) {
+async function uploadCatbox(file) {
+    const fd = new FormData();
+    fd.append('reqtype', 'fileupload');
+    fd.append('fileToUpload', file);
+    const r = await fetch(CATBOX_URL, { method: 'POST', body: fd });
+    if (!r.ok) throw new Error('catbox falhou (' + r.status + ')');
+    const txt = (await r.text()).trim();
+    if (!txt.startsWith('http')) throw new Error('catbox: ' + txt.slice(0, 80));
+    return { url: txt, thumb: '', medium: '', display_url: '' };
+}
+
+async function processarArquivos(files, tipoForcado) {
     if (!files || !files.length || enviando) return;
     enviando = true;
     const btn = $('ct-add');
     btn.disabled = true; btn.style.opacity = '0.5';
 
     try {
-        // 1. Escolhe a matéria UMA vez para todas
         const materia = await escolherMateria(files.length);
         if (!materia) return;
 
         const hoje = new Date().toISOString().split('T')[0];
         let ok = 0, falha = 0;
 
-        // 2. Processa uma por uma
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             try {
                 toast('📤 Enviando ' + (i + 1) + '/' + files.length + '…', 5000);
-                const blob = await comprimir(file);
-                const urls = await uploadImgBB(blob);
+                let urls, tipoItem;
+                if (tipoForcado === 'arq' || !file.type.startsWith('image/')) {
+                    urls = await uploadCatbox(file);
+                    tipoItem = 'arquivo';
+                } else {
+                    const blob = await comprimir(file);
+                    urls = await uploadImgBB(blob);
+                    tipoItem = 'imagem';
+                }
                 if (!urls.url) throw new Error('sem URL');
                 await addDoc(collection(db, 'conteudos'), {
                     usuario: userEmail,
                     materia: materia,
+                    tipo: tipoItem,
                     url: urls.url,
-                    thumb: urls.thumb || urls.url,
-                    medium: urls.medium || urls.url,
+                    thumb: urls.thumb || '',
+                    medium: urls.medium || '',
                     display_url: urls.display_url || '',
-                    nome: file.name || ('Foto ' + (i + 1)),
+                    nome: file.name || (tipoItem === 'imagem' ? 'Foto ' + (i + 1) : 'Arquivo'),
                     data: hoje,
-                    criadoEm: Date.now() + i, // preserva ordem de envio
+                    criadoEm: Date.now() + i,
                     origem: 'conteudos'
                 });
                 ok++;
             } catch (err) {
-                console.error('[ct] falha em uma foto:', err);
+                console.error('[ct] falha:', err);
                 falha++;
             }
         }
 
-        // 3. Mensagem final
-        if (falha === 0) toast('✓ ' + ok + (ok === 1 ? ' foto salva' : ' fotos salvas') + ' em ' + materia);
-        else if (ok === 0) toast('❌ Nenhuma foto foi salva');
-        else toast('✓ ' + ok + ' salvas · ' + falha + ' falharam', 3500);
+        if (falha === 0) toast('✓ ' + ok + (ok === 1 ? ' item salvo' : ' itens salvos') + ' em ' + materia);
+        else if (ok === 0) toast('❌ Nada foi salvo');
+        else toast('✓ ' + ok + ' salvos · ' + falha + ' falharam', 3500);
 
         await carregarFotos();
     } catch (e) {
@@ -425,26 +472,19 @@ async function processarArquivos(files) {
     }
 }
 
-/* ═══════════════ GESTOS DE ZOOM ═══════════════ */
 function instalarGestosZoom() {
     const viewer = $('ct-viewer');
     const img = $('ct-viewer-img');
     if (!viewer || !img) return;
 
-    let pinchInicial = null;
-    let dragInicial = null;
-    let swipeInicial = null;
-    let ultimoToque = 0;
-    let toqueRapidoTimer = null;
-    let suprimiuClick = false;
-
-    const dist = (t1, t2) => Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-    const meio = (t1, t2) => ({ x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 });
+    let pinchInicial = null, dragInicial = null, swipeInicial = null;
+    let ultimoToque = 0, toqueRapidoTimer = null, suprimiuClick = false;
+    const dist = (a, b) => Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+    const meio = (a, b) => ({ x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 });
 
     viewer.addEventListener('touchstart', (e) => {
         if (e.touches.length === 2) {
-            e.preventDefault();
-            swipeInicial = null;
+            e.preventDefault(); swipeInicial = null;
             pinchInicial = {
                 dist: dist(e.touches[0], e.touches[1]),
                 scale: zoom.scale,
@@ -453,16 +493,11 @@ function instalarGestosZoom() {
             };
         } else if (e.touches.length === 1) {
             const t = e.touches[0];
-            if (zoom.scale > 1) {
-                dragInicial = { x: t.clientX, y: t.clientY, x0: zoom.x, y0: zoom.y };
-                img.style.cursor = 'grabbing';
-            } else {
-                swipeInicial = { x: t.clientX, y: t.clientY };
-            }
+            if (zoom.scale > 1) dragInicial = { x: t.clientX, y: t.clientY, x0: zoom.x, y0: zoom.y };
+            else swipeInicial = { x: t.clientX, y: t.clientY };
             const agora = Date.now();
             if (agora - ultimoToque < 300) {
-                ultimoToque = 0;
-                clearTimeout(toqueRapidoTimer);
+                ultimoToque = 0; clearTimeout(toqueRapidoTimer);
                 suprimiuClick = true;
                 setTimeout(() => { suprimiuClick = false; }, 400);
                 handleDoubleTap(t.clientX, t.clientY);
@@ -478,18 +513,14 @@ function instalarGestosZoom() {
         if (pinchInicial && e.touches.length === 2) {
             e.preventDefault();
             const d = dist(e.touches[0], e.touches[1]);
-            const razao = d / pinchInicial.dist;
-            let novoScale = pinchInicial.scale * razao;
+            let novoScale = pinchInicial.scale * (d / pinchInicial.dist);
             novoScale = Math.max(zoom.min, Math.min(zoom.max, novoScale));
             const m = meio(e.touches[0], e.touches[1]);
-            const dx = m.x - pinchInicial.meio.x;
-            const dy = m.y - pinchInicial.meio.y;
             zoom.scale = novoScale;
-            zoom.x = pinchInicial.x0 + dx;
-            zoom.y = pinchInicial.y0 + dy;
+            zoom.x = pinchInicial.x0 + (m.x - pinchInicial.meio.x);
+            zoom.y = pinchInicial.y0 + (m.y - pinchInicial.meio.y);
             zoom.ativo = zoom.scale > 1.02;
-            clampXY();
-            aplicarZoom(false);
+            clampXY(); aplicarZoom(false);
             return;
         }
         if (dragInicial && e.touches.length === 1) {
@@ -497,8 +528,7 @@ function instalarGestosZoom() {
             const t = e.touches[0];
             zoom.x = dragInicial.x0 + (t.clientX - dragInicial.x);
             zoom.y = dragInicial.y0 + (t.clientY - dragInicial.y);
-            clampXY();
-            aplicarZoom(false);
+            clampXY(); aplicarZoom(false);
             return;
         }
         if (swipeInicial && e.touches.length === 1) {
@@ -514,14 +544,8 @@ function instalarGestosZoom() {
 
     viewer.addEventListener('touchend', (e) => {
         if (e.touches.length === 0) {
-            pinchInicial = null;
-            dragInicial = null;
-            swipeInicial = null;
-            if (zoom.scale < 1.05) {
-                zoom.scale = 1; zoom.x = 0; zoom.y = 0; zoom.ativo = false;
-                aplicarZoom(true);
-            }
-            img.style.cursor = zoom.ativo ? 'grab' : 'zoom-in';
+            pinchInicial = dragInicial = swipeInicial = null;
+            if (zoom.scale < 1.05) { zoom.scale = 1; zoom.x = 0; zoom.y = 0; zoom.ativo = false; aplicarZoom(true); }
         } else if (e.touches.length === 1 && pinchInicial) {
             pinchInicial = null;
             if (zoom.scale > 1) {
@@ -539,45 +563,45 @@ function instalarGestosZoom() {
     viewer.addEventListener('wheel', (e) => {
         if (!viewer.classList.contains('on')) return;
         e.preventDefault();
-        const delta = -e.deltaY * 0.002;
-        let novo = zoom.scale * (1 + delta);
+        let novo = zoom.scale * (1 + (-e.deltaY * 0.002));
         novo = Math.max(zoom.min, Math.min(zoom.max, novo));
-        zoom.scale = novo;
-        zoom.ativo = zoom.scale > 1.02;
-        clampXY();
-        aplicarZoom(false);
+        zoom.scale = novo; zoom.ativo = zoom.scale > 1.02;
+        clampXY(); aplicarZoom(false);
     }, { passive: false });
 
-    img.addEventListener('dblclick', (e) => {
-        e.preventDefault();
-        handleDoubleTap(e.clientX, e.clientY);
-    });
+    img.addEventListener('dblclick', (e) => { e.preventDefault(); handleDoubleTap(e.clientX, e.clientY); });
 }
-
 function handleDoubleTap(x, y) {
     if (zoom.scale > 1.05) { resetZoom(); aplicarZoom(true); return; }
-    const img = $('ct-viewer-img');
-    if (!img) return;
+    const img = $('ct-viewer-img'); if (!img) return;
     const rect = img.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
-    const escalaAlvo = 2.5;
-    zoom.scale = escalaAlvo;
-    zoom.x = (cx - x) * (escalaAlvo - 1) / escalaAlvo;
-    zoom.y = (cy - y) * (escalaAlvo - 1) / escalaAlvo;
+    zoom.scale = 2.5;
+    zoom.x = (cx - x) * 1.5 / 2.5;
+    zoom.y = (cy - y) * 1.5 / 2.5;
     zoom.ativo = true;
-    clampXY();
-    aplicarZoom(true);
+    clampXY(); aplicarZoom(true);
 }
 
-/* ═══════════════ INIT ═══════════════ */
 async function iniciar() {
-    $('ct-add').addEventListener('click', () => $('ct-file').click());
-    $('ct-file').addEventListener('change', (e) => {
+    // Botão + abre o mini-menu de tipo
+    $('ct-add').addEventListener('click', async () => {
+        const tipo = await escolherTipo();
+        if (tipo === 'img') $('ct-file-img').click();
+        else if (tipo === 'arq') $('ct-file-arq').click();
+    });
+    $('ct-file-img').addEventListener('change', (e) => {
         const files = Array.from(e.target.files || []);
-        if (files.length) processarArquivos(files);
+        if (files.length) processarArquivos(files, 'img');
         e.target.value = '';
     });
+    $('ct-file-arq').addEventListener('change', (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length) processarArquivos(files, 'arq');
+        e.target.value = '';
+    });
+
     $('ct-viewer-x').addEventListener('click', fecharViewer);
     $('ct-viewer-ant').addEventListener('click', () => navViewer(-1));
     $('ct-viewer-prox').addEventListener('click', () => navViewer(1));
