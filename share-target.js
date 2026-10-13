@@ -1,12 +1,12 @@
 /* share-target.js — Hub Brain · Recebe imagem OU arquivo compartilhado
-   Imagem → ImgBB · PDF/doc → catbox via Netlify Function (proxy)
+   Imagem → ImgBB · PDF/doc → Pomf via Netlify Function (proxy)
    Log na tela pra debug sem Console. */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const IMGBB_KEY = 'b329a89d2327b3957464d6d27a3c275b';
-const CATBOX_PROXY = '/.netlify/functions/catbox-upload';
+const IMGBB_KEY = 'COLE_SUA_CHAVE_AQUI';
+const POMF_PROXY = '/.netlify/functions/pomf-upload';
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -155,10 +155,10 @@ async function uploadImgBB(blob) {
     };
 }
 
-/* Upload do arquivo via função Netlify (proxy que contorna o CORS do catbox) */
-async function uploadCatbox(file) {
-    log('📤 enviando pro catbox via proxy (' + Math.round(file.size / 1024) + 'KB)…', 'info');
-    const r = await fetch(CATBOX_PROXY, {
+/* Upload do arquivo via função Netlify (proxy pro Pomf) */
+async function uploadArquivo(file) {
+    log('📤 enviando pro Pomf via proxy (' + Math.round(file.size / 1024) + 'KB)…', 'info');
+    const r = await fetch(POMF_PROXY, {
         method: 'POST',
         headers: { 'Content-Type': file.type || 'application/octet-stream' },
         body: file
@@ -169,10 +169,16 @@ async function uploadCatbox(file) {
         try { detalhe = await r.text(); } catch (e) {}
         throw new Error('proxy falhou (' + r.status + ') ' + detalhe.slice(0, 120));
     }
-    const txt = (await r.text()).trim();
-    if (!txt.startsWith('http')) throw new Error('catbox: ' + txt.slice(0, 100));
-    log('✓ catbox OK', 'ok');
-    return { url: txt, thumb: '', medium: '', display_url: '' };
+    // Pomf retorna JSON: {"files":[{"url":"https://..."}]}
+    let resposta;
+    const texto = await r.text();
+    try { resposta = JSON.parse(texto); }
+    catch (e) { throw new Error('Pomf: resposta não é JSON — ' + texto.slice(0, 80)); }
+
+    const url = resposta.files && resposta.files[0] && resposta.files[0].url;
+    if (!url || !url.startsWith('http')) throw new Error('Pomf: sem URL na resposta');
+    log('✓ Pomf OK', 'ok');
+    return { url: url, thumb: '', medium: '', display_url: '' };
 }
 
 /* ═══════════════ SALVAR ═══════════════ */
@@ -209,7 +215,7 @@ async function salvar() {
             urls = await uploadImgBB(blob);
             tipoItem = 'imagem';
         } else {
-            urls = await uploadCatbox(arquivo);
+            urls = await uploadArquivo(arquivo);
             tipoItem = 'arquivo';
         }
         if (!urls.url) throw new Error('Serviço não devolveu URL');
