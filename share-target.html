@@ -22,15 +22,26 @@
             border:1px solid rgba(138,43,226,0.3);
             margin-bottom:20px;
             display:flex; align-items:center; justify-content:center;
+            flex-direction:column; gap:10px;
         }
         .st-preview img { width:100%; height:100%; object-fit:contain; }
+        .st-preview .st-ico { font-size:80px; }
+        .st-preview .st-nome {
+            font-size:14px; font-weight:800; color:#fff;
+            text-align:center; word-break:break-word;
+            padding:0 20px; max-width:100%;
+        }
+        .st-preview .st-ext {
+            font-size:11px; font-weight:800; letter-spacing:2px;
+            color:#666; text-transform:uppercase;
+        }
         .st-titulo { font-size:22px; font-weight:900; margin-bottom:4px; text-align:center; }
         .st-sub { font-size:13px; color:#666; margin-bottom:24px; text-align:center; }
         .st-mats {
             width:100%; max-width:340px;
             display:flex; flex-direction:column; gap:8px;
             margin-bottom:18px;
-            max-height:50vh; overflow-y:auto;
+            max-height:45vh; overflow-y:auto;
         }
         .st-mat {
             padding:16px; border-radius:16px;
@@ -54,9 +65,9 @@
     </style>
 </head>
 <body>
-    <div class="st-preview"><img id="st-img" alt=""></div>
-    <div class="st-titulo">📷 Salvar em Conteúdos</div>
-    <div class="st-sub">Escolha a matéria dessa foto</div>
+    <div class="st-preview" id="st-preview"></div>
+    <div class="st-titulo">📚 Salvar em Conteúdos</div>
+    <div class="st-sub">Escolha a matéria</div>
     <div class="st-mats" id="st-mats"></div>
     <button class="st-salvar" id="st-salvar" disabled>Salvar</button>
     <script type="module" src="share-target.js"></script>
