@@ -1,5 +1,5 @@
 /* share-target.js — Hub Brain · Recebe imagem OU arquivo compartilhado
-   Imagem → ImgBB · PDF/doc → catbox.moe · salva no Firestore. */
+   Imagem → ImgBB · PDF/doc → catbox.moe · decide pelo NOME real do arquivo. */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -20,8 +20,8 @@ const db = getFirestore(app);
 const userEmail = localStorage.getItem('dt_user_email');
 const $ = (id) => document.getElementById(id);
 
-let arquivo = null;         // File/Blob recebido
-let ehImg = false;          // true se for imagem
+let arquivo = null;         // File pronto pra subir
+let ehImg = false;          // decidido depois
 let materiaSel = null;
 let materias = ['Geral'];
 
@@ -32,9 +32,23 @@ const corMateria = (n) => {
     return PALETA[Math.abs(h) % PALETA.length];
 };
 
-function extArquivo(nome) {
+/* ═══════════════ DETECÇÃO DE TIPO ═══════════════ */
+const EXTS_IMG = ['jpg','jpeg','png','gif','webp','bmp','heic','heif','avif'];
+const EXTS_ARQ = ['pdf','doc','docx','ppt','pptx','xls','xlsx','txt','csv','zip','rar','odt','ods','odp'];
+
+function extDe(nome) {
     const m = String(nome || '').toLowerCase().match(/\.([a-z0-9]{1,6})$/);
     return m ? m[1] : '';
+}
+function decidirTipo(nome, mime) {
+    const ext = extDe(nome);
+    // 1) Extensão é a fonte da verdade
+    if (EXTS_IMG.indexOf(ext) !== -1) return 'imagem';
+    if (EXTS_ARQ.indexOf(ext) !== -1) return 'arquivo';
+    // 2) Fallback: mime
+    if (mime && mime.startsWith('image/')) return 'imagem';
+    // 3) Padrão: arquivo
+    return 'arquivo';
 }
 function emojiPorExt(ext) {
     const map = { pdf:'📕', doc:'📘', docx:'📘', txt:'📄', ppt:'📙', pptx:'📙',
@@ -42,20 +56,27 @@ function emojiPorExt(ext) {
     return map[ext] || '📎';
 }
 
-/* Pega o arquivo do cache (o service worker guardou lá) */
+/* ═══════════════ PEGAR ARQUIVO DO CACHE ═══════════════ */
 async function pegarArquivo() {
-    if ('caches' in window) {
-        const cache = await caches.open('share-target-files');
-        const resp = await cache.match('/shared-file');
-        if (resp) {
-            const blob = await resp.blob();
-            await cache.delete('/shared-file');
-            return blob;
-        }
+    if (!('caches' in window)) return null;
+    const cache = await caches.open('share-target-files');
+    const resp = await cache.match('/shared-file');
+    if (!resp) return null;
+
+    const blob = await resp.blob();
+    // Lê o nome original dos headers
+    const nomeHeader = resp.headers.get('X-Nome-Original');
+    let nome = 'compartilhado';
+    if (nomeHeader) {
+        try { nome = decodeURIComponent(nomeHeader); } catch (e) {}
     }
-    return null;
+    const mime = resp.headers.get('Content-Type') || blob.type || '';
+
+    await cache.delete('/shared-file');
+    return { blob, nome, mime };
 }
 
+/* ═══════════════ CARREGAR MATÉRIAS ═══════════════ */
 async function carregarMaterias() {
     try {
         const snap = await getDoc(doc(db, 'notas', userEmail));
@@ -77,6 +98,7 @@ async function carregarMaterias() {
     });
 }
 
+/* ═══════════════ COMPRIMIR IMAGEM ═══════════════ */
 function comprimir(file) {
     return new Promise((resolve, reject) => {
         const url = URL.createObjectURL(file);
@@ -100,6 +122,7 @@ function comprimir(file) {
     });
 }
 
+/* ═══════════════ UPLOADS ═══════════════ */
 async function uploadImgBB(blob) {
     const fd = new FormData();
     fd.append('image', blob);
@@ -125,6 +148,7 @@ async function uploadCatbox(file) {
     return { url: txt, thumb: '', medium: '', display_url: '' };
 }
 
+/* ═══════════════ SALVAR ═══════════════ */
 async function salvar() {
     if (!arquivo || !materiaSel) return;
     const btn = $('st-salvar');
@@ -145,6 +169,8 @@ async function salvar() {
             throw new Error('Chave do ImgBB não colada no share-target.js');
         }
         if (!userEmail) throw new Error('Você não está logado');
+
+        console.log('[share] tipo:', ehImg ? 'IMAGEM' : 'ARQUIVO', '| nome:', arquivo.name, '| size:', arquivo.size);
 
         let urls, tipoItem;
         if (ehImg) {
@@ -182,30 +208,33 @@ async function salvar() {
     }
 }
 
+/* ═══════════════ INIT ═══════════════ */
 async function iniciar() {
     if (!userEmail) { window.location.href = 'login.html'; return; }
     await carregarMaterias();
 
-    const blob = await pegarArquivo();
-    if (blob) {
-        // Decide se é imagem pelo mime
-        ehImg = blob.type && blob.type.startsWith('image/');
-        const ext = ehImg ? 'jpg' : (extArquivo('arquivo.' + (blob.type.split('/')[1] || 'bin')) || 'bin');
-        arquivo = new File([blob], 'compartilhado.' + ext, { type: blob.type || 'application/octet-stream' });
+    const info = await pegarArquivo();
+    if (info) {
+        // Monta o File preservando o nome E o mime originais
+        arquivo = new File([info.blob], info.nome, { type: info.mime || info.blob.type || '' });
+        ehImg = decidirTipo(info.nome, info.mime || info.blob.type) === 'imagem';
+
+        console.log('[share] recebido:', info.nome, '| mime:', info.mime, '| decidido:', ehImg ? 'IMAGEM' : 'ARQUIVO');
 
         const preview = $('st-preview');
         if (ehImg) {
             preview.innerHTML = `<img id="st-img" alt="">`;
             $('st-img').src = URL.createObjectURL(arquivo);
+            $('st-sub').textContent = 'Escolha a matéria da foto';
         } else {
-            const extReal = extArquivo(arquivo.name) || 'arquivo';
+            const ext = extDe(info.nome) || 'arquivo';
             preview.innerHTML = `
-                <div class="st-ico">${emojiPorExt(extReal)}</div>
-                <div class="st-ext">${extReal.toUpperCase()}</div>
-                <div class="st-nome">${arquivo.name}</div>
+                <div class="st-ico">${emojiPorExt(ext)}</div>
+                <div class="st-ext">${ext.toUpperCase()}</div>
+                <div class="st-nome">${info.nome}</div>
             `;
+            $('st-sub').textContent = 'Escolha a matéria do arquivo';
         }
-        $('st-sub').textContent = ehImg ? 'Escolha a matéria da foto' : 'Escolha a matéria do arquivo';
     } else {
         $('st-preview').innerHTML = `<div class="st-ico" style="opacity:0.3;">📭</div>`;
         $('st-sub').textContent = 'Nenhum arquivo recebido';
