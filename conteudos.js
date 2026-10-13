@@ -1,7 +1,6 @@
 /* conteudos.js — Hub Brain · Página de Conteúdos
-   Lê a coleção `conteudos` do Firestore, agrupa por matéria, mostra grid,
-   permite ver em tela cheia com ZOOM (pinch + double-tap), excluir,
-   compartilhar a imagem e adicionar novas fotos. */
+   Aceita múltiplas fotos de uma vez (mesma matéria),
+   viewer com zoom (pinch + double-tap), compartilhar, excluir. */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -39,33 +38,22 @@ function corMateria(nome) {
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-function toast(msg) {
+function toast(msg, ms) {
     let el = document.querySelector('.ct-toast');
     if (!el) { el = document.createElement('div'); el.className = 'ct-toast'; document.body.appendChild(el); }
     el.textContent = msg;
     requestAnimationFrame(() => el.classList.add('on'));
     clearTimeout(toast._t);
-    toast._t = setTimeout(() => el.classList.remove('on'), 2400);
+    toast._t = setTimeout(() => el.classList.remove('on'), ms || 2400);
 }
 
-/* ═══════════════ ESTADO DE ZOOM ═══════════════ */
-const zoom = {
-    scale: 1,
-    min: 1,
-    max: 5,
-    x: 0,          // deslocamento horizontal
-    y: 0,          // deslocamento vertical
-    ativo: false
-};
+/* ═══════════════ ZOOM ═══════════════ */
+const zoom = { scale: 1, min: 1, max: 5, x: 0, y: 0, ativo: false };
 
 function resetZoom() {
-    zoom.scale = 1;
-    zoom.x = 0;
-    zoom.y = 0;
-    zoom.ativo = false;
+    zoom.scale = 1; zoom.x = 0; zoom.y = 0; zoom.ativo = false;
     aplicarZoom();
 }
-
 function aplicarZoom(anim) {
     const img = $('ct-viewer-img');
     if (!img) return;
@@ -74,30 +62,24 @@ function aplicarZoom(anim) {
     img.style.cursor = zoom.ativo ? 'grab' : 'zoom-in';
     if (anim) setTimeout(() => { if (img) img.style.transition = 'none'; }, 260);
 }
-
-/* Limita o deslocamento pra imagem não sair da tela */
 function clampXY() {
     if (zoom.scale <= 1) { zoom.x = 0; zoom.y = 0; return; }
     const img = $('ct-viewer-img');
     if (!img) return;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    // tamanho da imagem renderizada (object-fit: contain)
+    const vw = window.innerWidth, vh = window.innerHeight;
     const rect = img.getBoundingClientRect();
     const natW = img.naturalWidth || rect.width;
     const natH = img.naturalHeight || rect.height;
     const escalaContain = Math.min(vw / natW, vh / natH);
-    const baseW = natW * escalaContain;
-    const baseH = natH * escalaContain;
-    const visW = baseW * zoom.scale;
-    const visH = baseH * zoom.scale;
+    const visW = natW * escalaContain * zoom.scale;
+    const visH = natH * escalaContain * zoom.scale;
     const maxX = Math.max(0, (visW - vw) / 2);
     const maxY = Math.max(0, (visH - vh) / 2);
     zoom.x = Math.max(-maxX, Math.min(maxX, zoom.x));
     zoom.y = Math.max(-maxY, Math.min(maxY, zoom.y));
 }
 
-/* ═══════════════ CARREGA MATÉRIAS ═══════════════ */
+/* ═══════════════ CARREGAR MATÉRIAS ═══════════════ */
 async function carregarMaterias() {
     if (!userEmail) return;
     try {
@@ -114,7 +96,7 @@ async function carregarMaterias() {
     }
 }
 
-/* ═══════════════ CARREGA FOTOS ═══════════════ */
+/* ═══════════════ CARREGAR FOTOS ═══════════════ */
 async function carregarFotos() {
     if (!userEmail) return;
     $('ct-loading').style.display = 'flex';
@@ -133,7 +115,7 @@ async function carregarFotos() {
     render();
 }
 
-/* ═══════════════ RENDER GRID ═══════════════ */
+/* ═══════════════ RENDER ═══════════════ */
 function render() {
     const lista = $('ct-lista');
     if (!fotos.length) {
@@ -191,7 +173,7 @@ function render() {
     });
 }
 
-/* ═══════════════ VIEWER TELA CHEIA ═══════════════ */
+/* ═══════════════ VIEWER ═══════════════ */
 function abrirViewer(id) {
     const idx = fotos.findIndex(f => f.id === id);
     if (idx === -1) return;
@@ -200,25 +182,19 @@ function abrirViewer(id) {
     $('ct-viewer').classList.add('on');
     document.body.style.overflow = 'hidden';
 }
-
 function fecharViewer() {
     $('ct-viewer').classList.remove('on');
     document.body.style.overflow = '';
     resetConfirm();
     resetZoom();
 }
-
 function renderViewer() {
     const f = fotos[viewerIdx];
     if (!f) return fecharViewer();
     const img = $('ct-viewer-img');
-
-    // Sempre reseta o zoom ao trocar de foto
     resetZoom();
 
     const fontes = [f.url, f.display_url, f.medium, f.thumb].filter(Boolean);
-    console.log('[viewer] abrindo foto:', f.materia, '| tentando:', fontes);
-
     img.removeAttribute('src');
     img.onerror = null;
     img.onload = null;
@@ -226,24 +202,13 @@ function renderViewer() {
     let idx = 0;
     const tentar = () => {
         if (idx >= fontes.length) {
-            console.error('[viewer] NENHUMA URL funcionou. Dados da foto:', f);
+            console.error('[viewer] NENHUMA URL funcionou:', f);
             return;
         }
-        console.log('[viewer] tentando (' + (idx + 1) + '/' + fontes.length + '):', fontes[idx]);
         img.src = fontes[idx];
     };
-
-    img.onerror = () => {
-        console.warn('[viewer] falhou:', fontes[idx]);
-        idx++;
-        tentar();
-    };
-
-    img.onload = () => {
-        console.log('[viewer] ✓ carregou:', fontes[idx]);
-        aplicarZoom(false);
-    };
-
+    img.onerror = () => { idx++; tentar(); };
+    img.onload = () => { aplicarZoom(false); };
     tentar();
 
     const dataFmt = f.data ? f.data.split('-').reverse().join('/') : '';
@@ -252,16 +217,13 @@ function renderViewer() {
     $('ct-viewer-ant').hidden = unica;
     $('ct-viewer-prox').hidden = unica;
 }
-
 function navViewer(delta) {
     if (!fotos.length) return;
-    // Se tá com zoom ativo, o swipe não troca de foto
     if (zoom.scale > 1) return;
     viewerIdx = (viewerIdx + delta + fotos.length) % fotos.length;
     resetConfirm();
     renderViewer();
 }
-
 function resetConfirm() {
     confirmandoDel = false;
     clearTimeout(confirmTimer);
@@ -271,7 +233,6 @@ function resetConfirm() {
     btn.innerHTML = '<i data-lucide="trash-2" style="width:18px;height:18px;"></i>';
     if (window.lucide) lucide.createIcons();
 }
-
 async function excluirAtual() {
     const f = fotos[viewerIdx];
     if (!f) return;
@@ -315,9 +276,9 @@ async function compartilharAtual() {
                     if (!resp.ok) continue;
                     blob = await resp.blob();
                     if (blob && blob.size > 0) break;
-                } catch (err) { console.warn('[share] falhou baixar:', u, err); }
+                } catch (err) {}
             }
-            if (!blob) throw new Error('não consegui baixar a imagem');
+            if (!blob) throw new Error('não consegui baixar');
 
             const tipo = blob.type || 'image/jpeg';
             const ext = tipo.split('/')[1].replace('jpeg', 'jpg') || 'jpg';
@@ -325,16 +286,11 @@ async function compartilharAtual() {
             const file = new File([blob], 'conteudo-' + nomeLimpo + '-' + Date.now() + '.' + ext, { type: tipo });
 
             if (navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: 'Hub Brain — Conteúdo',
-                    text: texto
-                });
+                await navigator.share({ files: [file], title: 'Hub Brain — Conteúdo', text: texto });
                 return;
             }
         } catch (e) {
             if (e.name === 'AbortError') return;
-            console.warn('[share arquivo falhou]', e);
         }
     }
 
@@ -346,11 +302,14 @@ async function compartilharAtual() {
     try { await navigator.clipboard.writeText(f.url); toast('✓ Link copiado'); } catch (e) {}
 }
 
-/* ═══════════════ ADICIONAR FOTO ═══════════════ */
-function escolherMateria() {
+/* ═══════════════ ESCOLHER MATÉRIA ═══════════════ */
+function escolherMateria(qtdFotos) {
     return new Promise((resolve) => {
         const modal = $('ct-modal');
         const matsBox = $('ct-mats');
+        const sub = $('ct-modal-sub');
+        if (sub) sub.textContent = qtdFotos > 1 ? qtdFotos + ' fotos — escolha a matéria' : 'Da foto do quadro';
+
         matsBox.innerHTML = materias.map(m =>
             `<button class="ct-mat" data-m="${esc(m)}">
                 <span class="ct-mat-dot" style="background:${corMateria(m)}"></span>${esc(m)}
@@ -371,6 +330,7 @@ function escolherMateria() {
     });
 }
 
+/* ═══════════════ COMPRIMIR / UPLOAD ═══════════════ */
 function comprimir(file) {
     return new Promise((resolve, reject) => {
         const url = URL.createObjectURL(file);
@@ -399,44 +359,62 @@ async function uploadImgBB(blob) {
     fd.append('image', blob);
     const r = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, { method: 'POST', body: fd });
     const d = await r.json();
-    console.log('[ImgBB resposta completa]', d);
     if (!d.success || !d.data) throw new Error((d.error && d.error.message) || 'ImgBB recusou');
-    const out = {
+    return {
         url: d.data.url || (d.data.image && d.data.image.url) || '',
         thumb: (d.data.thumb && d.data.thumb.url) || d.data.url || '',
         medium: (d.data.medium && d.data.medium.url) || d.data.url || '',
         display_url: d.data.display_url || ''
     };
-    console.log('[ImgBB URLs salvas]', out);
-    return out;
 }
 
-async function processarArquivo(file) {
-    if (!file || enviando) return;
+/* ═══════════════ PROCESSA ARQUIVOS (múltiplos) ═══════════════ */
+async function processarArquivos(files) {
+    if (!files || !files.length || enviando) return;
     enviando = true;
     const btn = $('ct-add');
     btn.disabled = true; btn.style.opacity = '0.5';
+
     try {
-        const materia = await escolherMateria();
+        // 1. Escolhe a matéria UMA vez para todas
+        const materia = await escolherMateria(files.length);
         if (!materia) return;
-        toast('📤 Enviando…');
-        const blob = await comprimir(file);
-        const urls = await uploadImgBB(blob);
-        if (!urls.url) throw new Error('ImgBB não devolveu URL');
+
         const hoje = new Date().toISOString().split('T')[0];
-        await addDoc(collection(db, 'conteudos'), {
-            usuario: userEmail,
-            materia: materia,
-            url: urls.url,
-            thumb: urls.thumb || urls.url,
-            medium: urls.medium || urls.url,
-            display_url: urls.display_url || '',
-            nome: file.name || 'Foto do quadro',
-            data: hoje,
-            criadoEm: Date.now(),
-            origem: 'conteudos'
-        });
-        toast('✓ Salva em ' + materia);
+        let ok = 0, falha = 0;
+
+        // 2. Processa uma por uma
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            try {
+                toast('📤 Enviando ' + (i + 1) + '/' + files.length + '…', 5000);
+                const blob = await comprimir(file);
+                const urls = await uploadImgBB(blob);
+                if (!urls.url) throw new Error('sem URL');
+                await addDoc(collection(db, 'conteudos'), {
+                    usuario: userEmail,
+                    materia: materia,
+                    url: urls.url,
+                    thumb: urls.thumb || urls.url,
+                    medium: urls.medium || urls.url,
+                    display_url: urls.display_url || '',
+                    nome: file.name || ('Foto ' + (i + 1)),
+                    data: hoje,
+                    criadoEm: Date.now() + i, // preserva ordem de envio
+                    origem: 'conteudos'
+                });
+                ok++;
+            } catch (err) {
+                console.error('[ct] falha em uma foto:', err);
+                falha++;
+            }
+        }
+
+        // 3. Mensagem final
+        if (falha === 0) toast('✓ ' + ok + (ok === 1 ? ' foto salva' : ' fotos salvas') + ' em ' + materia);
+        else if (ok === 0) toast('❌ Nenhuma foto foi salva');
+        else toast('✓ ' + ok + ' salvas · ' + falha + ' falharam', 3500);
+
         await carregarFotos();
     } catch (e) {
         console.error('[ct]', e);
@@ -447,50 +425,40 @@ async function processarArquivo(file) {
     }
 }
 
-/* ═══════════════ GESTOS DE ZOOM NO VIEWER ═══════════════ */
+/* ═══════════════ GESTOS DE ZOOM ═══════════════ */
 function instalarGestosZoom() {
     const viewer = $('ct-viewer');
     const img = $('ct-viewer-img');
     if (!viewer || !img) return;
 
-    // Variáveis de gesto
-    let pinchInicial = null;    // { dist, scale }
-    let dragInicial = null;     // { x, y }
-    let swipeInicial = null;    // { x, y } — só pra swipe de trocar foto
+    let pinchInicial = null;
+    let dragInicial = null;
+    let swipeInicial = null;
     let ultimoToque = 0;
     let toqueRapidoTimer = null;
     let suprimiuClick = false;
 
     const dist = (t1, t2) => Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-    const meio = (t1, t2) => ({
-        x: (t1.clientX + t2.clientX) / 2,
-        y: (t1.clientY + t2.clientY) / 2
-    });
+    const meio = (t1, t2) => ({ x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 });
 
-    // ── touchstart ──
     viewer.addEventListener('touchstart', (e) => {
         if (e.touches.length === 2) {
-            // PINCH — inicia zoom
             e.preventDefault();
             swipeInicial = null;
             pinchInicial = {
                 dist: dist(e.touches[0], e.touches[1]),
                 scale: zoom.scale,
                 meio: meio(e.touches[0], e.touches[1]),
-                x0: zoom.x,
-                y0: zoom.y
+                x0: zoom.x, y0: zoom.y
             };
         } else if (e.touches.length === 1) {
             const t = e.touches[0];
-            // 1 dedo — pode ser drag (se tem zoom) ou swipe (se não tem)
             if (zoom.scale > 1) {
                 dragInicial = { x: t.clientX, y: t.clientY, x0: zoom.x, y0: zoom.y };
                 img.style.cursor = 'grabbing';
             } else {
                 swipeInicial = { x: t.clientX, y: t.clientY };
             }
-
-            // DOUBLE-TAP detection
             const agora = Date.now();
             if (agora - ultimoToque < 300) {
                 ultimoToque = 0;
@@ -506,17 +474,13 @@ function instalarGestosZoom() {
         }
     }, { passive: false });
 
-    // ── touchmove ──
     viewer.addEventListener('touchmove', (e) => {
         if (pinchInicial && e.touches.length === 2) {
-            // ZOOM por pinch
             e.preventDefault();
             const d = dist(e.touches[0], e.touches[1]);
             const razao = d / pinchInicial.dist;
             let novoScale = pinchInicial.scale * razao;
             novoScale = Math.max(zoom.min, Math.min(zoom.max, novoScale));
-
-            // Zoom centrado no meio dos dedos (ajusta deslocamento)
             const m = meio(e.touches[0], e.touches[1]);
             const dx = m.x - pinchInicial.meio.x;
             const dy = m.y - pinchInicial.meio.y;
@@ -528,9 +492,7 @@ function instalarGestosZoom() {
             aplicarZoom(false);
             return;
         }
-
         if (dragInicial && e.touches.length === 1) {
-            // ARRASTAR com zoom
             e.preventDefault();
             const t = e.touches[0];
             zoom.x = dragInicial.x0 + (t.clientX - dragInicial.x);
@@ -539,9 +501,7 @@ function instalarGestosZoom() {
             aplicarZoom(false);
             return;
         }
-
-         if (swipeInicial && e.touches.length === 1) {
-            // SWIPE pra trocar foto (só quando não tem zoom)
+        if (swipeInicial && e.touches.length === 1) {
             const t = e.touches[0];
             const dx = t.clientX - swipeInicial.x;
             const dy = t.clientY - swipeInicial.y;
@@ -552,23 +512,17 @@ function instalarGestosZoom() {
         }
     }, { passive: false });
 
-    // ── touchend ──
     viewer.addEventListener('touchend', (e) => {
         if (e.touches.length === 0) {
             pinchInicial = null;
             dragInicial = null;
             swipeInicial = null;
-            // Se o zoom voltou pra ~1, zera tudo
             if (zoom.scale < 1.05) {
-                zoom.scale = 1;
-                zoom.x = 0;
-                zoom.y = 0;
-                zoom.ativo = false;
+                zoom.scale = 1; zoom.x = 0; zoom.y = 0; zoom.ativo = false;
                 aplicarZoom(true);
             }
             img.style.cursor = zoom.ativo ? 'grab' : 'zoom-in';
         } else if (e.touches.length === 1 && pinchInicial) {
-            // Saiu de um pinch com 2 dedos, sobrou 1 → trata como drag
             pinchInicial = null;
             if (zoom.scale > 1) {
                 const t = e.touches[0];
@@ -577,15 +531,13 @@ function instalarGestosZoom() {
         }
     }, { passive: true });
 
-    // ── toque único: clique fora fecha ──
     viewer.addEventListener('click', (e) => {
         if (suprimiuClick) { e.preventDefault(); e.stopPropagation(); return; }
         if (e.target === viewer && zoom.scale <= 1) fecharViewer();
     });
 
-    // ── desktop: scroll do mouse = zoom, arrastar = move ──
     viewer.addEventListener('wheel', (e) => {
-        if (!$('ct-viewer').classList.contains('on')) return;
+        if (!viewer.classList.contains('on')) return;
         e.preventDefault();
         const delta = -e.deltaY * 0.002;
         let novo = zoom.scale * (1 + delta);
@@ -596,7 +548,6 @@ function instalarGestosZoom() {
         aplicarZoom(false);
     }, { passive: false });
 
-    // Desktop: clique com botão direito ou ctrl+clique? Não. Só dblclick.
     img.addEventListener('dblclick', (e) => {
         e.preventDefault();
         handleDoubleTap(e.clientX, e.clientY);
@@ -604,13 +555,7 @@ function instalarGestosZoom() {
 }
 
 function handleDoubleTap(x, y) {
-    if (zoom.scale > 1.05) {
-        // Volta ao normal
-        resetZoom();
-        aplicarZoom(true);
-        return;
-    }
-    // Zoom 2.5x centrado no ponto tocado
+    if (zoom.scale > 1.05) { resetZoom(); aplicarZoom(true); return; }
     const img = $('ct-viewer-img');
     if (!img) return;
     const rect = img.getBoundingClientRect();
@@ -629,8 +574,8 @@ function handleDoubleTap(x, y) {
 async function iniciar() {
     $('ct-add').addEventListener('click', () => $('ct-file').click());
     $('ct-file').addEventListener('change', (e) => {
-        const f = e.target.files && e.target.files[0];
-        if (f) processarArquivo(f);
+        const files = Array.from(e.target.files || []);
+        if (files.length) processarArquivos(files);
         e.target.value = '';
     });
     $('ct-viewer-x').addEventListener('click', fecharViewer);
@@ -646,7 +591,6 @@ async function iniciar() {
     });
 
     instalarGestosZoom();
-
     await carregarMaterias();
     await carregarFotos();
 }
