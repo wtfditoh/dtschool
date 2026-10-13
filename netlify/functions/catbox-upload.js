@@ -1,8 +1,8 @@
 /**
  * Netlify Function: proxy para o catbox.moe
  * URL: /.netlify/functions/catbox-upload   (POST)
- * O catbox bloqueia uploads direto do navegador (CORS).
- * Esta função recebe o arquivo e repassa pro catbox no servidor.
+ * O catbox bloqueia uploads direto do navegador (CORS) e de servidores sem User-Agent.
+ * Esta função recebe o arquivo e repassa pro catbox no servidor, "disfarçado" de navegador.
  */
 
 const CATBOX_URL = 'https://catbox.moe/user/api.php';
@@ -40,13 +40,23 @@ exports.handler = async (event) => {
         const fd = new FormData();
         fd.append('reqtype', 'fileupload');
         const blob = new Blob([bodyBuffer], { type: contentType });
+        // O nome do arquivo não importa muito para o catbox, mas é bom ter um.
         fd.append('fileToUpload', blob, 'arquivo');
 
-        const r = await fetch(CATBOX_URL, { method: 'POST', body: fd });
-        const texto = await r.text();
+        // 👇 A CORREÇÃO: Adiciona um User-Agent de navegador real
+        const catboxResponse = await fetch(CATBOX_URL, {
+            method: 'POST',
+            body: fd,
+            headers: {
+                // Simula um navegador real para evitar o bloqueio
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+        });
+        
+        const texto = await catboxResponse.text();
 
         return {
-            statusCode: r.status,
+            statusCode: catboxResponse.status,
             headers: { ...headers, 'Content-Type': 'text/plain' },
             body: texto
         };
