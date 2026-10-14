@@ -4,7 +4,7 @@
  */
 
 const ONESIGNAL_URL = 'https://api.onesignal.com/notifications';
-const APP_ID_PADRAO = 'f73275cd-17ad-4963-a25b-321ce2def2ba';
+const APP_ID_PADRAO = '04313997-e78e-4274-948b-88586b1247ec';
 const ADMIN_TOKEN_PADRAO = 'hubbrain-admin-2024';
 
 // Headers que a função devolve em TODAS as respostas
