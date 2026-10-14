@@ -157,10 +157,14 @@ async function uploadImgBB(blob) {
 
 /* Upload do arquivo via função Netlify (proxy pro Pomf) */
 async function uploadArquivo(file) {
-    log('📤 enviando pro Pomf via proxy (' + Math.round(file.size / 1024) + 'KB)…', 'info');
-    const r = await fetch(POMF_PROXY, {
+async function uploadArquivo(file) {
+    log('📤 enviando pro 0x0.st via proxy (' + Math.round(file.size / 1024) + 'KB)…', 'info');
+    const r = await fetch('/.netlify/functions/arquivo-upload', {
         method: 'POST',
-        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        headers: {
+            'Content-Type': file.type || 'application/octet-stream',
+            'X-Nome-Arquivo': encodeURIComponent(file.name || 'arquivo.bin')
+        },
         body: file
     });
     log('proxy respondeu status ' + r.status, 'info');
@@ -169,16 +173,10 @@ async function uploadArquivo(file) {
         try { detalhe = await r.text(); } catch (e) {}
         throw new Error('proxy falhou (' + r.status + ') ' + detalhe.slice(0, 120));
     }
-    // Pomf retorna JSON: {"files":[{"url":"https://..."}]}
-    let resposta;
-    const texto = await r.text();
-    try { resposta = JSON.parse(texto); }
-    catch (e) { throw new Error('Pomf: resposta não é JSON — ' + texto.slice(0, 80)); }
-
-    const url = resposta.files && resposta.files[0] && resposta.files[0].url;
-    if (!url || !url.startsWith('http')) throw new Error('Pomf: sem URL na resposta');
-    log('✓ Pomf OK', 'ok');
-    return { url: url, thumb: '', medium: '', display_url: '' };
+    const texto = (await r.text()).trim();
+    if (!texto.startsWith('http')) throw new Error('0x0.st: ' + texto.slice(0, 100));
+    log('✓ 0x0.st OK', 'ok');
+    return { url: texto, thumb: '', medium: '', display_url: '' };
 }
 
 /* ═══════════════ SALVAR ═══════════════ */
