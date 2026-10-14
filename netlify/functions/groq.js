@@ -10,18 +10,25 @@
  *  - só aceita chamadas do próprio site (mesma origem)
  *  - lista fixa de modelos, teto de tokens e de tamanho de texto
  *  - limite de uso por usuário (best-effort, por instância da função)
+ *  - aceita mensagens multimodais (texto + imagem) pra leitura de grade com IA
  */
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 // Troque aqui quando a Groq descontinuar algum modelo (e no MODELOS do ia-config.js).
-const MODELOS_PERMITIDOS = new Set(['openai/gpt-oss-120b', 'openai/gpt-oss-20b']);
+// Inclui o modelo de VISÃO (llama-4-scout) usado pra escanear a grade horária.
+const MODELOS_PERMITIDOS = new Set([
+  'openai/gpt-oss-120b',
+  'openai/gpt-oss-20b',
+  'meta-llama/llama-4-scout-17b-16e-instruct'
+]);
 const MODELO_PADRAO = 'openai/gpt-oss-120b';
 
 const TETO_TOKENS = 8000;
 const MAX_MENSAGENS = 24;
 const MAX_CHARS_TOTAL = 30000;
-const TIMEOUT_MS = Number(process.env.GROQ_TIMEOUT_MS) || 25000;
+const MAX_IMG_BASE64 = 5_000_000;   // ~5MB de string base64 por imagem
+const TIMEOUT_MS = Number(process.env.GROQ_TIMEOUT_MS) || 30000;
 
 // Chave pública do Firebase (a mesma do front). Só serve pra validar o token do usuário.
 const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY || 'AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc';
@@ -48,7 +55,6 @@ async function verificarIdToken(idToken) {
     `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`,
     {
       method: 'POST',
-      // Referer: caso a chave do Firebase esteja restrita por domínio no Google Cloud
       headers: {
         'Content-Type': 'application/json',
         Referer: process.env.URL || 'https://hubbrain.netlify.app/',
@@ -84,22 +90,59 @@ const entre = (n, min, max, padrao) => {
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : padrao;
 };
 
-/** Monta o payload enviado à Groq, aceitando só campos conhecidos. */
+/** Monta o payload enviado à Groq.
+ *  Aceita content como STRING (compatível com o resto do app) ou ARRAY multimodal
+ *  (texto + imagem), que é o que a grade horária usa pra escanear foto. */
 function montarPayload(b) {
   if (!b || !Array.isArray(b.messages) || b.messages.length === 0 || b.messages.length > MAX_MENSAGENS) {
     return { erro: [400, 'bad_request', 'Mensagens inválidas.'] };
   }
+
   let total = 0;
   const messages = [];
+
   for (const m of b.messages) {
-    if (!m || !['system', 'user', 'assistant'].includes(m.role) || typeof m.content !== 'string') {
+    if (!m || !['system', 'user', 'assistant'].includes(m.role)) {
       return { erro: [400, 'bad_request', 'Mensagem em formato inválido.'] };
     }
-    total += m.content.length;
-    messages.push({ role: m.role, content: m.content });
+
+    // ── String simples (texto puro) ──
+    if (typeof m.content === 'string') {
+      total += m.content.length;
+      messages.push({ role: m.role, content: m.content });
+      continue;
+    }
+
+    // ── Array multimodal (texto + imagem) ──
+    if (Array.isArray(m.content)) {
+      const partes = [];
+      for (const p of m.content) {
+        if (!p || typeof p !== 'object') continue;
+
+        if (p.type === 'text' && typeof p.text === 'string') {
+          total += p.text.length;
+          partes.push({ type: 'text', text: p.text });
+        } else if (p.type === 'image_url' && p.image_url && typeof p.image_url.url === 'string') {
+          if (p.image_url.url.length > MAX_IMG_BASE64) {
+            return { erro: [413, 'too_large', 'Imagem grande demais.'] };
+          }
+          // Conta ~1 token por 4 caracteres base64 (aproximação)
+          total += Math.round(p.image_url.url.length / 4);
+          partes.push({ type: 'image_url', image_url: { url: p.image_url.url } });
+        }
+      }
+      if (!partes.length) {
+        return { erro: [400, 'bad_request', 'Mensagem vazia.'] };
+      }
+      messages.push({ role: m.role, content: partes });
+      continue;
+    }
+
+    return { erro: [400, 'bad_request', 'Formato de mensagem desconhecido.'] };
   }
+
   if (total > MAX_CHARS_TOTAL) {
-    return { erro: [413, 'too_large', 'Texto grande demais.'] };
+    return { erro: [413, 'too_large', 'Conteúdo grande demais.'] };
   }
 
   const model = b.model || MODELO_PADRAO;
