@@ -460,3 +460,53 @@ export function resumoParaTags(tarefas, hoje) {
         tagN: String(Math.min(n, 20))   // OneSignal limita tag a 20 valores
     };
 }
+
+/* ═══════════════ FUNÇÕES PARA O "ADICIONAR RÁPIDO" ═══════════════ */
+
+export function capitalizar(texto) {
+    if (!texto) return '';
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+export function promptRapidoIA(texto, ctx) {
+    return [
+        'Você organiza tarefas de um aluno brasileiro.',
+        'Hoje é ' + ctx.hoje + '.',
+        (ctx.materias && ctx.materias.length) ? 'Matérias disponíveis: ' + ctx.materias.join(', ') + '.' : '',
+        'Analise a frase abaixo e extraia os campos.',
+        'Responda SOMENTE com JSON válido no formato:',
+        '{"nome":"título curto","data":"AAAA-MM-DD","tipo":"tarefa|prova|trabalho|revisao|projeto","materia":"nome ou Geral"}',
+        'Regras:',
+        '- data no formato AAAA-MM-DD. Se não mencionar, use null.',
+        '- tipo: use "tarefa" se não mencionar nenhum.',
+        '- materia: use o nome exato da lista acima. Se não souber, use "Geral".',
+        '- nome: frase curta, capitalizada, sem as palavras de data/tipo/matéria.',
+        '',
+        'FRASE: "' + texto + '"'
+    ].filter(Boolean).join('\n');
+}
+
+const TIPOS_VALIDOS = ['tarefa', 'prova', 'trabalho', 'revisao', 'projeto'];
+
+export function normalizarRespostaIA(dado, ctx) {
+    if (!dado || typeof dado !== 'object') return null;
+    const out = {};
+    if (typeof dado.nome === 'string' && dado.nome.trim()) out.nome = dado.nome.trim();
+    if (typeof dado.data === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dado.data)) out.data = dado.data;
+    if (typeof dado.tipo === 'string' && TIPOS_VALIDOS.indexOf(dado.tipo) !== -1) out.tipo = dado.tipo;
+    if (typeof dado.materia === 'string' && dado.materia.trim()) {
+        if (dado.materia === 'Geral') out.materia = 'Geral';
+        else if (ctx.materias && ctx.materias.indexOf(dado.materia) !== -1) out.materia = dado.materia;
+    }
+    return Object.keys(out).length ? out : null;
+}
+
+export function mesclarInterpretacao(local, ia) {
+    if (!ia) return local;
+    return {
+        nome: ia.nome || local.nome,
+        data: ia.data || local.data,
+        tipo: ia.tipo || local.tipo,
+        materia: ia.materia || local.materia
+    };
+}
