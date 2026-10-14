@@ -1001,3 +1001,37 @@ body::before {
     height: 20px;
     color: var(--primary);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   FOTO DE PERFIL (pódio + lista)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Pódio: a foto preenche todo o frame */
+.avatar-frame {
+    position: relative;
+    overflow: hidden;
+}
+.avatar-frame .rank-avatar-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+/* Lista: a foto preenche o quadradinho do avatar */
+.rank-avatar {
+    position: relative;
+    overflow: hidden;
+}
+.rank-avatar .rank-avatar-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    display: block;
+}
