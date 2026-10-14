@@ -18,7 +18,9 @@
             <button class="tab-btn active" onclick="trocarView('timer')">FOCO</button>
             <button class="tab-btn" onclick="trocarView('historico')">HISTÓRICO</button>
         </div>
-        <div style="width:38px;"></div>
+        <button id="btn-settings" class="btn-icon" aria-label="Configurações">
+            <i data-lucide="settings-2" style="width:22px;"></i>
+        </button>
     </header>
 
     <!-- VIEW: TIMER -->
@@ -41,34 +43,49 @@
                 </button>
             </div>
 
-            <!-- Flip Clock -->
-            <div class="flip-clock-wrap">
-                <div class="flip-unit">
-                    <div class="flip-card" id="card-h">
-                        <div class="flip-top"><span id="top-h-cur">00</span></div>
-                        <div class="flip-bottom"><span id="bot-h-cur">00</span></div>
-                        <div class="flip-card-flap" id="flap-h"><span id="flap-h-txt">00</span></div>
+            <!-- RELÓGIO — 3 estilos no mesmo container, JS troca classe -->
+            <div class="clock-wrap" id="clock-wrap" data-estilo="flip">
+
+                <!-- ESTILO FLIP (padrão) -->
+                <div class="clock-flip">
+                    <div class="flip-unit">
+                        <div class="flip-card" id="card-h">
+                            <div class="flip-top"><span id="top-h-cur">00</span></div>
+                            <div class="flip-bottom"><span id="bot-h-cur">00</span></div>
+                            <div class="flip-card-flap" id="flap-h"><span id="flap-h-txt">00</span></div>
+                        </div>
+                        <div class="flip-label">horas</div>
                     </div>
-                    <div class="flip-label">horas</div>
-                </div>
-                <div class="flip-sep">:</div>
-                <div class="flip-unit">
-                    <div class="flip-card" id="card-m">
-                        <div class="flip-top"><span id="top-m-cur">25</span></div>
-                        <div class="flip-bottom"><span id="bot-m-cur">25</span></div>
-                        <div class="flip-card-flap" id="flap-m"><span id="flap-m-txt">25</span></div>
+                    <div class="flip-sep">:</div>
+                    <div class="flip-unit">
+                        <div class="flip-card" id="card-m">
+                            <div class="flip-top"><span id="top-m-cur">25</span></div>
+                            <div class="flip-bottom"><span id="bot-m-cur">25</span></div>
+                            <div class="flip-card-flap" id="flap-m"><span id="flap-m-txt">25</span></div>
+                        </div>
+                        <div class="flip-label">min</div>
                     </div>
-                    <div class="flip-label">min</div>
-                </div>
-                <div class="flip-sep">:</div>
-                <div class="flip-unit">
-                    <div class="flip-card" id="card-s">
-                        <div class="flip-top"><span id="top-s-cur">00</span></div>
-                        <div class="flip-bottom"><span id="bot-s-cur">00</span></div>
-                        <div class="flip-card-flap" id="flap-s"><span id="flap-s-txt">00</span></div>
+                    <div class="flip-sep">:</div>
+                    <div class="flip-unit">
+                        <div class="flip-card" id="card-s">
+                            <div class="flip-top"><span id="top-s-cur">00</span></div>
+                            <div class="flip-bottom"><span id="bot-s-cur">00</span></div>
+                            <div class="flip-card-flap" id="flap-s"><span id="flap-s-txt">00</span></div>
+                        </div>
+                        <div class="flip-label">seg</div>
                     </div>
-                    <div class="flip-label">seg</div>
                 </div>
+
+                <!-- ESTILO DIGITAL -->
+                <div class="clock-digital">
+                    <span id="dig-h">00</span><span class="dig-sep">:</span><span id="dig-m">25</span><span class="dig-sep">:</span><span id="dig-s">00</span>
+                </div>
+
+                <!-- ESTILO MINIMAL -->
+                <div class="clock-minimal">
+                    <span id="min-h">00</span><span class="min-sep">:</span><span id="min-m">25</span><span class="min-sep">:</span><span id="min-s">00</span>
+                </div>
+
             </div>
 
             <!-- CONTROLES TIMER -->
@@ -164,7 +181,82 @@
         </div>
     </div>
 
+    <!-- MODAL CONFIGURAÇÕES -->
+    <div class="modal-overlay modal-settings-overlay" id="modal-settings">
+        <div class="modal-card modal-settings">
+
+            <div class="settings-head">
+                <h2>AJUSTES DO FOCO</h2>
+                <button class="settings-x" id="settings-x" aria-label="Fechar">✕</button>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-label">ESTILO DO RELÓGIO</div>
+                <div class="settings-opcoes" id="opcoes-relogio">
+                    <button class="opcao-btn" data-relogio="flip">
+                        <span class="opcao-emoji">🎞️</span>
+                        <span class="opcao-txt"><b>Flip</b><i>Cata-letra</i></span>
+                    </button>
+                    <button class="opcao-btn" data-relogio="digital">
+                        <span class="opcao-emoji">🔢</span>
+                        <span class="opcao-txt"><b>Digital</b><i>Número grande</i></span>
+                    </button>
+                    <button class="opcao-btn" data-relogio="minimal">
+                        <span class="opcao-emoji">◯</span>
+                        <span class="opcao-txt"><b>Minimal</b><i>Clean e leve</i></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-label">SOM DO TIQUE</div>
+                <div class="settings-opcoes" id="opcoes-som">
+                    <button class="opcao-btn" data-som="tick">
+                        <span class="opcao-emoji">🕐</span>
+                        <span class="opcao-txt"><b>Tick suave</b><i>Clássico</i></span>
+                    </button>
+                    <button class="opcao-btn" data-som="click">
+                        <span class="opcao-emoji">👆</span>
+                        <span class="opcao-txt"><b>Click</b><i>Curto e seco</i></span>
+                    </button>
+                    <button class="opcao-btn" data-som="wood">
+                        <span class="opcao-emoji">🪵</span>
+                        <span class="opcao-txt"><b>Madeira</b><i>Metrônomo</i></span>
+                    </button>
+                    <button class="opcao-btn" data-som="bip">
+                        <span class="opcao-emoji">💠</span>
+                        <span class="opcao-txt"><b>Bip digital</b><i>Eletrônico</i></span>
+                    </button>
+                    <button class="opcao-btn" data-som="silencioso">
+                        <span class="opcao-emoji">🔇</span>
+                        <span class="opcao-txt"><b>Silencioso</b><i>Sem som</i></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-label">SOM AO FINALIZAR</div>
+                <div class="settings-opcoes" id="opcoes-final">
+                    <button class="opcao-btn" data-final="alarme">
+                        <span class="opcao-emoji">🔔</span>
+                        <span class="opcao-txt"><b>Alarme</b><i>Avisa forte</i></span>
+                    </button>
+                    <button class="opcao-btn" data-final="suave">
+                        <span class="opcao-emoji">🎵</span>
+                        <span class="opcao-txt"><b>Suave</b><i>Sino leve</i></span>
+                    </button>
+                    <button class="opcao-btn" data-final="silencioso">
+                        <span class="opcao-emoji">🔕</span>
+                        <span class="opcao-txt"><b>Nenhum</b><i>Sem som final</i></span>
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="settings-ok" style="margin-top:14px;">PRONTO</button>
+        </div>
+    </div>
+
     <script src="menu.js"></script>
     <script type="module" src="foco-logica.js"></script>
 </body>
-</html>
+                        </html>
