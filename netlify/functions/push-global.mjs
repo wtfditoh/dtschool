@@ -1,43 +1,44 @@
 /**
  * Netlify Function: envia push global via OneSignal.
  * URL: /.netlify/functions/push-global   (POST)
- *
- * Usado pelo painel do mestre pra mandar aviso pra todos os alunos.
- * Substitui o servidor no Render (que dormia e dava "Failed to fetch").
- *
- * VARIÁVEIS DE AMBIENTE:
- *  ONESIGNAL_API_KEY  (obrigatória) — mesmo valor usado em aula-aviso/tarefa-aviso
- *  ONESIGNAL_APP_ID   (opcional) — padrão já configurado
- *  ADMIN_PUSH_TOKEN   (opcional) — token de auth; se não setar, usa o padrão abaixo
  */
 
 const ONESIGNAL_URL = 'https://api.onesignal.com/notifications';
 const APP_ID_PADRAO = 'f73275cd-17ad-4963-a25b-321ce2def2ba';
 const ADMIN_TOKEN_PADRAO = 'hubbrain-admin-2024';
 
+// Headers que a função devolve em TODAS as respostas
+const CORS = {
+  'Content-Type': 'application/json',
+  'Cache-Control': 'no-store',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
 function resposta(status, body) {
   return {
     statusCode: status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-store',
-      'Access-Control-Allow-Origin': '*'
-    },
+    headers: CORS,
     body: typeof body === 'string' ? body : JSON.stringify(body)
   };
 }
 
 exports.handler = async (event) => {
-  // CORS preflight
+  // ─── CORS preflight ───
   if (event.httpMethod === 'OPTIONS') {
-    return resposta(200, '');
+    return {
+      statusCode: 204,
+      headers: CORS,
+      body: ''
+    };
   }
 
   if (event.httpMethod !== 'POST') {
     return resposta(405, { error: 'Use POST' });
   }
 
-  // ─── Auth ───
+  // ─── Auth do admin ───
   const adminToken = process.env.ADMIN_PUSH_TOKEN || ADMIN_TOKEN_PADRAO;
   const auth = event.headers.authorization || event.headers.Authorization || '';
   if (auth !== 'Bearer ' + adminToken) {
@@ -58,6 +59,9 @@ exports.handler = async (event) => {
 
   // ─── OneSignal ───
   const apiKey = process.env.ONESIGNAL_API_KEY;
+  console.log('[push-global] chave presente?', apiKey ? 'SIM' : 'NAO');
+  if (apiKey) console.log('[push-global] prefixo:', apiKey.slice(0, 15));
+
   if (!apiKey) {
     return resposta(503, { error: 'ONESIGNAL_API_KEY não configurada no Netlify' });
   }
@@ -88,14 +92,17 @@ exports.handler = async (event) => {
     const data = await r.json();
 
     if (!r.ok) {
+      console.error('[push-global] OneSignal erro:', r.status, data);
       return resposta(r.status, { error: data.errors || data });
     }
 
+    console.log('[push-global] ok. recipients:', data.recipients || 0);
     return resposta(200, {
       id: data.id || 'ok',
       recipients: data.recipients || 0
     });
   } catch (e) {
+    console.error('[push-global] erro rede:', e.message);
     return resposta(502, { error: 'Falha ao falar com OneSignal: ' + (e.message || 'erro') });
   }
 };
