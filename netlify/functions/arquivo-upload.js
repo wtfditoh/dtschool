@@ -1,14 +1,14 @@
 /**
- * Netlify Function: proxy para o Pomf.lain.la
- * URL: /.netlify/functions/pomf-upload   (POST)
+ * Netlify Function: proxy pro 0x0.st
+ * URL: /.netlify/functions/arquivo-upload   (POST)
  */
 
-const POMF_URL = 'https://pomf.lain.la/upload.php';
+const UP_URL = 'https://0x0.st';
 const MAX_BYTES = 100 * 1024 * 1024; // 100MB
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Nome-Arquivo',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Cache-Control': 'no-store'
 };
@@ -23,6 +23,10 @@ exports.handler = async (event) => {
 
     try {
         const contentType = event.headers['content-type'] || 'application/octet-stream';
+        // Nome original vem no header custom (0x0.st precisa da extensão pra servir certo)
+        let nome = event.headers['x-nome-arquivo'] || 'arquivo.bin';
+        try { nome = decodeURIComponent(nome); } catch (e) {}
+
         const bodyBuffer = event.isBase64Encoded
             ? Buffer.from(event.body, 'base64')
             : Buffer.from(event.body || '', 'binary');
@@ -34,19 +38,20 @@ exports.handler = async (event) => {
             return { statusCode: 413, headers, body: 'Arquivo grande demais (limite 100MB)' };
         }
 
-        // Monta o FormData pro Pomf
         const fd = new FormData();
         const blob = new Blob([bodyBuffer], { type: contentType });
-        fd.append('files[]', blob, 'arquivo');
+        fd.append('file', blob, nome);
 
-        const r = await fetch(POMF_URL, {
+        const r = await fetch(UP_URL, {
             method: 'POST',
             body: fd,
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                // 0x0.st EXIGE um User-Agent que NÃO seja de navegador.
+                // Tem que identificar o app.
+                'User-Agent': 'HubBrain/1.0 (+https://hubbrain.netlify.app)'
             }
         });
-        
+
         const texto = await r.text();
 
         return {
@@ -55,11 +60,11 @@ exports.handler = async (event) => {
             body: texto
         };
     } catch (e) {
-        console.error('[pomf-upload]', e);
+        console.error('[arquivo-upload]', e);
         return {
             statusCode: 502,
             headers,
-            body: 'Falha ao falar com o Pomf: ' + (e.message || 'erro')
+            body: 'Falha ao falar com 0x0.st: ' + (e.message || 'erro')
         };
     }
 };
