@@ -16,9 +16,11 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const CONFIG_KEY = 'dt_config';
+const ANO_ATUAL = String(new Date().getFullYear());
 
 const defaultConfig = {
-    tema: 'dark', escola: '', serie: '',
+    tema: 'dark',
+    escola: '', serie: '', turma: '', ano: ANO_ATUAL,
     periodo: 'bimestral', media: 6.0, notaMax: 10,
     tick: true, notifFoco: true, lembrete: false,
     horarioLembrete: '20:00', streak: true, prazo: true,
@@ -37,7 +39,7 @@ let cfg = getCfg();
 let feedbackTipoAtual = 'sugestao';
 let _confirmCallback = null;
 
-// TOAST
+// ─── TOAST ────────────────────────────────
 function toast(msg, cor) {
     const el = document.getElementById('toast-cfg'); if (!el) return;
     el.innerText = msg;
@@ -56,6 +58,8 @@ async function carregarDoFirebase(email) {
         if (d.meta_minutos) { cfg.focoH = Math.floor(d.meta_minutos/60); cfg.focoM = d.meta_minutos%60; }
         if (d.escola) cfg.escola = d.escola;
         if (d.serie) cfg.serie = d.serie;
+        if (d.turma) cfg.turma = d.turma;
+        if (d.ano) cfg.ano = d.ano;
         if (d.media_aprovacao !== undefined) cfg.media = d.media_aprovacao;
         if (d.nota_max !== undefined) cfg.notaMax = d.nota_max;
         if (d.periodo) cfg.periodo = d.periodo;
@@ -66,21 +70,29 @@ async function carregarDoFirebase(email) {
 
 // ─── FIREBASE: SALVAR ─────────────────────
 async function salvarNoFirebase(email) {
+    const payload = {
+        config: cfg,
+        escola: cfg.escola,
+        serie: cfg.serie,
+        turma: cfg.turma,
+        ano: cfg.ano,
+        media_aprovacao: cfg.media,
+        nota_max: cfg.notaMax,
+        periodo: cfg.periodo,
+        meta_minutos: cfg.focoH * 60 + cfg.focoM,
+        ranking_visivel: cfg.ranking,
+        escola_visivel: cfg.showEscola,
+    };
+
     try {
-        await updateDoc(doc(db, 'notas', email), {
-            config: cfg, escola: cfg.escola, serie: cfg.serie,
-            media_aprovacao: cfg.media, nota_max: cfg.notaMax,
-            periodo: cfg.periodo, meta_minutos: cfg.focoH*60 + cfg.focoM,
-            ranking_visivel: cfg.ranking, escola_visivel: cfg.showEscola,
-        });
+        await updateDoc(doc(db, 'notas', email), payload);
     } catch(e) {
         try {
-            await setDoc(doc(db,'notas',email), {
-                config:cfg, escola:cfg.escola, serie:cfg.serie,
-                media_aprovacao:cfg.media, nota_max:cfg.notaMax,
-                periodo:cfg.periodo, meta_minutos:cfg.focoH*60+cfg.focoM,
-            }, { merge:true });
-        } catch(e2) { console.error(e2); }
+            await setDoc(doc(db, 'notas', email), payload, { merge: true });
+        } catch(e2) {
+            console.error('Erro ao salvar no Firebase:', e2);
+            throw e2;
+        }
     }
 }
 
@@ -88,18 +100,18 @@ async function salvarNoFirebase(email) {
 window.setTema = function(tema) {
     cfg.tema = tema;
     document.querySelectorAll('.theme-pill').forEach(p => p.classList.remove('active'));
-    document.getElementById('theme-'+tema)?.classList.add('active');
+    document.getElementById('theme-' + tema)?.classList.add('active');
     document.body.classList.toggle('light-mode', tema === 'light');
 };
 
 window.setPeriodo = function(p) {
     cfg.periodo = p;
     document.querySelectorAll('.period-option').forEach(el => el.classList.remove('active'));
-    document.getElementById('p-'+p)?.classList.add('active');
+    document.getElementById('p-' + p)?.classList.add('active');
 };
 
 window.ajustarMedia = function(delta) {
-    cfg.media = Math.max(0, Math.min(10, parseFloat((cfg.media+delta).toFixed(1))));
+    cfg.media = Math.max(0, Math.min(10, parseFloat((cfg.media + delta).toFixed(1))));
     document.getElementById('cfg-media-val').innerText = cfg.media.toFixed(1);
     document.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('active', parseFloat(b.innerText) === cfg.media));
 };
@@ -111,11 +123,20 @@ window.setMedia = function(val) {
 };
 
 window.ajustarNotaMax = function(delta) {
-    cfg.notaMax = Math.max(1, Math.min(100, cfg.notaMax+delta));
+    cfg.notaMax = Math.max(1, Math.min(100, cfg.notaMax + delta));
     document.getElementById('cfg-notamax-val').innerText = cfg.notaMax;
 };
 
-const toggleIds = { tick:'toggle-tick', notifFoco:'toggle-notifFoco', lembrete:'toggle-lembrete', streak:'toggle-streak', prazo:'toggle-prazo', conquistas:'toggle-conquistas', ranking:'toggle-ranking', showEscola:'toggle-showEscola' };
+const toggleIds = {
+    tick: 'toggle-tick',
+    notifFoco: 'toggle-notifFoco',
+    lembrete: 'toggle-lembrete',
+    streak: 'toggle-streak',
+    prazo: 'toggle-prazo',
+    conquistas: 'toggle-conquistas',
+    ranking: 'toggle-ranking',
+    showEscola: 'toggle-showEscola'
+};
 
 window.toggleOpcao = function(key) {
     cfg[key] = !cfg[key];
@@ -204,7 +225,7 @@ window.confirmarExcluirConta = function() {
             }
             fecharModal();
         },
-        true // mostra input
+        true
     );
 };
 
@@ -212,7 +233,9 @@ window.confirmarExcluirConta = function() {
 window.confirmarLimpeza = function(tipo, titulo, desc) {
     abrirModal('⚠️', titulo, desc, () => {
         if (tipo === 'foco') {
-            Object.keys(localStorage).filter(k => k.startsWith('dt_foco') || k.startsWith('dt_crono_conc')).forEach(k => localStorage.removeItem(k));
+            Object.keys(localStorage)
+                .filter(k => k.startsWith('dt_foco') || k.startsWith('dt_crono_conc'))
+                .forEach(k => localStorage.removeItem(k));
         } else if (tipo === 'cronograma') {
             localStorage.removeItem('dt_cronogramas');
         }
@@ -224,7 +247,10 @@ window.confirmarLimpeza = function(tipo, titulo, desc) {
 // ─── EXPORTAR ─────────────────────────────
 window.exportarConfig = function() {
     const blob = new Blob([JSON.stringify(getCfg(), null, 2)], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'hubbrain-config.json'; a.click();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'hubbrain-config.json';
+    a.click();
     toast('✓ Config exportada!');
 };
 
@@ -238,7 +264,10 @@ window.exportarDados = function() {
         usuario: localStorage.getItem('dt_user_email') || '',
     };
     const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'hubbrain-backup.json'; a.click();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'hubbrain-backup.json';
+    a.click();
     toast('✓ Dados exportados!');
 };
 
@@ -246,6 +275,8 @@ window.exportarDados = function() {
 window.salvarTudo = async function() {
     cfg.escola = document.getElementById('cfg-escola')?.value.trim() || '';
     cfg.serie = document.getElementById('cfg-serie')?.value || '';
+    cfg.turma = document.getElementById('cfg-turma')?.value.trim() || '';
+    cfg.ano = document.getElementById('cfg-ano')?.value.trim() || ANO_ATUAL;
     cfg.horarioLembrete = document.getElementById('cfg-horario-lembrete')?.value || '20:00';
     cfg.focoH = parseInt(document.getElementById('cfg-foco-h')?.value) || 0;
     cfg.focoM = parseInt(document.getElementById('cfg-foco-m')?.value) || 25;
@@ -253,7 +284,14 @@ window.salvarTudo = async function() {
     salvarLocal(cfg);
 
     const user = auth.currentUser;
-    if (user) await salvarNoFirebase(user.email);
+    if (user) {
+        try {
+            await salvarNoFirebase(user.email);
+        } catch(e) {
+            toast('Erro ao salvar na nuvem', '#ff4455');
+            return;
+        }
+    }
 
     const btn = document.getElementById('btn-salvar');
     if (btn) {
@@ -277,7 +315,7 @@ function abrirModal(emoji, titulo, desc, callback, comInput = false) {
     const inp = document.getElementById('modal-confirm-input');
     inp.style.display = comInput ? 'block' : 'none';
     inp.value = '';
-    document.getElementById('btn-confirm-ok').onclick = () => { if(_confirmCallback) _confirmCallback(); };
+    document.getElementById('btn-confirm-ok').onclick = () => { if (_confirmCallback) _confirmCallback(); };
     document.getElementById('modal-confirm').classList.add('active');
 }
 
@@ -289,16 +327,20 @@ window.fecharModal = function() {
 // ─── POPULAR INTERFACE ────────────────────
 function popularInterface() {
     document.querySelectorAll('.theme-pill').forEach(p => p.classList.remove('active'));
-    document.getElementById('theme-'+cfg.tema)?.classList.add('active');
+    document.getElementById('theme-' + cfg.tema)?.classList.add('active');
 
     document.getElementById('cfg-escola').value = cfg.escola || '';
     document.getElementById('cfg-serie').value = cfg.serie || '';
+    document.getElementById('cfg-turma').value = cfg.turma || '';
+    document.getElementById('cfg-ano').value = cfg.ano || ANO_ATUAL;
 
     document.querySelectorAll('.period-option').forEach(p => p.classList.remove('active'));
-    document.getElementById('p-'+cfg.periodo)?.classList.add('active');
+    document.getElementById('p-' + cfg.periodo)?.classList.add('active');
 
-    document.getElementById('cfg-media-val').innerText = (cfg.media||6).toFixed(1);
-    document.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('active', parseFloat(b.innerText) === cfg.media));
+    document.getElementById('cfg-media-val').innerText = (cfg.media || 6).toFixed(1);
+    document.querySelectorAll('.preset-btn').forEach(b =>
+        b.classList.toggle('active', parseFloat(b.innerText) === cfg.media)
+    );
     document.getElementById('cfg-notamax-val').innerText = cfg.notaMax || 10;
 
     Object.entries(toggleIds).forEach(([key, id]) => {
