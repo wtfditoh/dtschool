@@ -1,6 +1,4 @@
-/* boletim.js — Hub Brain · Modo Boletim Escolar
-   Situação correta (soma ≥ mínima = aprovado mesmo com bimestre em branco),
-   compartilhar em formato A4 vertical, assinatura vintage "Ditoh". */
+/* boletim.js — Hub Brain · Modo Boletim Escolar */
 
 const $ = (id) => document.getElementById(id);
 
@@ -32,12 +30,6 @@ function getNotas(m, numPeriodos) {
     return notas;
 }
 
-/* Situação correta:
-   - Sem notas → SEM NOTA
-   - Soma já bateu o mínimo → APROVADO (não importa se falta bimestre)
-   - Faltam notas MAS ainda dá pra atingir → EM CURSO
-   - Faltam notas e NÃO dá mais pra atingir → REPROVADO
-   - Fechou tudo → APROVADO se bateu, senão REPROVADO */
 function calcularSituacao(notas, cfg) {
     const validas = notas.filter(n => n !== null && !isNaN(n));
     const total = notas.length;
@@ -50,12 +42,10 @@ function calcularSituacao(notas, cfg) {
     const soma = validas.reduce((a, b) => a + b, 0);
     const somaMinima = cfg.media * total;
 
-    // Já garantiu a aprovação
     if (soma >= somaMinima) {
         return { txt: 'APROVADO', cls: 'aprovado' };
     }
 
-    // Ainda faltam notas
     if (faltam > 0) {
         const somaMaxima = soma + faltam * cfg.notaMax;
         if (somaMaxima < somaMinima) {
@@ -64,7 +54,6 @@ function calcularSituacao(notas, cfg) {
         return { txt: 'EM CURSO', cls: 'em-curso' };
     }
 
-    // Fechou todas e não bateu
     return { txt: 'REPROVADO', cls: 'reprovado' };
 }
 
@@ -140,6 +129,7 @@ function renderBoletim() {
         }).join('');
     }
 
+    /* Contador — só conta como APROVADO se a situação for aprovado */
     let somaMedias = 0, comMedia = 0, aprovadas = 0;
     materias.forEach(m => {
         const notas = getNotas(m, cfg.numPeriodos);
@@ -148,7 +138,8 @@ function renderBoletim() {
             const media = validas.reduce((a, b) => a + b, 0) / validas.length;
             somaMedias += media;
             comMedia++;
-            if (media >= cfg.media) aprovadas++;
+            const sit = calcularSituacao(notas, cfg);
+            if (sit.cls === 'aprovado') aprovadas++;
         }
     });
     const mediaGeral = comMedia > 0 ? (somaMedias / comMedia) : 0;
@@ -199,7 +190,7 @@ function alternarModo() {
     if (window.lucide) lucide.createIcons();
 }
 
-/* ═══════════════ COMPARTILHAR (A4 vertical) ═══════════════ */
+/* ═══════════════ COMPARTILHAR (A4) ═══════════════ */
 async function compartilharBoletim() {
     const btn = $('btn-share-boletim');
     if (btn) btn.disabled = true;
@@ -257,19 +248,19 @@ async function compartilharBoletim() {
 
     const headCols = ['DISCIPLINA', ...cfg.labels, 'MÉDIA', 'SITUAÇÃO'];
 
+    /* Contador correto */
     let somaMedias = 0, comMedia = 0, aprovadas = 0;
     linhas.forEach(l => {
         if (l.media !== null) {
             somaMedias += l.media;
             comMedia++;
-            if (l.media >= cfg.media) aprovadas++;
+            if (l.sit.cls === 'aprovado') aprovadas++;
         }
     });
     const mediaGeral = comMedia > 0 ? (somaMedias / comMedia) : 0;
 
     const corSitTxt = (cls) => cls === 'aprovado' ? verde : cls === 'reprovado' ? vermelho : cls === 'em-curso' ? roxo : txtDim;
 
-    // Formato A4 retrato — 1080 x 1527 (proporção 1:1.414)
     container.innerHTML = `
         <div style="width:1080px; height:1527px; padding:55px 65px 40px; background:linear-gradient(160deg, ${bg1}, ${bg2}); color:${txt}; font-family:'Outfit',sans-serif; position:relative; overflow:hidden; display:flex; flex-direction:column;">
             <div style="position:absolute; right:-80px; bottom:-80px; opacity:0.05; transform:rotate(-12deg); width:420px;">
@@ -336,7 +327,6 @@ async function compartilharBoletim() {
                     </div>
                 </div>
 
-                <!-- Assinatura vintage -->
                 <div style="text-align:center; margin-top:38px; position:relative;">
                     <div style="font-family:'Mrs Saint Delafield','Herr Von Muellerhoff','Alex Brush','Italianno',cursive; font-size:78px; font-weight:400; line-height:0.9; color:${assinaturaCor}; transform:rotate(-6deg); display:inline-block; letter-spacing:-2px; text-shadow:0 0 20px rgba(138,43,226,0.5), 0 0 40px rgba(138,43,226,0.2), 0 2px 4px rgba(0,0,0,0.4); padding-right:16px;">Ditoh</div>
                     <div style="width:220px; height:1px; background:linear-gradient(90deg, transparent, ${ehClaro ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.35)'}, transparent); margin:6px auto 10px;"></div>
