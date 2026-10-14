@@ -999,3 +999,83 @@ body::before {
     height: 32px;
     color: white;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   FOTO DE PERFIL (upload + preview)
+   ═══════════════════════════════════════════════════════════════ */
+
+.avatar-wrapper {
+    overflow: hidden;
+}
+.avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Botão "Escolher uma foto" no topo do modal */
+.btn-upload-foto {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+    border-radius: 18px;
+    background: rgba(138,43,226,0.12);
+    border: 1.5px solid rgba(138,43,226,0.4);
+    color: #fff;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.12s, background 0.15s;
+}
+.btn-upload-foto:active { transform: scale(0.98); background: rgba(138,43,226,0.2); }
+.btn-upload-foto i {
+    width: 28px; height: 28px;
+    color: #c084fc;
+    flex-shrink: 0;
+}
+.btn-upload-foto div { display: flex; flex-direction: column; gap: 2px; }
+.btn-upload-foto strong { font-size: 15px; font-weight: 800; color: #fff; }
+.btn-upload-foto small { font-size: 11px; color: #888; font-weight: 600; }
+
+/* Botão "Remover foto" */
+.btn-remover-foto {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 14px;
+    background: rgba(255,68,68,0.08);
+    border: 1px solid rgba(255,68,68,0.25);
+    color: #ff6b6b;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.btn-remover-foto:active { background: rgba(255,68,68,0.15); }
+.btn-remover-foto i { width: 16px; height: 16px; }
+
+/* Divisor "OU ESCOLHA UM ÍCONE" */
+.divider-ou {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0 14px;
+    color: #444;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+.divider-ou::before, .divider-ou::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+}
