@@ -57,6 +57,16 @@
                 <input type="text" id="busca-usuario" placeholder="Buscar por nome ou email..." oninput="filtrarUsuarios()">
             </div>
 
+            <!-- ORDENAÇÃO -->
+           <div class="ordem-bar">
+              <span class="ordem-label">ORDENAR:</span>
+              <button class="ordem-btn on" data-ordem="xp" onclick="window.setOrdem('xp')">⚡ XP</button>
+              <button class="ordem-btn" data-ordem="online" onclick="window.setOrdem('online')">🟢 Online</button>
+              <button class="ordem-btn" data-ordem="acesso" onclick="window.setOrdem('acesso')">👁 Acesso</button>
+              <button class="ordem-btn" data-ordem="acessos" onclick="window.setOrdem('acessos')">📊 Total</button>
+              <button class="ordem-btn" data-ordem="nome" onclick="window.setOrdem('nome')">🔤 Nome</button>
+           </div>
+
             <!-- LISTA DE ALUNOS -->
             <section class="admin-card">
                 <div class="card-header">
