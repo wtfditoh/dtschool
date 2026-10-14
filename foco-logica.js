@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { verificarConquistas, mostrarPopupConquista } from "./conquistas.js";
 
@@ -11,7 +11,7 @@ const firebaseConfig = {
     appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const userEmail = localStorage.getItem('dt_user_email');
 
@@ -21,13 +21,13 @@ let totalSegs = 0;
 let isPaused = false;
 let materiaSelecionada = "Geral";
 let sessionActive = false;
-let modoAtual = 'timer'; // 'timer' ou 'livre'
+let modoAtual = 'timer';
 
-// MODO LIVRE
+/* MODO LIVRE */
 let livreSegs = 0;
 let livreTimer = null;
 
-// --- SOM ---
+/* ═══════════════ SOM ═══════════════ */
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const playTick = () => {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -43,6 +43,7 @@ const playTick = () => {
     osc.stop(audioCtx.currentTime + 0.08);
 };
 
+/* ═══════════════ HELPERS ═══════════════ */
 const pad = n => String(n).padStart(2, '0');
 const formatarTempo = (min) => {
     if (min < 60) return min + 'm';
@@ -51,7 +52,7 @@ const formatarTempo = (min) => {
 };
 const getHojeStr = () => new Date().toISOString().split('T')[0];
 
-// --- FLIP CLOCK ---
+/* ═══════════════ FLIP CLOCK ═══════════════ */
 let prevH = '00', prevM = '25', prevS = '00';
 
 const flipCard = (unit, newVal) => {
@@ -85,7 +86,7 @@ const setFlipStatic = (h, m, s) => {
     prevH = hStr; prevM = mStr; prevS = sStr;
 };
 
-// --- MODO SELECTOR ---
+/* ═══════════════ MODO SELECTOR ═══════════════ */
 window.selecionarModo = (modo) => {
     if (sessionActive) return;
     modoAtual = modo;
@@ -101,7 +102,7 @@ window.selecionarModo = (modo) => {
     }
 };
 
-// --- TROCA DE VIEW ---
+/* ═══════════════ TROCA DE VIEW ═══════════════ */
 window.trocarView = (view) => {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -110,7 +111,7 @@ window.trocarView = (view) => {
     if (view === 'historico') carregarHistorico();
 };
 
-// --- MATÉRIAS ---
+/* ═══════════════ MATÉRIAS ═══════════════ */
 async function carregarMaterias() {
     const chips = document.getElementById('chips-materias');
     let materias = ['Geral'];
@@ -140,7 +141,7 @@ window.selecionarMateria = (nome) => {
     });
 };
 
-// --- CONTROLES ---
+/* ═══════════════ CONTROLES ═══════════════ */
 const getH = () => parseInt(document.getElementById('h-val').innerText);
 const getM = () => parseInt(document.getElementById('m-val').innerText);
 
@@ -154,20 +155,21 @@ document.getElementById('h-down').onclick  = () => { const v = getH(); if(v > 0)
 document.getElementById('m-up').onclick   = () => { const v = getM(); document.getElementById('m-val').innerText = v < 55 ? v + 5 : 0; atualizarSetup(); };
 document.getElementById('m-down').onclick  = () => { const v = getM(); if(v >= 5) document.getElementById('m-val').innerText = v - 5; atualizarSetup(); };
 
-// --- INICIAR ---
+/* ═══════════════ INICIAR ═══════════════ */
 document.getElementById('btn-start').onclick = () => {
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    
+
     if (modoAtual === 'livre') {
         iniciarModoLivre();
         return;
     }
-    
+
     const h = getH(), m = getM();
     if (h === 0 && m === 0) return;
     segsRestantes = h * 3600 + m * 60;
     totalSegs = segsRestantes;
     sessionActive = true;
+    document.body.classList.add('session-active');   // 👈 MODO IMERSIVO
     document.getElementById('setup-controls').style.display = 'none';
     document.getElementById('modo-selector').style.display = 'none';
     document.getElementById('progress-wrap').style.display = 'flex';
@@ -180,10 +182,11 @@ document.getElementById('btn-start').onclick = () => {
     timer = setInterval(tick, 1000);
 };
 
-// --- MODO LIVRE ---
+/* ═══════════════ MODO LIVRE ═══════════════ */
 function iniciarModoLivre() {
     livreSegs = 0;
     sessionActive = true;
+    document.body.classList.add('session-active');   // 👈 MODO IMERSIVO
     document.getElementById('livre-info').style.display = 'none';
     document.getElementById('modo-selector').style.display = 'none';
     document.getElementById('livre-progress-wrap').style.display = 'flex';
@@ -193,7 +196,7 @@ function iniciarModoLivre() {
     document.getElementById('btn-quit').style.display = 'block';
     document.getElementById('livre-materia-label').innerText = materiaSelecionada.toUpperCase();
     document.querySelectorAll('.chip-materia').forEach(c => c.style.opacity = '0.3');
-    
+
     livreTimer = setInterval(tickLivre, 1000);
 }
 
@@ -205,14 +208,12 @@ const tickLivre = () => {
     const m = Math.floor((livreSegs % 3600) / 60);
     const s = livreSegs % 60;
     atualizarFlip(h, m, s);
-    
-    // Atualiza XP acumulado a cada minuto
+
     const minutos = Math.floor(livreSegs / 60);
     const xpAcum = Math.floor(minutos / 25 * 10);
     document.getElementById('livre-xp-badge').innerText = '+' + xpAcum + ' XP acumulado';
 };
 
-// FINALIZAR MODO LIVRE
 document.getElementById('btn-parar-livre').onclick = async () => {
     clearInterval(livreTimer);
     const minutos = Math.floor(livreSegs / 60);
@@ -224,6 +225,7 @@ document.getElementById('btn-parar-livre').onclick = async () => {
     await finalizarSessao(true, minutos);
 };
 
+/* ═══════════════ TICK DO TIMER ═══════════════ */
 const tick = () => {
     if (isPaused) return;
     segsRestantes--;
@@ -238,13 +240,13 @@ const tick = () => {
     if (segsRestantes <= 0) finalizarSessao(true, Math.floor(totalSegs / 60));
 };
 
-// --- PAUSAR ---
+/* ═══════════════ PAUSAR ═══════════════ */
 document.getElementById('btn-pause').onclick = () => {
     isPaused = !isPaused;
     document.getElementById('btn-pause').innerText = isPaused ? 'RETOMAR' : 'PAUSAR';
 };
 
-// --- DESISTIR ---
+/* ═══════════════ DESISTIR ═══════════════ */
 document.getElementById('btn-quit').onclick = () => {
     isPaused = true;
     document.getElementById('modal-confirm').style.display = 'flex';
@@ -264,7 +266,7 @@ document.getElementById('btn-really-quit').onclick = async () => {
     location.reload();
 };
 
-// --- FINALIZAR ---
+/* ═══════════════ FINALIZAR ═══════════════ */
 const finalizarSessao = async (completa, minutosParam) => {
     clearInterval(timer);
     clearInterval(livreTimer);
@@ -301,7 +303,7 @@ const finalizarSessao = async (completa, minutosParam) => {
     setTimeout(() => location.reload(), temNovas ? 4000 : 500);
 };
 
-// --- HISTÓRICO ---
+/* ═══════════════ HISTÓRICO ═══════════════ */
 async function carregarHistorico() {
     if (!userEmail) return;
     try {
@@ -310,8 +312,8 @@ async function carregarHistorico() {
         const historico = snap.data().historico_foco || [];
         const hoje = getHojeStr();
 
-        const totalMin = historico.reduce((a, s) => a + s.minutos, 0);
-        const hojeMin  = historico.filter(s => s.data === hoje).reduce((a, s) => a + s.minutos, 0);
+        const totalMin = historico.reduce((a, s) => a + (s.minutos || 0), 0);
+        const hojeMin  = historico.filter(s => s.data === hoje).reduce((a, s) => a + (s.minutos || 0), 0);
 
         let streak = 0;
         const dias = [...new Set(historico.map(s => s.data))].sort().reverse();
@@ -329,7 +331,7 @@ async function carregarHistorico() {
         document.getElementById('stat-streak').innerText   = streak;
 
         const porMateria = {};
-        historico.forEach(s => { porMateria[s.materia] = (porMateria[s.materia] || 0) + s.minutos; });
+        historico.forEach(s => { porMateria[s.materia] = (porMateria[s.materia] || 0) + (s.minutos || 0); });
         const maxMin = Math.max(...Object.values(porMateria), 1);
 
         document.getElementById('lista-por-materia').innerHTML = Object.keys(porMateria).length === 0
@@ -364,17 +366,15 @@ async function carregarHistorico() {
     } catch(e) { console.error(e); }
 }
 
-// --- PRÉ-PREENCHIMENTO vindo da Agenda (botão "▶ Focar") ---
-// A agenda grava localStorage.hb_foco_prefill = { materia, minutos, tarefaNome, ts } e abre esta página.
+/* ═══════════════ PRÉ-PREENCHIMENTO (Agenda → Foco) ═══════════════ */
 function aplicarPrefillAgenda() {
     let bruto = null;
     try { bruto = localStorage.getItem('hb_foco_prefill'); localStorage.removeItem('hb_foco_prefill'); } catch (e) {}
     if (!bruto) return;
     let p;
     try { p = JSON.parse(bruto); } catch (e) { return; }
-    if (!p || (p.ts && Date.now() - p.ts > 10 * 60 * 1000)) return;       // ignora pré-preenchimento velho (10 min)
+    if (!p || (p.ts && Date.now() - p.ts > 10 * 60 * 1000)) return;
 
-    // matéria: se não estiver nos chips (ex.: veio de "Geral" ou foi removida das notas), cria o chip
     const materia = String(p.materia || 'Geral');
     if (![...document.querySelectorAll('.chip-materia')].some(c => c.dataset.materia === materia)) {
         const chip = document.createElement('div');
@@ -386,14 +386,12 @@ function aplicarPrefillAgenda() {
     }
     window.selecionarMateria(materia);
 
-    // tempo: o timer anda de 5 em 5 min (máx. 12 h)
     let min = Math.round((parseInt(p.minutos) || 25) / 5) * 5;
     min = Math.max(5, Math.min(min, 12 * 60));
     document.getElementById('h-val').innerText = Math.floor(min / 60);
     document.getElementById('m-val').innerText = min % 60;
     atualizarSetup();
 
-    // etiqueta com a tarefa que está sendo focada
     if (p.tarefaNome) {
         const tag = document.createElement('div');
         tag.textContent = '🎯 ' + p.tarefaNome;
@@ -403,7 +401,7 @@ function aplicarPrefillAgenda() {
     }
 }
 
-// --- INIT ---
+/* ═══════════════ INIT ═══════════════ */
 document.addEventListener('DOMContentLoaded', () => {
     carregarMaterias().then(aplicarPrefillAgenda);
     atualizarSetup();
