@@ -476,7 +476,7 @@ window.abrirConfirmExcluir = (i) => {
 /* ═══════════════════════════════════════════════════ */
 /* SCAN COM IA VISION                                   */
 /* ═══════════════════════════════════════════════════ */
-const MODELO_VISAO = 'meta-llama/llama-4-scout-17b-16e-instruct';
+const MODELO_VISAO = 'qwen/qwen3.8-27b';
 
 function initScan() {
     const btnEscanear = document.getElementById('btn-escanear');
