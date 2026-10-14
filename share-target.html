@@ -62,8 +62,15 @@
             cursor:pointer; box-shadow:0 6px 20px rgba(138,43,226,0.4);
         }
         .st-salvar:disabled { opacity:0.5; cursor:not-allowed; }
-
-        /* Painel de status (mostra o que tá acontecendo) */
+        .st-vazio-msg {
+            width:100%; max-width:340px;
+            padding:20px; border-radius:16px;
+            background:rgba(255,68,68,0.08);
+            border:1px solid rgba(255,68,68,0.25);
+            color:#ff9a9a; font-size:13px; font-weight:600;
+            text-align:center; line-height:1.5;
+            margin-bottom:16px;
+        }
         .st-log {
             width:100%; max-width:340px;
             margin-top:16px; padding:12px 14px;
@@ -71,11 +78,8 @@
             background:#16161a;
             border:1px solid rgba(138,43,226,0.25);
             font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-            font-size:11px;
-            line-height:1.55;
-            color:#c084fc;
-            max-height:180px;
-            overflow-y:auto;
+            font-size:11px; line-height:1.55;
+            color:#c084fc; max-height:180px; overflow-y:auto;
             display:none;
         }
         .st-log.on { display:block; }
@@ -89,10 +93,46 @@
 <body>
     <div class="st-preview" id="st-preview"></div>
     <div class="st-titulo">📚 Salvar em Conteúdos</div>
-    <div class="st-sub" id="st-sub">Escolha a matéria</div>
+    <div class="st-sub" id="st-sub">Carregando…</div>
     <div class="st-mats" id="st-mats"></div>
     <button class="st-salvar" id="st-salvar" disabled>Salvar</button>
     <div class="st-log" id="st-log"></div>
+
+    <script>
+        // Mostra erro na tela se o módulo não carregar
+        window.addEventListener('error', function (e) {
+            var box = document.getElementById('st-log');
+            if (box) {
+                box.classList.add('on');
+                var ln = document.createElement('div');
+                ln.className = 'ln err';
+                ln.textContent = '❌ erro global: ' + (e.message || 'desconhecido');
+                box.appendChild(ln);
+            }
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+            var box = document.getElementById('st-log');
+            if (box) {
+                box.classList.add('on');
+                var ln = document.createElement('div');
+                ln.className = 'ln err';
+                ln.textContent = '❌ promise rejeitada: ' + ((e.reason && e.reason.message) || e.reason || 'desconhecido');
+                box.appendChild(ln);
+            }
+        });
+        // Marca quando o módulo carregar
+        setTimeout(function () {
+            var box = document.getElementById('st-log');
+            if (box && !box.classList.contains('on')) {
+                box.classList.add('on');
+                var ln = document.createElement('div');
+                ln.className = 'ln err';
+                ln.textContent = '❌ share-target.js NÃO carregou em 3s. Verifique se o arquivo existe e não tem erro de sintaxe.';
+                box.appendChild(ln);
+            }
+        }, 3000);
+    </script>
+
     <script type="module" src="share-target.js"></script>
 </body>
 </html>
