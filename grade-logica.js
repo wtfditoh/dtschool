@@ -17,13 +17,13 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* ═══════════════ HORÁRIOS (corrigidos) ═══════════════ */
+/* ═══════════════ HORÁRIOS ═══════════════ */
 const TABELA_HORARIOS = {
     matutino: [
         { ordem: "1ª Aula", inicio: "07:00" },
         { ordem: "2ª Aula", inicio: "07:50" },
         { ordem: "3ª Aula", inicio: "08:40" },
-        { ordem: "4ª Aula", inicio: "09:50" },  // após intervalo 09:30-09:50
+        { ordem: "4ª Aula", inicio: "09:50" },
         { ordem: "5ª Aula", inicio: "10:40" },
         { ordem: "6ª Aula", inicio: "11:30" }
     ],
@@ -31,7 +31,7 @@ const TABELA_HORARIOS = {
         { ordem: "1ª Aula", inicio: "13:00" },
         { ordem: "2ª Aula", inicio: "13:50" },
         { ordem: "3ª Aula", inicio: "14:40" },
-        { ordem: "4ª Aula", inicio: "15:50" },  // após intervalo 15:30-15:50
+        { ordem: "4ª Aula", inicio: "15:50" },
         { ordem: "5ª Aula", inicio: "16:40" },
         { ordem: "6ª Aula", inicio: "17:30" }
     ]
@@ -163,8 +163,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     verificarStatusNotificacoes();
 
     intervaloAgora = setInterval(atualizarAgora, 30000);
-
-    // Init do scan
     initScan();
 
     if (window.lucide) lucide.createIcons();
@@ -377,7 +375,7 @@ function atualizarAgora() {
     if (window.lucide) lucide.createIcons();
 }
 
-/* ═══════════════ ABRIR MODAL MANUAL ═══════════════ */
+/* ═══════════════ MODAL MANUAL ═══════════════ */
 window.abrirModalAula = async () => {
     const inputProf = document.getElementById('aula-prof');
     const inputCustom = document.getElementById('aula-materia-custom');
@@ -469,14 +467,14 @@ window.salvarAula = async () => {
     }
 };
 
-/* ═══════════════ EXCLUIR AULA ═══════════════ */
+/* ═══════════════ EXCLUIR ═══════════════ */
 window.abrirConfirmExcluir = (i) => {
     indexParaExcluir = i;
     document.getElementById('modal-confirm-excluir').style.display = 'flex';
 };
 
 /* ═══════════════════════════════════════════════════ */
-/* SISTEMA DE SCAN COM IA VISION                       */
+/* SCAN COM IA VISION                                   */
 /* ═══════════════════════════════════════════════════ */
 const MODELO_VISAO = 'meta-llama/llama-4-scout-17b-16e-instruct';
 
@@ -513,13 +511,12 @@ function initScan() {
         input.click();
     });
 
-     if (btnProcessar) btnProcessar.addEventListener('click', processarScan);
+    if (btnProcessar) btnProcessar.addEventListener('click', processarScan);
     if (btnAplicar) btnAplicar.addEventListener('click', aplicarResultadoScan);
 }
 
 window.abrirModalScan = () => {
     document.getElementById('modal-scan').style.display = 'flex';
-    // Reseta estado
     arquivoScanAtual = null;
     resultadoScanIA = null;
     const preview = document.getElementById('scan-preview');
@@ -549,14 +546,14 @@ function atualizarStatusScan(msg, tipo) {
     el.className = 'scan-status' + (tipo ? ' ' + tipo : '');
 }
 
-/* Comprime pra max 1400px (a IA consegue ler com clareza) */
+/* Comprime pra max 1100px (leve o bastante pra caber no proxy) */
 function comprimirImagemParaIA(file) {
     return new Promise((resolve, reject) => {
         const url = URL.createObjectURL(file);
         const img = new Image();
         img.onload = () => {
             try {
-                const MAX = 1400;
+                const MAX = 1100;
                 let w = img.naturalWidth, h = img.naturalHeight;
                 if (w >= h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
                 else if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
@@ -570,7 +567,7 @@ function comprimirImagemParaIA(file) {
                     URL.revokeObjectURL(url);
                     if (!b) return reject(new Error('compress'));
                     resolve(b);
-                }, 'image/jpeg', 0.85);
+                }, 'image/jpeg', 0.8);
             } catch (e) { URL.revokeObjectURL(url); reject(e); }
         };
         img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img')); };
@@ -590,7 +587,6 @@ function blobParaBase64(blob) {
     });
 }
 
-/* Prompt da IA */
 function montarPromptScan() {
     return [
         'Você é um assistente que lê a grade horária escolar de uma foto de tabela.',
@@ -618,7 +614,6 @@ function montarPromptScan() {
     ].join('\n');
 }
 
-/* Chamada ao Groq (chave própria OU proxy) */
 async function chamarIAVisao(base64Imagem) {
     const chavePropria = (localStorage.getItem('hb_groq_key') || '').trim();
 
@@ -642,7 +637,6 @@ async function chamarIAVisao(base64Imagem) {
         url = 'https://api.groq.com/openai/v1/chat/completions';
         headers = { 'Authorization': 'Bearer ' + chavePropria, 'Content-Type': 'application/json' };
     } else {
-        // Usa o proxy Netlify — precisa do token do Firebase
         const token = await obterTokenFirebase();
         if (!token) throw new Error('Sem chave da IA. Cola sua chave da Groq no Estudos.');
         url = '/.netlify/functions/groq';
@@ -674,7 +668,6 @@ async function obterTokenFirebase() {
     } catch (e) { return null; }
 }
 
-/* Parser robusto do JSON */
 function parseJSONRobusto(texto) {
     let t = String(texto).replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
     const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -699,10 +692,8 @@ function normalizarRespostaIA(dado) {
         out[dia] = arr
             .filter(a => a && (a.materia || a.nome))
             .map((a, i) => {
-                // Encontra a ordem pelo número ou pelo index
                 let ordem = a.ordem || '';
                 if (!ordem) ordem = (i + 1) + 'ª Aula';
-                // Encontra a hora na tabela
                 const idx = TABELA_HORARIOS.vespertino.findIndex(t => t.ordem === ordem);
                 const hora = idx !== -1 ? TABELA_HORARIOS.vespertino[idx].inicio
                            : TABELA_HORARIOS.vespertino[i]?.inicio || '13:00';
@@ -737,7 +728,6 @@ async function processarScan() {
 
         resultadoScanIA = normalizarRespostaIA(parsed);
 
-        // Abre modal de confirmação
         window.fecharModalScan();
         mostrarConfirmScan(resultadoScanIA);
 
@@ -797,7 +787,6 @@ async function aplicarResultadoScan() {
     btn.innerText = 'Salvando...';
 
     try {
-        // Mescla com a grade existente: sobrescreve os dias que a IA leu
         Object.keys(resultadoScanIA).forEach(dia => {
             if (resultadoScanIA[dia] && resultadoScanIA[dia].length > 0) {
                 gradeHoraria[dia] = resultadoScanIA[dia];
