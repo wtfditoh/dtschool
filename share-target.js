@@ -1,9 +1,12 @@
-/* share-target.js — Hub Brain */
+/* share-target.js — Hub Brain · Recebe arquivo compartilhado
+   Imagem → ImgBB · PDF/doc → GoFile via Netlify Function (proxy)
+   Log na tela pra debug sem Console. */
+
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const IMGBB_KEY = 'b329a89d2327b3957464d6d27a3c275b';
-const UPLOAD_PROXY = '/.netlify/functions/arquivo-upload';
+const UPLOAD_PROXY = '/.netlify/functions/gofile-upload';
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -23,6 +26,7 @@ let ehImg = false;
 let materiaSel = null;
 let materias = ['Geral'];
 
+/* ═══════════════ LOG NA TELA ═══════════════ */
 function log(msg, tipo) {
     console.log('[share]', msg);
     const box = $('st-log');
@@ -35,6 +39,7 @@ function log(msg, tipo) {
     box.scrollTop = box.scrollHeight;
 }
 
+/* ═══════════════ DETECÇÃO DE TIPO ═══════════════ */
 const EXTS_IMG = ['jpg','jpeg','png','gif','webp','bmp','heic','heif','avif'];
 const EXTS_ARQ = ['pdf','doc','docx','ppt','pptx','xls','xlsx','txt','csv','zip','rar','odt','ods','odp'];
 
@@ -62,6 +67,7 @@ function corMateria(n) {
     return PALETA[Math.abs(h) % PALETA.length];
 }
 
+/* ═══════════════ PEGAR ARQUIVO DO CACHE ═══════════════ */
 async function pegarArquivo() {
     if (!('caches' in window)) { log('erro: sem caches API', 'err'); return null; }
     const cache = await caches.open('share-target-files');
@@ -77,6 +83,7 @@ async function pegarArquivo() {
     return { blob: blob, nome: nome, mime: mime };
 }
 
+/* ═══════════════ CARREGAR MATÉRIAS ═══════════════ */
 async function carregarMaterias() {
     try {
         const snap = await getDoc(doc(db, 'notas', userEmail));
@@ -105,6 +112,7 @@ async function carregarMaterias() {
     });
 }
 
+/* ═══════════════ COMPRIMIR IMAGEM ═══════════════ */
 function comprimir(file) {
     return new Promise(function(resolve, reject){
         const url = URL.createObjectURL(file);
@@ -134,6 +142,7 @@ function comprimir(file) {
     });
 }
 
+/* ═══════════════ UPLOADS ═══════════════ */
 async function uploadImgBB(blob) {
     log('enviando pro ImgBB (' + Math.round(blob.size/1024) + 'KB)…', 'info');
     const fd = new FormData();
@@ -152,13 +161,10 @@ async function uploadImgBB(blob) {
 }
 
 async function uploadArquivo(file) {
-    log('enviando pro proxy (' + Math.round(file.size/1024) + 'KB)…', 'info');
+    log('enviando pro GoFile via proxy (' + Math.round(file.size/1024) + 'KB)…', 'info');
     const r = await fetch(UPLOAD_PROXY, {
         method: 'POST',
-        headers: {
-            'Content-Type': file.type || 'application/octet-stream',
-            'X-Nome-Arquivo': encodeURIComponent(file.name || 'arquivo.bin')
-        },
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
         body: file
     });
     log('proxy status ' + r.status, 'info');
@@ -167,12 +173,13 @@ async function uploadArquivo(file) {
         try { detalhe = await r.text(); } catch (e) {}
         throw new Error('proxy ' + r.status + ': ' + detalhe.slice(0, 120));
     }
-    const texto = (await r.text()).trim();
-    if (texto.indexOf('http') !== 0) throw new Error('servico: ' + texto.slice(0, 100));
-    log('upload OK', 'ok');
-    return { url: texto, thumb: '', medium: '', display_url: '' };
+    const url = (await r.text()).trim();
+    if (url.indexOf('http') !== 0) throw new Error('GoFile: ' + url.slice(0, 100));
+    log('GoFile OK', 'ok');
+    return { url: url, thumb: '', medium: '', display_url: '' };
 }
 
+/* ═══════════════ SALVAR ═══════════════ */
 async function salvar() {
     if (!arquivo) { log('nenhum arquivo carregado', 'err'); return; }
     if (!materiaSel) { log('escolha uma materia primeiro', 'err'); return; }
@@ -235,6 +242,7 @@ async function salvar() {
     }
 }
 
+/* ═══════════════ INIT ═══════════════ */
 async function iniciar() {
     log('═══ INICIANDO ═══', 'info');
     if (!userEmail) {
