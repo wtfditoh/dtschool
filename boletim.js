@@ -1,10 +1,8 @@
 /* boletim.js — Hub Brain · Modo Boletim Escolar
-   Lê as matérias do notas-logica.js via window.HBNotas.
-   Alterna entre edição e boletim, tema claro/escuro (só no boletim), compartilha imagem. */
+   Tabela com todos os bimestres de uma vez, situação calculada certo, compartilha imagem. */
 
 const $ = (id) => document.getElementById(id);
 
-let periodo = 'media';        // 'media' | '1'..'4'
 let boletimAberto = false;
 
 /* ═══════════════ TEMA ═══════════════ */
@@ -33,36 +31,48 @@ function getNotas(m, numPeriodos) {
     return notas;
 }
 
-function situacaoDaNota(nota, cfg) {
-    if (nota === null || isNaN(nota)) return { txt: '—', cls: 'sem' };
-    if (nota >= cfg.media) return { txt: 'APROVADO', cls: 'aprovado' };
-    if (nota >= 4) return { txt: 'RECUPERAÇÃO', cls: 'recuperacao' };
-    return { txt: 'REPROVADO', cls: 'reprovado' };
+/* Calcula situação REAL:
+   - Se já tem média suficiente mesmo faltando notas → APROVADO
+   - Se ainda não dá pra atingir a média mesmo tirando o máximo → REPROVADO
+   - Se faltam notas mas ainda dá → EM CURSO
+   - Se não tem nenhuma nota → SEM NOTA */
+function calcularSituacao(notas, cfg) {
+    const validas = notas.filter(n => n !== null && !isNaN(n));
+    const total = notas.length;
+    const faltam = total - validas.length;
+
+    if (validas.length === 0) {
+        return { txt: 'SEM NOTA', cls: 'sem' };
+    }
+
+    const soma = validas.reduce((a, b) => a + b, 0);
+    const media = soma / validas.length;
+    const somaMinima = cfg.media * total;   // ex: 6 * 4 = 24
+
+    if (faltam === 0) {
+        // Todas as notas preenchidas
+        return soma >= somaMinima
+            ? { txt: 'APROVADO', cls: 'aprovado' }
+            : { txt: 'REPROVADO', cls: 'reprovado' };
+    }
+
+    // Faltam notas. Tira o cenário:
+    // - Se já somou o mínimo → aprovado garantido
+    if (soma >= somaMinima) {
+        return { txt: 'APROVADO', cls: 'aprovado' };
+    }
+
+    // - Se mesmo tirando nota máxima nas que faltam não atinge → reprovado
+    const somaMaxima = soma + faltam * cfg.notaMax;
+    if (somaMaxima < somaMinima) {
+        return { txt: 'REPROVADO', cls: 'reprovado' };
+    }
+
+    // - Senão, em curso
+    return { txt: 'EM CURSO', cls: 'em-curso' };
 }
 
 /* ═══════════════ RENDER BOLETIM ═══════════════ */
-function renderTabs(cfg) {
-    const tabs = $('bol-tabs');
-    if (!tabs) return;
-
-    const lista = [];
-    for (let i = 0; i < cfg.numPeriodos; i++) {
-        lista.push({ id: String(i + 1), label: cfg.labels[i] });
-    }
-    lista.push({ id: 'media', label: 'MÉDIA' });
-
-    tabs.innerHTML = lista.map(t =>
-        `<button class="bol-tab ${periodo === t.id ? 'on' : ''}" data-p="${t.id}">${t.label}</button>`
-    ).join('');
-
-    tabs.querySelectorAll('.bol-tab').forEach(b => {
-        b.addEventListener('click', () => {
-            periodo = b.dataset.p;
-            renderBoletim();
-        });
-    });
-}
-
 function renderBoletim() {
     const materias = (window.HBNotas && window.HBNotas.getMaterias()) || [];
     const cfg = (window.HBNotas && window.HBNotas.getCfg && window.HBNotas.getCfg()) || {
@@ -70,60 +80,103 @@ function renderBoletim() {
         labels: ['1º BIM', '2º BIM', '3º BIM', '4º BIM']
     };
 
-    // Cabeçalho
+    // ─── Cabeçalho ───
     const nome = localStorage.getItem('dt_user_name') || 'Estudante';
     $('bol-aluno').innerText = nome.toUpperCase();
+
+    let cfgUser = {};
+    try { cfgUser = JSON.parse(localStorage.getItem('dt_config') || '{}'); } catch(e) {}
+
+    $('bol-escola').innerText = (cfgUser.escola || '—').toUpperCase();
+
+    // Série + Turma juntos
+    const serieMap = {
+        '1em': '1° Ano EM', '2em': '2° Ano EM', '3em': '3° Ano EM',
+        '6ef': '6° Ano', '7ef': '7° Ano', '8ef': '8° Ano', '9ef': '9° Ano',
+        'fac': 'Faculdade'
+    };
+    const serie = serieMap[cfgUser.serie] || '';
+    const turma = cfgUser.turma || '';
+    const serieTurma = [serie, turma].filter(Boolean).join(' · ') || '—';
+    $('bol-serie-turma').innerText = serieTurma;
+
+    // Ano letivo
+    const ano = cfgUser.ano || new Date().getFullYear();
+    $('bol-ano').innerText = 'ANO LETIVO ' + ano;
+
+    // Data
     const d = new Date();
     $('bol-data').innerText = String(d.getDate()).padStart(2, '0') + '/' +
         String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
 
-    renderTabs(cfg);
+    // ─── Tabela ───
+    const thead = $('bol-thead');
+    const tbody = $('bol-tbody');
 
-    // Calcula cada linha
-    const linhas = materias.map(m => {
-        const notas = getNotas(m, cfg.numPeriodos);
-        let notaFinal = null;
-        let situacao = { txt: '—', cls: 'sem' };
+    // Cabeçalho da tabela
+    const cols = ['DISCIPLINA'];
+    for (let i = 0; i < cfg.numPeriodos; i++) cols.push(cfg.labels[i]);
+    cols.push('MÉDIA');
+    cols.push('SITUAÇÃO');
 
-        if (periodo === 'media') {
-            const validas = notas.filter(n => n !== null && !isNaN(n));
-            if (validas.length > 0) {
-                notaFinal = validas.reduce((a, b) => a + b, 0) / validas.length;
-            }
-        } else {
-            const idx = parseInt(periodo) - 1;
-            const v = notas[idx];
-            if (v !== null && !isNaN(v)) notaFinal = v;
-        }
+    thead.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr>`;
 
-        if (notaFinal !== null) situacao = situacaoDaNota(notaFinal, cfg);
-
-        return { nome: m.nome, nota: notaFinal, sit: situacao };
-    });
-
-    const cont = $('bol-linhas');
-    if (!linhas.length) {
-        cont.innerHTML = '<div style="text-align:center; padding:30px; color:#666; font-size:13px;">Nenhuma disciplina cadastrada ainda.</div>';
+    if (!materias.length) {
+        tbody.innerHTML = `<tr><td colspan="${cols.length}" style="text-align:center; padding:30px; color:#666; font-size:13px;">Nenhuma disciplina cadastrada ainda.</td></tr>`;
     } else {
-        cont.innerHTML = linhas.map(l => `
-            <div class="bol-linha">
-                <span class="bol-linha-nome">${l.nome}</span>
-                <span class="bol-linha-nota ${l.nota === null ? 'vazia' : ''}">${l.nota === null ? '—' : l.nota.toFixed(1)}</span>
-                <span class="bol-linha-sit ${l.sit.cls}">${l.sit.txt}</span>
-            </div>
-        `).join('');
+        tbody.innerHTML = materias.map(m => {
+            const notas = getNotas(m, cfg.numPeriodos);
+            const validas = notas.filter(n => n !== null && !isNaN(n));
+            const media = validas.length > 0 ? (validas.reduce((a, b) => a + b, 0) / validas.length) : null;
+            const sit = calcularSituacao(notas, cfg);
+
+            const celulasNotas = notas.map(n => {
+                if (n === null || isNaN(n)) return '<td class="bol-td-nota vazia">—</td>';
+                const cls = n >= cfg.media ? 'boa' : (n >= 4 ? 'media' : 'baixa');
+                return `<td class="bol-td-nota ${cls}">${n.toFixed(1)}</td>`;
+            }).join('');
+
+            const mediaTxt = media === null ? '—' : media.toFixed(1);
+            const mediaCls = media === null ? 'vazia' : (media >= cfg.media ? 'boa' : (media >= 4 ? 'media' : 'baixa'));
+
+            return `
+                <tr>
+                    <td class="bol-td-disc">${m.nome}</td>
+                    ${celulasNotas}
+                    <td class="bol-td-media ${mediaCls}">${mediaTxt}</td>
+                    <td class="bol-td-sit"><span class="bol-sit ${sit.cls}">${sit.txt}</span></td>
+                </tr>
+            `;
+        }).join('');
     }
 
-    // Resumo
-    const validas = linhas.filter(l => l.nota !== null);
-    const mediaGeral = validas.length > 0 ? (validas.reduce((a, l) => a + l.nota, 0) / validas.length) : 0;
-    const aprovadas = validas.filter(l => l.nota >= cfg.media).length;
+    // ─── Resumo geral ───
+    let somaMedias = 0, comMedia = 0, aprovadas = 0;
+    materias.forEach(m => {
+        const notas = getNotas(m, cfg.numPeriodos);
+        const validas = notas.filter(n => n !== null && !isNaN(n));
+        if (validas.length > 0) {
+            const media = validas.reduce((a, b) => a + b, 0) / validas.length;
+            somaMedias += media;
+            comMedia++;
+            if (media >= cfg.media) aprovadas++;
+        }
+    });
+    const mediaGeral = comMedia > 0 ? (somaMedias / comMedia) : 0;
 
-    $('bol-media').innerText = mediaGeral.toFixed(1);
+    $('bol-media-geral').innerText = mediaGeral.toFixed(1);
     $('bol-aprovadas').innerText = aprovadas + '/' + materias.length;
 
-    const status = mediaGeral >= cfg.media ? 'APROVADO' : (mediaGeral > 0 ? 'EM RECUPERAÇÃO' : '—');
-    $('bol-status').innerText = status;
+    let statusGeral = '—';
+    let statusCor = '#666';
+    if (comMedia > 0) {
+        if (mediaGeral >= cfg.media) { statusGeral = 'APROVADO'; statusCor = '#00e5a0'; }
+        else if (mediaGeral >= 4) { statusGeral = 'RECUPERAÇÃO'; statusCor = '#ffbb33'; }
+        else { statusGeral = 'REPROVADO'; statusCor = '#ff4455'; }
+    }
+    const elStatus = $('bol-status-geral');
+    elStatus.innerText = statusGeral;
+    elStatus.style.color = statusCor;
 
     if (window.lucide) lucide.createIcons();
 }
@@ -144,7 +197,7 @@ function alternarModo() {
         if (bo) bo.style.display = 'block';
         if (btn) { btn.classList.add('ativo'); btn.innerHTML = '<i data-lucide="pencil"></i>'; }
         if (btnAdd) btnAdd.style.display = 'none';
-        if (btnTemaEl) btnTemaEl.style.display = '';   // ✅ mostra o botão de tema
+        if (btnTemaEl) btnTemaEl.style.display = '';
         renderBoletim();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -152,7 +205,7 @@ function alternarModo() {
         if (bo) bo.style.display = 'none';
         if (btn) { btn.classList.remove('ativo'); btn.innerHTML = '<i data-lucide="clipboard-list"></i>'; }
         if (btnAdd) btnAdd.style.display = '';
-        if (btnTemaEl) btnTemaEl.style.display = 'none';   // ✅ esconde o botão de tema
+        if (btnTemaEl) btnTemaEl.style.display = 'none';
     }
     if (window.lucide) lucide.createIcons();
 }
@@ -160,7 +213,7 @@ function alternarModo() {
 /* ═══════════════ COMPARTILHAR ═══════════════ */
 async function compartilharBoletim() {
     const btn = $('btn-share-boletim');
-    if (btn) { btn.disabled = true; }
+    if (btn) btn.disabled = true;
 
     let container = document.getElementById('bol-share-container');
     if (!container) {
@@ -170,111 +223,138 @@ async function compartilharBoletim() {
         document.body.appendChild(container);
     }
 
+    const materias = (window.HBNotas && window.HBNotas.getMaterias()) || [];
     const cfg = (window.HBNotas && window.HBNotas.getCfg && window.HBNotas.getCfg()) || {
-        numPeriodos: 4, media: 6,
+        numPeriodos: 4, notaMax: 10, media: 6,
         labels: ['1º BIM', '2º BIM', '3º BIM', '4º BIM']
     };
-    const materias = (window.HBNotas && window.HBNotas.getMaterias()) || [];
+
+    let cfgUser = {};
+    try { cfgUser = JSON.parse(localStorage.getItem('dt_config') || '{}'); } catch(e) {}
+
     const nome = (localStorage.getItem('dt_user_name') || 'Estudante').toUpperCase();
+    const escola = (cfgUser.escola || '').toUpperCase() || '—';
+    const serieMap = {
+        '1em': '1° Ano EM', '2em': '2º Ano EM', '3em': '3° Ano EM',
+        '6ef': '6° Ano', '7ef': '7° Ano', '8ef': '8° Ano', '9ef': '9° Ano',
+        'fac': 'Faculdade'
+    };
+    const serieTurma = [serieMap[cfgUser.serie] || '', cfgUser.turma || ''].filter(Boolean).join(' · ') || '—';
+    const anoLetivo = cfgUser.ano || new Date().getFullYear();
+
     const d = new Date();
     const dataStr = String(d.getDate()).padStart(2, '0') + '/' +
         String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+
     const ehClaro = document.body.classList.contains('tema-claro');
-
-    const periodoTxt = periodo === 'media' ? 'MÉDIA FINAL' : cfg.labels[parseInt(periodo) - 1];
-
-    const linhas = materias.map(m => {
-        const notas = getNotas(m, cfg.numPeriodos);
-        let notaFinal = null;
-        if (periodo === 'media') {
-            const vs = notas.filter(n => n !== null && !isNaN(n));
-            if (vs.length > 0) notaFinal = vs.reduce((a, b) => a + b, 0) / vs.length;
-        } else {
-            const v = notas[parseInt(periodo) - 1];
-            if (v !== null && !isNaN(v)) notaFinal = v;
-        }
-        const sit = notaFinal === null ? { txt: '—', cls: 'sem' } : situacaoDaNota(notaFinal, cfg);
-        return { nome: m.nome, nota: notaFinal, sit };
-    });
-
-    const validas = linhas.filter(l => l.nota !== null);
-    const mediaGeral = validas.length > 0 ? (validas.reduce((a, l) => a + l.nota, 0) / validas.length) : 0;
-    const aprovadas = validas.filter(l => l.nota >= cfg.media).length;
-
     const bg1 = ehClaro ? '#ffffff' : '#0d0d12';
     const bg2 = ehClaro ? '#f5f3fa' : '#08080c';
     const txt = ehClaro ? '#1a1a1c' : '#ffffff';
     const txtDim = ehClaro ? '#999' : '#666';
+    const bordaSuave = ehClaro ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.08)';
     const roxo = '#8a2be2';
     const verde = '#00c851';
     const amarelo = '#ffbb33';
     const vermelho = '#ff4455';
 
-    const corSit = (sit) => sit === 'aprovado' ? verde : sit === 'recuperacao' ? amarelo : sit === 'reprovado' ? vermelho : txtDim;
+    // Monta as linhas
+    const linhas = materias.map(m => {
+        const notas = getNotas(m, cfg.numPeriodos);
+        const validas = notas.filter(n => n !== null && !isNaN(n));
+        const media = validas.length > 0 ? (validas.reduce((a, b) => a + b, 0) / validas.length) : null;
+        const sit = calcularSituacao(notas, cfg);
+        return { nome: m.nome, notas, media, sit };
+    });
+
+    // Colunas do cabeçalho
+    const headCols = ['DISCIPLINA', ...cfg.labels, 'MÉDIA', 'SITUAÇÃO'];
+
+    // Resumo geral
+    let somaMedias = 0, comMedia = 0, aprovadas = 0;
+    linhas.forEach(l => {
+        if (l.media !== null) {
+            somaMedias += l.media;
+            comMedia++;
+            if (l.media >= cfg.media) aprovadas++;
+        }
+    });
+    const mediaGeral = comMedia > 0 ? (somaMedias / comMedia) : 0;
+
+    const corSitTxt = (cls) => cls === 'aprovado' ? verde : cls === 'recuperacao' ? amarelo : cls === 'reprovado' ? vermelho : cls === 'em-curso' ? roxo : txtDim;
 
     container.innerHTML = `
-        <div style="width:1080px; min-height:1350px; padding:80px 70px; background:linear-gradient(160deg, ${bg1}, ${bg2}); color:${txt}; font-family:'Outfit',sans-serif; position:relative; overflow:hidden;">
+        <div style="width:1080px; min-height:1350px; padding:70px 60px; background:linear-gradient(160deg, ${bg1}, ${bg2}); color:${txt}; font-family:'Outfit',sans-serif; position:relative; overflow:hidden;">
             <div style="position:absolute; right:-80px; bottom:-80px; opacity:0.05; transform:rotate(-12deg); width:420px;">
                 <img src="icon-514_20260512_161420_0000.png" style="width:100%;">
             </div>
 
             <div style="position:relative; z-index:1;">
-                <h1 style="font-size:44px; font-weight:900; text-align:center; letter-spacing:8px; margin:0; color:${txt};">BOLETIM ESCOLAR</h1>
-                <div style="height:4px; margin:22px auto 40px; width:60%; background:linear-gradient(90deg, transparent, ${roxo} 50%, transparent); border-radius:4px;"></div>
+                <h1 style="font-size:42px; font-weight:900; text-align:center; letter-spacing:8px; margin:0; color:${txt};">BOLETIM ESCOLAR</h1>
+                <div style="text-align:center; font-size:13px; color:${txtDim}; letter-spacing:4px; margin-top:8px;">ANO LETIVO ${anoLetivo}</div>
+                <div style="height:4px; margin:22px auto 34px; width:60%; background:linear-gradient(90deg, transparent, ${roxo} 50%, transparent); border-radius:4px;"></div>
 
-                <div style="display:grid; grid-template-columns:1fr auto; gap:20px; margin-bottom:36px; padding:20px 26px; border-radius:18px; background:${ehClaro ? 'rgba(138,43,226,0.06)' : 'rgba(138,43,226,0.08)'}; border:1px solid ${ehClaro ? 'rgba(138,43,226,0.2)' : 'rgba(138,43,226,0.25)'};">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px 30px; margin-bottom:32px; padding:22px 26px; border-radius:18px; background:${ehClaro ? 'rgba(138,43,226,0.05)' : 'rgba(138,43,226,0.08)'}; border:1px solid ${ehClaro ? 'rgba(138,43,226,0.2)' : 'rgba(138,43,226,0.25)'};">
                     <div>
-                        <span style="display:block; font-size:11px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:6px;">ALUNO</span>
-                        <strong style="font-size:22px; font-weight:900; color:${txt}; letter-spacing:1px;">${nome}</strong>
+                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">ALUNO</span>
+                        <strong style="font-size:16px; font-weight:900; color:${txt}; letter-spacing:0.5px;">${nome}</strong>
                     </div>
-                    <div style="text-align:right;">
-                        <span style="display:block; font-size:11px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:6px;">DATA</span>
-                        <strong style="font-size:18px; font-weight:800; color:${txt};">${dataStr}</strong>
+                    <div>
+                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">DATA</span>
+                        <strong style="font-size:16px; font-weight:800; color:${txt};">${dataStr}</strong>
+                    </div>
+                    <div>
+                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">ESCOLA</span>
+                        <strong style="font-size:15px; font-weight:800; color:${txt};">${escola}</strong>
+                    </div>
+                    <div>
+                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">SÉRIE / TURMA</span>
+                        <strong style="font-size:15px; font-weight:800; color:${txt};">${serieTurma}</strong>
                     </div>
                 </div>
 
-                <div style="text-align:center; margin-bottom:28px;">
-                    <span style="display:inline-block; padding:10px 26px; border-radius:20px; background:${ehClaro ? 'rgba(138,43,226,0.1)' : 'rgba(138,43,226,0.15)'}; color:${roxo}; font-size:14px; font-weight:900; letter-spacing:3px;">${periodoTxt}</span>
-                </div>
+                <table style="width:100%; border-collapse:collapse; margin-bottom:32px;">
+                    <thead>
+                        <tr>
+                            ${headCols.map((c, i) => `<th style="padding:12px 8px; font-size:11px; font-weight:900; letter-spacing:1.5px; color:${txtDim}; text-align:${i === 0 ? 'left' : 'center'}; border-bottom:2px solid ${bordaSuave};">${c}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${linhas.map(l => `
+                            <tr>
+                                <td style="padding:14px 8px; font-size:15px; font-weight:800; color:${txt}; text-transform:uppercase; letter-spacing:0.3px; border-bottom:1px dashed ${bordaSuave};">${l.nome}</td>
+                                ${l.notas.map(n => `<td style="padding:14px 8px; text-align:center; font-size:17px; font-weight:900; color:${n === null ? txtDim : txt}; border-bottom:1px dashed ${bordaSuave};">${n === null ? '—' : n.toFixed(1)}</td>`).join('')}
+                                <td style="padding:14px 8px; text-align:center; font-size:19px; font-weight:900; color:${l.media === null ? txtDim : txt}; border-bottom:1px dashed ${bordaSuave};">${l.media === null ? '—' : l.media.toFixed(1)}</td>
+                                <td style="padding:14px 8px; text-align:center; border-bottom:1px dashed ${bordaSuave};">
+                                    <span style="display:inline-block; padding:6px 12px; border-radius:14px; font-size:10px; font-weight:900; letter-spacing:1px; color:${corSitTxt(l.sit.cls)}; background:${corSitTxt(l.sit.cls)}1a;">${l.sit.txt}</span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
 
-                <div style="margin-bottom:32px;">
-                    <div style="display:grid; grid-template-columns:1fr 120px 180px; gap:12px; padding:14px 18px; font-size:12px; font-weight:800; letter-spacing:2px; color:${txtDim}; border-bottom:2px solid ${ehClaro ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)'};">
-                        <span>DISCIPLINA</span>
-                        <span style="text-align:center;">NOTA</span>
-                        <span style="text-align:center;">SITUAÇÃO</span>
-                    </div>
-                    ${linhas.map(l => `
-                        <div style="display:grid; grid-template-columns:1fr 120px 180px; gap:12px; align-items:center; padding:16px 18px; border-bottom:1px dashed ${ehClaro ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)'};">
-                            <span style="font-weight:800; font-size:18px; color:${txt}; text-transform:uppercase; letter-spacing:0.5px;">${l.nome}</span>
-                            <span style="text-align:center; font-weight:900; font-size:24px; color:${l.nota === null ? txtDim : txt};">${l.nota === null ? '—' : l.nota.toFixed(1)}</span>
-                            <span style="text-align:center; font-weight:900; font-size:12px; letter-spacing:1px; padding:8px 10px; border-radius:20px; color:${corSit(l.sit.cls)}; background:${corSit(l.sit.cls)}1a;">${l.sit.txt}</span>
-                        </div>
-                    `).join('')}
-                </div>
-
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; padding:26px; border-radius:20px; background:linear-gradient(135deg, ${ehClaro ? 'rgba(138,43,226,0.1)' : 'rgba(138,43,226,0.18)'}, ${ehClaro ? 'rgba(138,43,226,0.02)' : 'rgba(138,43,226,0.05)'}); border:1px solid ${ehClaro ? 'rgba(138,43,226,0.25)' : 'rgba(138,43,226,0.35)'}; margin-bottom:40px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; padding:24px; border-radius:20px; background:linear-gradient(135deg, ${ehClaro ? 'rgba(138,43,226,0.08)' : 'rgba(138,43,226,0.18)'}, ${ehClaro ? 'rgba(138,43,226,0.02)' : 'rgba(138,43,226,0.05)'}); border:1px solid ${ehClaro ? 'rgba(138,43,226,0.25)' : 'rgba(138,43,226,0.35)'}; margin-bottom:40px;">
                     <div style="text-align:center;">
-                        <span style="display:block; font-size:11px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:6px;">MÉDIA GERAL</span>
-                        <strong style="font-size:36px; font-weight:900; color:${roxo};">${mediaGeral.toFixed(1)}</strong>
+                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">MÉDIA GERAL</span>
+                        <strong style="font-size:32px; font-weight:900; color:${roxo};">${mediaGeral.toFixed(1)}</strong>
                     </div>
                     <div style="text-align:center;">
-                        <span style="display:block; font-size:11px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:6px;">APROVADAS</span>
-                        <strong style="font-size:36px; font-weight:900; color:${roxo};">${aprovadas}/${materias.length}</strong>
+                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">APROVADAS</span>
+                        <strong style="font-size:32px; font-weight:900; color:${roxo};">${aprovadas}/${materias.length}</strong>
                     </div>
                     <div style="text-align:center;">
-                        <span style="display:block; font-size:11px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:6px;">SITUAÇÃO</span>
-                        <strong style="font-size:20px; font-weight:900; color:${mediaGeral >= cfg.media ? verde : mediaGeral > 0 ? amarelo : txtDim}; padding-top:12px; display:block;">${mediaGeral >= cfg.media ? 'APROVADO' : mediaGeral > 0 ? 'RECUPERAÇÃO' : '—'}</strong>
+                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">SITUAÇÃO</span>
+                        <strong style="font-size:18px; font-weight:900; color:${mediaGeral >= cfg.media ? verde : mediaGeral > 0 ? amarelo : txtDim}; display:block; padding-top:10px;">${mediaGeral >= cfg.media ? 'APROVADO' : mediaGeral > 0 ? 'RECUPERAÇÃO' : '—'}</strong>
                     </div>
                 </div>
 
-                <div style="text-align:center; margin-top:60px;">
+                <div style="text-align:center; margin-top:40px;">
                     <div style="width:280px; height:1px; background:${ehClaro ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'}; margin:0 auto 10px;"></div>
-                    <span style="font-size:12px; font-weight:700; color:${txtDim}; letter-spacing:2px; text-transform:uppercase;">Coordenação Hub Brain</span>
+                    <span style="font-size:11px; font-weight:700; color:${txtDim}; letter-spacing:2px; text-transform:uppercase;">Coordenação Hub Brain</span>
                 </div>
 
-                <div style="text-align:center; margin-top:50px;">
+                <div style="text-align:center; margin-top:40px;">
                     <div style="font-size:22px; font-weight:900; color:${roxo}; letter-spacing:4px;">HUB BRAIN</div>
-                    <div style="font-size:14px; color:${txtDim}; margin-top:6px;">hubbrain.netlify.app</div>
+                    <div style="font-size:13px; color:${txtDim}; margin-top:6px;">hubbrain.netlify.app</div>
                 </div>
             </div>
         </div>
@@ -293,7 +373,7 @@ async function compartilharBoletim() {
 
         canvas.toBlob(async blob => {
             const file = new File([blob], 'Boletim_HubBrain.png', { type: 'image/png' });
-            const texto = `📚 Meu boletim no Hub Brain — ${periodoTxt}\nMédia: ${mediaGeral.toFixed(1)}\n\nhttps://hubbrain.netlify.app`;
+            const texto = `📚 Meu boletim no Hub Brain\nMédia: ${mediaGeral.toFixed(1)} · Aprovadas: ${aprovadas}/${materias.length}\n\nhttps://hubbrain.netlify.app`;
 
             if (navigator.share) {
                 try { await navigator.share({ title: 'Meu Boletim', text: texto, files: [file] }); }
@@ -327,7 +407,6 @@ function iniciar() {
     if (btnTema) btnTema.addEventListener('click', toggleTema);
     if (btnShare) btnShare.addEventListener('click', compartilharBoletim);
 
-    // Restaura modo salvo
     if (localStorage.getItem('hb_notas_modo') === 'boletim') {
         setTimeout(() => alternarModo(), 400);
     }
