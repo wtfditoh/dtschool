@@ -77,7 +77,7 @@ exports.handler = async (event) => {
     contents: { pt: mensagem, en: mensagem },
     url: siteUrl + '/index.html',
     ttl: 4 * 3600,
-    idempotency_key: 'admin-' + Date.now()
+    idempotency_key: crypto.randomUUID()
   };
 
   try {
