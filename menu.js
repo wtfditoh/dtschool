@@ -2,6 +2,7 @@ const criarMenuGlobal = () => {
     const nome = localStorage.getItem('dt_user_name') || 'Estudante';
     const email = (localStorage.getItem('dt_user_email') || '').toLowerCase();
     const avatar = localStorage.getItem('dt_user_avatar') || 'user';
+    const foto = localStorage.getItem('dt_user_foto') || '';
     const primeiroNome = nome.split(' ')[0];
 
     const menuHTML = `
