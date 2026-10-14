@@ -1,32 +1,21 @@
 /* conteudos.js — Hub Brain · Página de Conteúdos
-   Imagem → ImgBB · PDF/doc → catbox.moe · múltiplos · zoom · compartilhar. */
+   Listagem por matéria · zoom · compartilhar · excluir.
+   O envio (foto/arquivo → ImgBB/catbox → Firestore) agora é o "Adicionar rápido" (hb-rapido.js + conteudos-upload.js),
+   o mesmo da Home e da Agenda. A chave do ImgBB fica em conteudos-upload.js. */
 
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { db } from "./hb-firebase.js";
+import { abrirRapido } from "./hb-rapido.js";
+import { extArquivo, emojiPorExt } from "./conteudos-upload.js";
 
-const IMGBB_KEY = 'COLE_SUA_CHAVE_AQUI';
-const CATBOX_URL = 'https://catbox.moe/user/api.php';
-
-const firebaseConfig = {
-    apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
-    authDomain: "dt-scho0l.firebaseapp.com",
-    projectId: "dt-scho0l",
-    storageBucket: "dt-scho0l.firebasestorage.app",
-    messagingSenderId: "78578509391",
-    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
-};
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const userEmail = localStorage.getItem('dt_user_email');
 
 const $ = (id) => document.getElementById(id);
 let fotos = [];
 let filtroMat = 'todas';
-let materias = ['Geral'];
 let viewerIdx = 0;
 let confirmandoDel = false;
 let confirmTimer = null;
-let enviando = false;
 
 const PALETA = ['#8a2be2','#00d2ff','#00e5a0','#ff8c32','#ff4455','#c084fc','#ffbb33','#3b82f6','#ec4899','#10b981'];
 function corMateria(nome) {
@@ -36,16 +25,6 @@ function corMateria(nome) {
     return PALETA[Math.abs(h) % PALETA.length];
 }
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-function extArquivo(nome) {
-    const m = String(nome || '').toLowerCase().match(/\.([a-z0-9]{1,6})$/);
-    return m ? m[1] : '';
-}
-function emojiPorExt(ext) {
-    const map = { pdf:'📕', doc:'📘', docx:'📘', txt:'📄', ppt:'📙', pptx:'📙',
-                  xls:'📗', xlsx:'📗', csv:'📗', zip:'🗜️', rar:'🗜️', mp3:'🎵', mp4:'🎬' };
-    return map[ext] || '📎';
-}
 
 function toast(msg, ms) {
     let el = document.querySelector('.ct-toast');
@@ -82,21 +61,6 @@ function clampXY() {
     zoom.y = Math.max(-maxY, Math.min(maxY, zoom.y));
 }
 
-async function carregarMaterias() {
-    if (!userEmail) return;
-    try {
-        const snap = await getDoc(doc(db, 'notas', userEmail));
-        if (snap.exists() && Array.isArray(snap.data().materias)) {
-            const nomes = snap.data().materias.map(m => m && m.nome).filter(Boolean);
-            materias = ['Geral', ...new Set(nomes)];
-        }
-    } catch (e) {
-        try {
-            const local = JSON.parse(localStorage.getItem('materias') || '[]');
-            if (local.length) materias = ['Geral', ...local.map(m => m.nome)];
-        } catch (_) {}
-    }
-}
 async function carregarFotos() {
     if (!userEmail) return;
     $('ct-loading').style.display = 'flex';
@@ -143,7 +107,7 @@ function render() {
             const dataCurta = (f.data || '').slice(5).replace('-', '/');
             if (f.tipo === 'arquivo') {
                 const ext = extArquivo(f.nome);
-                html += `<div class="ct-item ct-arquivo" data-id="${f.id}">
+                html += `<div class="ct-item ct-arquivo" data-id="${esc(f.id)}">
                     <span class="ct-ico">${emojiPorExt(ext)}</span>
                     <span class="ct-ext">${esc(ext || 'arquivo')}</span>
                     <span class="ct-nome-mini">${esc(f.nome || '')}</span>
@@ -151,9 +115,8 @@ function render() {
                 </div>`;
             } else {
                 const src = f.thumb || f.url || f.medium || '';
-                html += `<div class="ct-item" data-id="${f.id}">
-                    <img src="${esc(src)}" alt="" loading="lazy" decoding="async"
-                         onerror="console.warn('[grid]', this.src); this.onerror=null;">
+                html += `<div class="ct-item" data-id="${esc(f.id)}">
+                    <img src="${esc(src)}" alt="" loading="lazy" decoding="async">
                     <span class="ct-data">${esc(dataCurta)}</span>
                 </div>`;
             }
@@ -167,6 +130,8 @@ function render() {
     });
     lista.querySelectorAll('.ct-item').forEach(it => {
         it.addEventListener('click', () => abrirViewer(it.dataset.id));
+        const img = it.querySelector('img');
+        if (img) img.addEventListener('error', () => it.classList.add('quebrada'), { once: true });   // foto que não carregou
     });
 }
 
@@ -317,161 +282,6 @@ async function compartilharAtual() {
     try { await navigator.clipboard.writeText(f.url); toast('✓ Link copiado'); } catch (e) {}
 }
 
-function escolherTipo() {
-    return new Promise((resolve) => {
-        const modal = $('ct-tipo');
-        modal.classList.add('on');
-        const fechar = (valor) => {
-            modal.classList.remove('on');
-            setTimeout(() => resolve(valor), 250);
-        };
-        const h = (e) => {
-            if (e.target === modal) { cleanup(); fechar(null); return; }
-            const b = e.target.closest('.ct-tipo-btn');
-            if (b) { cleanup(); fechar(b.dataset.tipo); return; }
-            if (e.target.id === 'ct-tipo-cancel') { cleanup(); fechar(null); }
-        };
-        const cleanup = () => modal.removeEventListener('click', h);
-        modal.addEventListener('click', h);
-    });
-}
-
-function escolherMateria(qtd) {
-    return new Promise((resolve) => {
-        const modal = $('ct-modal');
-        const matsBox = $('ct-mats');
-        const sub = $('ct-modal-sub');
-        if (sub) sub.textContent = qtd > 1 ? qtd + ' itens — escolha a matéria' : 'Do conteúdo';
-
-        matsBox.innerHTML = materias.map(m =>
-            `<button class="ct-mat" data-m="${esc(m)}">
-                <span class="ct-mat-dot" style="background:${corMateria(m)}"></span>${esc(m)}
-            </button>`).join('');
-        modal.classList.add('on');
-        const fechar = (valor) => {
-            modal.classList.remove('on');
-            setTimeout(() => resolve(valor), 250);
-        };
-        const h = (e) => {
-            if (e.target === modal) { cleanup(); fechar(null); return; }
-            const b = e.target.closest('.ct-mat');
-            if (b) { cleanup(); fechar(b.dataset.m); return; }
-            if (e.target.id === 'ct-cancelar') { cleanup(); fechar(null); }
-        };
-        const cleanup = () => modal.removeEventListener('click', h);
-        modal.addEventListener('click', h);
-    });
-}
-
-function comprimir(file) {
-    return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = () => {
-            try {
-                const MAX = 2400, Q = 0.92;
-                let w = img.naturalWidth, h = img.naturalHeight;
-                if (w >= h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-                else if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
-                const c = document.createElement('canvas');
-                c.width = w; c.height = h;
-                const ctx = c.getContext('2d');
-                ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
-                ctx.drawImage(img, 0, 0, w, h);
-                c.toBlob(b => { URL.revokeObjectURL(url); b ? resolve(b) : reject(new Error('compress')); }, 'image/jpeg', Q);
-            } catch (e) { URL.revokeObjectURL(url); reject(e); }
-        };
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img')); };
-        img.src = url;
-    });
-}
-
-async function uploadImgBB(blob) {
-    const fd = new FormData();
-    fd.append('image', blob);
-    const r = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, { method: 'POST', body: fd });
-    const d = await r.json();
-    if (!d.success || !d.data) throw new Error((d.error && d.error.message) || 'ImgBB recusou');
-    return {
-        url: d.data.url || (d.data.image && d.data.image.url) || '',
-        thumb: (d.data.thumb && d.data.thumb.url) || d.data.url || '',
-        medium: (d.data.medium && d.data.medium.url) || d.data.url || '',
-        display_url: d.data.display_url || ''
-    };
-}
-
-async function uploadCatbox(file) {
-    const fd = new FormData();
-    fd.append('reqtype', 'fileupload');
-    fd.append('fileToUpload', file);
-    const r = await fetch(CATBOX_URL, { method: 'POST', body: fd });
-    if (!r.ok) throw new Error('catbox falhou (' + r.status + ')');
-    const txt = (await r.text()).trim();
-    if (!txt.startsWith('http')) throw new Error('catbox: ' + txt.slice(0, 80));
-    return { url: txt, thumb: '', medium: '', display_url: '' };
-}
-
-async function processarArquivos(files, tipoForcado) {
-    if (!files || !files.length || enviando) return;
-    enviando = true;
-    const btn = $('ct-add');
-    btn.disabled = true; btn.style.opacity = '0.5';
-
-    try {
-        const materia = await escolherMateria(files.length);
-        if (!materia) return;
-
-        const hoje = new Date().toISOString().split('T')[0];
-        let ok = 0, falha = 0;
-
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            try {
-                toast('📤 Enviando ' + (i + 1) + '/' + files.length + '…', 5000);
-                let urls, tipoItem;
-                if (tipoForcado === 'arq' || !file.type.startsWith('image/')) {
-                    urls = await uploadCatbox(file);
-                    tipoItem = 'arquivo';
-                } else {
-                    const blob = await comprimir(file);
-                    urls = await uploadImgBB(blob);
-                    tipoItem = 'imagem';
-                }
-                if (!urls.url) throw new Error('sem URL');
-                await addDoc(collection(db, 'conteudos'), {
-                    usuario: userEmail,
-                    materia: materia,
-                    tipo: tipoItem,
-                    url: urls.url,
-                    thumb: urls.thumb || '',
-                    medium: urls.medium || '',
-                    display_url: urls.display_url || '',
-                    nome: file.name || (tipoItem === 'imagem' ? 'Foto ' + (i + 1) : 'Arquivo'),
-                    data: hoje,
-                    criadoEm: Date.now() + i,
-                    origem: 'conteudos'
-                });
-                ok++;
-            } catch (err) {
-                console.error('[ct] falha:', err);
-                falha++;
-            }
-        }
-
-        if (falha === 0) toast('✓ ' + ok + (ok === 1 ? ' item salvo' : ' itens salvos') + ' em ' + materia);
-        else if (ok === 0) toast('❌ Nada foi salvo');
-        else toast('✓ ' + ok + ' salvos · ' + falha + ' falharam', 3500);
-
-        await carregarFotos();
-    } catch (e) {
-        console.error('[ct]', e);
-        toast('Erro: ' + (e.message || 'tente de novo'));
-    } finally {
-        enviando = false;
-        btn.disabled = false; btn.style.opacity = '';
-    }
-}
-
 function instalarGestosZoom() {
     const viewer = $('ct-viewer');
     const img = $('ct-viewer-img');
@@ -585,22 +395,8 @@ function handleDoubleTap(x, y) {
 }
 
 async function iniciar() {
-    // Botão + abre o mini-menu de tipo
-    $('ct-add').addEventListener('click', async () => {
-        const tipo = await escolherTipo();
-        if (tipo === 'img') $('ct-file-img').click();
-        else if (tipo === 'arq') $('ct-file-arq').click();
-    });
-    $('ct-file-img').addEventListener('change', (e) => {
-        const files = Array.from(e.target.files || []);
-        if (files.length) processarArquivos(files, 'img');
-        e.target.value = '';
-    });
-    $('ct-file-arq').addEventListener('change', (e) => {
-        const files = Array.from(e.target.files || []);
-        if (files.length) processarArquivos(files, 'arq');
-        e.target.value = '';
-    });
+    // + abre o "Adicionar rápido" direto na aba Conteúdo (câmera, galeria ou arquivo, matéria e prévia)
+    $('ct-add').addEventListener('click', () => abrirRapido({ aba: 'conteudo', onConteudo: () => carregarFotos() }));
 
     $('ct-viewer-x').addEventListener('click', fecharViewer);
     $('ct-viewer-ant').addEventListener('click', () => navViewer(-1));
@@ -615,7 +411,6 @@ async function iniciar() {
     });
 
     instalarGestosZoom();
-    await carregarMaterias();
     await carregarFotos();
 }
 
