@@ -1,5 +1,6 @@
 /* boletim.js — Hub Brain · Modo Boletim Escolar
-   Tabela com todos os bimestres de uma vez, situação calculada certo, compartilha imagem. */
+   Situação correta (soma ≥ mínima = aprovado mesmo com bimestre em branco),
+   compartilhar em formato A4 vertical, assinatura vintage "Ditoh". */
 
 const $ = (id) => document.getElementById(id);
 
@@ -31,11 +32,12 @@ function getNotas(m, numPeriodos) {
     return notas;
 }
 
-/* Calcula situação REAL:
-   - Se já tem média suficiente mesmo faltando notas → APROVADO
-   - Se ainda não dá pra atingir a média mesmo tirando o máximo → REPROVADO
-   - Se faltam notas mas ainda dá → EM CURSO
-   - Se não tem nenhuma nota → SEM NOTA */
+/* Situação correta:
+   - Sem notas → SEM NOTA
+   - Soma já bateu o mínimo → APROVADO (não importa se falta bimestre)
+   - Faltam notas MAS ainda dá pra atingir → EM CURSO
+   - Faltam notas e NÃO dá mais pra atingir → REPROVADO
+   - Fechou tudo → APROVADO se bateu, senão REPROVADO */
 function calcularSituacao(notas, cfg) {
     const validas = notas.filter(n => n !== null && !isNaN(n));
     const total = notas.length;
@@ -46,30 +48,24 @@ function calcularSituacao(notas, cfg) {
     }
 
     const soma = validas.reduce((a, b) => a + b, 0);
-    const media = soma / validas.length;
-    const somaMinima = cfg.media * total;   // ex: 6 * 4 = 24
+    const somaMinima = cfg.media * total;
 
-    if (faltam === 0) {
-        // Todas as notas preenchidas
-        return soma >= somaMinima
-            ? { txt: 'APROVADO', cls: 'aprovado' }
-            : { txt: 'REPROVADO', cls: 'reprovado' };
-    }
-
-    // Faltam notas. Tira o cenário:
-    // - Se já somou o mínimo → aprovado garantido
+    // Já garantiu a aprovação
     if (soma >= somaMinima) {
         return { txt: 'APROVADO', cls: 'aprovado' };
     }
 
-    // - Se mesmo tirando nota máxima nas que faltam não atinge → reprovado
-    const somaMaxima = soma + faltam * cfg.notaMax;
-    if (somaMaxima < somaMinima) {
-        return { txt: 'REPROVADO', cls: 'reprovado' };
+    // Ainda faltam notas
+    if (faltam > 0) {
+        const somaMaxima = soma + faltam * cfg.notaMax;
+        if (somaMaxima < somaMinima) {
+            return { txt: 'REPROVADO', cls: 'reprovado' };
+        }
+        return { txt: 'EM CURSO', cls: 'em-curso' };
     }
 
-    // - Senão, em curso
-    return { txt: 'EM CURSO', cls: 'em-curso' };
+    // Fechou todas e não bateu
+    return { txt: 'REPROVADO', cls: 'reprovado' };
 }
 
 /* ═══════════════ RENDER BOLETIM ═══════════════ */
@@ -80,7 +76,6 @@ function renderBoletim() {
         labels: ['1º BIM', '2º BIM', '3º BIM', '4º BIM']
     };
 
-    // ─── Cabeçalho ───
     const nome = localStorage.getItem('dt_user_name') || 'Estudante';
     $('bol-aluno').innerText = nome.toUpperCase();
 
@@ -89,7 +84,6 @@ function renderBoletim() {
 
     $('bol-escola').innerText = (cfgUser.escola || '—').toUpperCase();
 
-    // Série + Turma juntos
     const serieMap = {
         '1em': '1° Ano EM', '2em': '2° Ano EM', '3em': '3° Ano EM',
         '6ef': '6° Ano', '7ef': '7° Ano', '8ef': '8° Ano', '9ef': '9° Ano',
@@ -100,20 +94,16 @@ function renderBoletim() {
     const serieTurma = [serie, turma].filter(Boolean).join(' · ') || '—';
     $('bol-serie-turma').innerText = serieTurma;
 
-    // Ano letivo
     const ano = cfgUser.ano || new Date().getFullYear();
     $('bol-ano').innerText = 'ANO LETIVO ' + ano;
 
-    // Data
     const d = new Date();
     $('bol-data').innerText = String(d.getDate()).padStart(2, '0') + '/' +
         String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
 
-    // ─── Tabela ───
     const thead = $('bol-thead');
     const tbody = $('bol-tbody');
 
-    // Cabeçalho da tabela
     const cols = ['DISCIPLINA'];
     for (let i = 0; i < cfg.numPeriodos; i++) cols.push(cfg.labels[i]);
     cols.push('MÉDIA');
@@ -150,7 +140,6 @@ function renderBoletim() {
         }).join('');
     }
 
-    // ─── Resumo geral ───
     let somaMedias = 0, comMedia = 0, aprovadas = 0;
     materias.forEach(m => {
         const notas = getNotas(m, cfg.numPeriodos);
@@ -210,7 +199,7 @@ function alternarModo() {
     if (window.lucide) lucide.createIcons();
 }
 
-/* ═══════════════ COMPARTILHAR ═══════════════ */
+/* ═══════════════ COMPARTILHAR (A4 vertical) ═══════════════ */
 async function compartilharBoletim() {
     const btn = $('btn-share-boletim');
     if (btn) btn.disabled = true;
@@ -235,7 +224,7 @@ async function compartilharBoletim() {
     const nome = (localStorage.getItem('dt_user_name') || 'Estudante').toUpperCase();
     const escola = (cfgUser.escola || '').toUpperCase() || '—';
     const serieMap = {
-        '1em': '1° Ano EM', '2em': '2º Ano EM', '3em': '3° Ano EM',
+        '1em': '1° Ano EM', '2em': '2° Ano EM', '3em': '3° Ano EM',
         '6ef': '6° Ano', '7ef': '7° Ano', '8ef': '8° Ano', '9ef': '9° Ano',
         'fac': 'Faculdade'
     };
@@ -252,12 +241,12 @@ async function compartilharBoletim() {
     const txt = ehClaro ? '#1a1a1c' : '#ffffff';
     const txtDim = ehClaro ? '#999' : '#666';
     const bordaSuave = ehClaro ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.08)';
+    const assinaturaCor = ehClaro ? '#1a1a1c' : '#ffffff';
     const roxo = '#8a2be2';
     const verde = '#00c851';
     const amarelo = '#ffbb33';
     const vermelho = '#ff4455';
 
-    // Monta as linhas
     const linhas = materias.map(m => {
         const notas = getNotas(m, cfg.numPeriodos);
         const validas = notas.filter(n => n !== null && !isNaN(n));
@@ -266,10 +255,8 @@ async function compartilharBoletim() {
         return { nome: m.nome, notas, media, sit };
     });
 
-    // Colunas do cabeçalho
     const headCols = ['DISCIPLINA', ...cfg.labels, 'MÉDIA', 'SITUAÇÃO'];
 
-    // Resumo geral
     let somaMedias = 0, comMedia = 0, aprovadas = 0;
     linhas.forEach(l => {
         if (l.media !== null) {
@@ -280,87 +267,92 @@ async function compartilharBoletim() {
     });
     const mediaGeral = comMedia > 0 ? (somaMedias / comMedia) : 0;
 
-    const corSitTxt = (cls) => cls === 'aprovado' ? verde : cls === 'recuperacao' ? amarelo : cls === 'reprovado' ? vermelho : cls === 'em-curso' ? roxo : txtDim;
+    const corSitTxt = (cls) => cls === 'aprovado' ? verde : cls === 'reprovado' ? vermelho : cls === 'em-curso' ? roxo : txtDim;
 
+    // Formato A4 retrato — 1080 x 1527 (proporção 1:1.414)
     container.innerHTML = `
-        <div style="width:1080px; min-height:1350px; padding:70px 60px; background:linear-gradient(160deg, ${bg1}, ${bg2}); color:${txt}; font-family:'Outfit',sans-serif; position:relative; overflow:hidden;">
+        <div style="width:1080px; height:1527px; padding:55px 65px 40px; background:linear-gradient(160deg, ${bg1}, ${bg2}); color:${txt}; font-family:'Outfit',sans-serif; position:relative; overflow:hidden; display:flex; flex-direction:column;">
             <div style="position:absolute; right:-80px; bottom:-80px; opacity:0.05; transform:rotate(-12deg); width:420px;">
                 <img src="icon-514_20260512_161420_0000.png" style="width:100%;">
             </div>
 
-            <div style="position:relative; z-index:1;">
-                <h1 style="font-size:42px; font-weight:900; text-align:center; letter-spacing:8px; margin:0; color:${txt};">BOLETIM ESCOLAR</h1>
-                <div style="text-align:center; font-size:13px; color:${txtDim}; letter-spacing:4px; margin-top:8px;">ANO LETIVO ${anoLetivo}</div>
-                <div style="height:4px; margin:22px auto 34px; width:60%; background:linear-gradient(90deg, transparent, ${roxo} 50%, transparent); border-radius:4px;"></div>
+            <div style="position:relative; z-index:1; display:flex; flex-direction:column; height:100%;">
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px 30px; margin-bottom:32px; padding:22px 26px; border-radius:18px; background:${ehClaro ? 'rgba(138,43,226,0.05)' : 'rgba(138,43,226,0.08)'}; border:1px solid ${ehClaro ? 'rgba(138,43,226,0.2)' : 'rgba(138,43,226,0.25)'};">
+                <h1 style="font-size:36px; font-weight:900; text-align:center; letter-spacing:7px; margin:0; color:${txt};">BOLETIM ESCOLAR</h1>
+                <div style="text-align:center; font-size:12px; color:${txtDim}; letter-spacing:4px; margin-top:6px;">ANO LETIVO ${anoLetivo}</div>
+                <div style="height:3px; margin:16px auto 22px; width:55%; background:linear-gradient(90deg, transparent, ${roxo} 50%, transparent); border-radius:3px;"></div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; margin-bottom:20px; padding:16px 20px; border-radius:14px; background:${ehClaro ? 'rgba(138,43,226,0.05)' : 'rgba(138,43,226,0.08)'}; border:1px solid ${ehClaro ? 'rgba(138,43,226,0.2)' : 'rgba(138,43,226,0.25)'};">
                     <div>
-                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">ALUNO</span>
-                        <strong style="font-size:16px; font-weight:900; color:${txt}; letter-spacing:0.5px;">${nome}</strong>
+                        <span style="display:block; font-size:9px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:3px;">ALUNO</span>
+                        <strong style="font-size:14px; font-weight:900; color:${txt}; letter-spacing:0.5px;">${nome}</strong>
                     </div>
                     <div>
-                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">DATA</span>
-                        <strong style="font-size:16px; font-weight:800; color:${txt};">${dataStr}</strong>
+                        <span style="display:block; font-size:9px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:3px;">DATA</span>
+                        <strong style="font-size:14px; font-weight:800; color:${txt};">${dataStr}</strong>
                     </div>
                     <div>
-                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">ESCOLA</span>
-                        <strong style="font-size:15px; font-weight:800; color:${txt};">${escola}</strong>
+                        <span style="display:block; font-size:9px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:3px;">ESCOLA</span>
+                        <strong style="font-size:13px; font-weight:800; color:${txt};">${escola}</strong>
                     </div>
                     <div>
-                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">SÉRIE / TURMA</span>
-                        <strong style="font-size:15px; font-weight:800; color:${txt};">${serieTurma}</strong>
+                        <span style="display:block; font-size:9px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:3px;">SÉRIE / TURMA</span>
+                        <strong style="font-size:13px; font-weight:800; color:${txt};">${serieTurma}</strong>
                     </div>
                 </div>
 
-                <table style="width:100%; border-collapse:collapse; margin-bottom:32px;">
+                <table style="width:100%; border-collapse:collapse; margin-bottom:18px;">
                     <thead>
                         <tr>
-                            ${headCols.map((c, i) => `<th style="padding:12px 8px; font-size:11px; font-weight:900; letter-spacing:1.5px; color:${txtDim}; text-align:${i === 0 ? 'left' : 'center'}; border-bottom:2px solid ${bordaSuave};">${c}</th>`).join('')}
+                            ${headCols.map((c, i) => `<th style="padding:9px 6px; font-size:9px; font-weight:900; letter-spacing:1.2px; color:${txtDim}; text-align:${i === 0 ? 'left' : 'center'}; border-bottom:2px solid ${bordaSuave};">${c}</th>`).join('')}
                         </tr>
                     </thead>
                     <tbody>
                         ${linhas.map(l => `
                             <tr>
-                                <td style="padding:14px 8px; font-size:15px; font-weight:800; color:${txt}; text-transform:uppercase; letter-spacing:0.3px; border-bottom:1px dashed ${bordaSuave};">${l.nome}</td>
-                                ${l.notas.map(n => `<td style="padding:14px 8px; text-align:center; font-size:17px; font-weight:900; color:${n === null ? txtDim : txt}; border-bottom:1px dashed ${bordaSuave};">${n === null ? '—' : n.toFixed(1)}</td>`).join('')}
-                                <td style="padding:14px 8px; text-align:center; font-size:19px; font-weight:900; color:${l.media === null ? txtDim : txt}; border-bottom:1px dashed ${bordaSuave};">${l.media === null ? '—' : l.media.toFixed(1)}</td>
-                                <td style="padding:14px 8px; text-align:center; border-bottom:1px dashed ${bordaSuave};">
-                                    <span style="display:inline-block; padding:6px 12px; border-radius:14px; font-size:10px; font-weight:900; letter-spacing:1px; color:${corSitTxt(l.sit.cls)}; background:${corSitTxt(l.sit.cls)}1a;">${l.sit.txt}</span>
+                                <td style="padding:9px 6px; font-size:11px; font-weight:800; color:${txt}; text-transform:uppercase; letter-spacing:0.3px; border-bottom:1px dashed ${bordaSuave};">${l.nome}</td>
+                                ${l.notas.map(n => `<td style="padding:9px 6px; text-align:center; font-size:13px; font-weight:900; color:${n === null ? txtDim : txt}; border-bottom:1px dashed ${bordaSuave};">${n === null ? '—' : n.toFixed(1)}</td>`).join('')}
+                                <td style="padding:9px 6px; text-align:center; font-size:14px; font-weight:900; color:${l.media === null ? txtDim : txt}; border-bottom:1px dashed ${bordaSuave};">${l.media === null ? '—' : l.media.toFixed(1)}</td>
+                                <td style="padding:9px 6px; text-align:center; border-bottom:1px dashed ${bordaSuave};">
+                                    <span style="display:inline-block; padding:4px 9px; border-radius:12px; font-size:8px; font-weight:900; letter-spacing:0.8px; color:${corSitTxt(l.sit.cls)}; background:${corSitTxt(l.sit.cls)}1a;">${l.sit.txt}</span>
                                 </td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; padding:24px; border-radius:20px; background:linear-gradient(135deg, ${ehClaro ? 'rgba(138,43,226,0.08)' : 'rgba(138,43,226,0.18)'}, ${ehClaro ? 'rgba(138,43,226,0.02)' : 'rgba(138,43,226,0.05)'}); border:1px solid ${ehClaro ? 'rgba(138,43,226,0.25)' : 'rgba(138,43,226,0.35)'}; margin-bottom:40px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; padding:18px; border-radius:16px; background:linear-gradient(135deg, ${ehClaro ? 'rgba(138,43,226,0.08)' : 'rgba(138,43,226,0.18)'}, ${ehClaro ? 'rgba(138,43,226,0.02)' : 'rgba(138,43,226,0.05)'}); border:1px solid ${ehClaro ? 'rgba(138,43,226,0.25)' : 'rgba(138,43,226,0.35)'}; margin-bottom:auto;">
                     <div style="text-align:center;">
-                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">MÉDIA GERAL</span>
-                        <strong style="font-size:32px; font-weight:900; color:${roxo};">${mediaGeral.toFixed(1)}</strong>
+                        <span style="display:block; font-size:9px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">MÉDIA GERAL</span>
+                        <strong style="font-size:26px; font-weight:900; color:${roxo};">${mediaGeral.toFixed(1)}</strong>
                     </div>
                     <div style="text-align:center;">
-                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">APROVADAS</span>
-                        <strong style="font-size:32px; font-weight:900; color:${roxo};">${aprovadas}/${materias.length}</strong>
+                        <span style="display:block; font-size:9px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">APROVADAS</span>
+                        <strong style="font-size:26px; font-weight:900; color:${roxo};">${aprovadas}/${materias.length}</strong>
                     </div>
                     <div style="text-align:center;">
-                        <span style="display:block; font-size:10px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">SITUAÇÃO</span>
-                        <strong style="font-size:18px; font-weight:900; color:${mediaGeral >= cfg.media ? verde : mediaGeral > 0 ? amarelo : txtDim}; display:block; padding-top:10px;">${mediaGeral >= cfg.media ? 'APROVADO' : mediaGeral > 0 ? 'RECUPERAÇÃO' : '—'}</strong>
+                        <span style="display:block; font-size:9px; font-weight:800; letter-spacing:2px; color:${txtDim}; margin-bottom:4px;">SITUAÇÃO</span>
+                        <strong style="font-size:15px; font-weight:900; color:${mediaGeral >= cfg.media ? verde : mediaGeral > 0 ? amarelo : txtDim}; display:block; padding-top:8px;">${mediaGeral >= cfg.media ? 'APROVADO' : mediaGeral > 0 ? 'RECUPERAÇÃO' : '—'}</strong>
                     </div>
                 </div>
 
-                <div style="text-align:center; margin-top:40px;">
-                    <div style="width:280px; height:1px; background:${ehClaro ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'}; margin:0 auto 10px;"></div>
-                    <span style="font-size:11px; font-weight:700; color:${txtDim}; letter-spacing:2px; text-transform:uppercase;">Coordenação Hub Brain</span>
+                <!-- Assinatura vintage -->
+                <div style="text-align:center; margin-top:38px; position:relative;">
+                    <div style="font-family:'Mrs Saint Delafield','Herr Von Muellerhoff','Alex Brush','Italianno',cursive; font-size:78px; font-weight:400; line-height:0.9; color:${assinaturaCor}; transform:rotate(-6deg); display:inline-block; letter-spacing:-2px; text-shadow:0 0 20px rgba(138,43,226,0.5), 0 0 40px rgba(138,43,226,0.2), 0 2px 4px rgba(0,0,0,0.4); padding-right:16px;">Ditoh</div>
+                    <div style="width:220px; height:1px; background:linear-gradient(90deg, transparent, ${ehClaro ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.35)'}, transparent); margin:6px auto 10px;"></div>
+                    <span style="font-family:'Outfit',sans-serif; font-size:10px; font-weight:800; color:${txtDim}; letter-spacing:3px; text-transform:uppercase;">Coordenação <span style="color:${roxo};">Hub Brain</span></span>
                 </div>
 
-                <div style="text-align:center; margin-top:40px;">
-                    <div style="font-size:22px; font-weight:900; color:${roxo}; letter-spacing:4px;">HUB BRAIN</div>
-                    <div style="font-size:13px; color:${txtDim}; margin-top:6px;">hubbrain.netlify.app</div>
+                <div style="text-align:center; margin-top:26px;">
+                    <div style="font-size:16px; font-weight:900; color:${roxo}; letter-spacing:4px;">HUB BRAIN</div>
+                    <div style="font-size:11px; color:${txtDim}; margin-top:3px;">hubbrain.netlify.app</div>
                 </div>
+
             </div>
         </div>
     `;
 
-    await new Promise(r => setTimeout(r, 250));
+    await new Promise(r => setTimeout(r, 400));
 
     try {
         if (!window.html2canvas) throw new Error('html2canvas não carregou');
@@ -368,7 +360,7 @@ async function compartilharBoletim() {
         const alvo = container.firstElementChild;
         const canvas = await html2canvas(alvo, {
             backgroundColor: ehClaro ? '#ffffff' : '#0d0d12',
-            scale: 1, useCORS: true
+            scale: 1, useCORS: true, allowTaint: true
         });
 
         canvas.toBlob(async blob => {
