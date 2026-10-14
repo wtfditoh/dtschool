@@ -204,11 +204,16 @@ body::before {
     50% { opacity: 1; }
 }
 
-/* Só o estilo escolhido aparece */
-.clock-flip, .clock-digital, .clock-minimal { display: none; }
-.clock-wrap[data-estilo="flip"] .clock-flip { display: flex; }
-.clock-wrap[data-estilo="digital"] .clock-digital { display: flex; }
-.clock-wrap[data-estilo="minimal"] .clock-minimal { display: flex; }
+/* Só o estilo escolhido aparece — !important garante que vence
+   o .clock-flip { display: flex } que está mais abaixo no arquivo. */
+.clock-wrap > .clock-flip,
+.clock-wrap > .clock-digital,
+.clock-wrap > .clock-minimal {
+    display: none !important;
+}
+.clock-wrap[data-estilo="flip"]    > .clock-flip    { display: flex !important; }
+.clock-wrap[data-estilo="digital"] > .clock-digital { display: flex !important; }
+.clock-wrap[data-estilo="minimal"] > .clock-minimal { display: flex !important; }
 
 /* ═══════════════════════════════════════════ */
 /* ESTILO 1 — FLIP CLOCK                       */
