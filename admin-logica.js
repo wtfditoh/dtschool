@@ -228,7 +228,7 @@ window.enviarPushGlobal = async () => {
     }
     window.abrirModalAdmin("CONFIRMAR PUSH", `Enviar "<b>${titulo}</b>" para todos os alunos?`, "", async () => {
         try {
-            const response = await fetch("https://hubbrain-server.onrender.com/push-global", {
+            const response = await fetch("/.netlify/functions/push-global", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": "Bearer hubbrain-admin-2024" },
                 body: JSON.stringify({ titulo, mensagem })
