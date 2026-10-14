@@ -1,11 +1,11 @@
-/* agenda-ia.css — Hub Brain · FAB da IA na agenda */
+/* agenda-ia.css — Hub Brain · FAB da IA na agenda + modal da chave */
 
 .ag-ia-fab {
-    position: fixed; right: 16px; bottom: calc(160px + env(safe-area-inset-bottom, 0px));
-    z-index: 951; width: 56px; height: 56px; border-radius: 50%;
+    position: fixed; right: 16px; bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+    z-index: 951; width: 54px; height: 54px; border-radius: 50%;
     border: none; cursor: pointer;
     background: linear-gradient(135deg, #8a2be2, #6a1fc2);
-    color: #fff; font-size: 26px;
+    color: #fff; font-size: 24px;
     box-shadow: 0 10px 28px rgba(138,43,226,0.5);
     transition: transform 0.15s;
     display: flex; align-items: center; justify-content: center;
@@ -14,6 +14,7 @@
 .ag-ia-fab:active { transform: scale(0.9); }
 @keyframes agIaFabIn { from { opacity: 0; transform: scale(0) rotate(-180deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
 
+/* ─────── Sheet de chat ─────── */
 .ag-ia-ov {
     position: fixed; inset: 0; z-index: 20000;
     display: flex; align-items: flex-end; justify-content: center;
@@ -137,3 +138,50 @@
 .ag-ia-btn-send:disabled { opacity: 0.5; }
 
 body.ag-travado { overflow: hidden; }
+
+/* ═══════════════════════════════════════════
+   MODAL DA CHAVE DA GROQ (hbia-*) — copiado do ia-estilo.css
+   Precisava estar aqui porque a agenda.html não carrega o ia-estilo.css
+   ═══════════════════════════════════════════ */
+
+.hbia-overlay {
+    display: none; position: fixed; inset: 0; z-index: 100000; padding: 20px;
+    background: rgba(0,0,0,0.88); backdrop-filter: blur(10px);
+    align-items: center; justify-content: center;
+    font-family: 'Outfit', -apple-system, sans-serif;
+}
+.hbia-overlay.aberto { display: flex; }
+.hbia-modal-box {
+    width: 100%; max-width: 380px; padding: 26px 22px; border-radius: 24px;
+    background: #0e0e12; border: 1px solid rgba(138,43,226,0.3); text-align: left;
+    color: #fff;
+    animation: hbiaFadeIn 0.25s;
+}
+@keyframes hbiaFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.hbia-modal-box h3 { color: #fff; font-size: 18px; font-weight: 900; margin-bottom: 8px; }
+.hbia-modal-txt { color: #aaa; font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+.hbia-modal-atual { color: #2ecc71; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+.hbia-modal-atual:empty { display: none; }
+.hbia-input-chave {
+    width: 100%; padding: 14px; border-radius: 12px; font-size: 14px; margin-bottom: 10px;
+    background: #07070a !important; color: #fff !important; font-family: monospace;
+    border: 1px solid rgba(138,43,226,0.25) !important;
+    outline: none; box-sizing: border-box;
+}
+.hbia-input-chave:focus { border-color: rgba(138,43,226,0.6) !important; }
+.hbia-link { display: block; color: #c084fc; font-size: 12px; font-weight: 700; text-decoration: none; margin-bottom: 12px; }
+.hbia-modal-status { min-height: 18px; font-size: 12px; color: #aaa; margin-bottom: 8px; }
+.hbia-modal-status.erro { color: #ff6b6b; }
+.hbia-modal-acoes { display: flex; gap: 10px; }
+.hbia-btn-sec, .hbia-btn-pri {
+    flex: 1; padding: 13px; border-radius: 12px; font-weight: 800; font-size: 13px;
+    cursor: pointer; font-family: inherit;
+}
+.hbia-btn-sec { background: rgba(255,255,255,0.04); color: #888; border: 1px solid #222; }
+.hbia-btn-pri { background: #8a2be2; color: #fff; border: none; box-shadow: 0 4px 16px rgba(138,43,226,0.3); }
+.hbia-btn-pri:disabled { opacity: 0.55; }
+.hbia-btn-remover {
+    display: none; width: 100%; margin-top: 12px; padding: 8px;
+    background: none; border: none; color: #ff6b6b; font-size: 12px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+}
