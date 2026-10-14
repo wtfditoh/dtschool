@@ -10,8 +10,10 @@ const criarMenuGlobal = () => {
 
             <!-- MINI CARD PERFIL -->
             <div class="menu-profile-card" onclick="window.location.href='perfil.html'">
-                <div class="menu-avatar">
-                    <i data-lucide="${avatar}" id="menu-avatar-icon"></i>
+                <div class="menu-avatar" id="menu-avatar-box">
+    ${foto
+        ? `<img src="${foto}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+        : `<i data-lucide="${avatar}" id="menu-avatar-icon"></i>`}
                 </div>
                 <div class="menu-profile-info">
                     <div class="menu-profile-nome">${primeiroNome}</div>
