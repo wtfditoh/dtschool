@@ -187,3 +187,25 @@ body { background:#050508; color:#fff; font-family:'Outfit',-apple-system,sans-s
 /* estado vazio mais convidativo */
 .ct-vazio { border:1px dashed rgba(138,43,226,0.35); border-radius:24px; margin:10px 0; background:radial-gradient(circle at 50% 0%, rgba(138,43,226,0.1), transparent 65%); }
 @media (prefers-reduced-motion:reduce) { .ct-item { animation:none; } }
+
+/* Badge de bimestre nos cards */
+.ct-bim-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    z-index: 2;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    color: #c084fc;
+    background: rgba(20, 10, 30, 0.85);
+    padding: 3px 7px;
+    border-radius: 8px;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(138,43,226,0.4);
+    text-transform: uppercase;
+}
+.ct-item.ct-arquivo .ct-bim-badge {
+    position: static;
+    margin-bottom: 4px;
+}
