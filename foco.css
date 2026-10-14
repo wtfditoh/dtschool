@@ -24,7 +24,6 @@ body {
     position: relative;
 }
 
-/* Luz ambiente global atrás de tudo */
 body::before {
     content: '';
     position: fixed;
@@ -178,21 +177,20 @@ body::before {
 }
 .modo-btn:not(.active):active { color: var(--roxo-claro); }
 
-/* ══════════════════════════════════════ */
-/* FLIP CLOCK — o protagonista da tela   */
-/* ══════════════════════════════════════ */
-.flip-clock-wrap {
+/* ═══════════════════════════════════════════ */
+/* RELÓGIO — container que decide o estilo     */
+/* ═══════════════════════════════════════════ */
+.clock-wrap {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin: 8px 0;
+    justify-content: center;
     position: relative;
     padding: 24px 12px;
     transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    margin: 8px 0;
 }
 
-/* Holofote roxo atrás do clock */
-.flip-clock-wrap::before {
+.clock-wrap::before {
     content: '';
     position: absolute;
     inset: -30px;
@@ -206,13 +204,21 @@ body::before {
     50% { opacity: 1; }
 }
 
-.flip-unit {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-}
+/* Só o estilo escolhido aparece */
+.clock-flip, .clock-digital, .clock-minimal { display: none; }
+.clock-wrap[data-estilo="flip"] .clock-flip { display: flex; }
+.clock-wrap[data-estilo="digital"] .clock-digital { display: flex; }
+.clock-wrap[data-estilo="minimal"] .clock-minimal { display: flex; }
 
+/* ═══════════════════════════════════════════ */
+/* ESTILO 1 — FLIP CLOCK                       */
+/* ═══════════════════════════════════════════ */
+.clock-flip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.flip-unit { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .flip-label {
     font-size: 9px;
     font-weight: 800;
@@ -221,7 +227,6 @@ body::before {
     text-transform: uppercase;
     opacity: 0.9;
 }
-
 .flip-sep {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(48px, 13vw, 76px);
@@ -235,7 +240,6 @@ body::before {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.15; }
 }
-
 .flip-card {
     position: relative;
     width: clamp(74px, 19vw, 104px);
@@ -243,9 +247,7 @@ body::before {
     perspective: 500px;
     filter: drop-shadow(0 12px 30px rgba(0,0,0,0.6));
 }
-
-.flip-top,
-.flip-bottom {
+.flip-top, .flip-bottom {
     position: absolute;
     width: 100%;
     height: 50%;
@@ -255,7 +257,6 @@ body::before {
     justify-content: center;
     background: linear-gradient(180deg, #1a1a24 0%, #121219 100%);
 }
-
 .flip-top {
     top: 0;
     border-radius: 14px 14px 0 0;
@@ -263,7 +264,6 @@ body::before {
     align-items: flex-end;
     box-shadow: inset 0 1px 0 rgba(138,43,226,0.15);
 }
-
 .flip-bottom {
     bottom: 0;
     border-radius: 0 0 14px 14px;
@@ -272,23 +272,17 @@ body::before {
     background: linear-gradient(180deg, #131319 0%, #0a0a10 100%);
     box-shadow: inset 0 -1px 0 rgba(255,255,255,0.03);
 }
-
-.flip-top span,
-.flip-bottom span {
+.flip-top span, .flip-bottom span {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(72px, 20vw, 108px);
     color: #fff;
     line-height: 1;
     letter-spacing: 2px;
-    text-shadow:
-        0 0 24px rgba(138,43,226,0.55),
-        0 0 60px rgba(138,43,226,0.25);
+    text-shadow: 0 0 24px rgba(138,43,226,0.55), 0 0 60px rgba(138,43,226,0.25);
     display: block;
 }
-
 .flip-top span { transform: translateY(50%); }
 .flip-bottom span { transform: translateY(-50%); }
-
 .flip-card-flap {
     position: absolute;
     width: 100%;
@@ -311,9 +305,7 @@ body::before {
     color: #fff;
     line-height: 1;
     letter-spacing: 2px;
-    text-shadow:
-        0 0 24px rgba(138,43,226,0.55),
-        0 0 60px rgba(138,43,226,0.25);
+    text-shadow: 0 0 24px rgba(138,43,226,0.55), 0 0 60px rgba(138,43,226,0.25);
     display: block;
     transform: translateY(50%);
 }
@@ -324,8 +316,6 @@ body::before {
     0%   { transform: rotateX(0deg); }
     100% { transform: rotateX(-180deg); }
 }
-
-/* Linha divisória central do card */
 .flip-card::after {
     content: '';
     position: absolute;
@@ -336,6 +326,50 @@ body::before {
     background: #000;
     z-index: 10;
     box-shadow: 0 1px 0 rgba(138,43,226,0.15);
+}
+
+/* ═══════════════════════════════════════════ */
+/* ESTILO 2 — DIGITAL                          */
+/* ═══════════════════════════════════════════ */
+.clock-digital {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(90px, 24vw, 160px);
+    line-height: 0.9;
+    letter-spacing: 4px;
+    color: #fff;
+    text-shadow:
+        0 0 30px rgba(138,43,226,0.6),
+        0 0 80px rgba(138,43,226,0.35),
+        0 0 120px rgba(138,43,226,0.15);
+    align-items: baseline;
+    gap: 2px;
+}
+.clock-digital .dig-sep {
+    color: var(--roxo);
+    animation: blink 1s step-end infinite;
+    margin: 0 4px;
+    font-size: 0.9em;
+}
+
+/* ═══════════════════════════════════════════ */
+/* ESTILO 3 — MINIMAL                          */
+/* ═══════════════════════════════════════════ */
+.clock-minimal {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(58px, 16vw, 100px);
+    font-weight: 200;
+    line-height: 1;
+    letter-spacing: 6px;
+    color: #fff;
+    align-items: baseline;
+    gap: 0;
+}
+.clock-minimal .min-sep {
+    color: var(--roxo);
+    animation: blink 1s step-end infinite;
+    font-weight: 300;
+    margin: 0 4px;
+    opacity: 0.7;
 }
 
 /* ═══════════════ AJUSTE DE TEMPO ═══════════════ */
@@ -395,12 +429,7 @@ body::before {
 }
 
 /* ═══════════════ BARRA DE PROGRESSO ═══════════════ */
-.progress-bar-wrap {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+.progress-bar-wrap { width: 100%; display: flex; flex-direction: column; gap: 10px; }
 .progress-track {
     width: 100%;
     height: 6px;
@@ -447,9 +476,7 @@ body::before {
     letter-spacing: 2px;
     cursor: pointer;
     transition: 0.2s;
-    box-shadow:
-        0 8px 30px rgba(138,43,226,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.15);
+    box-shadow: 0 8px 30px rgba(138,43,226,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
     font-family: inherit;
     position: relative;
     overflow: hidden;
@@ -528,7 +555,6 @@ body::before {
     text-transform: uppercase;
 }
 
-/* Info modo livre inicial */
 #livre-info p {
     font-size: 12px;
     color: #666 !important;
@@ -546,7 +572,6 @@ body::before {
     z-index: 1;
 }
 .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
 .stat-card {
     background: linear-gradient(160deg, rgba(138,43,226,0.08), rgba(255,255,255,0.02));
     border: 1px solid var(--borda);
@@ -593,7 +618,6 @@ body::before {
     margin-bottom: -8px;
 }
 
-/* Barras por matéria */
 .materia-bar-item {
     display: flex;
     flex-direction: column;
@@ -624,7 +648,6 @@ body::before {
     transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Sessões */
 .sessao-item {
     display: flex;
     align-items: center;
@@ -650,7 +673,7 @@ body::before {
     letter-spacing: 1px;
 }
 
-/* ═══════════════ MODAL ═══════════════ */
+/* ═══════════════ MODAIS (base) ═══════════════ */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -691,6 +714,104 @@ body::before {
 }
 .modal-card .btn-primary { margin-bottom: 8px; }
 
+/* ═══════════════ MODAL SETTINGS (grande) ═══════════════ */
+.modal-settings-overlay {
+    align-items: flex-end;
+    padding: 0;
+}
+.modal-settings {
+    max-width: 560px;
+    width: 100%;
+    max-height: 88vh;
+    max-height: 88dvh;
+    overflow-y: auto;
+    padding: 12px 22px calc(24px + env(safe-area-inset-bottom, 0px));
+    border-radius: 28px 28px 0 0;
+    text-align: left;
+    animation: settingsIn 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+@keyframes settingsIn {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.settings-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 6px;
+}
+.settings-head h2 {
+    font-size: 15px;
+    letter-spacing: 2px;
+    margin: 0;
+    color: #fff;
+}
+.settings-x {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.05);
+    color: #888;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.settings-x:active { transform: scale(0.9); }
+
+.settings-section {
+    padding: 16px 4px 6px;
+}
+.settings-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #555;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.settings-opcoes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+}
+.opcao-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 12px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1.5px solid rgba(255,255,255,0.06);
+    color: #bbb;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.15s;
+}
+.opcao-btn:active { transform: scale(0.97); }
+.opcao-btn.on {
+    background: linear-gradient(135deg, rgba(138,43,226,0.2), rgba(138,43,226,0.05));
+    border-color: var(--borda-forte);
+    color: #fff;
+    box-shadow: 0 0 14px rgba(138,43,226,0.25);
+}
+.opcao-emoji { font-size: 20px; flex-shrink: 0; }
+.opcao-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.opcao-txt b { font-size: 13px; font-weight: 800; }
+.opcao-txt i {
+    font-size: 10px;
+    font-style: normal;
+    color: #666;
+    font-weight: 600;
+}
+.opcao-btn.on .opcao-txt i { color: var(--roxo-claro); opacity: 0.8; }
+
 /* ═══════════════ EMPTY STATE ═══════════════ */
 .empty-state {
     display: flex;
@@ -702,20 +823,16 @@ body::before {
     color: #444;
     text-align: center;
 }
-.empty-state p {
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 1px;
-}
+.empty-state p { font-size: 13px; font-weight: 700; letter-spacing: 1px; }
 
-/* ══════════════════════════════════════ */
-/* ESTADO DE SESSÃO ATIVA — modo imersivo */
-/* ══════════════════════════════════════ */
-body.session-active .flip-clock-wrap {
+/* ═══════════════════════════════════════ */
+/* ESTADO DE SESSÃO ATIVA (imersivo)       */
+/* ═══════════════════════════════════════ */
+body.session-active .clock-wrap {
     transform: scale(1.08);
     margin: 20px 0;
 }
-body.session-active .flip-clock-wrap::before {
+body.session-active .clock-wrap::before {
     background: radial-gradient(ellipse at center, rgba(138,43,226,0.35) 0%, transparent 65%);
 }
 body.session-active::before {
@@ -727,15 +844,14 @@ body.session-active .timer-view {
     gap: 24px;
 }
 
-/* ══════════════════════════════════════ */
+/* ═══════════════════════════════════════ */
 /* MODO PAISAGEM                          */
-/* ══════════════════════════════════════ */
+/* ═══════════════════════════════════════ */
 @media (orientation: landscape) {
     .header-foco { display: none; }
-    .materia-selector { display: none; }
+    .materia-selector { display: none !important; }
     #setup-controls { display: none !important; }
     .xp-tag { display: none !important; }
-    .materia-selector { display: none !important; }
 
     .timer-view { justify-content: center; gap: 16px; padding: 12px 40px; }
 
@@ -747,6 +863,9 @@ body.session-active .timer-view {
         font-size: clamp(55px, 12vw, 90px);
     }
     .flip-sep { font-size: clamp(40px, 10vw, 70px); }
+
+    .clock-digital { font-size: clamp(70px, 18vw, 130px); }
+    .clock-minimal { font-size: clamp(45px, 12vw, 80px); }
 
     .progress-bar-wrap {
         display: flex !important;
