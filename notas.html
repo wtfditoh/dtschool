@@ -27,10 +27,6 @@
     <link rel="stylesheet" href="boletim.css">
 
     <style>
-        /* ═══════════════════════════════════════════════════════════
-           HEADER LOGO ANIMADO CENTRALIZADO
-           ═══════════════════════════════════════════════════════════ */
-
         .header-logo-animated {
             position: absolute;
             left: 50%;
@@ -217,14 +213,32 @@
     <div id="modo-boletim" class="boletim-wrap" style="display:none;">
         <div class="boletim-papel" id="boletim-papel">
             <img class="boletim-marca" src="icon-514_20260512_161420_0000.png" alt="">
+
             <div class="boletim-conteudo">
-                <h1 class="boletim-titulo">BOLETIM ESCOLAR</h1>
+
+                <!-- Cabeçalho -->
+                <div class="boletim-topo">
+                    <div class="boletim-topo-centro">
+                        <h1 class="boletim-titulo">BOLETIM ESCOLAR</h1>
+                        <div class="boletim-ano" id="bol-ano">—</div>
+                    </div>
+                </div>
+
                 <div class="boletim-linha-dupla"></div>
 
-                <div class="boletim-info">
+                <!-- Info do aluno -->
+                <div class="boletim-info-grid">
                     <div>
                         <span class="boletim-label">ALUNO</span>
                         <strong id="bol-aluno">—</strong>
+                    </div>
+                    <div>
+                        <span class="boletim-label">ESCOLA</span>
+                        <strong id="bol-escola">—</strong>
+                    </div>
+                    <div>
+                        <span class="boletim-label">SÉRIE / TURMA</span>
+                        <strong id="bol-serie-turma">—</strong>
                     </div>
                     <div>
                         <span class="boletim-label">DATA</span>
@@ -232,29 +246,27 @@
                     </div>
                 </div>
 
-                <div class="boletim-tabs" id="bol-tabs"></div>
-
-                <div class="boletim-tabela">
-                    <div class="boletim-th">
-                        <span>DISCIPLINA</span>
-                        <span>NOTA</span>
-                        <span>SITUAÇÃO</span>
-                    </div>
-                    <div id="bol-linhas"></div>
+                <!-- Tabela -->
+                <div class="boletim-tabela-wrap">
+                    <table class="boletim-tabela">
+                        <thead id="bol-thead"></thead>
+                        <tbody id="bol-tbody"></tbody>
+                    </table>
                 </div>
 
+                <!-- Rodapé resumo -->
                 <div class="boletim-rodape">
                     <div class="boletim-resumo-item">
                         <span class="boletim-label">MÉDIA GERAL</span>
-                        <strong id="bol-media">0.0</strong>
+                        <strong id="bol-media-geral">—</strong>
                     </div>
                     <div class="boletim-resumo-item">
                         <span class="boletim-label">APROVADAS</span>
-                        <strong id="bol-aprovadas">0/0</strong>
+                        <strong id="bol-aprovadas">—</strong>
                     </div>
                     <div class="boletim-resumo-item">
                         <span class="boletim-label">SITUAÇÃO</span>
-                        <strong id="bol-status">—</strong>
+                        <strong id="bol-status-geral">—</strong>
                     </div>
                 </div>
 
@@ -262,6 +274,7 @@
                     <div class="boletim-linha-ass"></div>
                     <span>Coordenação Hub Brain</span>
                 </div>
+
             </div>
         </div>
 
