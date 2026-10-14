@@ -1,7 +1,10 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+/* perfil-logica.js — Hub Brain · Perfil com foto real (ImgBB) */
+
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { CONQUISTAS, verificarConquistas } from "./conquistas.js";
+import { uploadImgBB, imgbbConfigurado } from "./conteudos-upload.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -12,36 +15,60 @@ const firebaseConfig = {
     appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const userName = localStorage.getItem('dt_user_name'); 
+const userName = localStorage.getItem('dt_user_name');
 const userType = (userName === 'Visitante') ? 'local' : 'oficial';
 const getEl = id => document.getElementById(id);
 
+let avatarAtual = 'user';        // ícone (fallback)
+let fotoAtual = '';              // URL da foto (vazio = usa ícone)
+let enviandoFoto = false;
+
+/* ─────────── TOAST ─────────── */
 window.showToast = (msg, type = "success") => {
     const container = getEl('toast-container');
-    if(!container) return;
+    if (!container) return;
     const toast = document.createElement('div');
     toast.className = `toast ${type === 'error' ? 'error' : ''}`;
     toast.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}"></i> <span>${msg}</span>`;
     container.appendChild(toast);
-    if(window.lucide) lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
     setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
 };
 
 onAuthStateChanged(auth, (user) => {
-    if (user || userType === 'local') {
-        carregarPerfilOficial(user);
-    } else {
-        window.location.href = 'login.html';
-    }
+    if (user || userType === 'local') carregarPerfilOficial(user);
+    else window.location.href = 'login.html';
 });
 
+/* ─────────── AVATAR: mostra foto ou ícone ─────────── */
+function mostrarAvatar() {
+    const img = getEl('avatar-img');
+    const icone = getEl('avatar-icon');
+    if (!img || !icone) return;
+
+    if (fotoAtual) {
+        img.src = fotoAtual;
+        img.style.display = 'block';
+        icone.style.display = 'none';
+    } else {
+        img.style.display = 'none';
+        icone.style.display = '';
+        icone.setAttribute('data-lucide', avatarAtual);
+        if (window.lucide) lucide.createIcons();
+    }
+    // botão "remover foto" só aparece se tiver foto
+    const btnRemover = getEl('btn-remover-foto');
+    if (btnRemover) btnRemover.style.display = fotoAtual ? 'flex' : 'none';
+}
+
+/* ─────────── PERFIL ─────────── */
 async function carregarPerfilOficial(userFirebase) {
     const statsContainer = getEl('area-stats');
-    
+
     if (userType === 'local' || !userFirebase) {
         getEl('display-id').innerText = `VISITANTE`;
         getEl('user-name-input').value = "Visitante";
@@ -52,7 +79,7 @@ async function carregarPerfilOficial(userFirebase) {
     }
 
     try {
-        const userEmail = userFirebase.email; 
+        const userEmail = userFirebase.email;
         const shortID = userFirebase.uid.substring(0, 8).toUpperCase();
         getEl('display-id').innerText = `#HB-${shortID}`;
 
@@ -63,7 +90,7 @@ async function carregarPerfilOficial(userFirebase) {
         const minhaPosicao = todos.findIndex(u => u.id === userEmail) + 1;
 
         const meuDoc = await getDoc(doc(db, "notas", userEmail));
-        
+
         if (meuDoc.exists()) {
             const d = meuDoc.data();
             const xp = d.xp || 0;
@@ -80,15 +107,18 @@ async function carregarPerfilOficial(userFirebase) {
             const materias = d.materias || [];
             let desempenho = 0;
             if (materias.length > 0) {
-                const soma = materias.reduce((acc, m) => acc + (Number(m.n1)+Number(m.n2)+Number(m.n3)+Number(m.n4))/4, 0);
+                const soma = materias.reduce((acc, m) => acc + (Number(m.n1) + Number(m.n2) + Number(m.n3) + Number(m.n4)) / 4, 0);
                 desempenho = Math.round((soma / materias.length) * 10);
             }
 
             getEl('user-name-input').value = d.nome || userFirebase.displayName || "";
-            if(d.avatar) {
-                getEl('avatar-icon').setAttribute('data-lucide', d.avatar);
-                if(window.lucide) lucide.createIcons();
-            }
+
+            avatarAtual = d.avatar || 'user';
+            fotoAtual = d.fotoPerfil || '';
+            // sincroniza localStorage pra o menu já mostrar certo
+            if (fotoAtual) localStorage.setItem('dt_user_foto', fotoAtual);
+            else localStorage.removeItem('dt_user_foto');
+            mostrarAvatar();
 
             statsContainer.innerHTML = `
                 <div class="xp-card">
@@ -116,7 +146,6 @@ async function carregarPerfilOficial(userFirebase) {
                     </div>
                 </div>`;
 
-            // Meta
             if (d.meta_minutos) {
                 const h = Math.floor(d.meta_minutos / 60);
                 const m = d.meta_minutos % 60;
@@ -125,13 +154,12 @@ async function carregarPerfilOficial(userFirebase) {
                 atualizarBadgeMeta(d.meta_minutos);
             }
 
-            // Conquistas
             renderizarConquistas(d.conquistas || [], minhaPosicao);
 
-            if(window.lucide) lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         } else {
             if (userType !== 'local') {
-                await setDoc(doc(db, "notas", userEmail), { 
+                await setDoc(doc(db, "notas", userEmail), {
                     nome: userName || "Estudante", xp: 0, avatar: 'user', materias: []
                 });
             }
@@ -139,7 +167,7 @@ async function carregarPerfilOficial(userFirebase) {
     } catch (e) { console.error(e); }
 }
 
-// --- CONQUISTAS ---
+/* ─────────── CONQUISTAS ─────────── */
 function renderizarConquistas(conquistasDesbloqueadas, rankPos) {
     const area = getEl('area-conquistas');
     if (!area) return;
@@ -170,7 +198,7 @@ function renderizarConquistas(conquistasDesbloqueadas, rankPos) {
             <span id="conquistas-arrow" style="font-size:18px; color:#555; transition:transform 0.3s, color 0.3s;">↓</span>
         </div>
         <div class="conquistas-barra-bg">
-            <div class="conquistas-barra-fill" style="width:${Math.round((desbloqueadas/total)*100)}%"></div>
+            <div class="conquistas-barra-fill" style="width:${Math.round((desbloqueadas / total) * 100)}%"></div>
         </div>
         <div id="conquistas-corpo" style="display:none;">
             ${Object.values(categorias).map(cat => `
@@ -192,42 +220,140 @@ function renderizarConquistas(conquistasDesbloqueadas, rankPos) {
         </div>
     `;
 
-    if(window.lucide) lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 }
 
-window.toggleConquistas = () => {
-    const corpo = document.getElementById('conquistas-corpo');
-    const arrow = document.getElementById('conquistas-arrow');
-    if (!corpo) return;
-    const aberto = corpo.style.display !== 'none';
-    corpo.style.display = aberto ? 'none' : 'block';
-    arrow.style.transform = aberto ? 'rotate(0deg)' : 'rotate(180deg)';
-    arrow.style.color = aberto ? '#555' : '#8a2be2';
-};
+/* ─────────── FOTO DE PERFIL ─────────── */
 
-// --- AVATAR ---
-window.abrirGaleria = () => getEl('modal-avatar').style.display = 'flex';
-window.fecharGaleria = () => getEl('modal-avatar').style.display = 'none';
+/* Comprime 400x400 quadrado (crop centralizado) */
+function comprimirAvatar(file) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            try {
+                const SIZE = 400;
+                const w0 = img.naturalWidth, h0 = img.naturalHeight;
+                // crop centralizado
+                const lado = Math.min(w0, h0);
+                const sx = (w0 - lado) / 2;
+                const sy = (h0 - lado) / 2;
+                const c = document.createElement('canvas');
+                c.width = SIZE; c.height = SIZE;
+                const ctx = c.getContext('2d');
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, SIZE, SIZE);
+                ctx.drawImage(img, sx, sy, lado, lado, 0, 0, SIZE, SIZE);
+                c.toBlob(b => {
+                    URL.revokeObjectURL(url);
+                    b ? resolve(b) : reject(new Error('compress'));
+                }, 'image/jpeg', 0.88);
+            } catch (e) { URL.revokeObjectURL(url); reject(e); }
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img')); };
+        img.src = url;
+    });
+}
+
+async function enviarFoto(file) {
+    if (enviandoFoto) return;
+    if (!imgbbConfigurado()) {
+        showToast('Falta configurar a chave do ImgBB', 'error');
+        return;
+    }
+    if (!file || !file.type.startsWith('image/')) {
+        showToast('Escolha uma imagem', 'error');
+        return;
+    }
+    enviandoFoto = true;
+    showToast('Enviando foto…');
+
+    try {
+        const blob = await comprimirAvatar(file);
+        const urls = await uploadImgBB(blob);
+        if (!urls.url) throw new Error('sem URL');
+
+        fotoAtual = urls.url;
+        localStorage.setItem('dt_user_foto', fotoAtual);
+        mostrarAvatar();
+
+        // salva no Firestore
+        const user = auth.currentUser;
+        if (user) {
+            await updateDoc(doc(db, 'notas', user.email), { fotoPerfil: fotoAtual });
+        }
+
+        showToast('✓ Foto atualizada!');
+        window.fecharGaleria();
+    } catch (e) {
+        console.error('[foto]', e);
+        showToast('Erro ao enviar: ' + (e.message || 'tente de novo'), 'error');
+    } finally {
+        enviandoFoto = false;
+    }
+}
+
+window.abrirGaleria = () => {
+    getEl('modal-avatar').style.display = 'flex';
+    mostrarAvatar();
+    if (window.lucide) lucide.createIcons();
+};
+window.fecharGaleria = () => { getEl('modal-avatar').style.display = 'none'; };
+
 window.selecionarAvatar = (icon) => {
-    getEl('avatar-icon').setAttribute('data-lucide', icon);
-    if(window.lucide) lucide.createIcons();
+    // escolher ícone → apaga a foto
+    avatarAtual = icon;
+    fotoAtual = '';
+    localStorage.removeItem('dt_user_foto');
+    mostrarAvatar();
     window.fecharGaleria();
 };
 
-// --- SALVAR PERFIL ---
+window.removerFoto = () => {
+    fotoAtual = '';
+    localStorage.removeItem('dt_user_foto');
+    mostrarAvatar();
+    showToast('Foto removida. Use um ícone.');
+};
+
+/* Botões do modal */
+document.addEventListener('DOMContentLoaded', () => {
+    const btnUpload = getEl('btn-upload-foto');
+    const inputFoto = getEl('input-foto-perfil');
+    const btnRemover = getEl('btn-remover-foto');
+
+    if (btnUpload && inputFoto) {
+        btnUpload.addEventListener('click', () => inputFoto.click());
+        inputFoto.addEventListener('change', (e) => {
+            const f = e.target.files && e.target.files[0];
+            if (f) enviarFoto(f);
+            e.target.value = '';
+        });
+    }
+    if (btnRemover) btnRemover.addEventListener('click', window.removerFoto);
+});
+
+/* ─────────── SALVAR PERFIL ─────────── */
 getEl('btn-salvar-perfil').onclick = async () => {
     if (userType === 'local') { showToast("Visitantes não podem salvar alterações", "error"); return; }
     const user = auth.currentUser;
-    if(!user) return;
+    if (!user) return;
     const nome = getEl('user-name-input').value;
-    const avatar = getEl('avatar-icon').getAttribute('data-lucide');
     try {
-        await updateDoc(doc(db, "notas", user.email), { nome, avatar });
-        showToast("Perfil Atualizado!");
-    } catch(e) { showToast("Erro ao salvar", "error"); }
+        await updateDoc(doc(db, "notas", user.email), {
+            nome: nome,
+            avatar: avatarAtual,
+            fotoPerfil: fotoAtual || null
+        });
+        localStorage.setItem('dt_user_name', nome);
+        localStorage.setItem('dt_user_avatar', avatarAtual);
+        if (fotoAtual) localStorage.setItem('dt_user_foto', fotoAtual);
+        else localStorage.removeItem('dt_user_foto');
+        showToast("Perfil atualizado!");
+    } catch (e) { showToast("Erro ao salvar", "error"); }
 };
 
-// --- META ---
+/* ─────────── META ─────────── */
 function atualizarBadgeMeta(totalMin) {
     const badge = getEl('meta-badge');
     if (!badge) return;
@@ -239,10 +365,10 @@ function atualizarBadgeMeta(totalMin) {
 const getMetaH = () => parseInt(getEl('meta-h-val').innerText);
 const getMetaM = () => parseInt(getEl('meta-m-val').innerText);
 
-getEl('meta-h-up').onclick   = () => { const v = getMetaH(); if(v < 12) getEl('meta-h-val').innerText = v + 1; atualizarBadgeMeta(getMetaH()*60 + getMetaM()); };
-getEl('meta-h-down').onclick  = () => { const v = getMetaH(); if(v > 0) getEl('meta-h-val').innerText = v - 1; atualizarBadgeMeta(getMetaH()*60 + getMetaM()); };
-getEl('meta-m-up').onclick   = () => { const v = getMetaM(); getEl('meta-m-val').innerText = v < 55 ? v + 5 : 0; atualizarBadgeMeta(getMetaH()*60 + getMetaM()); };
-getEl('meta-m-down').onclick  = () => { const v = getMetaM(); if(v >= 5) getEl('meta-m-val').innerText = v - 5; atualizarBadgeMeta(getMetaH()*60 + getMetaM()); };
+getEl('meta-h-up').onclick   = () => { const v = getMetaH(); if (v < 12) getEl('meta-h-val').innerText = v + 1; atualizarBadgeMeta(getMetaH() * 60 + getMetaM()); };
+getEl('meta-h-down').onclick = () => { const v = getMetaH(); if (v > 0) getEl('meta-h-val').innerText = v - 1; atualizarBadgeMeta(getMetaH() * 60 + getMetaM()); };
+getEl('meta-m-up').onclick   = () => { const v = getMetaM(); getEl('meta-m-val').innerText = v < 55 ? v + 5 : 0; atualizarBadgeMeta(getMetaH() * 60 + getMetaM()); };
+getEl('meta-m-down').onclick = () => { const v = getMetaM(); if (v >= 5) getEl('meta-m-val').innerText = v - 5; atualizarBadgeMeta(getMetaH() * 60 + getMetaM()); };
 
 getEl('btn-salvar-meta').onclick = async () => {
     const user = auth.currentUser;
@@ -250,14 +376,23 @@ getEl('btn-salvar-meta').onclick = async () => {
     const totalMin = getMetaH() * 60 + getMetaM();
     try {
         await updateDoc(doc(db, "notas", user.email), { meta_minutos: totalMin });
-        showToast('Meta salva!'); const mc = document.getElementById('meta-controls'); const ma = document.getElementById('meta-arrow'); if(mc) mc.style.display = 'none'; if(ma) { ma.style.transform = 'rotate(0deg)'; ma.style.color = '#555'; }
+        showToast('Meta salva!');
+        const mc = document.getElementById('meta-controls');
+        const ma = document.getElementById('meta-arrow');
+        if (mc) mc.style.display = 'none';
+        if (ma) { ma.style.transform = 'rotate(0deg)'; ma.style.color = '#555'; }
         atualizarBadgeMeta(totalMin);
-    } catch(e) { showToast('Erro ao salvar meta', 'error'); }
+    } catch (e) { showToast('Erro ao salvar meta', 'error'); }
 };
 
-window.logout = () => { localStorage.clear(); window.location.href = 'login.html'; };
+window.logout = () => {
+    localStorage.removeItem('dt_user_name');
+    localStorage.removeItem('dt_user_email');
+    localStorage.removeItem('dt_user_avatar');
+    localStorage.removeItem('dt_user_foto');
+    window.location.href = 'login.html';
+};
 
-// --- ACCORDION CONQUISTAS ---
 window.toggleConquistas = () => {
     const corpo = document.getElementById('conquistas-corpo');
     const arrow = document.getElementById('conquistas-arrow');
@@ -268,14 +403,11 @@ window.toggleConquistas = () => {
     arrow.style.color = aberto ? '#555' : '#8a2be2';
 };
 
-// --- ACCORDION META ---
 window.toggleMeta = () => {
     const controls = document.getElementById('meta-controls');
     const arrow = document.getElementById('meta-arrow');
-    const editBtn = document.getElementById('meta-edit-btn');
     if (!controls) return;
     const aberto = controls.style.display !== 'none';
     controls.style.display = aberto ? 'none' : 'block';
     if (arrow) { arrow.style.transform = aberto ? 'rotate(0deg)' : 'rotate(180deg)'; arrow.style.color = aberto ? '#555' : '#8a2be2'; }
-    if (editBtn) editBtn.innerText = aberto ? 'EDITAR' : 'FECHAR';
 };
