@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc, increment, onSnapshot, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -17,26 +17,69 @@ const emailMestre = "ditoh2008@gmail.com";
 const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
 const userType    = localStorage.getItem('dt_user_type');
 
-/* ═══════════════ REGISTRO DE ACESSO ═══════════════ */
-/* Grava: último acesso (timestamp), total acumulado, e o dia do último acesso.
-   Quando o dia muda, reseta acessosHoje. */
-async function registrarAcesso() {
+/* ═══════════════════════════════════════════════════ */
+/* TAGS DE TAREFA NO ONESIGNAL                         */
+/* A function `tarefa-aviso.mjs` roda às 7h e 20h BRT  */
+/* e manda push pra quem tem essas tags.               */
+/*                                                     */
+/* Tags salvas:                                        */
+/*   tarefa_dia    = "2026-10-14"                      */
+/*   tarefas_hoje  = "3"   (pendentes pra hoje)        */
+/*   provas_hoje   = "Matemática" (nome da próxima     */
+/*                              prova de hoje, ou "")  */
+/* ═══════════════════════════════════════════════════ */
+async function sincronizarTagsTarefa() {
+    if (!window.OneSignalDeferred) return;
     if (!emailLogado || userType === 'local') return;
+
     try {
         const hoje = new Date().toISOString().split('T')[0];
-        const snap = await getDoc(doc(db, 'notas', emailLogado));
-        const dados = snap.exists() ? snap.data() : {};
-        const ultimoDia = dados.ultimoDiaAcesso || '';
-        const acessosHojeAtual = (ultimoDia === hoje) ? (Number(dados.acessosHoje) || 0) + 1 : 1;
 
-        await setDoc(doc(db, 'notas', emailLogado), {
-            ultimoAcesso: Date.now(),
-            acessosTotal: increment(1),
-            acessosHoje: acessosHojeAtual,
-            ultimoDiaAcesso: hoje
-        }, { merge: true });
+        // Lê todas as tarefas pendentes do aluno
+        const q = query(
+            collection(db, 'agenda'),
+            where('usuario', '==', emailLogado),
+            where('concluida', '==', false)
+        );
+
+        let pendentes = [];
+        try {
+            const snap = await getDocs(q);
+            pendentes = snap.docs.map(d => d.data());
+        } catch (e) {
+            // Fallback sem índice composto (busca tudo e filtra em JS)
+            try {
+                const q2 = query(collection(db, 'agenda'), where('usuario', '==', emailLogado));
+                const snap2 = await getDocs(q2);
+                pendentes = snap2.docs.map(d => d.data()).filter(t => !t.concluida);
+            } catch (e2) {
+                console.warn('[home] não consegui ler tarefas pro push:', e2);
+                return;
+            }
+        }
+
+        // Filtra as que vencem HOJE ou estão atrasadas
+        const vencendoHoje = pendentes.filter(t => t.dataFim && t.dataFim <= hoje);
+
+        // Próxima prova entre as pendentes (se tiver)
+        const prova = pendentes.find(t => t.tipo === 'prova' && t.dataFim === hoje);
+
+        const tags = {
+            tarefa_dia: hoje,
+            tarefas_hoje: String(Math.min(vencendoHoje.length, 99)),
+            provas_hoje: prova ? String(prova.materia || '').slice(0, 40) : ''
+        };
+
+        window.OneSignalDeferred.push(async function (OneSignal) {
+            try {
+                await OneSignal.User.addTags(tags);
+                console.log('[home] tags de tarefa sincronizadas:', tags);
+            } catch (e) {
+                console.warn('[home] falha ao salvar tags:', e);
+            }
+        });
     } catch (e) {
-        console.warn('[acesso] não deu pra registrar:', e.message);
+        console.warn('[home] erro ao sincronizar tags:', e);
     }
 }
 
@@ -138,6 +181,7 @@ async function carregarStatsCards(xp, estudadoHoje) {
     }
 }
 
+/* ═══════════════ INIT ═══════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
     const nome = localStorage.getItem('dt_user_name') || "ESTUDANTE";
 
@@ -170,7 +214,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tipEl = document.getElementById('tip-text');
     if (tipEl) tipEl.textContent = dicas[new Date().getDate() % dicas.length];
 
-    /* ─── REGISTRA ACESSO (roda antes de tudo) ─── */
+    /* ─── Registra acesso (pro painel do mestre) ─── */
     registrarAcesso();
 
     /* ─── Manutenção ─── */
@@ -266,6 +310,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await carregarStatsCards(xpUsuario, estudadoHoje);
 
+    /* ─── Sincroniza tags de tarefa pro push (7h e 20h) ─── */
+    // Espera 3s pro OneSignal estar pronto
+    setTimeout(sincronizarTagsTarefa, 3000);
+
     /* ─── Mural ─── */
     onSnapshot(doc(db, "config", "mural"), (snap) => {
         if (snap.exists()) {
@@ -318,6 +366,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.lucide) lucide.createIcons();
 });
 
+/* ═══════════════ REGISTRA ACESSO ═══════════════ */
+async function registrarAcesso() {
+    if (!emailLogado || userType === 'local') return;
+    try {
+        const hoje = new Date().toISOString().split('T')[0];
+        const { doc: d, setDoc: ss, increment: inc, getDoc: gd } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        const snap = await gd(d(db, 'notas', emailLogado));
+        const dados = snap.exists() ? snap.data() : {};
+        const ultimoDia = dados.ultimoDiaAcesso || '';
+        const acessosHoje = (ultimoDia === hoje) ? (Number(dados.acessosHoje) || 0) + 1 : 1;
+
+        await ss(d(db, 'notas', emailLogado), {
+            ultimoAcesso: Date.now(),
+            acessosTotal: inc(1),
+            acessosHoje: acessosHoje,
+            ultimoDiaAcesso: hoje
+        }, { merge: true });
+    } catch (e) {
+        console.warn('[acesso] não deu pra registrar:', e.message);
+    }
+}
+
+/* ═══════════════ COMPARTILHAR META ═══════════════ */
 window.compartilharMeta = async function(estudadoHoje, metaMin) {
     const nome = localStorage.getItem('dt_user_name') || 'Estudante';
     const h = Math.floor(estudadoHoje / 60);
@@ -392,3 +463,11 @@ window.compartilharMeta = async function(estudadoHoje, metaMin) {
         } catch (e) { console.error(e); }
     }, 300);
 };
+
+/* ═══════════════ AO VOLTAR PRO APP ═══════════════ */
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        // Re-sincroniza tags caso tenha virado o dia ou tarefas tenham mudado
+        sincronizarTagsTarefa();
+    }
+});
