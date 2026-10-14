@@ -20,7 +20,7 @@ const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODELOS_PERMITIDOS = new Set([
   'openai/gpt-oss-120b',
   'openai/gpt-oss-20b',
-  'meta-llama/llama-4-scout-17b-16e-instruct'
+  'qwen/qwen3.8-27b'
 ]);
 const MODELO_PADRAO = 'openai/gpt-oss-120b';
 
