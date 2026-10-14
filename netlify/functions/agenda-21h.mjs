@@ -21,7 +21,7 @@
 export const config = { schedule: '0 0 * * *' };
 
 const ONESIGNAL_URL = 'https://api.onesignal.com/notifications';
-const APP_ID_PADRAO = 'f73275cd-17ad-4963-a25b-321ce2def2ba';
+const APP_ID_PADRAO = '04313997-e78e-4274-948b-88586b1247ec';
 const PLURAL = Array.from({ length: 19 }, (_, i) => String(i + 2)).join(',');   // "2,3,...,20" (a tag é limitada a 20)
 
 /** Data de "hoje" em Brasília (UTC−3). Às 00:00 UTC ainda é 21h do dia anterior em BRT. */
