@@ -15,7 +15,9 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const userEmail = localStorage.getItem('dt_user_email');
 
+/* ═══════════════ ESTADO ═══════════════ */
 let timer = null;
+let targetTime = 0;         // timestamp alvo pra corrigir drift
 let segsRestantes = 0;
 let totalSegs = 0;
 let isPaused = false;
@@ -23,25 +25,130 @@ let materiaSelecionada = "Geral";
 let sessionActive = false;
 let modoAtual = 'timer';
 
-/* MODO LIVRE */
 let livreSegs = 0;
 let livreTimer = null;
+let livreTargetTime = 0;
 
-/* ═══════════════ SOM ═══════════════ */
+/* ═══════════════ CONFIG SALVA ═══════════════ */
+const CFG_KEY = 'hb_foco_cfg';
+const cfg = Object.assign({
+    relogio: 'flip',        // flip | digital | minimal
+    som: 'tick',            // tick | click | wood | bip | silencioso
+    somFinal: 'alarme'      // alarme | suave | silencioso
+}, JSON.parse(localStorage.getItem(CFG_KEY) || '{}'));
+
+function salvarCfg() {
+    localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+}
+
+/* ═══════════════ ÁUDIO ═══════════════ */
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const playTick = () => {
+
+function tocarSom(tipo) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.08);
-};
+    const t = audioCtx.currentTime;
+
+    if (tipo === 'tick') {
+        // Tick suave — onda senoidal baixa
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, t);
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.07);
+
+    } else if (tipo === 'click') {
+        // Click curto e seco — square wave altinho
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(850, t);
+        gain.gain.setValueAtTime(0.15, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.025);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.025);
+
+    } else if (tipo === 'wood') {
+        // Madeira / metrônomo — ruído branco curtinho
+        const bufferSize = audioCtx.sampleRate * 0.02;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 3);
+        }
+        const src = audioCtx.createBufferSource();
+        src.buffer = buffer;
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 1200;
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.35, t);
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        src.start(t);
+
+    } else if (tipo === 'bip') {
+        // Bip digital — onda triangular aguda
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1200, t);
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.04);
+    }
+}
+
+function playTick() {
+    if (cfg.som === 'silencioso') return;
+    tocarSom(cfg.som);
+}
+
+function tocarSomFinal() {
+    if (cfg.somFinal === 'silencioso') return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const t = audioCtx.currentTime;
+
+    if (cfg.somFinal === 'alarme') {
+        // 3 bips fortes
+        for (let i = 0; i < 3; i++) {
+            const start = t + i * 0.4;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(880, start);
+            gain.gain.setValueAtTime(0.3, start);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(start);
+            osc.stop(start + 0.25);
+        }
+    } else if (cfg.somFinal === 'suave') {
+        // Sino suave
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(660, t);
+        osc.frequency.exponentialRampToValueAtTime(880, t + 0.4);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 1.2);
+    }
+}
 
 /* ═══════════════ HELPERS ═══════════════ */
 const pad = n => String(n).padStart(2, '0');
@@ -52,10 +159,10 @@ const formatarTempo = (min) => {
 };
 const getHojeStr = () => new Date().toISOString().split('T')[0];
 
-/* ═══════════════ FLIP CLOCK ═══════════════ */
+/* ═══════════════ RELÓGIO (3 estilos) ═══════════════ */
 let prevH = '00', prevM = '25', prevS = '00';
 
-const flipCard = (unit, newVal) => {
+function flipCard(unit, newVal) {
     const flap = document.getElementById('flap-' + unit);
     const flapTxt = document.getElementById('flap-' + unit + '-txt');
     const topCur = document.getElementById('top-' + unit + '-cur');
@@ -66,25 +173,58 @@ const flipCard = (unit, newVal) => {
     flap.classList.add('flipping');
     setTimeout(() => { topCur.innerText = newVal; botCur.innerText = newVal; flapTxt.innerText = newVal; }, 200);
     setTimeout(() => { flap.classList.remove('flipping'); }, 400);
-};
+}
 
-const atualizarFlip = (h, m, s) => {
+function atualizarFlip(h, m, s) {
     const hStr = pad(h), mStr = pad(m), sStr = pad(s);
     if (hStr !== prevH) { flipCard('h', hStr); prevH = hStr; }
     if (mStr !== prevM) { flipCard('m', mStr); prevM = mStr; }
     if (sStr !== prevS) { flipCard('s', sStr); prevS = sStr; }
-};
+}
 
-const setFlipStatic = (h, m, s) => {
+function atualizarDigital(h, m, s) {
+    document.getElementById('dig-h').innerText = pad(h);
+    document.getElementById('dig-m').innerText = pad(m);
+    document.getElementById('dig-s').innerText = pad(s);
+}
+
+function atualizarMinimal(h, m, s) {
+    document.getElementById('min-h').innerText = pad(h);
+    document.getElementById('min-m').innerText = pad(m);
+    document.getElementById('min-s').innerText = pad(s);
+}
+
+function atualizarRelogio(h, m, s) {
+    atualizarFlip(h, m, s);
+    atualizarDigital(h, m, s);
+    atualizarMinimal(h, m, s);
+}
+
+function setFlipStatic(h, m, s) {
     const hStr = pad(h), mStr = pad(m), sStr = pad(s);
     ['h','m','s'].forEach((u, i) => {
         const val = [hStr, mStr, sStr][i];
-        document.getElementById('top-' + u + '-cur').innerText = val;
-        document.getElementById('bot-' + u + '-cur').innerText = val;
-        document.getElementById('flap-' + u + '-txt').innerText = val;
+        const topEl = document.getElementById('top-' + u + '-cur');
+        const botEl = document.getElementById('bot-' + u + '-cur');
+        const flapEl = document.getElementById('flap-' + u + '-txt');
+        if (topEl) topEl.innerText = val;
+        if (botEl) botEl.innerText = val;
+        if (flapEl) flapEl.innerText = val;
     });
     prevH = hStr; prevM = mStr; prevS = sStr;
-};
+}
+
+function setRelogioStatic(h, m, s) {
+    setFlipStatic(h, m, s);
+    atualizarDigital(h, m, s);
+    atualizarMinimal(h, m, s);
+}
+
+/* ═══════════════ APLICAR ESTILO DO RELÓGIO ═══════════════ */
+function aplicarEstiloRelogio() {
+    const wrap = document.getElementById('clock-wrap');
+    if (wrap) wrap.dataset.estilo = cfg.relogio;
+}
 
 /* ═══════════════ MODO SELECTOR ═══════════════ */
 window.selecionarModo = (modo) => {
@@ -96,7 +236,7 @@ window.selecionarModo = (modo) => {
     document.getElementById('livre-info').style.display = modo === 'livre' ? 'block' : 'none';
     document.getElementById('xp-tag').style.display = modo === 'timer' ? 'block' : 'none';
     if (modo === 'livre') {
-        setFlipStatic(0, 0, 0);
+        setRelogioStatic(0, 0, 0);
     } else {
         atualizarSetup();
     }
@@ -141,13 +281,13 @@ window.selecionarMateria = (nome) => {
     });
 };
 
-/* ═══════════════ CONTROLES ═══════════════ */
+/* ═══════════════ AJUSTE DE TEMPO ═══════════════ */
 const getH = () => parseInt(document.getElementById('h-val').innerText);
 const getM = () => parseInt(document.getElementById('m-val').innerText);
 
 const atualizarSetup = () => {
     document.getElementById('xp-num').innerText = Math.max(5, Math.floor((getH() * 60 + getM()) / 25 * 10));
-    setFlipStatic(getH(), getM(), 0);
+    setRelogioStatic(getH(), getM(), 0);
 };
 
 document.getElementById('h-up').onclick   = () => { const v = getH(); if(v < 12) document.getElementById('h-val').innerText = v + 1; atualizarSetup(); };
@@ -155,7 +295,34 @@ document.getElementById('h-down').onclick  = () => { const v = getH(); if(v > 0)
 document.getElementById('m-up').onclick   = () => { const v = getM(); document.getElementById('m-val').innerText = v < 55 ? v + 5 : 0; atualizarSetup(); };
 document.getElementById('m-down').onclick  = () => { const v = getM(); if(v >= 5) document.getElementById('m-val').innerText = v - 5; atualizarSetup(); };
 
-/* ═══════════════ INICIAR ═══════════════ */
+/* ═══════════════════════════════════════════════════ */
+/* TIMER PRECISO — corrige drift baseado no alvo real */
+/* ═══════════════════════════════════════════════════ */
+function tick() {
+    if (isPaused) return;
+    const agora = Date.now();
+    segsRestantes = Math.max(0, Math.round((targetTime - agora) / 1000));
+
+    const h = Math.floor(segsRestantes / 3600);
+    const m = Math.floor((segsRestantes % 3600) / 60);
+    const s = segsRestantes % 60;
+
+    // Só toca o som quando o SEGUNDO muda de fato
+    if (s !== parseInt(prevS, 10)) playTick();
+
+    atualizarRelogio(h, m, s);
+
+    const pct = totalSegs > 0 ? Math.round(((totalSegs - segsRestantes) / totalSegs) * 100) : 0;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progresso-pct').innerText = pct + '%';
+
+    if (segsRestantes <= 0) {
+        tocarSomFinal();
+        finalizarSessao(true, Math.floor(totalSegs / 60));
+    }
+}
+
+/* ═══════════════ INICIAR TIMER ═══════════════ */
 document.getElementById('btn-start').onclick = () => {
     if (audioCtx.state === 'suspended') audioCtx.resume();
 
@@ -166,10 +333,13 @@ document.getElementById('btn-start').onclick = () => {
 
     const h = getH(), m = getM();
     if (h === 0 && m === 0) return;
+
     segsRestantes = h * 3600 + m * 60;
     totalSegs = segsRestantes;
+    targetTime = Date.now() + segsRestantes * 1000;
     sessionActive = true;
-    document.body.classList.add('session-active');   // 👈 MODO IMERSIVO
+    document.body.classList.add('session-active');
+
     document.getElementById('setup-controls').style.display = 'none';
     document.getElementById('modo-selector').style.display = 'none';
     document.getElementById('progress-wrap').style.display = 'flex';
@@ -179,14 +349,18 @@ document.getElementById('btn-start').onclick = () => {
     document.getElementById('xp-tag').style.display = 'none';
     document.getElementById('materia-ativa-label').innerText = materiaSelecionada.toUpperCase();
     document.querySelectorAll('.chip-materia').forEach(c => c.style.opacity = '0.3');
-    timer = setInterval(tick, 1000);
+
+    // Intervalo curto de 250ms mas recalcula sempre pelo alvo → sem drift
+    timer = setInterval(tick, 250);
 };
 
 /* ═══════════════ MODO LIVRE ═══════════════ */
 function iniciarModoLivre() {
     livreSegs = 0;
+    livreTargetTime = Date.now();
     sessionActive = true;
-    document.body.classList.add('session-active');   // 👈 MODO IMERSIVO
+    document.body.classList.add('session-active');
+
     document.getElementById('livre-info').style.display = 'none';
     document.getElementById('modo-selector').style.display = 'none';
     document.getElementById('livre-progress-wrap').style.display = 'flex';
@@ -197,53 +371,50 @@ function iniciarModoLivre() {
     document.getElementById('livre-materia-label').innerText = materiaSelecionada.toUpperCase();
     document.querySelectorAll('.chip-materia').forEach(c => c.style.opacity = '0.3');
 
-    livreTimer = setInterval(tickLivre, 1000);
+    livreTimer = setInterval(tickLivre, 250);
 }
 
-const tickLivre = () => {
+function tickLivre() {
     if (isPaused) return;
-    livreSegs++;
-    playTick();
+    livreSegs = Math.round((Date.now() - livreTargetTime) / 1000);
+
     const h = Math.floor(livreSegs / 3600);
     const m = Math.floor((livreSegs % 3600) / 60);
     const s = livreSegs % 60;
-    atualizarFlip(h, m, s);
+
+    if (s !== parseInt(prevS, 10)) playTick();
+
+    atualizarRelogio(h, m, s);
 
     const minutos = Math.floor(livreSegs / 60);
     const xpAcum = Math.floor(minutos / 25 * 10);
     document.getElementById('livre-xp-badge').innerText = '+' + xpAcum + ' XP acumulado';
-};
+}
 
 document.getElementById('btn-parar-livre').onclick = async () => {
     clearInterval(livreTimer);
     const minutos = Math.floor(livreSegs / 60);
     if (minutos < 1) {
         alert('Você precisa estudar pelo menos 1 minuto!');
-        livreTimer = setInterval(tickLivre, 1000);
+        livreTimer = setInterval(tickLivre, 250);
         return;
     }
+    tocarSomFinal();
     await finalizarSessao(true, minutos);
-};
-
-/* ═══════════════ TICK DO TIMER ═══════════════ */
-const tick = () => {
-    if (isPaused) return;
-    segsRestantes--;
-    playTick();
-    const h = Math.floor(segsRestantes / 3600);
-    const m = Math.floor((segsRestantes % 3600) / 60);
-    const s = segsRestantes % 60;
-    atualizarFlip(h, m, s);
-    const pct = Math.round(((totalSegs - segsRestantes) / totalSegs) * 100);
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progresso-pct').innerText = pct + '%';
-    if (segsRestantes <= 0) finalizarSessao(true, Math.floor(totalSegs / 60));
 };
 
 /* ═══════════════ PAUSAR ═══════════════ */
 document.getElementById('btn-pause').onclick = () => {
     isPaused = !isPaused;
     document.getElementById('btn-pause').innerText = isPaused ? 'RETOMAR' : 'PAUSAR';
+
+    // Ajusta o alvo pra não perder tempo parado
+    if (isPaused) {
+        // nada — os ticks vão ignorar, e ao retomar recalcula
+    } else {
+        targetTime = Date.now() + segsRestantes * 1000;
+        livreTargetTime = Date.now() - livreSegs * 1000;
+    }
 };
 
 /* ═══════════════ DESISTIR ═══════════════ */
@@ -253,6 +424,9 @@ document.getElementById('btn-quit').onclick = () => {
 };
 document.getElementById('btn-keep-going').onclick = () => {
     isPaused = false;
+    // Retoma de onde parou
+    targetTime = Date.now() + segsRestantes * 1000;
+    livreTargetTime = Date.now() - livreSegs * 1000;
     document.getElementById('modal-confirm').style.display = 'none';
 };
 document.getElementById('btn-really-quit').onclick = async () => {
@@ -300,7 +474,7 @@ const finalizarSessao = async (completa, minutosParam) => {
         } catch(e) { console.error(e); }
     }
 
-    setTimeout(() => location.reload(), temNovas ? 4000 : 500);
+    setTimeout(() => location.reload(), temNovas ? 4000 : 800);
 };
 
 /* ═══════════════ HISTÓRICO ═══════════════ */
@@ -366,6 +540,68 @@ async function carregarHistorico() {
     } catch(e) { console.error(e); }
 }
 
+/* ═══════════════ MODAL DE SETTINGS ═══════════════ */
+function abrirSettings() {
+    document.getElementById('modal-settings').style.display = 'flex';
+    marcarOpcoes();
+}
+function fecharSettings() {
+    document.getElementById('modal-settings').style.display = 'none';
+}
+function marcarOpcoes() {
+    document.querySelectorAll('#opcoes-relogio [data-relogio]').forEach(b => {
+        b.classList.toggle('on', b.dataset.relogio === cfg.relogio);
+    });
+    document.querySelectorAll('#opcoes-som [data-som]').forEach(b => {
+        b.classList.toggle('on', b.dataset.som === cfg.som);
+    });
+    document.querySelectorAll('#opcoes-final [data-final]').forEach(b => {
+        b.classList.toggle('on', b.dataset.final === cfg.somFinal);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnSet = document.getElementById('btn-settings');
+    if (btnSet) btnSet.addEventListener('click', abrirSettings);
+
+    const btnX = document.getElementById('settings-x');
+    if (btnX) btnX.addEventListener('click', fecharSettings);
+
+    const btnOk = document.getElementById('settings-ok');
+    if (btnOk) btnOk.addEventListener('click', fecharSettings);
+
+    const modalSet = document.getElementById('modal-settings');
+    if (modalSet) modalSet.addEventListener('click', (e) => {
+        if (e.target === modalSet) fecharSettings();
+    });
+
+    // Cliques nas opções
+    document.querySelectorAll('#opcoes-relogio [data-relogio]').forEach(b => {
+        b.addEventListener('click', () => {
+            cfg.relogio = b.dataset.relogio;
+            salvarCfg();
+            aplicarEstiloRelogio();
+            marcarOpcoes();
+        });
+    });
+    document.querySelectorAll('#opcoes-som [data-som]').forEach(b => {
+        b.addEventListener('click', () => {
+            cfg.som = b.dataset.som;
+            salvarCfg();
+            marcarOpcoes();
+            // Preview do som ao escolher (menos se for silencioso)
+            if (cfg.som !== 'silencioso') tocarSom(cfg.som);
+        });
+    });
+    document.querySelectorAll('#opcoes-final [data-final]').forEach(b => {
+        b.addEventListener('click', () => {
+            cfg.somFinal = b.dataset.final;
+            salvarCfg();
+            marcarOpcoes();
+        });
+    });
+});
+
 /* ═══════════════ PRÉ-PREENCHIMENTO (Agenda → Foco) ═══════════════ */
 function aplicarPrefillAgenda() {
     let bruto = null;
@@ -403,6 +639,7 @@ function aplicarPrefillAgenda() {
 
 /* ═══════════════ INIT ═══════════════ */
 document.addEventListener('DOMContentLoaded', () => {
+    aplicarEstiloRelogio();
     carregarMaterias().then(aplicarPrefillAgenda);
     atualizarSetup();
     if (window.lucide) lucide.createIcons();
