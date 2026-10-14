@@ -1,4 +1,4 @@
-/* grade-logica.js — Hub Brain · Grade Horária + Escanear com IA */
+/* grade-logica.js — Hub Brain · Grade Horária + Escanear com IA + Tags de Notificação */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -139,6 +139,64 @@ function verificarStatusNotificacoes() {
     });
 }
 
+/* ═══════════════════════════════════════════════════ */
+/* TAGS DE AULA NO ONESIGNAL                           */
+/* Salva as aulas de HOJE como tags pra que a Function */
+/* `aula-aviso.mjs` consiga mandar push:               */
+/*   - 10 min antes da aula                            */
+/*   - no começo da aula                               */
+/*                                                     */
+/* Tags criadas:                                       */
+/*   aviso_dia   = "2026-10-14"                        */
+/*   aviso_13_00 = "Física"   (chave = "aviso_HH_MM")  */
+/*   aviso_13_50 = "Português"                         */
+/*   ...até 8 aulas por dia                            */
+/*                                                     */
+/* A function roda a cada minuto, calcula o "HH_MM de  */
+/* daqui a 10 min" e "HH_MM agora", e manda push pra   */
+/* quem tem aquela tag.                                */
+/* ═══════════════════════════════════════════════════ */
+function sincronizarTagsAula() {
+    if (!window.OneSignalDeferred) return;
+
+    const hoje = hojeStr();
+    const aulasHoje = DIAS_UTEIS.includes(hoje)
+        ? (gradeHoraria[hoje] || []).slice().sort((a, b) => (a.hora || '').localeCompare(b.hora || '')).slice(0, 8)
+        : [];
+
+    // Monta as tags novas
+    const tags = { aviso_dia: hoje };
+
+    // Se for fim de semana: limpa tudo
+    if (!aulasHoje.length) {
+        // Não temos lista de chaves antigas, então só atualiza o aviso_dia.
+        // As chaves aviso_HH_MM antigas ficam órfãs, mas a function checa aviso_dia === hoje antes de mandar,
+        // então tags velhas não vão disparar push.
+        window.OneSignalDeferred.push(async function (OneSignal) {
+            try {
+                await OneSignal.User.addTags(tags);
+                console.log('[grade] sem aulas hoje, aviso_dia atualizado');
+            } catch (e) { console.warn(e); }
+        });
+        return;
+    }
+
+    // Preenche as tags de cada aula
+    aulasHoje.forEach(a => {
+        const hhmm = String(a.hora || '').replace(':', '_');
+        if (hhmm) tags['aviso_' + hhmm] = (a.materia || 'Aula').slice(0, 40);
+    });
+
+    window.OneSignalDeferred.push(async function (OneSignal) {
+        try {
+            await OneSignal.User.addTags(tags);
+            console.log('[grade] tags de aula sincronizadas:', tags);
+        } catch (e) {
+            console.warn('[grade] falha ao salvar tags:', e);
+        }
+    });
+}
+
 /* ═══════════════ INIT ═══════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("[grade] Iniciado");
@@ -162,6 +220,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     salvarPlayerIdNoFirebase();
     verificarStatusNotificacoes();
 
+    // ── Sincroniza tags de aula pro push ──
+    // Espera 3s pro OneSignal estar 100% pronto
+    setTimeout(sincronizarTagsAula, 3000);
+
     intervaloAgora = setInterval(atualizarAgora, 30000);
     initScan();
 
@@ -180,6 +242,8 @@ async function carregarDadosNuvem() {
                 renderizarSemana();
                 window.renderizarAulas();
                 atualizarAgora();
+                // Atualiza as tags depois que carregar da nuvem
+                setTimeout(sincronizarTagsAula, 1000);
             }
         }
     } catch (e) { console.error("[grade] Nuvem:", e); }
@@ -271,7 +335,7 @@ window.renderizarAulas = () => {
     if (window.lucide) lucide.createIcons();
 };
 
-/* ═══════════════ AULA ATUAL DO DIA ═══════════════ */
+/* ═══════════════ AULA ATUAL ═══════════════ */
 function aulaAtualDoDia(dia) {
     if (dia !== hojeStr()) return null;
     const aulas = (gradeHoraria[dia] || []).slice().sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
@@ -460,6 +524,7 @@ window.salvarAula = async () => {
             atualizadoEm: Date.now()
         }, { merge: true });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(gradeHoraria));
+        sincronizarTagsAula();   // 👈 atualiza as tags do OneSignal
         window.mostrarAvisoCustom(`Aula agendada na ${NOMES_DIA[dia]}!`);
     } catch (e) {
         console.error(e);
@@ -476,7 +541,7 @@ window.abrirConfirmExcluir = (i) => {
 /* ═══════════════════════════════════════════════════ */
 /* SCAN COM IA VISION                                   */
 /* ═══════════════════════════════════════════════════ */
-const MODELO_VISAO = 'qwen/qwen3.8-27b';
+const MODELO_VISAO = 'meta-llama/llama-4-scout-17b-16e-instruct';
 
 function initScan() {
     const btnEscanear = document.getElementById('btn-escanear');
@@ -546,7 +611,6 @@ function atualizarStatusScan(msg, tipo) {
     el.className = 'scan-status' + (tipo ? ' ' + tipo : '');
 }
 
-/* Comprime pra max 1100px (leve o bastante pra caber no proxy) */
 function comprimirImagemParaIA(file) {
     return new Promise((resolve, reject) => {
         const url = URL.createObjectURL(file);
@@ -803,6 +867,9 @@ async function aplicarResultadoScan() {
             atualizadoEm: Date.now()
         }, { merge: true });
 
+        // ── Atualiza tags pro push funcionar nas aulas importadas ──
+        sincronizarTagsAula();
+
         window.fecharConfirmScan();
         window.mostrarAvisoCustom("✅ Grade importada com sucesso!");
     } catch (e) {
@@ -828,6 +895,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(gradeHoraria));
                 await setDoc(doc(db, "grades_horarias", userId), { grade: gradeHoraria }, { merge: true });
+                sincronizarTagsAula();   // 👈 atualiza as tags
                 window.mostrarAvisoCustom("Aula removida.");
             } catch (e) { console.error(e); }
             window.fecharModalExcluir();
@@ -849,6 +917,7 @@ window.ativarNotificacoesReal = () => {
             if (ok && btn) btn.classList.add('ativo');
             window.mostrarAvisoCustom(ok ? "Notificações ativadas!" : "Permissão negada");
             salvarPlayerIdNoFirebase();
+            sincronizarTagsAula();   // 👈 sincroniza tags logo após aceitar
         } catch (e) {
             window.mostrarAvisoCustom("Não foi possível ativar");
         }
@@ -869,5 +938,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') atualizarAgora();
+    if (document.visibilityState === 'visible') {
+        atualizarAgora();
+        // ── Ao voltar pro app, re-sincroniza as tags (caso tenha virado o dia) ──
+        sincronizarTagsAula();
+    }
 });
