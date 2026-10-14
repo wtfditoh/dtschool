@@ -20,11 +20,7 @@
       "files": [
         {
           "name": "arquivo",
-          "accept": [
-            "image/*",
-            "application/pdf",
-            ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt"
-          ]
+          "accept": ["image/*", "application/pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt"]
         }
       ]
     }
