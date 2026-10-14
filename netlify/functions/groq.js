@@ -26,8 +26,8 @@ const MODELO_PADRAO = 'openai/gpt-oss-120b';
 
 const TETO_TOKENS = 8000;
 const MAX_MENSAGENS = 24;
-const MAX_CHARS_TOTAL = 30000;
-const MAX_IMG_BASE64 = 5_000_000;   // ~5MB de string base64 por imagem
+const MAX_CHARS_TOTAL = 60000;         // texto + imagens (contagem aproximada)
+const MAX_IMG_BASE64 = 8_000_000;      // ~8MB de string base64 por imagem
 const TIMEOUT_MS = Number(process.env.GROQ_TIMEOUT_MS) || 30000;
 
 // Chave pública do Firebase (a mesma do front). Só serve pra validar o token do usuário.
@@ -126,8 +126,9 @@ function montarPayload(b) {
           if (p.image_url.url.length > MAX_IMG_BASE64) {
             return { erro: [413, 'too_large', 'Imagem grande demais.'] };
           }
-          // Conta ~1 token por 4 caracteres base64 (aproximação)
-          total += Math.round(p.image_url.url.length / 4);
+          // A Groq conta imagem por resolução, não pelo tamanho da string base64.
+          // Aproximação alta (2.000) só pra segurança contra abuso.
+          total += 2000;
           partes.push({ type: 'image_url', image_url: { url: p.image_url.url } });
         }
       }
