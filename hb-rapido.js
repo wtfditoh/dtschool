@@ -1,18 +1,11 @@
-/* hb-rapido.js — "Adicionar rápido" compartilhado pela Agenda e pela Home.
-   Duas abas: 📝 Tarefa (com IA que entende frase livre) e 📸 Conteúdo (foto/arquivo por matéria).
-
-   IA: usa a MESMA do Estudos (window.HBIA, de ia-config.js — carregado sob demanda), sem nunca abrir o
-   modal de chave: se não houver login/chave ou a IA demorar mais de 9 s, cai no leitor local (agenda-core.js).
-
-   API:
-     abrirRapido({ aba, data, nome, salvarTarefa, onTarefa, onConteudo, maisOpcoes })
-     enviarInline(texto, { onEstado })   → cria a tarefa direto, sem abrir o sheet (usado no card da Home) */
+/* hb-rapido.js — "Adicionar rápido" com IA + bimestre.
+   Duas abas: 📝 Tarefa (IA) e 📸 Conteúdo (foto/arquivo por matéria + bimestre).
+   API: abrirRapido({ aba, data, nome, bimestre, salvarTarefa, onTarefa, onConteudo, maisOpcoes })
+        enviarInline(texto, { onEstado }) */
 import { collection, addDoc, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { db } from "./hb-firebase.js";
 import * as Core from "./agenda-core.js";
 import { salvarItens, imgbbConfigurado, extArquivo, emojiPorExt } from "./conteudos-upload.js";
-
-/* ═══════════════ BÁSICO ═══════════════ */
 
 const userEmail = () => localStorage.getItem('dt_user_email');
 const isLocal = () => localStorage.getItem('dt_user_type') === 'local';
@@ -36,7 +29,7 @@ async function carregarMaterias(extra) {
     let nomes = [];
     const local = lerJSON('materias_db', null) || lerJSON('materias', []);
     if (Array.isArray(local)) nomes = local.map((m) => m && m.nome).filter(Boolean);
-    if (!nomes.length && userEmail() && !isLocal()) {                 // aparelho que nunca abriu as Notas: busca no Firebase
+    if (!nomes.length && userEmail() && !isLocal()) {
         try {
             const snap = await getDoc(doc(db, 'notas', userEmail()));
             if (snap.exists() && Array.isArray(snap.data().materias)) nomes = snap.data().materias.map((m) => m && m.nome).filter(Boolean);
@@ -46,8 +39,7 @@ async function carregarMaterias(extra) {
     return materiasCache;
 }
 
-/* ═══════════════ IA (a mesma do Estudos) ═══════════════ */
-
+/* IA */
 let iaCarregando = null;
 function garantirIA() {
     if (window.HBIA) return Promise.resolve(true);
@@ -63,7 +55,6 @@ function garantirIA() {
 }
 export const iaLigada = () => localStorage.getItem('hb_ag_ia') !== '0';
 
-/** Pede à IA para organizar o texto. Nunca lança: devolve null se não der (aí vale o leitor local). */
 async function iaOrganizar(texto, materias) {
     if (!iaLigada() || !(await garantirIA())) return null;
     const ctx = { hoje: hojeStr(), materias: materias.filter((m) => m !== 'Geral') };
@@ -74,13 +65,12 @@ async function iaOrganizar(texto, materias) {
         ]);
         return Core.normalizarRespostaIA(window.HBIA.parseJSONRobusto(resp), ctx);
     } catch (e) {
-        console.warn('[rapido] IA indisponível, usando o leitor local:', e && e.message);
+        console.warn('[rapido] IA indisponível:', e && e.message);
         return null;
     }
 }
 
-/* ═══════════════ SALVAR TAREFA (padrão: coleção `agenda`, igual à Agenda) ═══════════════ */
-
+/* Salvar tarefa padrão */
 function obterPlayerId() {
     return new Promise((res) => {
         if (!window.OneSignalDeferred) return res(null);
@@ -97,7 +87,7 @@ function obterPlayerId() {
 async function salvarTarefaPadrao(d) {
     const nova = {
         nome: d.nome, descricao: d.descricao || '', dataInicio: d.dataInicio, dataFim: d.dataFim,
-        materia: d.materia || 'Geral', tipo: d.tipo || 'tarefa', bimestre: '', imagem: '',
+        materia: d.materia || 'Geral', tipo: d.tipo || 'tarefa', bimestre: d.bimestre || '', imagem: '',
         concluida: false, usuario: userEmail() || '', onesignal_player_id: await obterPlayerId(), criadoEm: Date.now()
     };
     if (isLocal()) {
@@ -111,11 +101,10 @@ async function salvarTarefaPadrao(d) {
 
 async function salvar(opts, dados) {
     const r = await (opts.salvarTarefa || salvarTarefaPadrao)(dados);
-    return r && r.tarefa ? r : { tarefa: r, desfazer: null };       // salvarTarefa da Agenda devolve só a tarefa
+    return r && r.tarefa ? r : { tarefa: r, desfazer: null };
 }
 
-/* ═══════════════ INLINE (card da Home): digita → Enter → pronto ═══════════════ */
-
+/* Inline (card da Home) */
 export async function enviarInline(texto, opts) {
     opts = opts || {};
     texto = String(texto || '').trim();
@@ -125,7 +114,7 @@ export async function enviarInline(texto, opts) {
     if (opts.onEstado) opts.onEstado('ia');
     const ia = await iaOrganizar(texto, materias);
     const f = Core.mesclarInterpretacao(local, ia);
-    const dados = { nome: f.nome || Core.capitalizar(texto), tipo: f.tipo || 'tarefa', materia: f.materia || 'Geral' };
+    const dados = { nome: f.nome || Core.capitalizar(texto), tipo: f.tipo || 'tarefa', materia: f.materia || 'Geral', bimestre: '' };
     dados.dataInicio = dados.dataFim = f.data || hojeStr();
     if (opts.onEstado) opts.onEstado('salvando');
     const r = await salvar(opts, dados);
@@ -133,12 +122,11 @@ export async function enviarInline(texto, opts) {
     return { ...dados, data: dados.dataFim, usouIA: !!ia, tarefa: r.tarefa, desfazer: r.desfazer };
 }
 
-/* ═══════════════ SHEET ═══════════════ */
-
+/* ─────────── ESTADO ─────────── */
 const st = {
     aba: 'tarefa', opts: {}, materias: ['Geral'], ocupado: false, iaTexto: '', nomeIA: null,
-    q: { data: '', tipo: 'tarefa', materia: 'Geral', dataPadrao: '', materiaPadrao: 'Geral', manual: {}, auto: {} },
-    itens: [], matConteudo: 'Geral'
+    q: { data: '', tipo: 'tarefa', materia: 'Geral', bimestre: '', dataPadrao: '', materiaPadrao: 'Geral', manual: {}, auto: {} },
+    itens: [], matConteudo: 'Geral', bimConteudo: ''
 };
 let ui = null;
 
@@ -161,6 +149,7 @@ function montar() {
                 '</div>' +
                 '<div class="hbr-painel" data-p="conteudo">' +
                     '<div class="hbr-rot">Matéria</div><div class="hbr-chips" id="hbr-mats"></div>' +
+                    '<div class="hbr-rot">Bimestre <small style="opacity:0.5;text-transform:none;letter-spacing:0;">(opcional)</small></div><div class="hbr-chips" id="hbr-bims"></div>' +
                     '<div class="hbr-rot">Adicionar</div>' +
                     '<div class="hbr-fontes">' +
                         '<button data-fonte="camera"><span>📷</span><b>Tirar foto</b></button>' +
@@ -176,7 +165,7 @@ function montar() {
             '<div class="hbr-pe" id="hbr-pe"></div>' +
         '</div>';
     document.body.appendChild(ov);
-    ui = { ov, box: ov.querySelector('.hbr-sheet'), nome: ov.querySelector('#hbr-nome'), prev: ov.querySelector('#hbr-prev'), chips: ov.querySelector('#hbr-chips'), mats: ov.querySelector('#hbr-mats'), itens: ov.querySelector('#hbr-itens'), aviso: ov.querySelector('#hbr-aviso'), pe: ov.querySelector('#hbr-pe'), iaBtn: ov.querySelector('#hbr-ia'), iaAuto: ov.querySelector('#hbr-ia-auto') };
+    ui = { ov, box: ov.querySelector('.hbr-sheet'), nome: ov.querySelector('#hbr-nome'), prev: ov.querySelector('#hbr-prev'), chips: ov.querySelector('#hbr-chips'), mats: ov.querySelector('#hbr-mats'), bims: ov.querySelector('#hbr-bims'), itens: ov.querySelector('#hbr-itens'), aviso: ov.querySelector('#hbr-aviso'), pe: ov.querySelector('#hbr-pe'), iaBtn: ov.querySelector('#hbr-ia'), iaAuto: ov.querySelector('#hbr-ia-auto') };
 
     ov.addEventListener('click', onClick);
     ov.addEventListener('change', onChange);
@@ -203,13 +192,13 @@ export async function abrirRapido(opts) {
     st.itens = []; st.aba = opts.aba === 'conteudo' ? 'conteudo' : 'tarefa';
     st.materias = materiasCache || ['Geral', ...(opts.materias || [])];
     const ultima = localStorage.getItem('hb_ag_ult_materia') || 'Geral';
-    st.q = { data: opts.data || hojeStr(), dataPadrao: opts.data || hojeStr(), tipo: 'tarefa', materia: 'Geral', materiaPadrao: 'Geral', manual: {}, auto: {} };
+    st.q = { data: opts.data || hojeStr(), dataPadrao: opts.data || hojeStr(), tipo: 'tarefa', materia: 'Geral', bimestre: opts.bimestre || '', materiaPadrao: 'Geral', manual: {}, auto: {} };
     ui.nome.value = opts.nome || '';
     ui.iaAuto.checked = iaLigada();
     ui.aviso.textContent = '';
     ui.ov.classList.add('aberto');
     document.body.classList.add('hbr-travado');
-    garantirIA();                                                    // já aquece a IA enquanto o aluno digita
+    garantirIA();
     renderAba();
 
     st.materias = await carregarMaterias(opts.materias);
@@ -220,13 +209,20 @@ export async function abrirRapido(opts) {
 }
 
 function renderAba() {
+    const soConteudo = st.opts && st.opts.aba === 'conteudo';
+    const abasEl = ui.ov.querySelector('.hbr-abas');
+    if (abasEl) abasEl.style.display = soConteudo ? 'none' : '';
+
     ui.ov.querySelectorAll('[data-aba]').forEach((b) => { const on = b.dataset.aba === st.aba; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
     ui.ov.querySelectorAll('.hbr-painel').forEach((p) => p.classList.toggle('on', p.dataset.p === st.aba));
+
+    const titulo = ui.ov.querySelector('#hbr-titulo');
+    if (titulo) titulo.textContent = (st.aba === 'conteudo' && soConteudo) ? '📸 Adicionar conteúdo' : '⚡ Adicionar rápido';
+
     renderTarefa(); renderConteudo(); renderPe();
 }
 
-/* ───────── aba TAREFA ───────── */
-
+/* Chips de tarefa */
 function chipsTarefa() {
     const q = st.q, hoje = hojeStr(), amanha = Core.somarDias(hoje, 1), depois = Core.somarDias(hoje, 2);
     const rotDia = (d) => { const n = Core.NOMES_DIA[Core.diaDaSemana(d)]; return n.charAt(0) + n.slice(1).toLowerCase() + ' ' + (+d.split('-')[2]); };
@@ -236,7 +232,12 @@ function chipsTarefa() {
         '<label class="hbr-chip hbr-data' + (outra ? ' on' : '') + '">📅 ' + (outra ? esc(prazoTexto(q.data)) : 'Outra') + '<input type="date" data-q="data-input" value="' + esc(q.data) + '"></label>';
     const tipos = Object.keys(Core.TIPOS).map((k) => '<button type="button" class="hbr-chip' + (q.tipo === k ? ' on' : '') + '" data-q="tipo" data-val="' + k + '">' + Core.TIPOS[k].emoji + ' ' + Core.TIPOS[k].label + '</button>').join('');
     const mats = st.materias.map((m) => '<button type="button" class="hbr-chip' + (q.materia === m ? ' on' : '') + '" data-q="materia" data-val="' + esc(m) + '"><i class="hbr-dot" style="background:' + Core.corMateria(m) + '"></i>' + esc(m) + '</button>').join('');
-    return '<div class="hbr-rot">Prazo</div><div class="hbr-chips">' + datas + '</div><div class="hbr-rot">Tipo</div><div class="hbr-chips">' + tipos + '</div><div class="hbr-rot">Matéria</div><div class="hbr-chips">' + mats + '</div>';
+    const bims = ['1','2','3','4'].map((b) => '<button type="button" class="hbr-chip' + (q.bimestre === b ? ' on' : '') + '" data-q="bimestre" data-val="' + b + '">' + b + 'º BIM</button>').join('');
+
+    return '<div class="hbr-rot">Prazo</div><div class="hbr-chips">' + datas + '</div>'
+         + '<div class="hbr-rot">Tipo</div><div class="hbr-chips">' + tipos + '</div>'
+         + '<div class="hbr-rot">Matéria</div><div class="hbr-chips">' + mats + '</div>'
+         + '<div class="hbr-rot">Bimestre <small style="opacity:0.5;text-transform:none;letter-spacing:0;">(opcional)</small></div><div class="hbr-chips">' + bims + '</div>';
 }
 
 function nomeParaMostrar() {
@@ -245,23 +246,24 @@ function nomeParaMostrar() {
     if (st.nomeIA && st.iaTexto === texto) return st.nomeIA;
     const r = Core.interpretarRapido(texto, { hoje: hojeStr(), materias: st.materias.filter((m) => m !== 'Geral') });
     const gen = (tipo, mat) => Core.TIPOS[tipo || 'tarefa'].label + ' de ' + (mat || 'Geral');
-    return r.nome === gen(r.tipo, r.materia) && r.nome !== Core.capitalizar(texto) ? gen(st.q.tipo, st.q.materia) : r.nome;   // nome gerado acompanha os chips
+    return r.nome === gen(r.tipo, r.materia) && r.nome !== Core.capitalizar(texto) ? gen(st.q.tipo, st.q.materia) : r.nome;
 }
 
 function renderPrev(statusIA) {
     const texto = ui.nome.value.trim();
     if (!texto) { ui.prev.innerHTML = '<span class="hbr-prev-vazio">Escreva o que precisa fazer — eu entendo o dia, o tipo e a matéria.</span>'; return; }
     const t = Core.TIPOS[st.q.tipo];
-    ui.prev.innerHTML = '<span class="hbr-prev-em">' + t.emoji + '</span><div><b>' + esc(nomeParaMostrar()) + '</b><small>' + esc(st.q.materia) + ' · ' + esc(prazoTexto(st.q.data)) + (statusIA ? ' · ' + esc(statusIA) : '') + '</small></div>';
+    const bimTxt = st.q.bimestre ? ' · ' + st.q.bimestre + 'º BIM' : '';
+    ui.prev.innerHTML = '<span class="hbr-prev-em">' + t.emoji + '</span><div><b>' + esc(nomeParaMostrar()) + '</b><small>' + esc(st.q.materia) + bimTxt + ' · ' + esc(prazoTexto(st.q.data)) + (statusIA ? ' · ' + esc(statusIA) : '') + '</small></div>';
 }
 
 function renderTarefa(statusIA) { ui.chips.innerHTML = chipsTarefa(); renderPrev(statusIA); }
 
-function aplicarCampos(r, origemIA) {                               // só mexe no que o aluno não escolheu na mão
+function aplicarCampos(r, origemIA) {
     [['data', r.data, st.q.dataPadrao], ['tipo', r.tipo, 'tipo'], ['materia', r.materia, st.q.materiaPadrao]].forEach(([k, v, padrao]) => {
         if (st.q.manual[k]) return;
         if (v) { st.q[k] = v; st.q.auto[k] = true; }
-        else if (st.q.auto[k] && !origemIA) { st.q[k] = k === 'tipo' ? 'tarefa' : padrao; st.q.auto[k] = false; }   // trecho apagado: volta ao padrão
+        else if (st.q.auto[k] && !origemIA) { st.q[k] = k === 'tipo' ? 'tarefa' : padrao; st.q.auto[k] = false; }
     });
 }
 
@@ -278,7 +280,7 @@ async function rodarIA(silencioso) {
     renderPrev('✨ entendendo…');
     const ia = await iaOrganizar(texto, st.materias);
     ui.iaBtn.classList.remove('girando'); ui.iaBtn.disabled = false;
-    st.iaTexto = texto;                                              // não tenta de novo para o mesmo texto
+    st.iaTexto = texto;
     if (ia) { aplicarCampos(ia, true); st.nomeIA = ia.nome || null; renderTarefa('✨ IA'); return true; }
     st.nomeIA = null; renderTarefa();
     if (!silencioso) toast('IA indisponível agora — usei o leitor automático');
@@ -293,9 +295,9 @@ async function confirmarTarefa() {
     if (!texto) { shake(ui.nome); return; }
     st.ocupado = true; renderPe();
     try {
-        if (iaLigada() && st.iaTexto !== texto) await rodarIA(true);   // automático: organiza com IA antes de salvar
+        if (iaLigada() && st.iaTexto !== texto) await rodarIA(true);
         const nome = nomeParaMostrar() || Core.capitalizar(texto);
-        const dados = { nome, tipo: st.q.tipo, materia: st.q.materia, dataInicio: st.q.data, dataFim: st.q.data };
+        const dados = { nome, tipo: st.q.tipo, materia: st.q.materia, bimestre: st.q.bimestre, dataInicio: st.q.data, dataFim: st.q.data };
         localStorage.setItem('hb_ag_ult_materia', st.q.materia);
         const r = await salvar(st.opts, dados);
         const opts = st.opts;
@@ -308,10 +310,12 @@ async function confirmarTarefa() {
     } finally { st.ocupado = false; if (aberto()) renderPe(); }
 }
 
-/* ───────── aba CONTEÚDO ───────── */
-
+/* Conteúdo */
 function renderConteudo() {
     ui.mats.innerHTML = st.materias.map((m) => '<button type="button" class="hbr-chip' + (st.matConteudo === m ? ' on' : '') + '" data-mat-c="' + esc(m) + '"><i class="hbr-dot" style="background:' + Core.corMateria(m) + '"></i>' + esc(m) + '</button>').join('');
+    const bims = ['1','2','3','4'].map((b) => '<button type="button" class="hbr-chip' + (st.bimConteudo === b ? ' on' : '') + '" data-bim-c="' + b + '">' + b + 'º BIM</button>').join('');
+    ui.bims.innerHTML = bims;
+
     ui.itens.innerHTML = st.itens.map((it, i) =>
         '<div class="hbr-item">' + (it.url ? '<img src="' + it.url + '" alt="">' : '<span class="hbr-item-ico">' + emojiPorExt(extArquivo(it.file.name)) + '</span>') +
         '<span class="hbr-item-nome">' + esc(it.file.name || 'Foto') + '</span><button type="button" data-rm="' + i + '" aria-label="Remover">✕</button></div>').join('');
@@ -334,7 +338,10 @@ async function enviarConteudo() {
     st.ocupado = true; renderPe('Enviando…');
     try {
         const r = await salvarItens({
-            items: st.itens.map((it) => ({ file: it.file, arq: it.arq })), materia: st.matConteudo, userEmail: userEmail() || '',
+            items: st.itens.map((it) => ({ file: it.file, arq: it.arq })),
+            materia: st.matConteudo,
+            bimestre: st.bimConteudo,
+            userEmail: userEmail() || '',
             onProgresso: (i, n) => renderPe('Enviando ' + i + '/' + n + '…')
         });
         localStorage.setItem('hb_ag_ult_materia', st.matConteudo);
@@ -348,8 +355,6 @@ async function enviarConteudo() {
         toast(e.message || 'Erro ao enviar', 4500);
     } finally { st.ocupado = false; if (aberto()) renderPe(); }
 }
-
-/* ───────── rodapé e eventos ───────── */
 
 function renderPe(textoOcupado) {
     if (!ui) return;
@@ -368,15 +373,33 @@ function onClick(e) {
     if (t === ui.ov) { if (!st.ocupado) fechar(); return; }
     const ab = t.closest('[data-aba]'); if (ab) { st.aba = ab.dataset.aba; renderAba(); if (st.aba === 'tarefa') ui.nome.focus(); return; }
     const q = t.closest('[data-q]');
-    if (q) { const k = q.dataset.q; if (k !== 'data-input') { st.q[k] = q.dataset.val; st.q.manual[k] = true; renderTarefa(); } return; }
+    if (q) {
+        const k = q.dataset.q;
+        if (k !== 'data-input') {
+            if (k === 'bimestre' && st.q.bimestre === q.dataset.val) {
+                st.q.bimestre = ''; st.q.manual.bimestre = true;
+            } else {
+                st.q[k] = q.dataset.val; st.q.manual[k] = true;
+            }
+            renderTarefa();
+        }
+        return;
+    }
     const mc = t.closest('[data-mat-c]'); if (mc) { st.matConteudo = mc.dataset.matC; renderConteudo(); return; }
+    const bc = t.closest('[data-bim-c]');
+    if (bc) {
+        const b = bc.dataset.bimC;
+        st.bimConteudo = (st.bimConteudo === b) ? '' : b;
+        renderConteudo();
+        return;
+    }
     const fo = t.closest('[data-fonte]'); if (fo) { ui.ov.querySelector('#hbr-f-' + fo.dataset.fonte).click(); return; }
     const rm = t.closest('[data-rm]'); if (rm) { const [it] = st.itens.splice(Number(rm.dataset.rm), 1); if (it && it.url) URL.revokeObjectURL(it.url); renderConteudo(); renderPe(); return; }
     const pe = t.closest('[data-pe]');
     if (pe) {
         if (pe.dataset.pe === 'add') confirmarTarefa();
         else if (pe.dataset.pe === 'enviar') enviarConteudo();
-        else if (pe.dataset.pe === 'mais') { const d = { nome: nomeParaMostrar(), data: st.q.data, tipo: st.q.tipo, materia: st.q.materia }; const f = st.opts.maisOpcoes; fechar(); f(d); }
+        else if (pe.dataset.pe === 'mais') { const d = { nome: nomeParaMostrar(), data: st.q.data, tipo: st.q.tipo, materia: st.q.materia, bimestre: st.q.bimestre }; const f = st.opts.maisOpcoes; fechar(); f(d); }
         return;
     }
     const h = t.closest('[data-hbr]');
