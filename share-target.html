@@ -31,14 +31,16 @@
             color:#666; text-transform:uppercase;
         }
         .st-titulo { font-size:22px; font-weight:900; margin-bottom:4px; text-align:center; }
-        .st-sub { font-size:13px; color:#666; margin-bottom:24px; text-align:center; }
-        .st-mats {
+        .st-sub { font-size:13px; color:#666; margin-bottom:20px; text-align:center; }
+        .st-secao { width:100%; max-width:340px; font-size:10px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:#555; margin:8px 2px 8px; }
+        .st-mats, .st-bims {
             width:100%; max-width:340px;
             display:flex; flex-direction:column; gap:8px;
-            margin-bottom:18px; max-height:40vh; overflow-y:auto;
+            margin-bottom:12px; max-height:32vh; overflow-y:auto;
         }
+        .st-bims { flex-direction:row; flex-wrap:wrap; gap:6px; max-height:none; }
         .st-mat {
-            padding:16px; border-radius:16px;
+            padding:14px; border-radius:14px;
             background:#16161a; border:1px solid rgba(138,43,226,0.2);
             color:#fff; font-family:inherit; font-size:15px; font-weight:700;
             cursor:pointer; text-align:left;
@@ -48,12 +50,25 @@
         .st-mat:active { transform:scale(0.98); }
         .st-mat.on { border-color:#8a2be2; background:rgba(138,43,226,0.15); }
         .st-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+        .st-bim {
+            flex:1; min-width:70px;
+            padding:12px 10px; border-radius:14px;
+            background:#16161a; border:1px solid rgba(138,43,226,0.2);
+            color:#fff; font-family:inherit; font-size:13px; font-weight:800;
+            cursor:pointer; text-align:center;
+            transition:all 0.15s;
+        }
+        .st-bim:active { transform:scale(0.96); }
+        .st-bim.on { border-color:#8a2be2; background:rgba(138,43,226,0.2); }
+
         .st-salvar {
             width:100%; max-width:340px;
             padding:16px; border-radius:16px; border:none;
             background:#8a2be2; color:#fff;
             font-family:inherit; font-size:15px; font-weight:900;
             cursor:pointer; box-shadow:0 6px 20px rgba(138,43,226,0.4);
+            margin-top:8px;
         }
         .st-salvar:disabled { opacity:0.5; cursor:not-allowed; }
         .st-erro {
@@ -70,8 +85,14 @@
 <body>
     <div class="st-preview" id="st-preview"></div>
     <div class="st-titulo">📚 Salvar em Conteúdos</div>
-    <div class="st-sub" id="st-sub">Escolha a matéria</div>
+    <div class="st-sub" id="st-sub">Escolha a matéria e o bimestre</div>
+
+    <div class="st-secao" style="text-align:left;">Matéria</div>
     <div class="st-mats" id="st-mats"></div>
+
+    <div class="st-secao" style="text-align:left;">Bimestre <span style="opacity:0.5; text-transform:none; letter-spacing:0;">(opcional)</span></div>
+    <div class="st-bims" id="st-bims"></div>
+
     <button class="st-salvar" id="st-salvar" disabled>Salvar</button>
     <div class="st-erro" id="st-erro"></div>
     <script type="module" src="share-target.js"></script>
