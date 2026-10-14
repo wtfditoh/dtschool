@@ -164,3 +164,32 @@ textarea:focus { border-color: var(--purple); }
 .loading-state { display: flex; align-items: center; justify-content: center; padding: 40px; }
 .pulse-loader { width: 22px; height: 22px; border: 3px solid rgba(138,43,226,0.1); border-top-color: var(--purple); border-radius: 50%; animation: s 0.8s infinite linear; }
 @keyframes s { to { transform: rotate(360deg); } }
+
+/* Barra de ordenação */
+.ordem-bar {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+}
+.ordem-bar::-webkit-scrollbar { display: none; }
+.ordem-label {
+    font-size: 10px; font-weight: 800; color: #333;
+    letter-spacing: 1px; flex-shrink: 0;
+}
+.ordem-btn {
+    flex-shrink: 0;
+    padding: 8px 12px; border-radius: 14px;
+    background: #0f0f12; color: #666;
+    border: 1px solid #1a1a1c;
+    font-family: inherit; font-size: 11px; font-weight: 800;
+    cursor: pointer; transition: all 0.15s;
+    white-space: nowrap;
+}
+.ordem-btn:active { transform: scale(0.95); }
+.ordem-btn.on {
+    background: rgba(138,43,226,0.15);
+    color: #c084fc;
+    border-color: rgba(138,43,226,0.5);
+}
