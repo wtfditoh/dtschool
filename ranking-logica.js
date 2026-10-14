@@ -1,4 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+/* ranking-logica.js — Hub Brain · Ranking Global (com foto de perfil) */
+
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -10,7 +12,7 @@ const firebaseConfig = {
     appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const userEmail = localStorage.getItem('dt_user_email');
@@ -30,6 +32,29 @@ function formatarNumero(num) {
     return num.toString();
 }
 
+/* Mostra foto (se tiver) por cima do ícone. Se não tiver, deixa o ícone. */
+function aplicarAvatar(containerEl, iconeEl, fotoUrl, iconeNome) {
+    if (!containerEl) return;
+
+    // Remove img antiga se existir
+    const imgAntiga = containerEl.querySelector('img.rank-avatar-img');
+    if (imgAntiga) imgAntiga.remove();
+
+    if (fotoUrl) {
+        if (iconeEl) iconeEl.style.display = 'none';
+        const img = document.createElement('img');
+        img.className = 'rank-avatar-img';
+        img.src = fotoUrl;
+        img.alt = '';
+        containerEl.appendChild(img);
+    } else {
+        if (iconeEl) {
+            iconeEl.style.display = '';
+            iconeEl.setAttribute('data-lucide', iconeNome || 'user');
+        }
+    }
+}
+
 async function carregarRanking() {
     try {
         const querySnapshot = await getDocs(collection(db, "notas"));
@@ -42,7 +67,8 @@ async function carregarRanking() {
                     id: d.email.toLowerCase(),
                     nome: d.nome,
                     xp: Number(d.xp) || 0,
-                    avatar: d.avatar || "user"
+                    avatar: d.avatar || "user",
+                    fotoPerfil: d.fotoPerfil || ""
                 });
             }
         });
@@ -56,14 +82,12 @@ async function carregarRanking() {
         // Ordena por XP
         listaUnica.sort((a, b) => b.xp - a.xp);
 
-        // Calcula estatísticas
+        // Estatísticas
         const totalUsuarios = listaUnica.length;
         const totalXP = listaUnica.reduce((sum, u) => sum + u.xp, 0);
 
-        // Atualiza stats no header
         const totalUsuariosEl = document.getElementById('total-usuarios');
         const totalXpEl = document.getElementById('total-xp');
-        
         if (totalUsuariosEl) totalUsuariosEl.textContent = totalUsuarios;
         if (totalXpEl) totalXpEl.textContent = formatarNumero(totalXP);
 
@@ -78,30 +102,31 @@ async function carregarRanking() {
 }
 
 function renderizar(lista) {
-    // PÓDIO — top 3
+    // ─────────── PÓDIO (top 3) ───────────
     for (let i = 0; i < 3; i++) {
         const u = lista[i];
-        const nomeElem = document.getElementById(`p${i+1}-name`);
-        const scoreElem = document.getElementById(`p${i+1}-score`);
-        const patenteElem = document.getElementById(`p${i+1}-patente`);
-        const avatarElem = document.getElementById(`avatar-p${i+1}`);
+        const nomeElem = document.getElementById(`p${i + 1}-name`);
+        const scoreElem = document.getElementById(`p${i + 1}-score`);
+        const patenteElem = document.getElementById(`p${i + 1}-patente`);
+        const avatarIcone = document.getElementById(`avatar-p${i + 1}`);
 
-        if (u && nomeElem && scoreElem && avatarElem) {
+        if (u && nomeElem && scoreElem && avatarIcone) {
             nomeElem.textContent = u.nome.split(' ')[0];
             scoreElem.textContent = u.xp;
             if (patenteElem) patenteElem.textContent = getPatente(u.xp);
 
-            const iconName = isNaN(u.avatar) ? u.avatar : "user";
-            avatarElem.setAttribute('data-lucide', iconName);
+            // Container: o pai do <i> é o .avatar-frame
+            const frame = avatarIcone.parentElement;
+            const iconeNome = isNaN(u.avatar) ? u.avatar : "user";
+            aplicarAvatar(frame, avatarIcone, u.fotoPerfil, iconeNome);
         } else {
-            // Se não tem usuário suficiente, mostra vazio
             if (nomeElem) nomeElem.textContent = '---';
             if (scoreElem) scoreElem.textContent = '0';
             if (patenteElem) patenteElem.textContent = '—';
         }
     }
 
-    // LISTA — 4º em diante
+    // ─────────── LISTA (4º em diante) ───────────
     const container = document.getElementById('lista-ranking');
     if (!container) return;
 
@@ -110,14 +135,17 @@ function renderizar(lista) {
     } else {
         container.innerHTML = lista.slice(3).map((u, i) => {
             const isMe = u.id === meuID;
-            const iconName = isNaN(u.avatar) ? u.avatar : "user";
             const pos = i + 4;
+            // Se tem foto, usa <img>. Senão, ícone lucide.
+            const avatarHtml = u.fotoPerfil
+                ? `<img class="rank-avatar-img" src="${u.fotoPerfil}" alt="">`
+                : `<i data-lucide="${isNaN(u.avatar) ? u.avatar : 'user'}"></i>`;
 
             return `
             <div class="rank-item ${isMe ? 'me' : ''}">
                 <span class="rank-position">${pos}º</span>
                 <div class="rank-avatar">
-                    <i data-lucide="${iconName}"></i>
+                    ${avatarHtml}
                 </div>
                 <div class="rank-info">
                     <div class="rank-name">
@@ -131,7 +159,6 @@ function renderizar(lista) {
         }).join('');
     }
 
-    // Re-renderiza os ícones do Lucide
     if (window.lucide) lucide.createIcons();
 }
 
