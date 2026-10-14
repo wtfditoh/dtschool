@@ -1,5 +1,5 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, onSnapshot, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc, increment, onSnapshot, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
@@ -10,16 +10,37 @@ const firebaseConfig = {
     appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const emailMestre = "ditoh2008@gmail.com";
 const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
 const userType    = localStorage.getItem('dt_user_type');
 
-// ==========================================
-// WIDGET DE MOTIVAÇÃO INTELIGENTE
-// ==========================================
+/* ═══════════════ REGISTRO DE ACESSO ═══════════════ */
+/* Grava: último acesso (timestamp), total acumulado, e o dia do último acesso.
+   Quando o dia muda, reseta acessosHoje. */
+async function registrarAcesso() {
+    if (!emailLogado || userType === 'local') return;
+    try {
+        const hoje = new Date().toISOString().split('T')[0];
+        const snap = await getDoc(doc(db, 'notas', emailLogado));
+        const dados = snap.exists() ? snap.data() : {};
+        const ultimoDia = dados.ultimoDiaAcesso || '';
+        const acessosHojeAtual = (ultimoDia === hoje) ? (Number(dados.acessosHoje) || 0) + 1 : 1;
+
+        await setDoc(doc(db, 'notas', emailLogado), {
+            ultimoAcesso: Date.now(),
+            acessosTotal: increment(1),
+            acessosHoje: acessosHojeAtual,
+            ultimoDiaAcesso: hoje
+        }, { merge: true });
+    } catch (e) {
+        console.warn('[acesso] não deu pra registrar:', e.message);
+    }
+}
+
+/* ═══════════════ FRASE INTELIGENTE ═══════════════ */
 function gerarFraseInteligente(ctx) {
     const hora = new Date().getHours();
     const nome = ctx.nome.split(' ')[0];
@@ -34,53 +55,28 @@ function gerarFraseInteligente(ctx) {
     const frases = [];
 
     if (metaBatida) {
-        frases.push(...[
-            `🎯 Meta batida, ${nome}!`,
-            `🔥 Foco total hoje, ${nome}!`,
-            `🏆 Missão cumprida, ${nome}!`,
-            `⚡ Meta no bolso, ${nome}!`,
-        ]);
+        frases.push(`🎯 Meta batida, ${nome}!`, `🔥 Foco total hoje, ${nome}!`, `🏆 Missão cumprida, ${nome}!`, `⚡ Meta no bolso, ${nome}!`);
     } else if (quaseNaMeta && temMeta) {
         const faltaStr = formatarTempo(ctx.metaMin - ctx.estudadoHoje);
-        frases.push(...[
-            `💪 Faltam ${faltaStr} pra meta, ${nome}!`,
-            `⚡ Reta final, ${nome}! Só ${faltaStr}.`,
-            `🎯 Quase lá, ${nome}!`,
-        ]);
+        frases.push(`💪 Faltam ${faltaStr} pra meta, ${nome}!`, `⚡ Reta final, ${nome}! Só ${faltaStr}.`, `🎯 Quase lá, ${nome}!`);
     } else if (semEstudo && temMeta && hora >= 12) {
-        frases.push(...[
-            `😴 Meta zerada ainda, ${nome}.`,
-            `⏰ Bora começar, ${nome}?`,
-            `🧠 Uma sessão muda o dia, ${nome}.`,
-        ]);
+        frases.push(`😴 Meta zerada ainda, ${nome}.`, `⏰ Bora começar, ${nome}?`, `🧠 Uma sessão muda o dia, ${nome}.`);
     }
 
-    if (streak >= 7) {
-        frases.push(...[`🔥 ${streak} dias seguidos, ${nome}!`, `⚡ ${nome}, você tá em chamas!`]);
-    } else if (streak >= 3) {
-        frases.push(`🔥 ${streak} dias seguidos, ${nome}!`);
-    }
+    if (streak >= 7) frases.push(`🔥 ${streak} dias seguidos, ${nome}!`, `⚡ ${nome}, você tá em chamas!`);
+    else if (streak >= 3) frases.push(`🔥 ${streak} dias seguidos, ${nome}!`);
 
-    if (rank === 1) {
-        frases.push(...[`👑 Líder do ranking, ${nome}!`, `🏆 ${nome}, defende o trono!`]);
-    } else if (rank <= 3) {
-        frases.push(`🥇 Top 3, ${nome}! Bora pro 1º!`);
-    } else if (rank <= 10) {
-        frases.push(`📈 Top 10, ${nome}!`);
-    }
+    if (rank === 1) frases.push(`👑 Líder do ranking, ${nome}!`, `🏆 ${nome}, defende o trono!`);
+    else if (rank <= 3) frases.push(`🥇 Top 3, ${nome}! Bora pro 1º!`);
+    else if (rank <= 10) frases.push(`📈 Top 10, ${nome}!`);
 
     if (xp >= 1000 && xp < 1100) frases.push(`🎉 Passou de 1000 XP, ${nome}!`);
     else if (xp >= 500 && xp < 600) frases.push(`⚡ Quase Veterano, ${nome}!`);
 
-    if (hora >= 5 && hora < 12) {
-        frases.push(...[`🌅 Bom dia, ${nome}!`, `☀️ Manhã sua, ${nome}. Aproveita!`, `🧠 Cérebro fresco, ${nome}. Bora!`]);
-    } else if (hora >= 12 && hora < 18) {
-        frases.push(...[`⚡ Boa tarde, ${nome}!`, `📚 Foco total, ${nome}!`, `🎯 A tarde é sua, ${nome}!`]);
-    } else if (hora >= 18 && hora < 23) {
-        frases.push(...[`🌙 Boa noite, ${nome}!`, `🔥 Fecha o dia forte, ${nome}!`, `⭐ Ainda dá tempo, ${nome}!`]);
-    } else {
-        frases.push(...[`🦉 Madrugada, ${nome}? Nível elite!`, `🌙 ${nome}, dedicação total!`]);
-    }
+    if (hora >= 5 && hora < 12) frases.push(`🌅 Bom dia, ${nome}!`, `☀️ Manhã sua, ${nome}. Aproveita!`, `🧠 Cérebro fresco, ${nome}. Bora!`);
+    else if (hora >= 12 && hora < 18) frases.push(`⚡ Boa tarde, ${nome}!`, `📚 Foco total, ${nome}!`, `🎯 A tarde é sua, ${nome}!`);
+    else if (hora >= 18 && hora < 23) frases.push(`🌙 Boa noite, ${nome}!`, `🔥 Fecha o dia forte, ${nome}!`, `⭐ Ainda dá tempo, ${nome}!`);
+    else frases.push(`🦉 Madrugada, ${nome}? Nível elite!`, `🌙 ${nome}, dedicação total!`);
 
     return frases[Math.floor(Math.random() * frases.length)];
 }
@@ -92,9 +88,6 @@ const formatarTempo = (min) => {
     return m > 0 ? h + 'h ' + m + 'min' : h + 'h';
 };
 
-// ==========================================
-// PERÍODO DO DIA
-// ==========================================
 function getPeriodoDia() {
     const h = new Date().getHours();
     if (h < 12) return '☀️ BOM DIA';
@@ -102,13 +95,7 @@ function getPeriodoDia() {
     return '🌙 BOA NOITE';
 }
 
-// ==========================================
-// STATS DOS CARDS NOVOS
-// Recebe xp e estudadoHoje já buscados do Firebase
-// e busca tarefas e notas separadamente
-// ==========================================
 async function carregarStatsCards(xp, estudadoHoje) {
-    // Card foco
     const statFoco = document.getElementById('stat-foco');
     if (statFoco) {
         const min = estudadoHoje || 0;
@@ -120,11 +107,9 @@ async function carregarStatsCards(xp, estudadoHoje) {
         }
     }
 
-    // Card XP
     const statXp = document.getElementById('stat-xp');
     if (statXp) statXp.textContent = xp || 0;
 
-    // Card tarefas pendentes — busca no Firebase igual ao agenda-logica.js
     const statTarefas = document.getElementById('stat-tarefas');
     if (statTarefas) {
         let pendentes = 0;
@@ -133,14 +118,9 @@ async function carregarStatsCards(xp, estudadoHoje) {
             pendentes = local.filter(t => !t.concluida).length;
         } else if (emailLogado) {
             try {
-                const q = query(
-                    collection(db, 'agenda'),
-                    where('usuario', '==', emailLogado),
-                    where('concluida', '==', false)
-                );
+                const q = query(collection(db, 'agenda'), where('usuario', '==', emailLogado), where('concluida', '==', false));
                 pendentes = (await getDocs(q)).size;
             } catch {
-                // Firestore pode não ter índice composto ainda — fallback
                 try {
                     const q2 = query(collection(db, 'agenda'), where('usuario', '==', emailLogado));
                     const snap2 = await getDocs(q2);
@@ -151,29 +131,19 @@ async function carregarStatsCards(xp, estudadoHoje) {
         statTarefas.textContent = pendentes;
     }
 
-    // Card notas — usa a mesma chave do localStorage que o notas-logica.js usa
-    // Se sua chave for diferente, troca aqui
     const statNotas = document.getElementById('stat-notas');
     if (statNotas) {
-        const notas = JSON.parse(
-            localStorage.getItem('dt_notas') ||
-            localStorage.getItem('dt_caderno') ||
-            '[]'
-        );
+        const notas = JSON.parse(localStorage.getItem('dt_notas') || localStorage.getItem('dt_caderno') || '[]');
         statNotas.textContent = notas.length;
     }
 }
 
-// ==========================================
-// MAIN
-// ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
     const nome = localStorage.getItem('dt_user_name') || "ESTUDANTE";
 
     const nomeDisplay = document.getElementById('user-display-name');
     if (nomeDisplay) nomeDisplay.innerText = nome.split(' ')[0].toUpperCase();
 
-    // Período do dia (novo card de saudação)
     const periodoEl = document.getElementById('periodo-dia');
     if (periodoEl) periodoEl.innerText = getPeriodoDia();
 
@@ -183,7 +153,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fraseEl = document.getElementById('frase-ia');
     if (fraseEl) fraseEl.innerText = '...';
 
-    // Dica do dia (novo card)
     const dicas = [
         "Use a técnica Pomodoro: 25min de foco, 5min de pausa.",
         "Revise suas anotações antes de dormir.",
@@ -201,7 +170,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tipEl = document.getElementById('tip-text');
     if (tipEl) tipEl.textContent = dicas[new Date().getDate() % dicas.length];
 
-    // ── Status de Manutenção ─────────────────────────────────────────────────
+    /* ─── REGISTRA ACESSO (roda antes de tudo) ─── */
+    registrarAcesso();
+
+    /* ─── Manutenção ─── */
     onSnapshot(doc(db, "config", "status_sistema"), (s) => {
         if (s.exists()) {
             const d = s.data();
@@ -210,8 +182,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // ── Dados do usuário no Firebase ─────────────────────────────────────────
-    let xpUsuario    = 0;
+    /* ─── Dados do usuário ─── */
+    let xpUsuario = 0;
     let estudadoHoje = 0;
 
     if (emailLogado) {
@@ -226,12 +198,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const historico = dados.historico_foco || [];
                 const hoje = new Date().toISOString().split('T')[0];
-                estudadoHoje = historico.filter(s => s.data === hoje).reduce((a, s) => a + s.minutos, 0);
+                estudadoHoje = historico.filter(s => s.data === hoje).reduce((a, s) => a + (Number(s.minutos) || 0), 0);
 
                 const metaMin = dados.meta_minutos || 0;
                 const pctMeta = metaMin > 0 ? Math.min(Math.round((estudadoHoje / metaMin) * 100), 100) : 0;
 
-                // Streak
                 let streak = 0;
                 const dias = [...new Set(historico.map(s => s.data))].sort().reverse();
                 let dCheck = new Date();
@@ -240,7 +211,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     else break;
                 }
 
-                // Rank
                 let rankPos = 999;
                 try {
                     const rankSnap = await getDocs(collection(db, "notas"));
@@ -253,12 +223,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (fraseEl) {
                     fraseEl.innerText = gerarFraseInteligente({
-                        nome, metaMin, estudadoHoje, pctMeta,
-                        streak, rankPos, xp: xpUsuario, tarefasPendentes: 0
+                        nome, metaMin, estudadoHoje, pctMeta, streak, rankPos, xp: xpUsuario, tarefasPendentes: 0
                     });
                 }
 
-                // META DIÁRIA
                 if (metaMin > 0) {
                     const section = document.getElementById('meta-progress-section');
                     if (section) section.style.display = 'block';
@@ -285,7 +253,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (shareBtn) shareBtn.style.display = 'none';
                     }
                 }
-
             } else {
                 if (fraseEl) fraseEl.innerText = gerarFraseInteligente({ nome, metaMin: 0, estudadoHoje: 0, pctMeta: 0, streak: 0, rankPos: 999, xp: 0, tarefasPendentes: 0 });
             }
@@ -297,14 +264,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (fraseEl) fraseEl.innerText = gerarFraseInteligente({ nome, metaMin: 0, estudadoHoje: 0, pctMeta: 0, streak: 0, rankPos: 999, xp: 0, tarefasPendentes: 0 });
     }
 
-    // ── Stats dos novos cards (roda depois dos dados principais) ─────────────
     await carregarStatsCards(xpUsuario, estudadoHoje);
 
-    // ── MURAL DINÂMICO ───────────────────────────────────────────────────────
+    /* ─── Mural ─── */
     onSnapshot(doc(db, "config", "mural"), (snap) => {
         if (snap.exists()) {
             const d = snap.data();
-            const preview   = document.getElementById('mural-preview');
+            const preview = document.getElementById('mural-preview');
             const cardMural = document.getElementById('btn-mural-main');
             const iconMural = cardMural?.querySelector('i[data-lucide="megaphone"]');
             const strongMural = cardMural?.querySelector('strong');
@@ -334,7 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (cardMural) {
                 cardMural.onclick = () => {
                     const modal = document.getElementById('modal-mural');
-                    const msg   = document.getElementById('mural-msg');
+                    const msg = document.getElementById('mural-msg');
                     if (modal && msg) {
                         msg.innerHTML = `
                             <p style="white-space:pre-wrap; word-break:break-word; color:#eee; line-height:1.6; text-align:left;">${d.texto}</p>
@@ -352,9 +318,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.lucide) lucide.createIcons();
 });
 
-// ==========================================
-// COMPARTILHAR META BATIDA
-// ==========================================
 window.compartilharMeta = async function(estudadoHoje, metaMin) {
     const nome = localStorage.getItem('dt_user_name') || 'Estudante';
     const h = Math.floor(estudadoHoje / 60);
@@ -426,6 +389,6 @@ window.compartilharMeta = async function(estudadoHoje, metaMin) {
                 }
                 container.innerHTML = '';
             });
-        } catch(e) { console.error(e); }
+        } catch (e) { console.error(e); }
     }, 300);
 };
