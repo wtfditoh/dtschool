@@ -1,17 +1,19 @@
-/* share-target.js — Hub Brain · Recebe arquivo compartilhado
-   Imagem → ImgBB · PDF/arquivo → catbox.moe (direto, sem proxy) */
+/* share-target.js — Hub Brain · Recebe arquivo compartilhado (WhatsApp etc)
+   Imagem → ImgBB · PDF → base64 no Firestore. Escolhe matéria E bimestre. */
 
 import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { db } from "./hb-firebase.js";
 import { uploadImgBB, imgbbConfigurado, comprimir, extArquivo, emojiPorExt, hojeLocal } from "./conteudos-upload.js";
 
-const CATBOX_URL = 'https://catbox.moe/user/api.php';
+const LIMITE_PDF = 700 * 1024;
 const userEmail = localStorage.getItem('dt_user_email');
 const $ = (id) => document.getElementById(id);
 
 let arquivo = null;
 let ehImg = false;
+let ehPdf = false;
 let materiaSel = null;
+let bimSel = '';
 let materias = ['Geral'];
 
 const PALETA = ['#8a2be2','#00d2ff','#00e5a0','#ff8c32','#ff4455','#c084fc','#ffbb33','#3b82f6','#ec4899','#10b981'];
@@ -53,19 +55,32 @@ async function carregarMaterias() {
         if (!b) return;
         materiaSel = b.dataset.m;
         document.querySelectorAll('.st-mat').forEach(x => x.classList.toggle('on', x === b));
-        $('st-salvar').disabled = false;
+        validar();
+    });
+
+    $('st-bims').innerHTML = ['1','2','3','4'].map(b =>
+        `<button class="st-bim" data-b="${b}">${b}º BIM</button>`
+    ).join('');
+    $('st-bims').addEventListener('click', (e) => {
+        const b = e.target.closest('.st-bim');
+        if (!b) return;
+        const val = b.dataset.b;
+        bimSel = (bimSel === val) ? '' : val;
+        document.querySelectorAll('.st-bim').forEach(x => x.classList.toggle('on', x.dataset.b === bimSel));
     });
 }
 
-async function uploadCatbox(file) {
-    const fd = new FormData();
-    fd.append('reqtype', 'fileupload');
-    fd.append('fileToUpload', file);
-    const r = await fetch(CATBOX_URL, { method: 'POST', body: fd });
-    if (!r.ok) throw new Error('catbox falhou (' + r.status + ')');
-    const txt = (await r.text()).trim();
-    if (!txt.startsWith('http')) throw new Error('catbox: ' + txt.slice(0, 80));
-    return { url: txt, thumb: '', medium: '', display_url: '' };
+function validar() {
+    $('st-salvar').disabled = !materiaSel;
+}
+
+function blobParaBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => { const s = r.result; resolve(s.slice(s.indexOf(',') + 1)); };
+        r.onerror = () => reject(new Error('erro ao ler'));
+        r.readAsDataURL(blob);
+    });
 }
 
 async function salvar() {
@@ -79,10 +94,21 @@ async function salvar() {
     try {
         if (!userEmail) throw new Error('Você não está logado');
         const hoje = hojeLocal();
-        const base = { usuario: userEmail, materia: materiaSel, data: hoje, criadoEm: Date.now(), origem: 'whatsapp' };
+        const base = { usuario: userEmail, materia: materiaSel, bimestre: bimSel || '', data: hoje, criadoEm: Date.now(), origem: 'whatsapp' };
 
-        if (ehImg) {
-            if (!imgbbConfigurado()) throw new Error('Chave do ImgBB não configurada');
+        if (ehPdf) {
+            if (arquivo.size > LIMITE_PDF) throw new Error('PDF muito grande (máx 700KB). Comprima antes de enviar.');
+            const base64 = await blobParaBase64(arquivo);
+            await addDoc(collection(db, 'conteudos'), Object.assign({}, base, {
+                tipo: 'pdf',
+                nome: arquivo.name,
+                base64: base64,
+                mime: arquivo.type || 'application/pdf',
+                tamanho: arquivo.size,
+                url: '', thumb: '', medium: '', display_url: ''
+            }));
+        } else if (ehImg) {
+            if (!imgbbConfigurado()) throw new Error('Chave do ImgBB não configurada em conteudos-upload.js');
             const blob = await comprimir(arquivo);
             const urls = await uploadImgBB(blob);
             await addDoc(collection(db, 'conteudos'), Object.assign({}, base, {
@@ -94,13 +120,7 @@ async function salvar() {
                 display_url: urls.display_url || ''
             }));
         } else {
-            const urls = await uploadCatbox(arquivo);
-            await addDoc(collection(db, 'conteudos'), Object.assign({}, base, {
-                tipo: 'arquivo',
-                nome: arquivo.name,
-                url: urls.url,
-                thumb: '', medium: '', display_url: ''
-            }));
+            throw new Error('Formato não suportado: ' + extArquivo(arquivo.name).toUpperCase());
         }
 
         btn.textContent = '✓ Salvo!';
@@ -121,19 +141,23 @@ async function iniciar() {
         arquivo = new File([info.blob], info.nome, { type: info.mime || info.blob.type || '' });
         const ext = extArquivo(info.nome);
         ehImg = (info.mime && info.mime.indexOf('image/') === 0) || ['jpg','jpeg','png','gif','webp','bmp','heic','heif'].indexOf(ext) !== -1;
+        ehPdf = (info.mime === 'application/pdf') || ext === 'pdf';
 
         const preview = $('st-preview');
         if (ehImg) {
             preview.innerHTML = '<img id="st-img" alt="">';
             $('st-img').src = URL.createObjectURL(arquivo);
-            $('st-sub').textContent = 'Escolha a matéria da foto';
-        } else {
-            const ext2 = extArquivo(info.nome) || 'arquivo';
+            $('st-sub').textContent = 'Escolha a matéria e o bimestre da foto';
+        } else if (ehPdf) {
             preview.innerHTML =
-                '<div class="st-ico">' + emojiPorExt(ext2) + '</div>' +
-                '<div class="st-ext">' + ext2.toUpperCase() + '</div>' +
-                '<div class="st-nome">' + info.nome + '</div>';
-            $('st-sub').textContent = 'Escolha a matéria do arquivo';
+                '<div class="st-ico">📕</div>' +
+                '<div class="st-ext">PDF</div>' +
+                '<div class="st-nome">' + info.nome + '</div>' +
+                '<div style="font-size:11px;color:#666;padding:0 20px;text-align:center;">' + Math.round(arquivo.size/1024) + 'KB</div>';
+            $('st-sub').textContent = 'Escolha a matéria e o bimestre do PDF';
+        } else {
+            preview.innerHTML = '<div class="st-ico">📎</div><div class="st-nome">' + info.nome + '</div>';
+            $('st-sub').textContent = 'Formato não suportado';
         }
     } else {
         $('st-preview').innerHTML = '<div class="st-ico" style="opacity:0.3;">📭</div>';
