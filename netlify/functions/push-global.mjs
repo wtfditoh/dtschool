@@ -72,6 +72,7 @@ exports.handler = async (event) => {
   const envio = {
     app_id: appId,
     target_channel: 'push',
+    included_segments: ['Subscribed Users'],
     headings: { pt: titulo, en: titulo },
     contents: { pt: mensagem, en: mensagem },
     url: siteUrl + '/index.html',
