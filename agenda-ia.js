@@ -1,13 +1,17 @@
 /* agenda-ia.js — Hub Brain · IA dentro da Agenda
    FAB 🤖 + sheet de chat com contexto completo da agenda.
-   Usa window.HBIA (ia-config.js) — o mesmo motor do estudos.html. */
+   Histórico SÓ NA SESSÃO (perde ao recarregar a página).
+   Botão voltar do celular fecha o modal em vez de sair. */
 
 (function () {
   'use strict';
 
   var $ = (id) => document.getElementById(id);
-  var STORAGE_CHAT = 'hb_agenda_chat_hist';
   var ocupado = false;
+
+  /* Histórico em memória — não vai pro localStorage.
+     Zera quando você recarrega a página ou fecha o app. */
+  var histSessao = [];
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -47,8 +51,8 @@
 
       pendentes.sort((a, b) => (a.dataFim || '9999') < (b.dataFim || '9999') ? -1 : 1);
 
-      var cortar = (s) => { s = String(s || '').replace(/\s+/g, ' ').trim(); return s.length > 120 ? s.slice(0,117)+'...' : s; };
-      var fmt = (t) => '- ' + (t.nome || 'Sem título') + ' (' + (t.materia||'Geral') + ', ' + (t.tipo||'tarefa') + ', prazo ' + (t.dataFim||'sem prazo') + (t.bimestre ? ' ['+t.bimestre+'º BIM]' : '') + ')' + (t.descricao ? ' — "' + cortar(t.descricao) + '"' : '');
+      var cortar = (s) => { s = String(s || '').replace(/\s+/g, ' ').trim(); return s.length > 120 ? s.slice(0, 117) + '...' : s; };
+      var fmt = (t) => '- ' + (t.nome || 'Sem título') + ' (' + (t.materia || 'Geral') + ', ' + (t.tipo || 'tarefa') + ', prazo ' + (t.dataFim || 'sem prazo') + (t.bimestre ? ' [' + t.bimestre + 'º BIM]' : '') + ')' + (t.descricao ? ' — "' + cortar(t.descricao) + '"' : '');
 
       var linhas = [];
       linhas.push('Agenda do aluno (hoje é ' + hoje + '):');
@@ -77,13 +81,6 @@
     'Responda em português do Brasil, curto e direto (até ~120 palavras).',
     'Pode usar **negrito** e listas com "-". Não use tabelas.'
   ].join(' ');
-
-  /* ─────────── Histórico ─────────── */
-  function lerHist() {
-    try { var a = JSON.parse(localStorage.getItem(STORAGE_CHAT) || '[]'); return Array.isArray(a) ? a.filter(m => m && (m.r === 'u' || m.r === 'ia') && typeof m.t === 'string') : []; }
-    catch (e) { return []; }
-  }
-  function salvarHist(h) { try { localStorage.setItem(STORAGE_CHAT, JSON.stringify(h.slice(-30))); } catch (e) {} }
 
   /* ─────────── Sheet ─────────── */
   var sheet = null;
@@ -150,23 +147,36 @@
 
   function carregarHistorico() {
     sheet.chat.innerHTML = '';
-    var hist = lerHist();
-    if (!hist.length) bolha('ia', 'Oi! Sou o assistente da Agenda. **Como posso ajudar?**\n\nPosso te ajudar a priorizar, ver o que está atrasado, organizar o dia ou tirar dúvidas.');
-    else hist.forEach(m => bolha(m.r, m.t));
+    if (!histSessao.length) {
+      // Primeira vez nessa sessão — mostra a saudação
+      bolha('ia', 'Oi! Sou o assistente da Agenda. **Como posso ajudar?**\n\nPosso te ajudar a priorizar, ver o que está atrasado, organizar o dia ou tirar dúvidas.');
+    } else {
+      // Mesma sessão — restaura o que já foi dito
+      histSessao.forEach(m => bolha(m.r, m.t));
+    }
   }
 
   function abrirIA() {
+    if (sheet && sheet.ov.classList.contains('on')) return;
     montarSheet();
     carregarHistorico();
     sugerirAcoes();
     sheet.ov.classList.add('on');
     document.body.classList.add('ag-travado');
+    // Empurra um estado no histórico pra que o botão voltar feche o modal
+    try { history.pushState({ agendaIA: true }, ''); } catch (e) {}
     setTimeout(() => sheet.input.focus(), 200);
   }
+
   function fecharIA() {
     if (!sheet) return;
+    var estava = sheet.ov.classList.contains('on');
     sheet.ov.classList.remove('on');
     document.body.classList.remove('ag-travado');
+    // Se o modal estava aberto, desfaz o estado que empurramos
+    if (estava && history.state && history.state.agendaIA) {
+      try { history.back(); } catch (e) {}
+    }
   }
 
   async function enviar(textoForcado) {
@@ -177,8 +187,7 @@
     sheet.send.disabled = true;
     if (typeof textoForcado !== 'string') sheet.input.value = '';
 
-    var hist = lerHist();
-    hist.push({ r: 'u', t: texto });
+    histSessao.push({ r: 'u', t: texto });
     bolha('u', texto);
 
     var dig = document.createElement('div');
@@ -189,20 +198,19 @@
 
     try {
       var sistema = SISTEMA + contextoUsuario();
+      // Manda as últimas 9 mensagens da SESSÃO (não do localStorage)
       var mensagens = [{ role: 'system', content: sistema }].concat(
-        hist.slice(-9).map(m => ({ role: m.r === 'u' ? 'user' : 'assistant', content: m.t }))
+        histSessao.slice(-9).map(m => ({ role: m.r === 'u' ? 'user' : 'assistant', content: m.t }))
       );
       var resp = await window.HBIA.chat({ messages: mensagens, temperature: 0.5, maxTokens: 1200, esforco: 'low' });
       dig.remove();
       bolha('ia', resp);
-      hist.push({ r: 'ia', t: resp });
-      salvarHist(hist);
+      histSessao.push({ r: 'ia', t: resp });
     } catch (e) {
       dig.remove();
       var msg = window.HBIA.erroAmigavel ? window.HBIA.erroAmigavel(e) : 'Erro ao falar com a IA.';
       bolha('ia', '⚠️ ' + msg);
-      hist.pop();
-      salvarHist(hist);
+      histSessao.pop();   // descarta a pergunta que falhou
     } finally {
       ocupado = false;
       sheet.send.disabled = false;
@@ -210,6 +218,7 @@
     }
   }
 
+  // Sugestões clicáveis
   document.addEventListener('click', function (e) {
     var chip = e.target.closest && e.target.closest('.ag-ia-chip');
     if (chip) enviar(chip.dataset.sug);
@@ -225,6 +234,18 @@
     fab.addEventListener('click', abrirIA);
     document.body.appendChild(fab);
   }
+
+  /* ─────────── Botão voltar do celular ─────────── */
+  // Quando o aluno aperta voltar com o modal aberto, fecha o modal
+  // em vez de sair da agenda. Se o modal não tá aberto, deixa o
+  // comportamento padrão do navegador acontecer.
+  window.addEventListener('popstate', function () {
+    if (sheet && sheet.ov.classList.contains('on')) {
+      // Fecha sem mexer no histórico (o navegador já consumiu o estado)
+      sheet.ov.classList.remove('on');
+      document.body.classList.remove('ag-travado');
+    }
+  });
 
   /* ─────────── Init ─────────── */
   function iniciar() {
