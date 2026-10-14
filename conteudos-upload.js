@@ -4,7 +4,7 @@ import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/fi
 import { db } from "./hb-firebase.js";
 
 // ▼▼▼ COLE AQUI a chave do ImgBB (https://api.imgbb.com). Só neste lugar. ▼▼▼
-export const IMGBB_KEY = 'COLE_SUA_CHAVE_AQUI';
+export const IMGBB_KEY = 'b329a89d2327b3957464d6d27a3c275b';
 // (dica: para testar sem mexer no código, rode no console:  localStorage.setItem('hb_imgbb_key', 'SUA_CHAVE'))
 
 const CATBOX_URL = 'https://catbox.moe/user/api.php';
