@@ -58,6 +58,7 @@ let resultadoScanIA = null;
 const userPhone = localStorage.getItem('dt_user_phone');
 const userEmail = localStorage.getItem('dt_user_email');
 const userId = userPhone || userEmail || "convidado";
+const userIdPush = userId;   // mesmo ID usado no Firestore
 
 /* ═══════════════ HELPERS ═══════════════ */
 function corMateria(nome) {
@@ -188,13 +189,20 @@ function sincronizarTagsAula() {
     });
 
     window.OneSignalDeferred.push(async function (OneSignal) {
-        try {
-            await OneSignal.User.addTags(tags);
-            console.log('[grade] tags de aula sincronizadas:', tags);
-        } catch (e) {
-            console.warn('[grade] falha ao salvar tags:', e);
-        }
-    });
+    try {
+        await OneSignal.User.addTags(tags);
+        console.log('[grade] tags sincronizadas');
+    } catch (e) {
+        console.warn('[grade] falha addTags:', e);
+    }
+    // Salva as infos no Firestore pra function ler direto
+    try {
+        await setDoc(doc(db, 'grades_horarias', userIdPush), tags, { merge: true });
+        console.log('[grade] tags salvas no Firestore');
+    } catch (e) {
+        console.warn('[grade] falha Firestore:', e);
+    }
+});
 }
 
 /* ═══════════════ INIT ═══════════════ */
