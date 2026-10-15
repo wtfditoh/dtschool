@@ -71,13 +71,25 @@ async function sincronizarTagsTarefa() {
         };
 
         window.OneSignalDeferred.push(async function (OneSignal) {
-            try {
-                await OneSignal.User.addTags(tags);
-                console.log('[home] tags de tarefa sincronizadas:', tags);
-            } catch (e) {
-                console.warn('[home] falha ao salvar tags:', e);
-            }
-        });
+    try {
+        await OneSignal.User.addTags(tags);
+        console.log('[home] tags sincronizadas:', tags);
+    } catch (e) {
+        console.warn('[home] falha addTags:', e);
+    }
+    // Salva as mesmas infos no Firestore pra function ler direto
+    try {
+        const { doc: d2, setDoc: ss2 } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        await ss2(d2(db, 'grades_horarias', userIdPush), {
+            tarefa_dia: tags.tarefa_dia,
+            tarefas_hoje: tags.tarefas_hoje,
+            provas_hoje: tags.provas_hoje
+        }, { merge: true });
+        console.log('[home] tags salvas no Firestore');
+    } catch (e) {
+        console.warn('[home] falha Firestore:', e);
+    }
+});
     } catch (e) {
         console.warn('[home] erro ao sincronizar tags:', e);
     }
