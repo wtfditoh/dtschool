@@ -75,10 +75,14 @@ exports.handler = async (event) => {
     included_segments: ['Total Subscriptions'],
     headings: { pt: titulo, en: titulo },
     contents: { pt: mensagem, en: mensagem },
-    url: siteUrl + '/index.html',
+    url: siteUrl + '/index.html?notif=' + Date.now(),   // ← URL única por push
     ttl: 4 * 3600,
-    idempotency_key: crypto.randomUUID()
-  };
+    idempotency_key: crypto.randomUUID(),
+
+    // 👇 força cada notificação a ser separada
+    android_group: 'hubbrain-' + Date.now(),
+    web_push_topic: 'hub-' + Date.now(),
+};
 
   try {
     const r = await fetch(ONESIGNAL_URL, {
