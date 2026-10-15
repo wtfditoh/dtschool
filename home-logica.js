@@ -311,8 +311,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarStatsCards(xpUsuario, estudadoHoje);
 
     /* ─── Sincroniza tags de tarefa pro push (7h e 20h) ─── */
-    // Espera 3s pro OneSignal estar pronto
-    setTimeout(sincronizarTagsTarefa, 3000);
+    // Espera o OneSignal estar pronto antes de sincronizar
+function tentarSincronizarTentativas(restantes) {
+    if (!window.OneSignalDeferred) {
+        if (restantes > 0) return setTimeout(() => tentarSincronizarTentativas(restantes - 1), 1000);
+        return;
+    }
+    window.OneSignalDeferred.push(async (OS) => {
+        try {
+            // Se o device tá pronto, sincroniza
+            if (OS.User.PushSubscription.optedIn) {
+                sincronizarTagsTarefa();
+                console.log('[home] tags sincronizadas na abertura');
+            } else {
+                // Ainda não optou — tenta de novo em 3s (máx 5 tentativas)
+                if (restantes > 0) setTimeout(() => tentarSincronizarTentativas(restantes - 1), 3000);
+            }
+        } catch (e) {
+            console.warn('[home] erro ao verificar OneSignal:', e);
+        }
+    });
+}
+tentarSincronizarTentativas(10);   // tenta por até 10 segundos
 
     /* ─── Mural ─── */
     onSnapshot(doc(db, "config", "mural"), (snap) => {
