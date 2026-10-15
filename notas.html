@@ -113,7 +113,7 @@
             <button id="btn-boletim" class="btn-icon-header" title="Ver boletim">
                 <i data-lucide="clipboard-list"></i>
             </button>
-            <button id="btn-tema" class="btn-icon-header" title="Alternar tema">
+            <button id="btn-tema" class="btn-icon-header" title="Alternar tema" style="display:none">
                 <i data-lucide="moon"></i>
             </button>
             <button onclick="abrirModal()" class="btn-add">
@@ -154,20 +154,74 @@
 
     <!-- MODO BOLETIM -->
 <div id="modo-boletim" class="boletim-wrap" style="display:none;">
-    <div id="bol-tabs" class="bol-tabs" role="tablist"></div>
+    <div class="boletim-papel" id="boletim-papel">
+        <img class="boletim-marca" src="icon-514_20260512_161420_0000.png" alt="">
 
-    <div class="boletim-papel" id="boletim-papel"></div>
+        <div class="boletim-conteudo">
+            <div class="boletim-topo">
+                <div class="boletim-topo-centro">
+                    <h1 class="boletim-titulo">BOLETIM ESCOLAR</h1>
+                    <div class="boletim-ano" id="bol-ano">—</div>
+                </div>
+            </div>
 
-    <div class="bol-acoes">
-        <button class="btn-compartilhar-boletim" id="btn-share-boletim">
-            <i data-lucide="share-2"></i>
-            <span>COMPARTILHAR BOLETIM</span>
-        </button>
-        <button class="btn-imprimir-boletim" id="btn-print-boletim">
-            <i data-lucide="printer"></i>
-            <span>IMPRIMIR / PDF</span>
-        </button>
+            <div class="boletim-linha-dupla"></div>
+
+            <div class="boletim-info-grid">
+                <div>
+                    <span class="boletim-label">ALUNO</span>
+                    <strong id="bol-aluno">—</strong>
+                </div>
+                <div>
+                    <span class="boletim-label">ESCOLA</span>
+                    <strong id="bol-escola">—</strong>
+                </div>
+                <div>
+                    <span class="boletim-label">SÉRIE / TURMA</span>
+                    <strong id="bol-serie-turma">—</strong>
+                </div>
+                <div>
+                    <span class="boletim-label">DATA</span>
+                    <strong id="bol-data">—</strong>
+                </div>
+            </div>
+
+            <div class="boletim-tabela-wrap">
+                <table class="boletim-tabela">
+                    <thead id="bol-thead"></thead>
+                    <tbody id="bol-tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="boletim-rodape">
+                <div class="boletim-resumo-item">
+                    <span class="boletim-label">MÉDIA GERAL</span>
+                    <strong id="bol-media-geral">—</strong>
+                </div>
+                <div class="boletim-resumo-item">
+                    <span class="boletim-label">APROVADAS</span>
+                    <strong id="bol-aprovadas">—</strong>
+                </div>
+                <div class="boletim-resumo-item">
+                    <span class="boletim-label">SITUAÇÃO</span>
+                    <strong id="bol-status-geral">—</strong>
+                </div>
+            </div>
+
+            <!-- ASSINATURA VINTAGE -->
+            <div class="boletim-assinatura">
+                <div class="boletim-assinatura-nome">Ditoh</div>
+                <div class="boletim-linha-ass"></div>
+                <span class="boletim-assinatura-cargo">Coordenação Hub Brain</span>
+            </div>
+
+        </div>
     </div>
+
+    <button class="btn-compartilhar-boletim" id="btn-share-boletim">
+        <i data-lucide="share-2"></i>
+        <span>COMPARTILHAR BOLETIM</span>
+    </button>
 </div>
 
     <!-- MODAL NOVA MATÉRIA -->
