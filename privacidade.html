@@ -3,46 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <title>Privacidade - Hub Brain</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <style>
 :root{
     --bg:#ffffff;
     --text:#111;
-    --muted:#555;
-    --border:#eee;
+    --muted:#666;
+    --border:#eaeaea;
+    --acc:#8a2be2;
+    --acc-soft:rgba(138,43,226,0.08);
+    --card:#fafafa;
 }
 
-/* 🔥 MODO ESCURO AUTOMÁTICO DO SISTEMA */
 @media (prefers-color-scheme: dark) {
     :root{
-        --bg:#0b0f19;
-        --text:#e6e6e6;
-        --muted:#a1a1a1;
-        --border:#1f2937;
+        --bg:#07070b;
+        --text:#e8e8ec;
+        --muted:#8a8a96;
+        --border:rgba(255,255,255,0.07);
+        --acc:#c084fc;
+        --acc-soft:rgba(138,43,226,0.12);
+        --card:rgba(255,255,255,0.025);
     }
 }
 
+* { box-sizing: border-box; }
+
 body{
     margin:0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+    font-family: -apple-system, BlinkMacSystemFont, "Outfit", "Segoe UI", Roboto, Arial, sans-serif;
     background:var(--bg);
     color:var(--text);
+    -webkit-font-smoothing: antialiased;
 }
 
 /* topbar */
 .topbar{
-    position:fixed;
+    position:sticky;
     top:0;
-    left:0;
-    right:0;
-    height:50px;
+    height:56px;
     display:flex;
     align-items:center;
-    padding:0 14px;
+    padding:0 16px;
     border-bottom:1px solid var(--border);
     background:var(--bg);
     z-index:10;
+    backdrop-filter:blur(12px);
 }
 
 .back{
@@ -50,107 +57,242 @@ body{
     text-decoration:none;
     color:var(--text);
     margin-right:12px;
+    width:36px;
+    height:36px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:background 0.15s;
 }
+.back:hover { background:var(--acc-soft); }
 
 .title{
     font-size:16px;
-    font-weight:600;
+    font-weight:800;
+    letter-spacing:-0.2px;
 }
 
 /* conteúdo */
 .container{
-    padding:70px 18px 30px;
+    padding:24px 20px 48px;
     max-width:720px;
     margin:auto;
 }
 
+.intro{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px 18px;
+    margin-bottom:24px;
+}
+.intro h1{
+    font-size:22px;
+    font-weight:900;
+    margin:0 0 6px;
+    letter-spacing:-0.4px;
+}
+.intro p{
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--muted);
+    margin:0;
+}
+
 .section{
-    margin-bottom:22px;
+    margin-bottom:24px;
 }
 
 h2{
     font-size:14px;
-    margin-bottom:6px;
-    font-weight:700;
+    margin:0 0 8px;
+    font-weight:900;
+    letter-spacing:-0.1px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+h2 .ico{
+    width:22px;
+    height:22px;
+    border-radius:8px;
+    background:var(--acc-soft);
+    color:var(--acc);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    flex-shrink:0;
 }
 
 p, li{
     font-size:13.5px;
-    line-height:1.5;
+    line-height:1.6;
     color:var(--text);
+    margin:0;
 }
 
 ul{
-    padding-left:18px;
+    padding-left:20px;
+    margin:6px 0 0;
 }
+
+li { margin-bottom:6px; }
+
+li b { color:var(--acc); font-weight:800; }
 
 .divider{
     height:1px;
     background:var(--border);
-    margin:18px 0;
+    margin:22px 0;
+}
+
+.destaque{
+    background:var(--acc-soft);
+    border-left:3px solid var(--acc);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-top:8px;
+    font-size:13px;
+    line-height:1.55;
 }
 
 .footer{
     font-size:12px;
     color:var(--muted);
     text-align:center;
-    margin-top:30px;
+    margin-top:36px;
+    padding-top:20px;
+    border-top:1px solid var(--border);
+    line-height:1.6;
+}
+.footer a{
+    color:var(--acc);
+    text-decoration:none;
+    font-weight:700;
+}
+
+.atualizacao{
+    display:inline-block;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:1.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin-bottom:10px;
 }
 </style>
 
 </head>
-
 <body>
 
 <div class="topbar">
-    <a class="back" href="login.html">‹</a>
+    <a class="back" href="javascript:history.back()">‹</a>
     <div class="title">Privacidade</div>
 </div>
 
 <div class="container">
 
-    <div class="section">
-        <h2>Visão geral</h2>
-        <p>O Hub Brain respeita sua privacidade e protege seus dados pessoais.</p>
+    <div class="intro">
+        <span class="atualizacao">Atualizado em outubro de 2026</span>
+        <h1>Sua privacidade</h1>
+        <p>O Hub Brain é um projeto de estudante, feito pra estudantes. Essa página explica exatamente quais dados a gente coleta, por quê e com quem compartilha.</p>
     </div>
 
-    <div class="divider"></div>
-
     <div class="section">
-        <h2>Dados coletados</h2>
+        <h2><span class="ico">👤</span>Dados que coletamos</h2>
         <ul>
-            <li>Nome de usuário</li>
-            <li>E-mail</li>
+            <li><b>Nome ou apelido</b> — o que você digita no perfil (aparece no ranking e no seu perfil)</li>
+            <li><b>E-mail</b> — usado pra login e recuperação de conta</li>
+            <li><b>Foto de perfil</b> — opcional, escolhida por você</li>
+            <li><b>Notas e matérias</b> — as que você cadastra na aba Notas</li>
+            <li><b>Tarefas e agenda</b> — atividades, prazos e compromissos</li>
+            <li><b>Histórico de foco</b> — quanto tempo você estudou em cada matéria</li>
+            <li><b>Conteúdos salvos</b> — fotos do quadro e PDFs que você envia</li>
+            <li><b>Grade horária</b> — horários de aula e professores</li>
+            <li><b>XP, conquistas e estatísticas</b> — pontos ganhos, ranking, dias seguidos</li>
+            <li><b>Info do dispositivo</b> — modelo, sistema, para o app funcionar bem</li>
         </ul>
     </div>
 
     <div class="divider"></div>
 
     <div class="section">
-        <h2>Como usamos seus dados</h2>
+        <h2><span class="ico">🎯</span>Como usamos esses dados</h2>
         <ul>
-            <li>Gerenciar seu progresso (XP e ranking)</li>
-            <li>Permitir recuperação de conta</li>
-            <li>Melhorar a experiência na plataforma</li>
+            <li>Fazer o app funcionar (salvar suas notas, agenda, foco)</li>
+            <li>Mostrar seu nome e foto no <b>ranking global</b> (visível a outros alunos)</li>
+            <li>Te dar XP, conquistas e alertas personalizados</li>
+            <li>Enviar notificações de aula, tarefa e lembretes</li>
+            <li>Permitir que você recupere a conta se esquecer a senha</li>
         </ul>
     </div>
 
     <div class="divider"></div>
 
     <div class="section">
-        <h2>Compartilhamento</h2>
-        <p>Não compartilhamos seus dados com terceiros.</p>
+        <h2><span class="ico">🔗</span>Com quem compartilhamos</h2>
+        <p>Não vendemos nem compartilhamos seus dados com anunciantes. Mas usamos alguns serviços pra o app funcionar:</p>
+        <ul>
+            <li><b>Firebase (Google)</b> — armazena notas, agenda, perfil, XP</li>
+            <li><b>ImgBB</b> — hospeda suas fotos de quadro e do perfil</li>
+            <li><b>OneSignal</b> — envia as notificações push</li>
+            <li><b>Groq</b> — processa a IA (quando você pede explicação ou escaneia a grade)</li>
+            <li><b>Netlify</b> — hospeda o site</li>
+        </ul>
+        <div class="destaque">
+            ⚠️ <b>Importante:</b> quando você usa a IA pra explicar conteúdo ou escanear a grade, o texto/imagem vai pra Groq processar. Não guardamos esse conteúdo nos nossos servidores, mas ele passa por lá.
+        </div>
     </div>
 
     <div class="divider"></div>
 
     <div class="section">
-        <h2>Segurança</h2>
-        <p>Seus dados são armazenados de forma segura dentro do sistema do Hub Brain.</p>
+        <h2><span class="ico">👀</span>O que é visível a outros alunos</h2>
+        <ul>
+            <li><b>Seu nome</b> (ou apelido) — aparece no ranking global</li>
+            <li><b>Sua foto de perfil</b> — se você cadastrou uma</li>
+            <li><b>Seu XP e patente</b> — quantos pontos você tem</li>
+        </ul>
+        <p style="margin-top:8px; color:var(--muted);">Suas notas, tarefas, conteúdos e histórico de foco são <b>só seus</b>. Ninguém mais vê.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section">
+        <h2><span class="ico">🔒</span>Segurança</h2>
+        <ul>
+            <li>Senhas são criptografadas (nós nem vemos elas)</li>
+            <li>Sua conta é protegida por login</li>
+            <li>Fotos e conteúdos têm link próprio, mas podem ser vistos por quem tiver o link</li>
+        </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section">
+        <h2><span class="ico">🗑️</span>Seus direitos</h2>
+        <ul>
+            <li><b>Apagar sua conta</b> — Configurações → Excluir minha conta. Apaga tudo de uma vez.</li>
+            <li><b>Baixar seus dados</b> — Configurações → Exportar dados (JSON)</li>
+            <li><b>Editar suas infos</b> — Perfil → editar nome, foto, meta diária</li>
+            <li><b>Desativar notificações</b> — só desligar o sino ou bloquear no navegador</li>
+        </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section">
+        <h2><span class="ico">🧒</span>Menores de idade</h2>
+        <p>O Hub Brain foi feito pra estudantes do ensino médio. Se você tem menos de 13 anos, pede pra um responsável acompanhar o cadastro. Não coletamos nada além do necessário pra o app funcionar.</p>
     </div>
 
     <div class="footer">
-        Hub Brain © 2026
+        <b style="color:var(--acc);">HUB BRAIN</b><br>
+        Dúvidas sobre privacidade? Chama no Instagram <a href="https://www.instagram.com/wtfditoh" target="_blank" rel="noopener">@wtfditoh</a><br>
+        <span style="opacity:0.6;">© 2026 Hub Brain · Feito por um aluno, pra alunos</span>
     </div>
 
 </div>
