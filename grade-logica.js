@@ -1,7 +1,7 @@
 /* grade-logica.js — Hub Brain · Grade Horária + Escanear com IA + Tags de Notificação */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, query, collection, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /* ═══════════════ FIREBASE ═══════════════ */
 const firebaseConfig = {
@@ -952,3 +952,27 @@ document.addEventListener('visibilitychange', () => {
         sincronizarTagsAula();
     }
 });
+
+// Atualiza o Firestore com as pendências da agenda (pra notificação das 21h)
+async function sincronizarTagsAgenda() {
+    if (!userId || userId === 'convidado') return;
+    try {
+        const hoje = new Date().toISOString().split('T')[0];
+        const alvo = userEmail || userId;
+        const q = query(collection(db, 'agenda'), where('usuario', '==', alvo), where('concluida', '==', false));
+        let pend = [];
+        try {
+            const snap = await getDocs(q);
+            pend = snap.docs.map(d => d.data());
+        } catch (e) {
+            const q2 = query(collection(db, 'agenda'), where('usuario', '==', alvo));
+            const snap2 = await getDocs(q2);
+            pend = snap2.docs.map(d => d.data()).filter(t => !t.concluida);
+        }
+        const venc = pend.filter(t => t.dataFim && t.dataFim <= hoje);
+        await setDoc(doc(db, 'grades_horarias', userId), {
+            pend_dia: hoje,
+            pend_n: String(Math.min(venc.length, 20))
+        }, { merge: true });
+    } catch (e) { console.warn('[grade] sync agenda:', e); }
+}
