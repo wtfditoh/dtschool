@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debug Tags - Hub Brain</title>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({ appId: "04313997-e78e-4274-948b-88586b1247ec" });
+});
+</script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        background: #050508;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        padding: 20px;
+        min-height: 100vh;
+    }
+    h1 {
+        font-size: 20px;
+        font-weight: 900;
+        color: #c084fc;
+        margin-bottom: 4px;
+    }
+    .sub {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+    .card {
+        background: #0e0e14;
+        border: 1px solid rgba(138,43,226,0.2);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+    .label {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+    .valor {
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+        font-family: ui-monospace, Menlo, monospace;
+        word-break: break-all;
+    }
+    .ok { color: #00e5a0; }
+    .erro { color: #ff4455; }
+    .aviso { color: #ffbb33; }
+    .tag-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 8px;
+    }
+    .tag-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 8px 10px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 10px;
+        font-size: 13px;
+    }
+    .tag-key { color: #c084fc; font-weight: 800; }
+    .tag-val { color: #fff; font-family: ui-monospace, monospace; word-break: break-all; text-align: right; }
+    button {
+        width: 100%;
+        padding: 14px;
+        border-radius: 14px;
+        border: none;
+        background: linear-gradient(135deg, #8a2be2, #6a1fc2);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 900;
+        cursor: pointer;
+        margin-top: 12px;
+    }
+    button:active { transform: scale(0.97); }
+    .btn-sec {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+</style>
+</head>
+<body>
+
+<h1>🔍 Debug de Tags</h1>
+<p class="sub">Mostra o que o OneSignal tem salvo no seu device</p>
+
+<div class="card">
+    <div class="label">Permissão</div>
+    <div class="valor" id="v-permissao">Carregando...</div>
+</div>
+
+<div class="card">
+    <div class="label">Subscription ID</div>
+    <div class="valor" id="v-id">Carregando...</div>
+</div>
+
+<div class="card">
+    <div class="label">Opted In</div>
+    <div class="valor" id="v-opted">Carregando...</div>
+</div>
+
+<div class="card">
+    <div class="label">Token</div>
+    <div class="valor" id="v-token">Carregando...</div>
+</div>
+
+<div class="card">
+    <div class="label">Tags salvas</div>
+    <div class="tag-list" id="v-tags">Carregando...</div>
+</div>
+
+<button id="btn-rec">🔄 Recarregar</button>
+<button id="btn-sync" class="btn-sec">⚡ Forçar sincronizar tags de tarefa</button>
+
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBh3wsAGXY-03HtT47TFlAZGWrusNtjTrc",
+    authDomain: "dt-scho0l.firebaseapp.com",
+    projectId: "dt-scho0l",
+    storageBucket: "dt-scho0l.firebasestorage.app",
+    messagingSenderId: "78578509371",
+    appId: "1:78578509391:web:7f5ede4f967ca8ce292c3a"
+};
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const $ = (id) => document.getElementById(id);
+const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
+
+async function carregar() {
+    $('v-permissao').textContent = 'Carregando...';
+    $('v-id').textContent = 'Carregando...';
+    $('v-opted').textContent = 'Carregando...';
+    $('v-token').textContent = 'Carregando...';
+    $('v-tags').innerHTML = 'Carregando...';
+
+    if (!window.OneSignalDeferred) {
+        $('v-permissao').innerHTML = '<span class="erro">OneSignal não carregou</span>';
+        return;
+    }
+
+    window.OneSignalDeferred.push(async (OS) => {
+        try {
+            const perm = OS.Notifications.permission;
+            $('v-permissao').innerHTML = perm
+                ? '<span class="ok">✓ Permitido</span>'
+                : '<span class="erro">✗ Negado</span>';
+
+            const id = OS.User.PushSubscription.id;
+            $('v-id').innerHTML = id
+                ? '<span class="ok">' + id + '</span>'
+                : '<span class="erro">Vazio — device não registrado</span>';
+
+            const opted = OS.User.PushSubscription.optedIn;
+            $('v-opted').innerHTML = opted
+                ? '<span class="ok">✓ Sim</span>'
+                : '<span class="erro">✗ Não — não tá inscrito</span>';
+
+            const token = OS.User.PushSubscription.token;
+            $('v-token').innerHTML = token
+                ? '<span class="ok">' + token.slice(0, 30) + '...</span>'
+                : '<span class="erro">Vazio</span>';
+
+            // Tags
+            const tags = await OS.User.getTags();
+            const keys = Object.keys(tags);
+            if (!keys.length) {
+                $('v-tags').innerHTML = '<span class="erro">Nenhuma tag salva</span>';
+            } else {
+                $('v-tags').innerHTML = keys.map(k => {
+                    const v = tags[k] || '(vazio)';
+                    const corCls = v ? 'tag-val' : 'tag-val erro';
+                    return '<div class="tag-item"><span class="tag-key">' + k + '</span><span class="' + corCls + '">' + v + '</span></div>';
+                }).join('');
+            }
+        } catch (e) {
+            $('v-permissao').innerHTML = '<span class="erro">Erro: ' + e.message + '</span>';
+        }
+    });
+}
+
+async function forcarSincronizarTags() {
+    if (!emailLogado) {
+        alert('Você não tá logado (dt_user_email vazio)');
+        return;
+    }
+
+    $('v-tags').innerHTML = '<span class="aviso">Calculando...</span>';
+
+    try {
+        const hoje = new Date().toISOString().split('T')[0];
+        let pendentes = [];
+
+        try {
+            const q = query(collection(db, 'agenda'), where('usuario', '==', emailLogado), where('concluida', '==', false));
+            const snap = await getDocs(q);
+            pendentes = snap.docs.map(d => d.data());
+        } catch (e) {
+            const q2 = query(collection(db, 'agenda'), where('usuario', '==', emailLogado));
+            const snap2 = await getDocs(q2);
+            pendentes = snap2.docs.map(d => d.data()).filter(t => !t.concluida);
+        }
+
+        const vencendoHoje = pendentes.filter(t => t.dataFim && t.dataFim <= hoje);
+        const prova = pendentes.find(t => t.tipo === 'prova' && t.dataFim === hoje);
+
+        const tags = {
+            tarefa_dia: hoje,
+            tarefas_hoje: String(Math.min(vencendoHoje.length, 99)),
+            provas_hoje: prova ? String(prova.materia || '').slice(0, 40) : ''
+        };
+
+        window.OneSignalDeferred.push(async (OS) => {
+            await OS.User.addTags(tags);
+            alert('✓ Tags salvas: ' + JSON.stringify(tags, null, 2));
+            await carregar();
+        });
+    } catch (e) {
+        alert('Erro: ' + e.message);
+        await carregar();
+    }
+}
+
+$('btn-rec').onclick = carregar;
+$('btn-sync').onclick = forcarSincronizarTags;
+
+// Carrega automático
+setTimeout(carregar, 2500);
+</script>
+
+</body>
+</html>
