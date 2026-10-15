@@ -15,6 +15,7 @@ const db = getFirestore(app);
 
 const emailMestre = "ditoh2008@gmail.com";
 const emailLogado = (localStorage.getItem('dt_user_email') || "").toLowerCase();
+const userIdPush = localStorage.getItem('dt_user_phone') || emailLogado || 'convidado';
 const userType    = localStorage.getItem('dt_user_type');
 
 /* ═══════════════════════════════════════════════════ */
