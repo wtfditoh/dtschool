@@ -3,7 +3,7 @@
 <head>
     <script src="hb-loader.js"></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Hub Brain - Bem-vindo</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -21,13 +21,18 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+
         body {
             background: var(--bg);
             font-family: 'Outfit', -apple-system, sans-serif;
             color: var(--txt);
-            min-height: 100vh;
-            overflow: hidden;
             position: relative;
+            -webkit-font-smoothing: antialiased;
         }
 
         body::before {
@@ -44,7 +49,7 @@
         /* Botão pular */
         .btn-skip {
             position: fixed;
-            top: 20px;
+            top: calc(20px + env(safe-area-inset-top, 0px));
             right: 20px;
             background: transparent;
             border: none;
@@ -63,16 +68,21 @@
 
         /* Wrapper */
         .wrapper {
+            height: 100vh;
             height: 100dvh;
             display: flex;
             flex-direction: column;
             position: relative;
             z-index: 1;
+            overflow: hidden;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         /* Slides */
         .slides-box {
-            flex: 1;
+            flex: 1 1 0;
+            min-height: 0;
             overflow: hidden;
             position: relative;
         }
@@ -85,29 +95,30 @@
 
         .slide {
             min-width: 100vw;
-            padding: 40px 32px;
+            padding: 32px 28px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            gap: 20px;
+            gap: 16px;
         }
 
         /* Ícone */
         .slide-icon {
-            width: 110px;
-            height: 110px;
-            border-radius: 32px;
+            width: 100px;
+            height: 100px;
+            border-radius: 30px;
             background: rgba(147,51,234,0.1);
             border: 1px solid rgba(147,51,234,0.25);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             position: relative;
             box-shadow: 0 0 60px rgba(147,51,234,0.2);
             animation: float 3.5s ease-in-out infinite;
+            flex-shrink: 0;
         }
 
         .slide-icon::after {
@@ -122,8 +133,8 @@
         }
 
         .slide-icon i {
-            width: 52px;
-            height: 52px;
+            width: 48px;
+            height: 48px;
             color: var(--roxo-claro);
             filter: drop-shadow(0 0 16px rgba(147,51,234,0.7));
         }
@@ -145,7 +156,7 @@
 
         /* Título */
         .slide-title {
-            font-size: 30px;
+            font-size: 28px;
             font-weight: 900;
             line-height: 1.1;
             letter-spacing: -1px;
@@ -169,11 +180,13 @@
 
         /* Footer */
         .footer {
-            padding: 24px 24px 32px;
+            flex-shrink: 0;
+            padding: 16px 24px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
+            background: linear-gradient(to top, var(--bg) 60%, transparent);
         }
 
         /* Dots */
@@ -206,7 +219,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            padding: 17px 24px;
+            padding: 16px 24px;
             border-radius: 999px;
             font-family: inherit;
             font-size: 14px;
@@ -277,19 +290,30 @@
 
         /* Responsivo */
         @media (max-width: 480px) {
-            .slide { padding: 32px 24px; gap: 16px; }
-            .slide-icon { width: 96px; height: 96px; border-radius: 28px; }
-            .slide-icon i { width: 46px; height: 46px; }
-            .slide-title { font-size: 26px; }
+            .slide { padding: 24px 22px; gap: 14px; }
+            .slide-icon { width: 90px; height: 90px; border-radius: 26px; }
+            .slide-icon i { width: 42px; height: 42px; }
+            .slide-title { font-size: 25px; }
             .slide-desc { font-size: 13.5px; }
         }
 
         @media (max-height: 700px) {
-            .slide { padding: 24px 24px; gap: 14px; }
-            .slide-icon { width: 84px; height: 84px; border-radius: 24px; margin-bottom: 4px; }
-            .slide-icon i { width: 40px; height: 40px; }
-            .slide-title { font-size: 24px; }
-            .footer { padding: 18px 24px 24px; gap: 16px; }
+            .slide { padding: 18px 22px; gap: 10px; }
+            .slide-icon { width: 78px; height: 78px; border-radius: 22px; margin-bottom: 0; }
+            .slide-icon i { width: 36px; height: 36px; }
+            .slide-title { font-size: 22px; }
+            .slide-desc { font-size: 13px; }
+            .footer { padding: 12px 20px 16px; gap: 12px; }
+        }
+
+        @media (max-height: 600px) {
+            .slide { padding: 12px 20px; gap: 8px; }
+            .slide-icon { width: 64px; height: 64px; border-radius: 18px; }
+            .slide-icon i { width: 30px; height: 30px; }
+            .slide-title { font-size: 20px; }
+            .slide-desc { font-size: 12px; line-height: 1.45; }
+            .btn-prox, .btn-comecar { padding: 13px 22px; font-size: 13px; }
+            .footer { padding: 10px 20px 14px; gap: 10px; }
         }
     </style>
 </head>
