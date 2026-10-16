@@ -2,6 +2,21 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <script>
+    (function() {
+        const tipo = localStorage.getItem('dt_user_type');
+        const email = localStorage.getItem('dt_user_email');
+        // Se não é conta real (google) E não é visitante que clicou no botão
+        const ehVisitante = tipo === 'local' && localStorage.getItem('dt_visitante_escolhido') === 'true';
+        const ehConta = tipo === 'google' && email;
+        if (!ehConta && !ehVisitante) {
+            localStorage.removeItem('dt_user_name');
+            localStorage.removeItem('dt_user_type');
+            localStorage.removeItem('dt_user_email');
+            window.location.replace('welcome.html');
+        }
+    })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Home</title>
     <link rel="manifest" href="manifest.json">
