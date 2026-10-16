@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <script src="hb-loader.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Criar Conta</title>
@@ -10,12 +11,6 @@
     <link rel="stylesheet" href="auth.css">
 </head>
 <body>
-
-    <!-- LOADER -->
-    <div id="hb-loading">
-        <img src="https://media.tenor.com/GQAsycjoZG8AAAAi/scuba-scuba-cat.gif" alt="">
-        <p>Preparando sua conta...</p>
-    </div>
 
     <a href="login.html" class="voltar">
         <i data-lucide="arrow-left"></i>
@@ -29,7 +24,7 @@
 
         <div class="header-txt">
             <span class="kicker">NOVO POR AQUI?</span>
-            <h1>Criar sua<br><em>conta grátis</em></h1>
+            <h1>Criar sua <em>conta grátis</em></h1>
         </div>
 
         <form class="form" onsubmit="realizarCadastro(event)">
@@ -51,11 +46,11 @@
 
             <div class="campo">
                 <label>SENHA</label>
-                <div class="input-wrap">gif
+                <div class="input-wrap">
                     <i data-lucide="lock"></i>
                     <input type="password" id="user-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password" oninput="checarForca()">
-                    <button type="button" class="ver-senha" onclick="toggleSenha()">
-                        <i data-lucide="eye" id="eye-icon"></i>
+                    <button type="button" class="ver-senha" onclick="toggleSenha('user-pass','eye-icon-1')">
+                        <i data-lucide="eye" id="eye-icon-1"></i>
                     </button>
                 </div>
                 <div class="forca" id="forca-box" style="display:none">
@@ -69,11 +64,22 @@
                 </div>
             </div>
 
+            <div class="campo">
+                <label>CONFIRMAR SENHA</label>
+                <div class="input-wrap">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="user-pass-2" placeholder="Repete a senha" autocomplete="new-password">
+                    <button type="button" class="ver-senha" onclick="toggleSenha('user-pass-2','eye-icon-2')">
+                        <i data-lucide="eye" id="eye-icon-2"></i>
+                    </button>
+                </div>
+            </div>
+
             <div class="linha-extra">
                 <label class="check">
                     <input type="checkbox" id="aceito-termos">
                     <span></span>
-                    <small>Aceito os <a href="termos.html" style="color:var(--roxo-claro);text-decoration:none">termos</a></small>
+                    <small>Aceito os <a href="termos.html" target="_blank" style="color:var(--roxo-claro);text-decoration:none">termos</a></small>
                 </label>
             </div>
 
@@ -90,30 +96,36 @@
             <a href="login.html">Entrar agora</a>
         </div>
 
-       <div class="policy">
-    <a href="privacidade.html">Privacidade</a>
-    <span>·</span>
-    <a href="termos.html">Termos</a>
-    <span>·</span>
-    <a href="https://instagram.com/hubbrain.app" target="_blank" rel="noopener">
-        <i data-lucide="instagram" style="width:12px;height:12px;vertical-align:middle"></i>
-        @hubbrain.app
-    </a>
-</div>
+        <div class="policy">
+            <a href="privacidade.html">Privacidade</a>
+            <span>·</span>
+            <a href="termos.html">Termos</a>
+            <span>·</span>
+            <a href="https://instagram.com/hubbrain.app" target="_blank" rel="noopener">
+                <i data-lucide="instagram" style="width:12px;height:12px;vertical-align:middle"></i>
+                @hubbrain.app
+            </a>
+        </div>
 
     </main>
 
     <script type="module" src="login-logica.js"></script>
-    <script src="auth-loader.js"></script>
     <script>
         lucide.createIcons();
         const inputPass = document.getElementById('user-pass');
-        window.toggleSenha = function () {
-            const t = inputPass.type === 'password' ? 'text' : 'password';
-            inputPass.type = t;
-            document.getElementById('eye-icon').setAttribute('data-lucide', t === 'password' ? 'eye' : 'eye-off');
+
+        // Toggle senha — aceita qual campo (1 ou 2)
+        window.toggleSenha = function (inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+            const t = input.type === 'password' ? 'text' : 'password';
+            input.type = t;
+            icon.setAttribute('data-lucide', t === 'password' ? 'eye' : 'eye-off');
             lucide.createIcons();
         };
+
+        // Força da senha
         window.checarForca = function () {
             const val = inputPass.value;
             const box = document.getElementById('forca-box');
