@@ -5,180 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Login</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="auth.css">
 </head>
 <body>
-<div class="login-wrapper">
 
-    <!-- MASCOTE MACACO (Lottie) -->
-    <div class="mascote-wrap" id="mascote">
-        <div id="lottie-hello"   style="width:100%;height:100%"></div>
-        <div id="lottie-sucesso" style="width:100%;height:100%;display:none"></div>
-        <div id="lottie-erro"    style="width:100%;height:100%;display:none"></div>
+    <!-- LOADER -->
+    <div id="hb-loading">
+        <img src="https://media1.tenor.com/m/tN4-q43SkzcAAAAC/scuba.gif" alt="">
+        <p>Preparando seu acesso...</p>
     </div>
 
-    <!-- CARD LOGIN -->
-    <div class="login-card" id="login-card">
-        <div class="card-glow"></div>
+    <a href="welcome.html" class="voltar">
+        <i data-lucide="arrow-left"></i>
+    </a>
 
-        <div class="logo-section">
-            <h1>HUB <span>BRAIN</span></h1>
-            <p>Domine sua rotina de estudos</p>
+    <main class="container">
+
+        <div class="topo">
+            <img src="icon-514_20260512_161420_0000.png" alt="Hub Brain">
         </div>
 
-        <div class="input-field">
-            <div class="input-icon">
-                <i data-lucide="mail"></i>
-            </div>
-            <input
-                type="email"
-                id="user-email"
-                placeholder="Seu e-mail"
-                autocomplete="email"
-                spellcheck="false"
-            >
+        <div class="header-txt">
+            <span class="kicker">BEM-VINDO DE VOLTA</span>
+            <h1>Entrar no<br><em>Hub Brain</em></h1>
         </div>
 
-        <div class="input-field">
-            <div class="input-icon">
-                <i data-lucide="lock"></i>
+        <form class="form" onsubmit="tentarLogar(event)">
+            <div class="campo">
+                <label>E-MAIL</label>
+                <div class="input-wrap">
+                    <i data-lucide="mail"></i>
+                    <input type="email" id="user-email" placeholder="seu@email.com" autocomplete="email" spellcheck="false">
+                </div>
             </div>
-            <input
-                type="password"
-                id="user-pass"
-                placeholder="Sua senha"
-                autocomplete="current-password"
-            >
-            <button type="button" class="toggle-password" onclick="toggleSenha()">
-                <i data-lucide="eye" id="eye-icon"></i>
+
+            <div class="campo">
+                <label>SENHA</label>
+                <div class="input-wrap">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="user-pass" placeholder="••••••••" autocomplete="current-password">
+                    <button type="button" class="ver-senha" onclick="toggleSenha()">
+                        <i data-lucide="eye" id="eye-icon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="linha-extra">
+                <label class="check">
+                    <input type="checkbox" id="manter-conectado" checked>
+                    <span></span>
+                    <small>Manter conectado</small>
+                </label>
+                <a href="#" onclick="window.recuperarSenha(event)">Esqueci a senha</a>
+            </div>
+
+            <div id="login-status" class="status"></div>
+
+            <button type="submit" class="btn-roxo">
+                <i data-lucide="log-in"></i>
+                <span>Entrar</span>
             </button>
+        </form>
+
+        <div class="rodape-form">
+            <span>Não tem conta?</span>
+            <a href="cadastro.html">Criar agora</a>
         </div>
 
-        <div class="options-row">
-            <label class="checkbox-wrapper">
-                <input type="checkbox" id="manter-conectado" checked>
-                <span class="checkmark"></span>
-                <span class="label-text">Manter conectado</span>
-            </label>
-            <a href="#" class="forgot-link" onclick="window.recuperarSenha(event)">Esqueci a senha</a>
-        </div>
-
-        <div id="login-status" class="status-message"></div>
-
-        <button class="btn-primary" onclick="tentarLogar(event)">
-            <span>Entrar</span>
-            <i data-lucide="arrow-right"></i>
+        <button class="btn-visitante" onclick="entrarComoVisitante()">
+            <i data-lucide="eye"></i>
+            <span>Continuar como Visitante</span>
         </button>
 
-        <div class="divider">
-            <span>ou</span>
-        </div>
-
-        <div class="footer-actions">
-            <a href="cadastro.html" class="link-secondary">Não tem conta? <strong>Criar agora</strong></a>
-            <button class="btn-ghost" onclick="entrarComoVisitante()">
-                <i data-lucide="eye"></i>
-                <span>Continuar como Visitante</span>
-            </button>
-        </div>
-
-        <div class="policy-links">
+        <div class="policy">
             <a href="privacidade.html">Privacidade</a>
             <span>·</span>
             <a href="termos.html">Termos</a>
         </div>
-    </div>
-</div>
 
-<script type="module" src="login-logica.js"></script>
-<script>
-    lucide.createIcons();
+    </main>
 
-    const inputEmail = document.getElementById('user-email');
-    const inputPass  = document.getElementById('user-pass');
-    const card       = document.getElementById('login-card');
-
-    /* ═══ LOTTIE — MASCOTE MACACO ROXO ═══ */
-    let animHello, animSucesso, animErro;
-
-    function mostrarEstado(nome) {
-        ['hello', 'sucesso', 'erro'].forEach(n => {
-            const el = document.getElementById('lottie-' + n);
-            if (el) el.style.display = (n === nome) ? 'block' : 'none';
-        });
-    }
-
-    // Carrega os 3
-    animHello   = lottie.loadAnimation({ container: document.getElementById('lottie-hello'),   renderer: 'svg', loop: true,  autoplay: true,  path: 'lottie/macaco-hello.json' });
-    animSucesso = lottie.loadAnimation({ container: document.getElementById('lottie-sucesso'), renderer: 'svg', loop: false, autoplay: false, path: 'lottie/macaco-sucesso.json' });
-    animErro    = lottie.loadAnimation({ container: document.getElementById('lottie-erro'),    renderer: 'svg', loop: false, autoplay: false, path: 'lottie/macaco-erro.json' });
-
-    // Estado inicial: idle (frames 0-30 do hello)
-    animHello.addEventListener('DOMLoaded', () => {
-        animHello.loop = true;
-        animHello.setSegment(0, 30);
-        animHello.play();
-    });
-
-    /* ═══ REAÇÕES AOS INPUTS ═══ */
-    // Foco no email → idle
-    inputEmail?.addEventListener('focus', () => {
-        mostrarEstado('hello');
-        animHello.loop = true;
-        animHello.setSegment(0, 30);
-        animHello.play();
-    });
-
-    // Foco na senha → cobre os olhos (frames 30-115)
-    inputPass?.addEventListener('focus', () => {
-        mostrarEstado('hello');
-        animHello.loop = false;
-        animHello.setSegment(30, 115);
-        animHello.play();
-    });
-
-    // Sai da senha → volta pro idle
-    inputPass?.addEventListener('blur', () => {
-        animHello.loop = true;
-        animHello.setSegment(0, 30);
-        animHello.play();
-    });
-
-    /* ═══ ESTADOS CHAMADOS PELO login-logica.js ═══ */
-    window.mascoteErro = function () {
-        mostrarEstado('erro');
-        animErro.goToAndPlay(0, true);
-        card?.classList.add('shake-error');
-        setTimeout(() => {
-            card?.classList.remove('shake-error');
-            mostrarEstado('hello');
-            animHello.loop = true;
-            animHello.setSegment(0, 30);
-            animHello.play();
-        }, 2500);
-    };
-
-    window.mascoteSucesso = function () {
-        mostrarEstado('sucesso');
-        animSucesso.goToAndPlay(0, true);
-    };
-
-    /* ═══ TOGGLE SENHA ═══ */
-    window.toggleSenha = function () {
-        const type = inputPass.type === 'password' ? 'text' : 'password';
-        inputPass.type = type;
-        const icon = document.getElementById('eye-icon');
-        icon.setAttribute('data-lucide', type === 'password' ? 'eye' : 'eye-off');
+    <script type="module" src="login-logica.js"></script>
+    <script src="auth-loader.js"></script>
+    <script>
         lucide.createIcons();
-    };
-
-    window.recuperarSenha = function (e) {
-        if (e) e.preventDefault();
-        if (typeof window.executarRecuperacao === 'function') window.executarRecuperacao();
-    };
-</script>
+        const inputPass = document.getElementById('user-pass');
+        window.toggleSenha = function () {
+            const t = inputPass.type === 'password' ? 'text' : 'password';
+            inputPass.type = t;
+            document.getElementById('eye-icon').setAttribute('data-lucide', t === 'password' ? 'eye' : 'eye-off');
+            lucide.createIcons();
+        };
+        window.recuperarSenha = function (e) {
+            if (e) e.preventDefault();
+            if (typeof window.executarRecuperacao === 'function') window.executarRecuperacao();
+        };
+    </script>
 </body>
 </html>
