@@ -11,7 +11,6 @@ const chaveImgBB = () => (localStorage.getItem('hb_imgbb_key') || IMGBB_KEY || '
 export const imgbbConfigurado = () => { const k = chaveImgBB(); return !!k && k !== 'COLE_SUA_CHAVE_AQUI'; };
 
 const pad = (n) => String(n).padStart(2, '0');
-/** Data LOCAL (AAAA-MM-DD). O toISOString() usa UTC e, depois das 21h em Brasília, devolvia o dia seguinte. */
 export function hojeLocal() { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
 
 export function extArquivo(nome) {
@@ -23,7 +22,6 @@ export function emojiPorExt(ext) {
     return map[ext] || '📎';
 }
 
-/** Reduz a foto (lado maior ≤ 2400px, JPEG 92%) antes de subir. */
 export function comprimir(file) {
     return new Promise((resolve, reject) => {
         const url = URL.createObjectURL(file);
@@ -72,12 +70,7 @@ export async function uploadCatbox(file) {
     return { url: txt, thumb: '', medium: '', display_url: '' };
 }
 
-/**
- * Sobe e salva os itens na coleção `conteudos` (mesmos campos de sempre).
- * items: [{ file, arq?: boolean }]  (arq = tratar como arquivo mesmo sendo imagem)
- * Retorna { ok, falha, erros }. Lança erro claro se o ImgBB não estiver configurado.
- */
-export async function salvarItens({ items, materia, bimestre, userEmail, onProgresso }) {
+export async function salvarItens({ items, materia, bimestre, tarefaId, tarefaNome, userEmail, onProgresso }) {
     const precisaImg = items.some((it) => !it.arq && it.file.type.startsWith('image/'));
     if (precisaImg && !imgbbConfigurado()) {
         throw new Error('Falta configurar a chave do ImgBB (conteudos-upload.js). Arquivos PDF/Word funcionam sem ela.');
@@ -97,6 +90,8 @@ export async function salvarItens({ items, materia, bimestre, userEmail, onProgr
                 usuario: userEmail,
                 materia: materia,
                 bimestre: bimestre || '',
+                tarefaId: tarefaId || '',
+                tarefaNome: tarefaNome || '',
                 tipo: tipoItem,
                 url: urls.url,
                 thumb: urls.thumb || '',
