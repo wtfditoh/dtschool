@@ -1,0 +1,135 @@
+{
+  "ano": 2025,
+  "fonte": "INEP - Censo Escolar 2025 / Sinopse Estatística da Educação Básica 2025",
+  "atualizado": "2026-10-16",
+  "brasil": {
+    "escolas_total": 178766,
+    "alunos_total": 46018380,
+    "alunos_fundamental": 25806767,
+    "alunos_medio": 7370879,
+    "professores_total": 2407049,
+    "escolas_publicas": 137020,
+    "escolas_privadas": 41746,
+    "professores_efetivos": 1131309,
+    "professores_temporarios": 813010,
+    "professores_vinculo_base": "Rede pública (dependências federal, estadual e municipal); não representa todos os docentes do Brasil.",
+    "professores_outros_vinculos_rede_publica": 54416
+  },
+  "regioes": [
+    {
+      "nome": "Sudeste",
+      "escolas": 60831,
+      "alunos": 18007935,
+      "professores": 958310
+    },
+    {
+      "nome": "Nordeste",
+      "escolas": 59391,
+      "alunos": 13225818,
+      "professores": 681534
+    },
+    {
+      "nome": "Sul",
+      "escolas": 25940,
+      "alunos": 6397634,
+      "professores": 386296
+    },
+    {
+      "nome": "Norte",
+      "escolas": 22061,
+      "alunos": 4676158,
+      "professores": 210879
+    },
+    {
+      "nome": "Centro-Oeste",
+      "escolas": 10543,
+      "alunos": 3710835,
+      "professores": 171005
+    }
+  ],
+  "estados": [
+    {
+      "uf": "SP",
+      "nome": "São Paulo",
+      "escolas": 30439,
+      "alunos": 9600318,
+      "professores": 502593
+    },
+    {
+      "uf": "MG",
+      "nome": "Minas Gerais",
+      "escolas": 15849,
+      "alunos": 4220829,
+      "professores": 243436
+    },
+    {
+      "uf": "BA",
+      "nome": "Bahia",
+      "escolas": 15854,
+      "alunos": 3345058,
+      "professores": 169614
+    },
+    {
+      "uf": "RN",
+      "nome": "Rio Grande do Norte",
+      "escolas": 3368,
+      "alunos": 756434,
+      "professores": 36193,
+      "vinculo_docente_rede_estadual_percentual": {
+        "concursado_efetivo_estavel": 61.4,
+        "contrato_temporario": 38.5,
+        "fonte": "INEP - Censo Escolar 2025, gráfico 37",
+        "observacao": "Percentuais da rede estadual, transcritos visualmente do gráfico oficial; outras categorias podem compor a diferença."
+      },
+      "vinculo_docente_rede_municipal_percentual": {
+        "concursado_efetivo_estavel": 58.5,
+        "contrato_temporario": 36.6,
+        "fonte": "INEP - Censo Escolar 2025, gráfico 38",
+        "observacao": "Percentuais da rede municipal, transcritos visualmente do gráfico oficial; outras categorias podem compor a diferença."
+      }
+    },
+    {
+      "uf": "PE",
+      "nome": "Pernambuco",
+      "escolas": 7968,
+      "alunos": 2076655,
+      "professores": 92810
+    },
+    {
+      "uf": "CE",
+      "nome": "Ceará",
+      "escolas": 7628,
+      "alunos": 2108135,
+      "professores": 112211
+    },
+    {
+      "uf": "PR",
+      "nome": "Paraná",
+      "escolas": 9528,
+      "alunos": 2438428,
+      "professores": 154212
+    },
+    {
+      "uf": "RJ",
+      "nome": "Rio de Janeiro",
+      "escolas": 11557,
+      "alunos": 3319771,
+      "professores": 164472
+    },
+    {
+      "uf": "PB",
+      "nome": "Paraíba",
+      "escolas": 4624,
+      "alunos": 942549,
+      "professores": 50288
+    },
+    {
+      "uf": "DF",
+      "nome": "Distrito Federal",
+      "escolas": 1291,
+      "alunos": 620272,
+      "professores": 31675
+    }
+  ],
+  "observacao": "Os totais de escolas públicas e privadas são da Tabela 3.2 da Sinopse Estatística da Educação Básica 2025. Professores efetivos e temporários referem-se somente à rede pública, conforme Tabela 2.6; o total de docentes inclui redes pública e privada. Percentuais do RN são específicos das redes estadual e municipal e foram transcritos visualmente dos gráficos 37 e 38 do Censo Escolar 2025."
+}
