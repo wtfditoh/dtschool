@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor INEP → JSON</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --roxo: #9333ea;
+            --roxo-claro: #c084fc;
+            --bg: #0a0a0e;
+            --bg-card: #131319;
+            --borda: rgba(255,255,255,0.07);
+            --txt: #fff;
+            --txt-dim: #9ca3af;
+            --txt-dimmer: #6b7280;
+            --sucesso: #00e5a0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--txt);
+            font-family: 'Outfit', -apple-system, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--borda);
+            margin-bottom: 12px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        header h1 span { color: var(--roxo); }
+
+        header p {
+            font-size: 13px;
+            color: var(--txt-dim);
+        }
+
+        /* Coluna esquerda — inputs */
+        .col-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .secao {
+            background: var(--bg-card);
+            border: 1px solid var(--borda);
+            border-radius: 18px;
+            padding: 20px;
+        }
+
+        .secao-titulo {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--roxo-claro);
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .secao-titulo i { width: 14px; height: 14px; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .campo label {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--txt-dimmer);
+            text-transform: uppercase;
+            padding-left: 2px;
+        }
+
+        .campo input {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--borda);
+            border-radius: 10px;
+            padding: 10px 12px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .campo input:focus {
+            border-color: var(--roxo);
+            background: rgba(147,51,234,0.06);
+            box-shadow: 0 0 0 3px rgba(147,51,234,0.12);
+        }
+
+        .campo input::placeholder { color: #454550; font-weight: 500; }
+
+        /* Blocos dinâmicos */
+        .bloco-regiao,
+        .bloco-estado {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--borda);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .bloco-regiao:last-child,
+        .bloco-estado:last-child { margin-bottom: 0; }
+
+        .bloco-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .bloco-nome {
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--roxo-claro);
+        }
+
+        .bloco-remover {
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,68,85,0.1);
+            color: #ff4455;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .bloco-remover:hover { background: rgba(255,68,85,0.2); }
+        .bloco-remover i { width: 13px; height: 13px; }
+
+        .btn-add {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px dashed rgba(147,51,234,0.4);
+            background: rgba(147,51,234,0.05);
+            color: var(--roxo-claro);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .btn-add:hover {
+            background: rgba(147,51,234,0.12);
+            border-color: var(--roxo);
+        }
+
+        .btn-add i { width: 14px; height: 14px; }
+
+        /* Coluna direita — preview */
+        .col-preview {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .preview-box {
+            background: #06060a;
+            border: 1px solid var(--borda);
+            border-radius: 16px;
+            padding: 16px;
+            flex: 1;
+            overflow: auto;
+            min-height: 400px;
+            max-height: 70vh;
+        }
+
+        .preview-box pre {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 11px;
+            line-height: 1.6;
+            color: #a5f3fc;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .preview-label {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--txt-dimmer);
+            text-transform: uppercase;
+        }
+
+        .btn-baixar {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #9333ea, #6a1fc2);
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 10px 26px rgba(147,51,234,0.35);
+        }
+
+        .btn-baixar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 34px rgba(147,51,234,0.5);
+        }
+
+        .btn-baixar i { width: 16px; height: 16px; }
+
+        .status-salvo {
+            text-align: center;
+            font-size: 12px;
+            color: var(--sucesso);
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .status-salvo.show { opacity: 1; }
+
+        /* Responsivo */
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+            .col-preview { position: static; }
+            .preview-box { max-height: 300px; min-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>Conversor <span>INEP</span> → JSON</h1>
+        <p>Preenche os dados do Excel aqui e baixa o arquivo pronto pro Hub Brain</p>
+    </header>
+
+    <!-- COLUNA INPUTS -->
+    <div class="col-inputs">
+
+        <!-- META -->
+        <div class="secao">
+            <div class="secao-titulo">
+                <i data-lucide="info"></i>
+                Informações gerais
+            </div>
+            <div class="grid-3">
+                <div class="campo">
+                    <label>Ano do censo</label>
+                    <input type="number" id="meta-ano" value="2024" min="2000" max="2100">
+                </div>
+                <div class="campo" style="grid-column: span 2;">
+                    <label>Fonte</label>
+                    <input type="text" id="meta-fonte" value="INEP - Censo Escolar 2024">
+                </div>
+            </div>
+        </div>
+
+        <!-- BRASIL -->
+        <div class="secao">
+            <div class="secao-titulo">
+                <i data-lucide="globe"></i>
+                Brasil
+            </div>
+            <div class="grid-3">
+                <div class="campo">
+                    <label>Total de escolas</label>
+                    <input type="number" id="br-escolas" placeholder="178000">
+                </div>
+                <div class="campo">
+                    <label>Escolas públicas</label>
+                    <input type="number" id="br-pub" placeholder="138000">
+                </div>
+                <div class="campo">
+                    <label>Escolas privadas</label>
+                    <input type="number" id="br-priv" placeholder="40000">
+                </div>
+                <div class="campo">
+                    <label>Total de alunos</label>
+                    <input type="number" id="br-alunos" placeholder="47100000">
+                </div>
+                <div class="campo">
+                    <label>Alunos Fundamental</label>
+                    <input type="number" id="br-fund" placeholder="22000000">
+                </div>
+                <div class="campo">
+                    <label>Alunos Médio</label>
+                    <input type="number" id="br-medio" placeholder="7800000">
+                </div>
+                <div class="campo">
+                    <label>Total de professores</label>
+                    <input type="number" id="br-prof" placeholder="2367777">
+                </div>
+                <div class="campo">
+                    <label>Prof. efetivos</label>
+                    <input type="number" id="br-prof-ef" placeholder="331440">
+                </div>
+                <div class="campo">
+                    <label>Prof. temporários</label>
+                    <input type="number" id="br-prof-temp" placeholder="331971">
+                </div>
+            </div>
+        </div>
+
+        <!-- REGIÕES -->
+        <div class="secao">
+            <div class="secao-titulo">
+                <i data-lucide="map"></i>
+                Regiões
+            </div>
+            <div id="lista-regioes"></div>
+            <button class="btn-add" onclick="addRegiao()">
+                <i data-lucide="plus"></i>
+                Adicionar região
+            </button>
+        </div>
+
+        <!-- ESTADOS -->
+        <div class="secao">
+            <div class="secao-titulo">
+                <i data-lucide="map-pin"></i>
+                Estados
+            </div>
+            <div id="lista-estados"></div>
+            <button class="btn-add" onclick="addEstado()">
+                <i data-lucide="plus"></i>
+                Adicionar estado
+            </button>
+        </div>
+
+    </div>
+
+    <!-- COLUNA PREVIEW -->
+    <div class="col-preview">
+        <span class="preview-label">Preview do JSON</span>
+        <div class="preview-box">
+            <pre id="preview">Preenchendo...</pre>
+        </div>
+        <button class="btn-baixar" onclick="baixarJSON()">
+            <i data-lucide="download"></i>
+            Baixar JSON
+        </button>
+        <span class="status-salvo" id="status-salvo">✓ Arquivo baixado!</span>
+    </div>
+
+</div>
+
+<script>
+    /* ═══════════ GERA JSON EM TEMPO REAL ═══════════ */
+    function valorOuNulo(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        const v = el.value.trim();
+        if (!v) return null;
+        const n = parseFloat(v);
+        return isNaN(n) ? v : n;
+    }
+
+    function limparZeros(obj) {
+        const out = {};
+        Object.entries(obj).forEach(([k, v]) => {
+            if (v !== null && v !== '' && v !== undefined) out[k] = v;
+        });
+        return out;
+    }
+
+    function montarJSON() {
+        const ano = parseInt(document.getElementById('meta-ano').value) || 2024;
+        const fonte = document.getElementById('meta-fonte').value.trim();
+        const atualizado = new Date().toISOString().split('T')[0];
+
+        const brasil = limparZeros({
+            escolas_total: valorOuNulo('br-escolas'),
+            escolas_publicas: valorOuNulo('br-pub'),
+            escolas_privadas: valorOuNulo('br-priv'),
+            alunos_total: valorOuNulo('br-alunos'),
+            alunos_fundamental: valorOuNulo('br-fund'),
+            alunos_medio: valorOuNulo('br-medio'),
+            professores_total: valorOuNulo('br-prof'),
+            professores_efetivos: valorOuNulo('br-prof-ef'),
+            professores_temporarios: valorOuNulo('br-prof-temp')
+        });
+
+        const regioes = [...document.querySelectorAll('.bloco-regiao')].map(b => limparZeros({
+            nome: b.querySelector('.reg-nome').value.trim(),
+            escolas: parseFloat(b.querySelector('.reg-escolas').value) || null,
+            alunos: parseFloat(b.querySelector('.reg-alunos').value) || null,
+            professores: parseFloat(b.querySelector('.reg-prof').value) || null
+        })).filter(r => r.nome);
+
+        const estados = [...document.querySelectorAll('.bloco-estado')].map(b => limparZeros({
+            uf: b.querySelector('.est-uf').value.trim().toUpperCase(),
+            nome: b.querySelector('.est-nome').value.trim(),
+            escolas: parseFloat(b.querySelector('.est-escolas').value) || null,
+            alunos: parseFloat(b.querySelector('.est-alunos').value) || null,
+            professores: parseFloat(b.querySelector('.est-prof').value) || null
+        })).filter(e => e.uf || e.nome);
+
+        return { ano, fonte, atualizado, brasil, regioes, estados };
+    }
+
+    function atualizarPreview() {
+        const json = montarJSON();
+        document.getElementById('preview').textContent = JSON.stringify(json, null, 2);
+    }
+
+    /* ═══════════ BLOCO REGIÃO ═══════════ */
+    function addRegiao(nome = '', escolas = '', alunos = '', professores = '') {
+        const div = document.createElement('div');
+        div.className = 'bloco-regiao';
+        div.innerHTML = `
+            <div class="bloco-topo">
+                <span class="bloco-nome">REGIÃO</span>
+                <button class="bloco-remover" onclick="this.closest('.bloco-regiao').remove(); atualizarPreview();">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+            <div class="campo" style="margin-bottom:8px;">
+                <label>Nome</label>
+                <input type="text" class="reg-nome" placeholder="Ex: Sudeste" value="${nome}">
+            </div>
+            <div class="grid-3">
+                <div class="campo">
+                    <label>Escolas</label>
+                    <input type="number" class="reg-escolas" value="${escolas}">
+                </div>
+                <div class="campo">
+                    <label>Alunos</label>
+                    <input type="number" class="reg-alunos" value="${alunos}">
+                </div>
+                <div class="campo">
+                    <label>Prof.</label>
+                    <input type="number" class="reg-prof" value="${professores}">
+                </div>
+            </div>
+        `;
+        document.getElementById('lista-regioes').appendChild(div);
+        div.querySelectorAll('input').forEach(inp => inp.addEventListener('input', atualizarPreview));
+        if (window.lucide) lucide.createIcons();
+        atualizarPreview();
+    }
+
+    /* ═══════════ BLOCO ESTADO ═══════════ */
+    function addEstado(uf = '', nome = '', escolas = '', alunos = '', professores = '') {
+        const div = document.createElement('div');
+        div.className = 'bloco-estado';
+        div.innerHTML = `
+            <div class="bloco-topo">
+                <span class="bloco-nome">ESTADO</span>
+                <button class="bloco-remover" onclick="this.closest('.bloco-estado').remove(); atualizarPreview();">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+            <div class="grid-2" style="margin-bottom:8px;">
+                <div class="campo">
+                    <label>UF</label>
+                    <input type="text" class="est-uf" placeholder="SP" maxlength="2" value="${uf}">
+                </div>
+                <div class="campo">
+                    <label>Nome</label>
+                    <input type="text" class="est-nome" placeholder="São Paulo" value="${nome}">
+                </div>
+            </div>
+            <div class="grid-3">
+                <div class="campo">
+                    <label>Escolas</label>
+                    <input type="number" class="est-escolas" value="${escolas}">
+                </div>
+                <div class="campo">
+                    <label>Alunos</label>
+                    <input type="number" class="est-alunos" value="${alunos}">
+                </div>
+                <div class="campo">
+                    <label>Prof.</label>
+                    <input type="number" class="est-prof" value="${professores}">
+                </div>
+            </div>
+        `;
+        document.getElementById('lista-estados').appendChild(div);
+        div.querySelectorAll('input').forEach(inp => inp.addEventListener('input', atualizarPreview));
+        if (window.lucide) lucide.createIcons();
+        atualizarPreview();
+    }
+
+    /* ═══════════ DOWNLOAD ═══════════ */
+    function baixarJSON() {
+        const json = montarJSON();
+        const txt = JSON.stringify(json, null, 2);
+        const blob = new Blob([txt], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'educacao-brasil.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        const status = document.getElementById('status-salvo');
+        status.classList.add('show');
+        setTimeout(() => status.classList.remove('show'), 2500);
+    }
+
+    /* ═══════════ INIT ═══════════ */
+    document.querySelectorAll('.secao input').forEach(inp => {
+        inp.addEventListener('input', atualizarPreview);
+    });
+
+    // Já cria 5 regiões vazias
+    ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'].forEach(r => addRegiao(r));
+
+    if (window.lucide) lucide.createIcons();
+    atualizarPreview();
+</script>
+
+</body>
+</html>
