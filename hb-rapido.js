@@ -1,4 +1,4 @@
-/* hb-rapido.js — "Adicionar rápido" com IA + bimestre + relacionar com atividade.
+/* hb-rapido.js — "Adicionar rápido" com IA + bimestre + relacionar com atividade + offline.
    Duas abas: 📝 Tarefa (IA) e 📸 Conteúdo (foto/arquivo por matéria + bimestre + tarefa).
    API: abrirRapido({ aba, data, nome, bimestre, salvarTarefa, onTarefa, onConteudo, maisOpcoes })
         enviarInline(texto, { onEstado }) */
@@ -6,6 +6,7 @@ import { collection, addDoc, deleteDoc, doc, getDoc } from "https://www.gstatic.
 import { db } from "./hb-firebase.js";
 import * as Core from "./agenda-core.js";
 import { salvarItens, imgbbConfigurado, extArquivo, emojiPorExt } from "./conteudos-upload.js";
+import * as Fila from "./offline-queue.js";
 
 const userEmail = () => localStorage.getItem('dt_user_email');
 const isLocal = () => localStorage.getItem('dt_user_type') === 'local';
@@ -39,7 +40,6 @@ async function carregarMaterias(extra) {
     return materiasCache;
 }
 
-/* IA */
 let iaCarregando = null;
 function garantirIA() {
     if (window.HBIA) return Promise.resolve(true);
@@ -70,7 +70,6 @@ async function iaOrganizar(texto, materias) {
     }
 }
 
-/* Salvar tarefa padrão */
 function obterPlayerId() {
     return new Promise((res) => {
         if (!window.OneSignalDeferred) return res(null);
@@ -121,7 +120,6 @@ export async function enviarInline(texto, opts) {
     return { ...dados, data: dados.dataFim, usouIA: !!ia, tarefa: r.tarefa, desfazer: r.desfazer };
 }
 
-/* ─────────── ESTADO ─────────── */
 const st = {
     aba: 'tarefa', opts: {}, materias: ['Geral'], ocupado: false, iaTexto: '', nomeIA: null,
     q: { data: '', tipo: 'tarefa', materia: 'Geral', bimestre: '', dataPadrao: '', materiaPadrao: 'Geral', manual: {}, auto: {} },
@@ -373,7 +371,35 @@ function adicionarArquivos(files, arq) {
 
 async function enviarConteudo() {
     if (st.ocupado || !st.itens.length) return;
-    st.ocupado = true; renderPe('Enviando…');
+    st.ocupado = true;
+
+    // Offline: joga direto na fila
+    if (!navigator.onLine) {
+        try {
+            await Fila.adicionar({
+                tipo: 'conteudo',
+                dados: {
+                    materia: st.matConteudo,
+                    bimestre: st.bimConteudo,
+                    tarefaId: st.tarefaConteudo ? st.tarefaConteudo.id : '',
+                    tarefaNome: st.tarefaConteudo ? st.tarefaConteudo.nome : '',
+                    userEmail: userEmail() || ''
+                },
+                arquivos: st.itens.map((it) => ({ file: it.file, arq: it.arq }))
+            });
+            const opts = st.opts;
+            fechar();
+            toast('📶 Salvo offline · sincroniza quando voltar a net', 4000);
+            if (opts.onConteudo) opts.onConteudo({ ok: 1, offline: true });
+        } catch (e) {
+            toast('Erro ao salvar offline');
+        } finally {
+            st.ocupado = false;
+        }
+        return;
+    }
+
+    renderPe('Enviando…');
     try {
         const r = await salvarItens({
             items: st.itens.map((it) => ({ file: it.file, arq: it.arq })),
@@ -392,6 +418,31 @@ async function enviarConteudo() {
         else toast('✓ ' + r.ok + ' salvos · ' + r.falha + ' falharam', 3800);
         if (r.ok && opts.onConteudo) opts.onConteudo(r);
     } catch (e) {
+        // Erro de rede → fila
+        const msg = String(e && e.message || '').toLowerCase();
+        const ehRede = msg.includes('fetch') || msg.includes('network') || msg.includes('failed');
+        if (ehRede && st.itens.length) {
+            try {
+                await Fila.adicionar({
+                    tipo: 'conteudo',
+                    dados: {
+                        materia: st.matConteudo,
+                        bimestre: st.bimConteudo,
+                        tarefaId: st.tarefaConteudo ? st.tarefaConteudo.id : '',
+                        tarefaNome: st.tarefaConteudo ? st.tarefaConteudo.nome : '',
+                        userEmail: userEmail() || ''
+                    },
+                    arquivos: st.itens.map((it) => ({ file: it.file, arq: it.arq }))
+                });
+                const opts = st.opts;
+                fechar();
+                toast('📶 Sem conexão · salvo pra sincronizar depois', 4000);
+                if (opts.onConteudo) opts.onConteudo({ ok: 1, offline: true });
+                return;
+            } catch (e2) {
+                console.error('[rapido] erro ao salvar offline:', e2);
+            }
+        }
         toast(e.message || 'Erro ao enviar', 4500);
     } finally { st.ocupado = false; if (aberto()) renderPe(); }
 }
