@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="welcome.css">
     <script>
-        // Se já tá logado, pula direto pro app
         const u = localStorage.getItem('dt_user_name');
         const t = localStorage.getItem('dt_user_type');
         if (u && t === 'google') window.location.replace('index.html');
@@ -23,7 +22,7 @@
         <p>Chamando o cérebro pra trabalhar...</p>
     </div>
 
-    <!-- Header pílula -->
+    <!-- Header -->
     <header class="header-pill">
         <div class="header-logo">
             <img src="icon-514_20260512_161420_0000.png" alt="Hub Brain">
@@ -40,17 +39,33 @@
         <section class="hero">
             <span class="kicker">ESTUDAR · ORGANIZAR · EVOLUIR</span>
             <h1>Sua rotina escolar,<br><em>no controle</em>.</h1>
-            <p>Agenda, notas, foco e IA num app só. Feito por aluno, pra aluno — sem enrolação.</p>
+            <p>Agenda, notas, foco e IA num app só.<br>Feito por aluno, pra aluno.</p>
 
             <div class="hero-botoes">
                 <a href="login.html" class="btn-roxo">
                     <i data-lucide="log-in"></i>
                     <span>Começar agora</span>
                 </a>
-                <a href="#calculadora" class="btn-escuro">
+                <button class="btn-escuro" onclick="abrirCalc()">
                     <i data-lucide="calculator"></i>
                     <span>Calcular notas</span>
-                </a>
+                </button>
+            </div>
+        </section>
+
+        <!-- STATS -->
+        <section class="stats">
+            <div class="stat">
+                <strong>100%</strong>
+                <span>gratuito</span>
+            </div>
+            <div class="stat">
+                <strong>0</strong>
+                <span>anúncios</span>
+            </div>
+            <div class="stat">
+                <strong>24/7</strong>
+                <span>disponível</span>
             </div>
         </section>
 
@@ -60,78 +75,41 @@
             <h2>Tudo que você precisa<br>pra mandar bem</h2>
 
             <div class="cards">
-
-                <div class="card">
+                <a href="login.html" class="card">
                     <div class="card-icone"><i data-lucide="calendar-days"></i></div>
                     <h3>Agenda</h3>
-                    <p>Provas, tarefas e trabalhos organizados. Avisa antes de vencer.</p>
-                    <a href="login.html" class="card-link">Ver agenda <i data-lucide="arrow-right"></i></a>
-                </div>
+                    <p>Provas, tarefas e trabalhos organizados.</p>
+                </a>
 
-                <div class="card">
+                <a href="login.html" class="card">
                     <div class="card-icone"><i data-lucide="timer"></i></div>
                     <h3>Modo Foco</h3>
-                    <p>Pomodoro com 3 relógios e XP. Cada minuto estudado vira progresso.</p>
-                    <a href="login.html" class="card-link">Começar foco <i data-lucide="arrow-right"></i></a>
-                </div>
+                    <p>Pomodoro com XP a cada minuto.</p>
+                </a>
 
-                <div class="card">
+                <a href="login.html" class="card">
                     <div class="card-icone"><i data-lucide="sparkles"></i></div>
                     <h3>IA de Estudos</h3>
-                    <p>Tira dúvida, resume matéria e gera simulado. Tudo na hora.</p>
-                    <a href="login.html" class="card-link">Testar IA <i data-lucide="arrow-right"></i></a>
-                </div>
+                    <p>Dúvida na hora, resumo na hora.</p>
+                </a>
 
-                <div class="card">
+                <a href="login.html" class="card">
                     <div class="card-icone"><i data-lucide="trending-up"></i></div>
                     <h3>Boletim</h3>
-                    <p>Notas, médias e situação de cada matéria. Calcula tudo automático.</p>
-                    <a href="login.html" class="card-link">Ver notas <i data-lucide="arrow-right"></i></a>
-                </div>
+                    <p>Notas e situação de cada matéria.</p>
+                </a>
 
-                <div class="card">
+                <a href="login.html" class="card">
                     <div class="card-icone"><i data-lucide="clock"></i></div>
                     <h3>Grade Horária</h3>
-                    <p>Suas aulas da semana, com aviso 10 minutos antes de cada uma.</p>
-                    <a href="login.html" class="card-link">Ver grade <i data-lucide="arrow-right"></i></a>
-                </div>
+                    <p>Aulas da semana com aviso antes.</p>
+                </a>
 
-                <div class="card">
+                <a href="login.html" class="card">
                     <div class="card-icone"><i data-lucide="book-open"></i></div>
                     <h3>Conteúdos</h3>
-                    <p>Materiais por matéria e bimestre. Foto, PDF e arquivo num lugar só.</p>
-                    <a href="login.html" class="card-link">Explorar <i data-lucide="arrow-right"></i></a>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- CALCULADORA DE NOTAS -->
-        <section class="secao" id="calculadora">
-            <span class="kicker">CALCULADORA</span>
-            <h2>Descubra sua média<br>em segundos</h2>
-            <p class="secao-desc">Adiciona as notas e os pesos de cada avaliação. A gente calcula a média ponderada pra você.</p>
-
-            <div class="calc">
-                <div class="calc-materias" id="calc-lista">
-                    <!-- Linhas geradas pelo JS -->
-                </div>
-
-                <button class="calc-add" onclick="adicionarLinha()">
-                    <i data-lucide="plus"></i>
-                    <span>Adicionar nota</span>
-                </button>
-
-                <div class="calc-resultado" id="calc-resultado">
-                    <span class="calc-resultado-label">SUA MÉDIA</span>
-                    <strong class="calc-resultado-valor" id="calc-valor">—</strong>
-                    <span class="calc-resultado-status" id="calc-status"></span>
-                </div>
-
-                <button class="btn-roxo calc-btn" onclick="calcularMedia()">
-                    <i data-lucide="calculator"></i>
-                    <span>Calcular média</span>
-                </button>
+                    <p>Materiais por matéria e bimestre.</p>
+                </a>
             </div>
         </section>
 
@@ -147,12 +125,60 @@
 
         <!-- FOOTER -->
         <footer class="footer">
-            <img src="icon-514_20260512_161420_0000.png" alt="Hub Brain">
+            <div class="footer-logo">
+                <img src="icon-514_20260512_161420_0000.png" alt="Hub Brain">
+                <span>HUB BRAIN</span>
+            </div>
             <p>Feito por estudantes, independente de escola.<br>Notas, foco e organização num app só.</p>
-            <span>DITOH · 2026</span>
+
+            <div class="footer-links">
+                <a href="termos.html">Termos</a>
+                <span>·</span>
+                <a href="privacidade.html">Privacidade</a>
+                <span>·</span>
+                <a href="https://instagram.com/hubbrain.app" target="_blank" rel="noopener">
+                    <i data-lucide="instagram"></i>
+                    @hubbrain.app
+                </a>
+            </div>
+
+            <span class="footer-creditos">DITOH · 2026</span>
         </footer>
 
     </main>
+
+    <!-- ═══ MODAL CALCULADORA ═══ -->
+    <div class="calc-modal" id="calc-modal">
+        <div class="calc-sheet">
+            <div class="calc-topo">
+                <div>
+                    <span class="kicker">FERRAMENTA</span>
+                    <h2>Calculadora de notas</h2>
+                </div>
+                <button class="calc-fechar" onclick="fecharCalc()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="calc-lista" id="calc-lista"></div>
+
+            <button class="calc-add" onclick="adicionarLinha()">
+                <i data-lucide="plus"></i>
+                <span>Adicionar nota</span>
+            </button>
+
+            <div class="calc-resultado" id="calc-resultado">
+                <span class="calc-resultado-label">MÉDIA</span>
+                <strong class="calc-resultado-valor" id="calc-valor">—</strong>
+                <span class="calc-resultado-status" id="calc-status">Preencha as notas</span>
+            </div>
+
+            <button class="btn-roxo calc-btn" onclick="calcularMedia()">
+                <i data-lucide="calculator"></i>
+                <span>Calcular média</span>
+            </button>
+        </div>
+    </div>
 
     <script src="welcome.js"></script>
     <script>lucide.createIcons();</script>
