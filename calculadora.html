@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script src="hb-loader.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculadora - Hub Brain</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calculadora.css">
+</head>
+<body>
+
+    <header class="header-pill">
+        <a href="welcome.html" class="header-btn">
+            <i data-lucide="arrow-left"></i>
+        </a>
+        <span class="header-title">Calculadora</span>
+        <a href="login.html" class="header-btn roxo">
+            <i data-lucide="log-in"></i>
+        </a>
+    </header>
+
+    <main class="container">
+
+        <!-- Hero -->
+        <section class="hero">
+            <span class="kicker">FERRAMENTA GRÁTIS</span>
+            <h1>Calculadora<br>de <em>notas</em></h1>
+            <p>Descobre sua média, situação e quanto precisa pra passar. Tudo na hora, sem login.</p>
+        </section>
+
+        <!-- Tipo de disciplina -->
+        <section class="bloco">
+            <label class="bloco-label">TIPO DE DISCIPLINA</label>
+            <div class="toggle">
+                <button class="toggle-btn on" data-tipo="anual" onclick="mudarTipo('anual')">
+                    <i data-lucide="calendar"></i>
+                    <span>Anual</span>
+                </button>
+                <button class="toggle-btn" data-tipo="semestral" onclick="mudarTipo('semestral')">
+                    <i data-lucide="calendar-days"></i>
+                    <span>Semestral</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Notas -->
+        <section class="bloco">
+            <label class="bloco-label">SUAS NOTAS</label>
+            <div class="notas" id="notas-lista"></div>
+        </section>
+
+        <!-- Média mínima -->
+        <section class="bloco">
+            <label class="bloco-label">MÉDIA MÍNIMA PRA PASSAR</label>
+            <div class="input-grande">
+                <input type="number" id="media-minima" value="6" min="0" max="10" step="0.1" oninput="recalcular()">
+            </div>
+        </section>
+
+        <!-- Resultado -->
+        <section class="resultado" id="resultado">
+            <span class="resultado-label">SUA MÉDIA</span>
+            <strong class="resultado-valor" id="valor-media">—</strong>
+            <span class="resultado-status" id="status-media">Preencha pelo menos 1 nota</span>
+            <div class="resultado-barra">
+                <div class="resultado-fill" id="fill-media" style="width:0%"></div>
+            </div>
+        </section>
+
+        <!-- Simulador -->
+        <section class="simulador" id="simulador" style="display:none">
+            <div class="simulador-topo">
+                <i data-lucide="target" class="simulador-icon"></i>
+                <div>
+                    <span class="simulador-label">SIMULADOR</span>
+                    <h3 id="simulador-titulo">Quanto preciso no próximo?</h3>
+                </div>
+            </div>
+            <div class="simulador-corpo" id="simulador-corpo"></div>
+        </section>
+
+        <!-- Limpar -->
+        <button class="btn-limpar" onclick="limpar()">
+            <i data-lucide="trash-2"></i>
+            <span>Limpar tudo</span>
+        </button>
+
+        <!-- Info -->
+        <section class="info">
+            <span class="kicker">COMO FUNCIONA</span>
+            <h2>As contas por trás</h2>
+
+            <div class="info-card">
+                <div class="info-header">
+                    <i data-lucide="calendar"></i>
+                    <b>Disciplina Anual</b>
+                </div>
+                <p class="info-sub">4 etapas · pesos 2 - 2 - 3 - 3</p>
+                <div class="formula">
+                    <span>Média = </span>
+                    <span class="fracao">
+                        <span class="num">2·N₁ + 2·N₂ + 3·N₃ + 3·N₄</span>
+                        <span class="linha"></span>
+                        <span class="den">10</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-header">
+                    <i data-lucide="calendar-days"></i>
+                    <b>Disciplina Semestral</b>
+                </div>
+                <p class="info-sub">2 etapas · pesos 2 - 3</p>
+                <div class="formula">
+                    <span>Média = </span>
+                    <span class="fracao">
+                        <span class="num">2·N₁ + 3·N₂</span>
+                        <span class="linha"></span>
+                        <span class="den">5</span>
+                    </span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="calculadora.js"></script>
+</body>
+</html>
