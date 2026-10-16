@@ -24,8 +24,8 @@ const DIAS_FULL = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', '
 /* ───────── mensagens na vibe "amigo da sala" ───────── */
 const ANTES = [
   ['ó o bagulho 👀',        (m) => `${m} em 10min, se liga`],
-  ['acorda fi 😴',          (m) => `${m} já já. Levanta dessa cama`],
-  ['mano... ⏰',            (m) => `${m} em 10min. Vai logo`],
+  ['acorda fi 😴',          (m) => `${m} já já. Levanta desse chão`],
+  ['mano... ⏰',            (m) => `${m} em 10min. Cuida pra cuidar`],
   ['chegando o bicho 🚨',   (m) => `${m} em 10min. Se prepara aí`],
   ['10min só ⚡',           (m) => `${m} já já. Fecha o Insta`],
   ['psiu 👀',               (m) => `${m} em 10min. Bora se arrumar`],
@@ -36,12 +36,12 @@ const ANTES = [
 const AGORA = [
   ['é AGORA mlk 🔥',         (m) => `${m} começou. Vai logo`],
   ['colou a aula 📚',        (m) => `${m} agora. Entra aí`],
-  ['acabou a moleza 🫡',     (m) => `${m} começou. Foco`],
+  ['acabou a moleza 🫡',     (m) => `${m} começou. bora meu fi`],
   ['bora bora 🚀',           (m) => `${m} agora. Levanta`],
   ['chegou o momento 🎯',    (m) => `${m} começou. Bora`],
   ['já era o descanso 😮‍💨', (m) => `${m} agora. Vai`],
   ['presta atenção 👀',      (m) => `${m} começou. Cola aí`],
-  ['é hoje 💪',              (m) => `${m} agora. Voa`]
+  ['já começou ',              (m) => `${m} ó a hora. entra pcr`]
 ];
 
 const pick = (arr, seed) => arr[Math.abs(seed) % arr.length];
