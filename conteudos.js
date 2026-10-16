@@ -1,9 +1,12 @@
 /* conteudos.js — Hub Brain · Página de Conteúdos
-   Filtros por matéria E bimestre. Envio via "Adicionar rápido". */
+   Filtros por matéria + bimestre. Envio via "Adicionar rápido".
+   Lote 1: renomear + relacionar com atividade.
+   Lote 2: compartilhar pasta + modo offline. */
 import { collection, query, where, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { db } from "./hb-firebase.js";
 import { abrirRapido } from "./hb-rapido.js";
 import { extArquivo, emojiPorExt } from "./conteudos-upload.js";
+import * as Fila from "./offline-queue.js";
 
 const userEmail = localStorage.getItem('dt_user_email');
 
@@ -96,9 +99,7 @@ function render() {
     html += `<button class="ct-chip ${filtroMat === 'todas' ? 'on' : ''}" data-fmat="todas">Todas</button>`;
     todasMats.forEach(m => {
         const qtd = fotos.filter(f => (f.materia || 'Geral') === m).length;
-        html += `<button class="ct-chip ${filtroMat === m ? 'on' : ''}" data-fmat="${esc(m)}">
-            <i style="background:${corMateria(m)}"></i>${esc(m)} <span style="opacity:0.6">${qtd}</span>
-        </button>`;
+        html += `<button class="ct-chip ${filtroMat === m ? 'on' : ''}" data-fmat="${esc(m)}"><i style="background:${corMateria(m)}"></i>${esc(m)} <span style="opacity:0.6">${qtd}</span></button>`;
     });
     html += '</div>';
 
@@ -106,16 +107,10 @@ function render() {
     html += `<button class="ct-chip ${filtroBim === 'todos' ? 'on' : ''}" data-fbim="todos">Todos os bim.</button>`;
     ['1','2','3','4'].forEach(b => {
         const qtd = fotos.filter(f => String(f.bimestre || '') === b).length;
-        if (qtd > 0) {
-            html += `<button class="ct-chip ${filtroBim === b ? 'on' : ''}" data-fbim="${b}">
-                ${b}º BIM <span style="opacity:0.6">${qtd}</span>
-            </button>`;
-        }
+        if (qtd > 0) html += `<button class="ct-chip ${filtroBim === b ? 'on' : ''}" data-fbim="${b}">${b}º BIM <span style="opacity:0.6">${qtd}</span></button>`;
     });
     const semBim = fotos.filter(f => !f.bimestre).length;
-    if (semBim > 0) {
-        html += `<button class="ct-chip ${filtroBim === '_sem' ? 'on' : ''}" data-fbim="_sem">Sem bim. <span style="opacity:0.6">${semBim}</span></button>`;
-    }
+    if (semBim > 0) html += `<button class="ct-chip ${filtroBim === '_sem' ? 'on' : ''}" data-fbim="_sem">Sem bim. <span style="opacity:0.6">${semBim}</span></button>`;
     html += '</div>';
 
     const listaFiltrada = filtrar();
@@ -131,41 +126,19 @@ function render() {
     todasMatsVisiveis.forEach(m => {
         const doGrupo = listaFiltrada.filter(f => (f.materia || 'Geral') === m);
         if (!doGrupo.length) return;
-        html += `<div class="ct-grupo">
-            <div class="ct-grupo-head">
-                <i style="width:10px;height:10px;border-radius:50%;background:${corMateria(m)}"></i>
-                <span class="ct-grupo-nome">${esc(m)}</span>
-                <span class="ct-grupo-count">${doGrupo.length}</span>
-            </div>
-            <div class="ct-grid">`;
+        html += `<div class="ct-grupo"><div class="ct-grupo-head"><i style="width:10px;height:10px;border-radius:50%;background:${corMateria(m)}"></i><span class="ct-grupo-nome">${esc(m)}</span><span class="ct-grupo-count">${doGrupo.length}</span></div><div class="ct-grid">`;
         doGrupo.forEach(f => {
             const dataCurta = (f.data || '').slice(5).replace('-', '/');
             const bimBadge = f.bimestre ? `<span class="ct-bim-badge">${f.bimestre}º BIM</span>` : '';
             const tarefaBadge = f.tarefaNome ? `<span class="ct-tarefa-badge" title="${esc(f.tarefaNome)}">📌</span>` : '';
             if (f.tipo === 'pdf') {
-                html += `<div class="ct-item ct-arquivo" data-id="${esc(f.id)}">
-                    ${bimBadge}${tarefaBadge}
-                    <span class="ct-ico">📕</span>
-                    <span class="ct-ext">pdf</span>
-                    <span class="ct-nome-mini">${esc(f.nome || '')}</span>
-                    <span class="ct-data">${esc(dataCurta)}</span>
-                </div>`;
+                html += `<div class="ct-item ct-arquivo" data-id="${esc(f.id)}">${bimBadge}${tarefaBadge}<span class="ct-ico">📕</span><span class="ct-ext">pdf</span><span class="ct-nome-mini">${esc(f.nome || '')}</span><span class="ct-data">${esc(dataCurta)}</span></div>`;
             } else if (f.tipo === 'arquivo') {
                 const ext = extArquivo(f.nome);
-                html += `<div class="ct-item ct-arquivo" data-id="${esc(f.id)}">
-                    ${bimBadge}${tarefaBadge}
-                    <span class="ct-ico">${emojiPorExt(ext)}</span>
-                    <span class="ct-ext">${esc(ext || 'arquivo')}</span>
-                    <span class="ct-nome-mini">${esc(f.nome || '')}</span>
-                    <span class="ct-data">${esc(dataCurta)}</span>
-                </div>`;
+                html += `<div class="ct-item ct-arquivo" data-id="${esc(f.id)}">${bimBadge}${tarefaBadge}<span class="ct-ico">${emojiPorExt(ext)}</span><span class="ct-ext">${esc(ext || 'arquivo')}</span><span class="ct-nome-mini">${esc(f.nome || '')}</span><span class="ct-data">${esc(dataCurta)}</span></div>`;
             } else {
                 const src = f.thumb || f.url || f.medium || '';
-                html += `<div class="ct-item" data-id="${esc(f.id)}">
-                    ${bimBadge}${tarefaBadge}
-                    <img src="${esc(src)}" alt="" loading="lazy" decoding="async">
-                    <span class="ct-data">${esc(dataCurta)}</span>
-                </div>`;
+                html += `<div class="ct-item" data-id="${esc(f.id)}">${bimBadge}${tarefaBadge}<img src="${esc(src)}" alt="" loading="lazy" decoding="async"><span class="ct-data">${esc(dataCurta)}</span></div>`;
             }
         });
         html += '</div></div>';
@@ -183,16 +156,10 @@ function render() {
 
 function bindChips() {
     document.querySelectorAll('[data-fmat]').forEach(chip => {
-        chip.addEventListener('click', () => {
-            filtroMat = chip.dataset.fmat;
-            render();
-        });
+        chip.addEventListener('click', () => { filtroMat = chip.dataset.fmat; render(); });
     });
     document.querySelectorAll('[data-fbim]').forEach(chip => {
-        chip.addEventListener('click', () => {
-            filtroBim = chip.dataset.fbim;
-            render();
-        });
+        chip.addEventListener('click', () => { filtroBim = chip.dataset.fbim; render(); });
     });
 }
 
@@ -231,15 +198,7 @@ function renderViewer() {
             $('ct-viewer').appendChild(card);
         }
         card.style.display = 'flex';
-        card.innerHTML = `
-            <div style="font-size:80px;">📕</div>
-            <div style="font-size:16px;font-weight:800;color:#fff;word-break:break-word;max-width:280px;">${esc(f.nome || 'Documento')}</div>
-            <div style="font-size:12px;color:#666;font-weight:600;letter-spacing:1px;text-transform:uppercase;">PDF · ${f.tamanho ? Math.round(f.tamanho/1024) + ' KB' : ''}${f.bimestre ? ' · ' + f.bimestre + 'º BIM' : ''}</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
-                <button id="ct-pdf-abrir" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:#8a2be2;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer;box-shadow:0 6px 20px rgba(138,43,226,0.4);">📄 Abrir PDF</button>
-                <button id="ct-pdf-baixar" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.1);border-radius:14px;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer;">⬇️ Baixar</button>
-            </div>
-        `;
+        card.innerHTML = `<div style="font-size:80px;">📕</div><div style="font-size:16px;font-weight:800;color:#fff;word-break:break-word;max-width:280px;">${esc(f.nome || 'Documento')}</div><div style="font-size:12px;color:#666;font-weight:600;letter-spacing:1px;text-transform:uppercase;">PDF · ${f.tamanho ? Math.round(f.tamanho/1024) + ' KB' : ''}${f.bimestre ? ' · ' + f.bimestre + 'º BIM' : ''}</div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;"><button id="ct-pdf-abrir" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:#8a2be2;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer;box-shadow:0 6px 20px rgba(138,43,226,0.4);">📄 Abrir PDF</button><button id="ct-pdf-baixar" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.1);border-radius:14px;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer;">⬇️ Baixar</button></div>`;
         card.querySelector('#ct-pdf-abrir').onclick = () => abrirPdfBase64(f);
         card.querySelector('#ct-pdf-baixar').onclick = () => baixarPdfBase64(f);
     } else if (f.tipo === 'arquivo') {
@@ -253,15 +212,7 @@ function renderViewer() {
         }
         const ext = extArquivo(f.nome);
         card.style.display = 'flex';
-        card.innerHTML = `
-            <div style="font-size:80px;">${emojiPorExt(ext)}</div>
-            <div style="font-size:16px;font-weight:800;color:#fff;word-break:break-word;max-width:280px;">${esc(f.nome || 'Arquivo')}</div>
-            <div style="font-size:12px;color:#666;font-weight:600;letter-spacing:1px;text-transform:uppercase;">${esc(ext || 'arquivo')}${f.bimestre ? ' · ' + f.bimestre + 'º BIM' : ''}</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
-                <a href="${esc(f.url)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:#8a2be2;color:#fff;text-decoration:none;border-radius:14px;font-weight:800;font-size:14px;box-shadow:0 6px 20px rgba(138,43,226,0.4);">📄 Abrir</a>
-                <a href="${esc(f.url)}" download="${esc(f.nome || 'arquivo')}" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:rgba(255,255,255,0.06);color:#fff;text-decoration:none;border-radius:14px;font-weight:800;font-size:14px;border:1px solid rgba(255,255,255,0.1);">⬇️ Baixar</a>
-            </div>
-        `;
+        card.innerHTML = `<div style="font-size:80px;">${emojiPorExt(ext)}</div><div style="font-size:16px;font-weight:800;color:#fff;word-break:break-word;max-width:280px;">${esc(f.nome || 'Arquivo')}</div><div style="font-size:12px;color:#666;font-weight:600;letter-spacing:1px;text-transform:uppercase;">${esc(ext || 'arquivo')}${f.bimestre ? ' · ' + f.bimestre + 'º BIM' : ''}</div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;"><a href="${esc(f.url)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:#8a2be2;color:#fff;text-decoration:none;border-radius:14px;font-weight:800;font-size:14px;box-shadow:0 6px 20px rgba(138,43,226,0.4);">📄 Abrir</a><a href="${esc(f.url)}" download="${esc(f.nome || 'arquivo')}" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:rgba(255,255,255,0.06);color:#fff;text-decoration:none;border-radius:14px;font-weight:800;font-size:14px;border:1px solid rgba(255,255,255,0.1);">⬇️ Baixar</a></div>`;
     } else {
         img.style.display = '';
         const fontes = [f.url, f.display_url, f.medium, f.thumb].filter(Boolean);
@@ -421,6 +372,54 @@ async function compartilharAtual() {
     try { await navigator.clipboard.writeText(f.url); toast('✓ Link copiado'); } catch (e) {}
 }
 
+/* ═══════════════ COMPARTILHAR PASTA ═══════════════ */
+async function compartilharPasta() {
+    const filtrados = filtrar();
+    if (!filtrados.length) { toast('Nada pra compartilhar com esses filtros'); return; }
+
+    const matTxt = filtroMat === 'todas' ? 'Todas as matérias' : filtroMat;
+    const bimTxt = filtroBim === 'todos' ? '' : filtroBim === '_sem' ? 'Sem bimestre' : filtroBim + 'º BIM';
+    const titulo = [matTxt, bimTxt].filter(Boolean).join(' · ');
+
+    const conteudosIds = filtrados.map((f) => f.id);
+    const capa = filtrados.find((f) => f.tipo === 'imagem')?.thumb || filtrados[0]?.thumb || filtrados[0]?.url || '';
+    const autor = (localStorage.getItem('dt_user_name') || 'Alguém').split(' ')[0];
+
+    if (!confirm(`Compartilhar pasta?\n\n"${titulo}"\n${filtrados.length} conteúdos\n\nO link pode ser aberto por qualquer pessoa.`)) return;
+
+    try {
+        toast('Criando pasta...', 5000);
+        const { collection: col, addDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        const ref = await addDoc(col(db, 'pastas'), { titulo, autor, autorEmail: userEmail, capa, conteudosIds, criadoEm: Date.now() });
+        const link = `${location.origin}/pasta/${ref.id}`;
+        try { await navigator.clipboard.writeText(link); toast('✓ Link copiado!'); } catch (e) { toast('Pasta criada!'); }
+        mostrarLinkModal(link, titulo, filtrados.length);
+    } catch (e) {
+        console.error('[pasta]', e);
+        toast('Erro ao criar pasta');
+    }
+}
+
+function mostrarLinkModal(link, titulo, qtd) {
+    const ov = document.createElement('div');
+    ov.className = 'ct-modal-pasta on';
+    ov.innerHTML = `<div class="ct-modal-pasta-box"><button class="ct-modal-pasta-x" onclick="this.closest('.ct-modal-pasta').remove()">✕</button><div class="ct-modal-pasta-emoji">🔗</div><h3>Pasta pronta!</h3><p>"${esc(titulo)}" · ${qtd} ${qtd === 1 ? 'conteúdo' : 'conteúdos'}</p><div class="ct-modal-pasta-link">${esc(link)}</div><div class="ct-modal-pasta-btns"><button class="ct-modal-pasta-btn pri" onclick="navigator.clipboard.writeText('${link}').then(()=>{this.textContent='✓ Copiado!'})">📋 Copiar link</button>${navigator.share ? `<button class="ct-modal-pasta-btn sec" onclick="navigator.share({title:'${esc(titulo)}',url:'${link}'}).catch(()=>{})">📤 Compartilhar</button>` : ''}</div><p class="ct-modal-pasta-dica">💡 Cola no WhatsApp — o preview aparece com capa e tudo</p></div>`;
+    document.body.appendChild(ov);
+    ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
+}
+
+async function atualizarBadgeFila() {
+    const badge = $('ct-fila-badge');
+    if (!badge) return;
+    const total = await Fila.contar();
+    if (total > 0) {
+        badge.style.display = 'flex';
+        badge.innerHTML = `📶 <b>${total}</b> ${total === 1 ? 'item' : 'itens'} offline`;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
 function instalarGestosZoom() {
     const viewer = $('ct-viewer');
     const img = $('ct-viewer-img');
@@ -531,6 +530,17 @@ function handleDoubleTap(x, y) {
 async function iniciar() {
     $('ct-add').addEventListener('click', () => abrirRapido({ aba: 'conteudo', onConteudo: () => carregarFotos() }));
 
+    const btnPasta = $('ct-compartilhar');
+    if (btnPasta) btnPasta.addEventListener('click', compartilharPasta);
+
+    atualizarBadgeFila();
+    window.addEventListener('hb-fila-mudou', atualizarBadgeFila);
+    window.addEventListener('hb-fila-sincronizada', () => {
+        atualizarBadgeFila();
+        toast('✓ Itens offline sincronizados');
+        carregarFotos();
+    });
+
     $('ct-viewer-x').addEventListener('click', fecharViewer);
     $('ct-viewer-ant').addEventListener('click', () => navViewer(-1));
     $('ct-viewer-prox').addEventListener('click', () => navViewer(1));
@@ -544,6 +554,25 @@ async function iniciar() {
         if (e.key === 'Escape') fecharViewer();
         else if (e.key === 'ArrowLeft') navViewer(-1);
         else if (e.key === 'ArrowRight') navViewer(1);
+    });
+
+    Fila.registrarAutoSync({
+        processarTarefa: async (dados) => {
+            const { collection: col, addDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            await addDoc(col(db, 'agenda'), { ...dados, concluida: false, criadoEm: Date.now() });
+        },
+        processarConteudo: async (dados, arquivos) => {
+            const { salvarItens } = await import("./conteudos-upload.js");
+            const r = await salvarItens({
+                items: arquivos.map((a) => ({ file: a.file, arq: a.arq })),
+                materia: dados.materia,
+                bimestre: dados.bimestre,
+                tarefaId: dados.tarefaId,
+                tarefaNome: dados.tarefaNome,
+                userEmail: dados.userEmail
+            });
+            if (!r.ok) throw new Error('Falha no upload');
+        }
     });
 
     instalarGestosZoom();
