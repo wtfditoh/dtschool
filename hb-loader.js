@@ -1,13 +1,12 @@
-/* ═══════════════════════════════════════════════════════════════
-   HUB BRAIN — LOADER UNIVERSAL
-   Uso: adiciona <script src="hb-loader.js"></script> no <head>
-   Funciona em qualquer página. Injeta HTML + CSS + auto-remove.
-   ═══════════════════════════════════════════════════════════════ */
 (function () {
-    if (window.__hbLoaderAtivo) return;
+    if (window.__hbLoaderAtivo || window.hbLoaderSkip) return;
     window.__hbLoaderAtivo = true;
 
-    const GIF_URL = 'https://media.tenor.com/GQAsycjoZG8AAAAi/scuba-scuba-cat.gif';
+    const GIF_URL = 'https://media1.tenor.com/m/tN4-q43SkzcAAAAC/scuba.gif';
+    const MIN_TEMPO = 600;
+    const MAX_TEMPO = 4000;
+    const inicio = Date.now();
+    let removido = false;
 
     const FRASES = [
         'Chamando o cérebro pra trabalhar...',
@@ -26,41 +25,52 @@
 
     const frase = FRASES[Math.floor(Math.random() * FRASES.length)];
 
+    // ═══ CSS INLINE (injeta IMEDIATAMENTE, sem esperar nada) ═══
     const css = `
+        html { background: #0a0a0e; }
         #hb-loader {
-            position: fixed;
-            inset: 0;
-            background: #0a0a0e;
-            z-index: 999999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 18px;
-            font-family: 'Outfit', -apple-system, sans-serif;
-            transition: opacity 0.4s ease;
-            pointer-events: all;
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: #0a0a0e !important;
+            z-index: 2147483647 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 18px !important;
+            font-family: 'Outfit', -apple-system, sans-serif !important;
+            transition: opacity 0.4s ease !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            top: 0 !important;
+            left: 0 !important;
         }
         #hb-loader.hb-out {
-            opacity: 0;
-            pointer-events: none;
+            opacity: 0 !important;
+            pointer-events: none !important;
         }
         #hb-loader img {
-            width: 88px;
-            height: 88px;
-            object-fit: contain;
-            mix-blend-mode: screen;
-            animation: hb-pulse 2s ease-in-out infinite;
+            width: 88px !important;
+            height: 88px !important;
+            max-width: 88px !important;
+            max-height: 88px !important;
+            object-fit: contain !important;
+            mix-blend-mode: screen !important;
+            animation: hb-pulse 2s ease-in-out infinite !important;
+            display: block !important;
         }
         #hb-loader p {
-            font-size: 13px;
-            color: #9ca3af;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            text-align: center;
-            padding: 0 24px;
-            max-width: 320px;
-            line-height: 1.5;
+            font-size: 13px !important;
+            color: #9ca3af !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.3px !important;
+            text-align: center !important;
+            padding: 0 24px !important;
+            max-width: 320px !important;
+            line-height: 1.5 !important;
+            margin: 0 !important;
         }
         @keyframes hb-pulse {
             0%, 100% { transform: scale(1); opacity: 1; }
@@ -68,40 +78,46 @@
         }
     `;
 
-    // Injeta CSS
     const style = document.createElement('style');
+    style.id = 'hb-loader-style';
     style.textContent = css;
-    document.head.appendChild(style);
+    // documentElement SEMPRE existe (é o <html>), mesmo no <head>
+    document.documentElement.appendChild(style);
 
-    // Injeta HTML quando o DOM tiver pronto
-    function injetarLoader() {
-        if (document.getElementById('hb-loader')) return;
-        const el = document.createElement('div');
-        el.id = 'hb-loader';
-        el.innerHTML = '<img src="' + GIF_URL + '" alt=""><p>' + frase + '</p>';
-        document.body.insertBefore(el, document.body.firstChild);
-    }
+    // ═══ HTML DO LOADER ═══
+    // Injeta direto no <html>. Navegador aceita e renderiza por cima de tudo.
+    const loaderEl = document.createElement('div');
+    loaderEl.id = 'hb-loader';
+    loaderEl.innerHTML = '<img src="' + GIF_URL + '" alt=""><p>' + frase + '</p>';
+    document.documentElement.appendChild(loaderEl);
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injetarLoader);
-    } else {
-        injetarLoader();
-    }
+    // ═══ REMOÇÃO ═══
+    function remover() {
+        if (removido) return;
+        removido = true;
 
-    // Remove quando a página carregar
-    function removerLoader() {
-        const el = document.getElementById('hb-loader');
-        if (!el) return;
-        el.classList.add('hb-out');
-        setTimeout(() => el.remove(), 400);
+        const decorrido = Date.now() - inicio;
+        const espera = Math.max(0, MIN_TEMPO - decorrido);
+
+        setTimeout(() => {
+            const el = document.getElementById('hb-loader');
+            if (!el) return;
+            el.classList.add('hb-out');
+            setTimeout(() => {
+                el.remove();
+                const st = document.getElementById('hb-loader-style');
+                if (st) st.remove();
+            }, 400);
+        }, espera);
     }
 
     if (document.readyState === 'complete') {
-        setTimeout(removerLoader, 700);
+        remover();
     } else {
-        window.addEventListener('load', () => setTimeout(removerLoader, 700));
+        window.addEventListener('load', remover);
     }
 
-    // Fallback: se algo travar, remove em 4s
-    setTimeout(removerLoader, 4000);
+    setTimeout(remover, MAX_TEMPO);
+
+    window.hbLoader = { remover };
 })();
