@@ -2,237 +2,94 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Mascote com Cérebro Exposto</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+<title>Conversor Lottie → Roxo</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #05050a;
-    font-family: 'Outfit', sans-serif;
-    color: #fff;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 30px;
-  }
-  h1 { font-size: 18px; font-weight: 900; letter-spacing: 2px; text-align: center; }
-  p  { font-size: 12px; color: #888; text-align: center; max-width: 420px; line-height: 1.6; }
-
-  /* ═══ MASCOTE + CÉREBRO ═══ */
-  .mascote-wrap {
-    position: relative;
-    width: 340px;
-    height: 340px;
-  }
-  #lottie { width: 100%; height: 100%; }
-
-  /* Cérebro por cima do Lottie */
-  .cerebro {
-    position: absolute;
-    pointer-events: none;
-    z-index: 5;
-    /* Variáveis ajustáveis pelos sliders */
-    top: 22%;
-    left: 50%;
-    width: 42%;
-    transform: translateX(-50%) rotate(0deg);
-    opacity: 1;
-    filter: drop-shadow(0 3px 8px rgba(138,43,226,0.5));
-    transition: top 0.1s, left 0.1s, width 0.1s, transform 0.1s;
-  }
-
-  /* Controles */
-  .controles {
-    background: rgba(20,20,28,0.8);
-    border: 1px solid rgba(138,43,226,0.3);
-    padding: 18px 22px;
-    border-radius: 16px;
-    display: grid;
-    gap: 12px;
-    width: 100%;
-    max-width: 420px;
-  }
-  .linha { display: grid; grid-template-columns: 70px 1fr 60px; gap: 10px; align-items: center; }
-  .linha label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #c084fc; }
-  .linha input[type=range] { width: 100%; accent-color: #8a2be2; }
-  .linha .valor { font-size: 11px; color: #888; text-align: right; font-family: monospace; }
-
-  .botoes { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
-  .btn {
-    padding: 10px 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
-    color: #fff;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 1px;
-    cursor: pointer;
-  }
-  .btn:hover { background: rgba(138,43,226,0.3); }
-  .btn.primario { background: linear-gradient(135deg, #8a2be2, #6a1fc2); border: none; box-shadow: 0 6px 20px rgba(138,43,226,0.4); }
-  .btn-file { display: inline-block; padding: 10px 16px; border-radius: 10px; background: #1a1a20; border: 1px dashed rgba(138,43,226,0.5); cursor: pointer; font-size: 12px; font-weight: 700; color: #c084fc; }
+  body { background: #05050a; color: #fff; font-family: system-ui; padding: 30px; max-width: 700px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 8px; }
+  p { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.6; }
+  .drop { border: 2px dashed rgba(138,43,226,0.5); border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; transition: 0.2s; }
+  .drop:hover { background: rgba(138,43,226,0.1); }
+  .drop.on { background: rgba(138,43,226,0.2); border-color: #8a2be2; }
   input[type=file] { display: none; }
-  .msg { font-size: 11px; color: #666; letter-spacing: 1px; text-align: center; }
+  .lista { margin-top: 20px; display: grid; gap: 10px; }
+  .item { background: #14141a; padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .item b { color: #c084fc; }
+  .ok { color: #00e5a0; }
+  .btn { margin-top: 20px; padding: 14px 24px; border: none; border-radius: 12px; background: linear-gradient(135deg,#8a2be2,#6a1fc2); color: #fff; font-weight: 900; font-size: 14px; cursor: pointer; width: 100%; display: none; }
 </style>
 </head>
 <body>
 
-  <h1>🧠 MASCOTE COM CÉREBRO EXPOSTO</h1>
-  <p>1º escolhe o JSON. 2º ajusta os sliders até o cérebro encaixar no lugar certo. 3º me manda os valores que eu fixo no código.</p>
+<h1>🎨 Conversor Lottie → Roxo</h1>
+<p>Arrasta os 3 JSONs aqui (ou clica pra escolher os 3 de uma vez). O conversor troca todas as cores bege/marrom pelo roxo do Hub Brain e baixa tudo automaticamente.</p>
 
-  <label class="btn-file">
-    📁 Escolher JSON
-    <input type="file" accept=".json" onchange="carregar(this.files[0])">
-  </label>
+<label class="drop" id="drop">
+  <input type="file" id="file" accept=".json" multiple>
+  <div>📁 Solta os 3 arquivos aqui</div>
+</label>
 
-  <div class="mascote-wrap">
-    <div id="lottie"></div>
+<div class="lista" id="lista"></div>
+<button class="btn" id="btn">⬇ Baixar todos convertidos</button>
 
-    <!-- Cérebro SVG ajustável -->
-    <svg class="cerebro" id="cerebro" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="brainGrad" cx="40%" cy="30%">
-          <stop offset="0%" stop-color="#c084fc"/>
-          <stop offset="55%" stop-color="#8a2be2"/>
-          <stop offset="100%" stop-color="#4a0a9a"/>
-        </radialGradient>
-        <linearGradient id="brainShadow" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="rgba(0,0,0,0.25)"/>
-          <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
-        </linearGradient>
-      </defs>
+<script>
+const MAPA = {
+  '0.937254965305,0.796078503132,0.647058844566': '0.753,0.518,0.988',
+  '0.835370719433,0.707643389702,0.57282012701':  '0.541,0.169,0.886',
+  '0.835294127464,0.705882370472,0.572549045086': '0.541,0.169,0.886',
+  '0.510000011968,0.294000004787,0.081999999402': '0.353,0.063,0.753',
+  '0.57599995931,0.344999994016,0.13300000359':   '0.416,0.122,0.761',
+  '0.20800000359,0.20800000359,0.20800000359':    '0.102,0.039,0.180',
+  '0.929000016755,0.929000016755,0.929000016755': '0.051,0.051,0.078',
+  '"sc":"#ffffff"': '"sc":"#0d0d12"'
+};
 
-      <!-- Metade de cérebro (dome) -->
-      <path d="M 20 95
-               C 15 70, 25 40, 50 25
-               C 65 15, 85 12, 100 12
-               C 115 12, 135 15, 150 25
-               C 175 40, 185 70, 180 95
-               C 160 100, 140 102, 100 102
-               C 60 102, 40 100, 20 95 Z"
-            fill="url(#brainGrad)"
-            stroke="#3a0a7a"
-            stroke-width="3"
-            stroke-linejoin="round"/>
+const drop = document.getElementById('drop');
+const file = document.getElementById('file');
+const lista = document.getElementById('lista');
+const btn = document.getElementById('btn');
+let convertidos = [];
 
-      <!-- Sulcos (as dobrinhas do cérebro) -->
-      <g stroke="#3a0a7a" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.75">
-        <path d="M 100 14 Q 100 55 100 100"/>
-        <path d="M 100 35 Q 75 30 55 42"/>
-        <path d="M 100 35 Q 125 30 145 42"/>
-        <path d="M 100 60 Q 70 58 45 68"/>
-        <path d="M 100 60 Q 130 58 155 68"/>
-        <path d="M 100 82 Q 75 82 55 88"/>
-        <path d="M 100 82 Q 125 82 145 88"/>
-      </g>
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('on'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('on'));
+drop.addEventListener('drop', e => {
+  e.preventDefault(); drop.classList.remove('on');
+  processar([...e.dataTransfer.files]);
+});
+file.addEventListener('change', () => processar([...file.files]));
 
-      <!-- Brilho em cima (dá volume) -->
-      <ellipse cx="70" cy="38" rx="22" ry="10" fill="rgba(255,255,255,0.35)" transform="rotate(-22 70 38)"/>
-      <ellipse cx="135" cy="36" rx="14" ry="7" fill="rgba(255,255,255,0.2)" transform="rotate(20 135 36)"/>
-
-      <!-- Sombra embaixo (encaixa na cabeça) -->
-      <path d="M 20 95 C 40 100, 60 102, 100 102 C 140 102, 160 100, 180 95
-               C 180 100, 170 108, 100 108 C 30 108, 20 100, 20 95 Z"
-            fill="rgba(0,0,0,0.4)"/>
-    </svg>
-  </div>
-
-  <div class="controles">
-    <div class="linha">
-      <label>↕ TOPO</label>
-      <input type="range" id="rTop" min="0" max="50" value="22" oninput="ajustar()">
-      <span class="valor" id="vTop">22%</span>
-    </div>
-    <div class="linha">
-      <label>↔ ESQ</label>
-      <input type="range" id="rLeft" min="30" max="70" value="50" oninput="ajustar()">
-      <span class="valor" id="vLeft">50%</span>
-    </div>
-    <div class="linha">
-      <label>⤢ TAM</label>
-      <input type="range" id="rWidth" min="20" max="80" value="42" oninput="ajustar()">
-      <span class="valor" id="vWidth">42%</span>
-    </div>
-    <div class="linha">
-      <label>↻ ROT</label>
-      <input type="range" id="rRot" min="-20" max="20" value="0" oninput="ajustar()">
-      <span class="valor" id="vRot">0°</span>
-    </div>
-  </div>
-
-  <div class="botoes">
-    <button class="btn primario" onclick="copiarCSS()">📋 Copiar valores</button>
-  </div>
-  <div class="msg" id="msg">Ajusta aí que eu pego o resultado.</div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-  <script>
-    const $ = (s) => document.querySelector(s);
-    let anim = null;
-
-    // Cores do Lottie (mesmo mapa de antes)
-    const CORES = {
-      '0.937254965305,0.796078503132,0.647058844566': '0.753,0.518,0.988',
-      '0.835370719433,0.707643389702,0.57282012701':  '0.541,0.169,0.886',
-      '0.835294127464,0.705882370472,0.572549045086': '0.541,0.169,0.886',
-      '0.510000011968,0.294000004787,0.081999999402': '0.353,0.063,0.690',
-      '0.57599995931,0.344999994016,0.13300000359':   '0.416,0.122,0.761',
-      '0.20800000359,0.20800000359,0.20800000359':    '0.102,0.039,0.180',
-      '0.929000016755,0.929000016755,0.929000016755': '0.051,0.051,0.078',
-      '#ffffff': '#0d0d12'
-    };
-
-    function carregar(file) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        let txt = e.target.result;
-        for (const [velho, novo] of Object.entries(CORES)) {
-          while (txt.includes(velho)) txt = txt.replace(velho, novo);
-        }
-        const data = JSON.parse(txt);
-        if (anim) anim.destroy();
-        anim = lottie.loadAnimation({
-          container: $('#lottie'),
-          renderer: 'svg',
-          loop: true,
-          autoplay: true,
-          animationData: data
-        });
-      };
-      reader.readAsText(file);
+async function processar(arquivos) {
+  convertidos = [];
+  lista.innerHTML = '';
+  for (const arq of arquivos) {
+    if (!arq.name.endsWith('.json')) continue;
+    let txt = await arq.text();
+    const antes = txt.length;
+    for (const [velho, novo] of Object.entries(MAPA)) {
+      txt = txt.split(velho).join(novo);
     }
+    const nome = arq.name.replace('.json', '-roxo.json');
+    convertidos.push({ nome, conteudo: txt });
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.innerHTML = `<span>✅ <b>${arq.name}</b></span><span class="ok">${antes} → ${txt.length} chars</span>`;
+    lista.appendChild(item);
+  }
+  if (convertidos.length) btn.style.display = 'block';
+}
 
-    function ajustar() {
-      const top = $('#rTop').value + '%';
-      const left = $('#rLeft').value + '%';
-      const width = $('#rWidth').value + '%';
-      const rot = $('#rRot').value + 'deg';
-
-      $('#cerebro').style.top = top;
-      $('#cerebro').style.left = left;
-      $('#cerebro').style.width = width;
-      $('#cerebro').style.transform = `translateX(-50%) rotate(${rot})`;
-
-      $('#vTop').textContent = top;
-      $('#vLeft').textContent = left;
-      $('#vWidth').textContent = width;
-      $('#vRot').textContent = rot;
-    }
-
-    function copiarCSS() {
-      const css = `top: ${$('#rTop').value}%;
-left: ${$('#rLeft').value}%;
-width: ${$('#rWidth').value}%;
-transform: translateX(-50%) rotate(${$('#rRot').value}deg);`;
-      navigator.clipboard.writeText(css);
-      $('#msg').textContent = '✅ Copiado! Cola aqui no chat.';
-    }
-  </script>
+btn.addEventListener('click', () => {
+  convertidos.forEach((c, i) => {
+    setTimeout(() => {
+      const blob = new Blob([c.conteudo], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = c.nome;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }, i * 300);
+  });
+});
+</script>
 </body>
 </html>
