@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub Brain</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="welcome.css">
+    <script>
+        // Se já tá logado, pula direto pro app
+        const u = localStorage.getItem('dt_user_name');
+        const t = localStorage.getItem('dt_user_type');
+        if (u && t === 'google') window.location.replace('index.html');
+    </script>
+</head>
+<body>
+
+    <!-- LOADER -->
+    <div id="hb-loading">
+        <img src="https://media1.tenor.com/m/tN4-q43SkzcAAAAC/scuba.gif" alt="">
+        <p>Chamando o cérebro pra trabalhar...</p>
+    </div>
+
+    <!-- Header pílula -->
+    <header class="header-pill">
+        <div class="header-logo">
+            <img src="icon-514_20260512_161420_0000.png" alt="Hub Brain">
+            <span>HUB BRAIN</span>
+        </div>
+        <a href="login.html" class="header-btn">
+            <i data-lucide="log-in"></i>
+        </a>
+    </header>
+
+    <main class="conteudo">
+
+        <!-- HERO -->
+        <section class="hero">
+            <span class="kicker">ESTUDAR · ORGANIZAR · EVOLUIR</span>
+            <h1>Sua rotina escolar,<br><em>no controle</em>.</h1>
+            <p>Agenda, notas, foco e IA num app só. Feito por aluno, pra aluno — sem enrolação.</p>
+
+            <div class="hero-botoes">
+                <a href="login.html" class="btn-roxo">
+                    <i data-lucide="log-in"></i>
+                    <span>Começar agora</span>
+                </a>
+                <a href="#calculadora" class="btn-escuro">
+                    <i data-lucide="calculator"></i>
+                    <span>Calcular notas</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- RECURSOS -->
+        <section class="secao">
+            <span class="kicker">RECURSOS</span>
+            <h2>Tudo que você precisa<br>pra mandar bem</h2>
+
+            <div class="cards">
+
+                <div class="card">
+                    <div class="card-icone"><i data-lucide="calendar-days"></i></div>
+                    <h3>Agenda</h3>
+                    <p>Provas, tarefas e trabalhos organizados. Avisa antes de vencer.</p>
+                    <a href="login.html" class="card-link">Ver agenda <i data-lucide="arrow-right"></i></a>
+                </div>
+
+                <div class="card">
+                    <div class="card-icone"><i data-lucide="timer"></i></div>
+                    <h3>Modo Foco</h3>
+                    <p>Pomodoro com 3 relógios e XP. Cada minuto estudado vira progresso.</p>
+                    <a href="login.html" class="card-link">Começar foco <i data-lucide="arrow-right"></i></a>
+                </div>
+
+                <div class="card">
+                    <div class="card-icone"><i data-lucide="sparkles"></i></div>
+                    <h3>IA de Estudos</h3>
+                    <p>Tira dúvida, resume matéria e gera simulado. Tudo na hora.</p>
+                    <a href="login.html" class="card-link">Testar IA <i data-lucide="arrow-right"></i></a>
+                </div>
+
+                <div class="card">
+                    <div class="card-icone"><i data-lucide="trending-up"></i></div>
+                    <h3>Boletim</h3>
+                    <p>Notas, médias e situação de cada matéria. Calcula tudo automático.</p>
+                    <a href="login.html" class="card-link">Ver notas <i data-lucide="arrow-right"></i></a>
+                </div>
+
+                <div class="card">
+                    <div class="card-icone"><i data-lucide="clock"></i></div>
+                    <h3>Grade Horária</h3>
+                    <p>Suas aulas da semana, com aviso 10 minutos antes de cada uma.</p>
+                    <a href="login.html" class="card-link">Ver grade <i data-lucide="arrow-right"></i></a>
+                </div>
+
+                <div class="card">
+                    <div class="card-icone"><i data-lucide="book-open"></i></div>
+                    <h3>Conteúdos</h3>
+                    <p>Materiais por matéria e bimestre. Foto, PDF e arquivo num lugar só.</p>
+                    <a href="login.html" class="card-link">Explorar <i data-lucide="arrow-right"></i></a>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CALCULADORA DE NOTAS -->
+        <section class="secao" id="calculadora">
+            <span class="kicker">CALCULADORA</span>
+            <h2>Descubra sua média<br>em segundos</h2>
+            <p class="secao-desc">Adiciona as notas e os pesos de cada avaliação. A gente calcula a média ponderada pra você.</p>
+
+            <div class="calc">
+                <div class="calc-materias" id="calc-lista">
+                    <!-- Linhas geradas pelo JS -->
+                </div>
+
+                <button class="calc-add" onclick="adicionarLinha()">
+                    <i data-lucide="plus"></i>
+                    <span>Adicionar nota</span>
+                </button>
+
+                <div class="calc-resultado" id="calc-resultado">
+                    <span class="calc-resultado-label">SUA MÉDIA</span>
+                    <strong class="calc-resultado-valor" id="calc-valor">—</strong>
+                    <span class="calc-resultado-status" id="calc-status"></span>
+                </div>
+
+                <button class="btn-roxo calc-btn" onclick="calcularMedia()">
+                    <i data-lucide="calculator"></i>
+                    <span>Calcular média</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- CTA FINAL -->
+        <section class="cta-final">
+            <h2>Pronto pra organizar<br>sua vida escolar?</h2>
+            <p>Entra agora e começa em 30 segundos.</p>
+            <a href="login.html" class="btn-roxo">
+                <i data-lucide="log-in"></i>
+                <span>Entrar no Hub Brain</span>
+            </a>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <img src="icon-514_20260512_161420_0000.png" alt="Hub Brain">
+            <p>Feito por estudantes, independente de escola.<br>Notas, foco e organização num app só.</p>
+            <span>DITOH · 2026</span>
+        </footer>
+
+    </main>
+
+    <script src="welcome.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
