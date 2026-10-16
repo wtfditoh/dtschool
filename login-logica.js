@@ -23,15 +23,9 @@ const inputPass = document.getElementById('user-pass');
 function avisar(msg, tipo = "erro") {
     if (!status) return;
     status.innerText = (tipo === "erro" ? "⚠ " : "✓ ") + msg;
-    status.classList.remove('sucesso');
-    if (tipo === "sucesso") {
-        status.classList.add('sucesso');
-        if (window.mascoteSucesso) window.mascoteSucesso();
-    } else {
-        if (window.mascoteErro) window.mascoteErro();
-    }
-    status.style.opacity = "1";
-    setTimeout(() => { status.style.opacity = "0"; }, 2000);
+    status.classList.toggle('success', tipo === 'sucesso');
+    status.classList.add('show');
+    setTimeout(() => status.classList.remove('show'), 2500);
 }
 
 window.tentarLogar = async (e) => {
