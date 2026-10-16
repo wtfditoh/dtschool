@@ -1,4 +1,4 @@
-/* ═══════════ LOADER COM FRASES VARIADAS ═══════════ */
+/* ═══════════ LOADER ═══════════ */
 const FRASES = [
     'Chamando o cérebro pra trabalhar...',
     'Garantindo mais um café antes da aula...',
@@ -7,18 +7,11 @@ const FRASES = [
     'Puxando seus dados do além...',
     'Acalma o coração, já vai abrir...',
     'Organizando a bagunça mental...',
-    'Aquecendo os neurônios...',
-    'Recarregando a paciência...',
-    'Ajustando o foco...',
-    'Sincronizando com o universo...',
-    'Preparando tudo com carinho...'
+    'Aquecendo os neurônios...'
 ];
 
-// Sorteia uma frase diferente a cada carregamento
 const fraseEl = document.querySelector('#hb-loading p');
-if (fraseEl) {
-    fraseEl.textContent = FRASES[Math.floor(Math.random() * FRASES.length)];
-}
+if (fraseEl) fraseEl.textContent = FRASES[Math.floor(Math.random() * FRASES.length)];
 
 window.addEventListener('load', () => {
     setTimeout(() => {
@@ -29,10 +22,30 @@ window.addEventListener('load', () => {
     }, 800);
 });
 
-/* ═══════════ CALCULADORA DE NOTAS ═══════════ */
+/* ═══════════ MODAL CALCULADORA ═══════════ */
+window.abrirCalc = function () {
+    const m = document.getElementById('calc-modal');
+    if (!m) return;
+    m.classList.add('on');
+    if (window.lucide) lucide.createIcons();
+    if (document.querySelectorAll('.calc-linha').length === 0) adicionarLinha();
+};
+
+window.fecharCalc = function () {
+    const m = document.getElementById('calc-modal');
+    if (m) m.classList.remove('on');
+};
+
+// Fecha ao clicar fora do sheet
+document.getElementById('calc-modal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'calc-modal') fecharCalc();
+});
+
+/* ═══════════ LÓGICA DA CALCULADORA ═══════════ */
 const lista = document.getElementById('calc-lista');
 
 function adicionarLinha(nome = '', nota = '', peso = '') {
+    if (!lista) return;
     const id = 'linha-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
     const div = document.createElement('div');
     div.className = 'calc-linha';
@@ -40,7 +53,7 @@ function adicionarLinha(nome = '', nota = '', peso = '') {
     div.innerHTML = `
         <div class="calc-campo">
             <span class="calc-label">AVALIAÇÃO</span>
-            <input type="text" class="calc-nome" placeholder="Ex: Prova 1" value="${nome}">
+            <input type="text" class="calc-nome" placeholder="Prova 1" value="${nome}">
         </div>
         <div class="calc-campo">
             <span class="calc-label">NOTA</span>
@@ -58,23 +71,17 @@ function adicionarLinha(nome = '', nota = '', peso = '') {
     if (window.lucide) lucide.createIcons();
 }
 
-function removerLinha(id) {
+window.removerLinha = function (id) {
     const el = document.getElementById(id);
     if (el) el.remove();
-}
+};
 
-function calcularMedia() {
+window.calcularMedia = function () {
     const linhas = document.querySelectorAll('.calc-linha');
     const valorEl = document.getElementById('calc-valor');
     const statusEl = document.getElementById('calc-status');
     const resultadoEl = document.getElementById('calc-resultado');
     resultadoEl.classList.remove('ok', 'ruim');
-
-    if (linhas.length === 0) {
-        valorEl.textContent = '—';
-        statusEl.textContent = 'Adicione pelo menos uma nota';
-        return;
-    }
 
     let somaNotas = 0, somaPesos = 0, validas = 0;
     linhas.forEach(linha => {
@@ -90,6 +97,7 @@ function calcularMedia() {
     if (validas === 0) {
         valorEl.textContent = '—';
         statusEl.textContent = 'Preencha pelo menos uma nota';
+        statusEl.style.color = '';
         return;
     }
 
@@ -108,6 +116,4 @@ function calcularMedia() {
         statusEl.style.color = '#ff4455';
         resultadoEl.classList.add('ruim');
     }
-}
-
-if (lista) adicionarLinha('', '', '');
+};
