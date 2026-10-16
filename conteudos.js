@@ -1,7 +1,6 @@
 /* conteudos.js — Hub Brain · Página de Conteúdos
    Filtros por matéria E bimestre. Envio via "Adicionar rápido". */
-
-import { collection, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, query, where, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { db } from "./hb-firebase.js";
 import { abrirRapido } from "./hb-rapido.js";
 import { extArquivo, emojiPorExt } from "./conteudos-upload.js";
@@ -34,7 +33,6 @@ function toast(msg, ms) {
     toast._t = setTimeout(() => el.classList.remove('on'), ms || 2400);
 }
 
-/* ═══════════════ ZOOM ═══════════════ */
 const zoom = { scale: 1, min: 1, max: 5, x: 0, y: 0, ativo: false };
 function resetZoom() { zoom.scale = 1; zoom.x = 0; zoom.y = 0; zoom.ativo = false; aplicarZoom(); }
 function aplicarZoom(anim) {
@@ -60,7 +58,6 @@ function clampXY() {
     zoom.y = Math.max(-maxY, Math.min(maxY, zoom.y));
 }
 
-/* ═══════════════ CARREGAR ═══════════════ */
 async function carregarFotos() {
     if (!userEmail) return;
     $('ct-loading').style.display = 'flex';
@@ -76,7 +73,6 @@ async function carregarFotos() {
     render();
 }
 
-/* Aplica os dois filtros */
 function filtrar() {
     return fotos.filter(f => {
         if (filtroMat !== 'todas' && (f.materia || 'Geral') !== filtroMat) return false;
@@ -89,7 +85,6 @@ function filtrar() {
     });
 }
 
-/* ═══════════════ RENDER ═══════════════ */
 function render() {
     const lista = $('ct-lista');
     if (!fotos.length) { lista.innerHTML = ''; $('ct-vazio').style.display = 'flex'; return; }
@@ -97,7 +92,6 @@ function render() {
 
     const todasMats = [...new Set(fotos.map(f => f.materia || 'Geral'))].sort();
 
-    // ── Chips de MATÉRIA ──
     let html = '<div class="ct-filtros">';
     html += `<button class="ct-chip ${filtroMat === 'todas' ? 'on' : ''}" data-fmat="todas">Todas</button>`;
     todasMats.forEach(m => {
@@ -108,7 +102,6 @@ function render() {
     });
     html += '</div>';
 
-    // ── Chips de BIMESTRE ──
     html += '<div class="ct-filtros">';
     html += `<button class="ct-chip ${filtroBim === 'todos' ? 'on' : ''}" data-fbim="todos">Todos os bim.</button>`;
     ['1','2','3','4'].forEach(b => {
@@ -125,7 +118,6 @@ function render() {
     }
     html += '</div>';
 
-    // ── Aplica filtros ──
     const listaFiltrada = filtrar();
 
     if (!listaFiltrada.length) {
@@ -135,7 +127,6 @@ function render() {
         return;
     }
 
-    // ── Agrupa por matéria ──
     const todasMatsVisiveis = [...new Set(listaFiltrada.map(f => f.materia || 'Geral'))].sort();
     todasMatsVisiveis.forEach(m => {
         const doGrupo = listaFiltrada.filter(f => (f.materia || 'Geral') === m);
@@ -150,9 +141,10 @@ function render() {
         doGrupo.forEach(f => {
             const dataCurta = (f.data || '').slice(5).replace('-', '/');
             const bimBadge = f.bimestre ? `<span class="ct-bim-badge">${f.bimestre}º BIM</span>` : '';
+            const tarefaBadge = f.tarefaNome ? `<span class="ct-tarefa-badge" title="${esc(f.tarefaNome)}">📌</span>` : '';
             if (f.tipo === 'pdf') {
                 html += `<div class="ct-item ct-arquivo" data-id="${esc(f.id)}">
-                    ${bimBadge}
+                    ${bimBadge}${tarefaBadge}
                     <span class="ct-ico">📕</span>
                     <span class="ct-ext">pdf</span>
                     <span class="ct-nome-mini">${esc(f.nome || '')}</span>
@@ -161,7 +153,7 @@ function render() {
             } else if (f.tipo === 'arquivo') {
                 const ext = extArquivo(f.nome);
                 html += `<div class="ct-item ct-arquivo" data-id="${esc(f.id)}">
-                    ${bimBadge}
+                    ${bimBadge}${tarefaBadge}
                     <span class="ct-ico">${emojiPorExt(ext)}</span>
                     <span class="ct-ext">${esc(ext || 'arquivo')}</span>
                     <span class="ct-nome-mini">${esc(f.nome || '')}</span>
@@ -170,7 +162,7 @@ function render() {
             } else {
                 const src = f.thumb || f.url || f.medium || '';
                 html += `<div class="ct-item" data-id="${esc(f.id)}">
-                    ${bimBadge}
+                    ${bimBadge}${tarefaBadge}
                     <img src="${esc(src)}" alt="" loading="lazy" decoding="async">
                     <span class="ct-data">${esc(dataCurta)}</span>
                 </div>`;
@@ -204,7 +196,6 @@ function bindChips() {
     });
 }
 
-/* ═══════════════ VIEWER ═══════════════ */
 function abrirViewer(id) {
     const idx = fotos.findIndex(f => f.id === id);
     if (idx === -1) return;
@@ -284,7 +275,8 @@ function renderViewer() {
 
     const dataFmt = f.data ? f.data.split('-').reverse().join('/') : '';
     const bimTxt = f.bimestre ? ' · ' + f.bimestre + 'º BIM' : '';
-    $('ct-viewer-info').innerHTML = esc(f.materia || 'Geral') + bimTxt + ' · ' + esc(f.nome || 'Arquivo') + `<small>${esc(dataFmt)} · ${viewerIdx + 1} de ${fotos.length}</small>`;
+    const tarefaTxt = f.tarefaNome ? ` · 📌 ${esc(f.tarefaNome)}` : '';
+    $('ct-viewer-info').innerHTML = esc(f.materia || 'Geral') + bimTxt + tarefaTxt + ' · ' + esc(f.nome || 'Arquivo') + `<small>${esc(dataFmt)} · ${viewerIdx + 1} de ${fotos.length}</small>`;
     const unica = fotos.length < 2;
     $('ct-viewer-ant').hidden = unica;
     $('ct-viewer-prox').hidden = unica;
@@ -350,6 +342,26 @@ async function excluirAtual() {
     } catch (e) { toast('Não consegui excluir'); resetConfirm(); }
 }
 
+async function renomearAtual() {
+    const f = fotos[viewerIdx];
+    if (!f) return;
+    const atual = f.nome || 'Arquivo';
+    const novo = window.prompt('Novo nome do arquivo:', atual);
+    if (novo === null) return;
+    const limpo = String(novo).trim().slice(0, 100);
+    if (!limpo || limpo === atual) return;
+    try {
+        await updateDoc(doc(db, 'conteudos', f.id), { nome: limpo });
+        f.nome = limpo;
+        renderViewer();
+        render();
+        toast('✓ Nome atualizado');
+    } catch (e) {
+        console.error(e);
+        toast('Erro ao renomear');
+    }
+}
+
 async function compartilharAtual() {
     const f = fotos[viewerIdx];
     if (!f) return;
@@ -409,7 +421,6 @@ async function compartilharAtual() {
     try { await navigator.clipboard.writeText(f.url); toast('✓ Link copiado'); } catch (e) {}
 }
 
-/* ═══════════════ ZOOM GESTOS ═══════════════ */
 function instalarGestosZoom() {
     const viewer = $('ct-viewer');
     const img = $('ct-viewer-img');
@@ -517,7 +528,6 @@ function handleDoubleTap(x, y) {
     clampXY(); aplicarZoom(true);
 }
 
-/* ═══════════════ INIT ═══════════════ */
 async function iniciar() {
     $('ct-add').addEventListener('click', () => abrirRapido({ aba: 'conteudo', onConteudo: () => carregarFotos() }));
 
@@ -526,6 +536,9 @@ async function iniciar() {
     $('ct-viewer-prox').addEventListener('click', () => navViewer(1));
     $('ct-viewer-del').addEventListener('click', excluirAtual);
     $('ct-viewer-share').addEventListener('click', compartilharAtual);
+    const btnRenomear = $('ct-viewer-rename');
+    if (btnRenomear) btnRenomear.addEventListener('click', renomearAtual);
+
     document.addEventListener('keydown', (e) => {
         if (!$('ct-viewer').classList.contains('on')) return;
         if (e.key === 'Escape') fecharViewer();
