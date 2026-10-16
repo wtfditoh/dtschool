@@ -616,3 +616,97 @@ body {
     .calc-linha { grid-template-columns: 1fr 56px 56px 30px; padding: 8px; }
     .calc-resultado-valor { font-size: 32px; }
 }
+
+/* ═══════════ FERRAMENTAS (sem login) ═══════════ */
+.ferramentas {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 420px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.ferramenta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--borda);
+    border-radius: 18px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.22s;
+}
+
+.ferramenta:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(147, 51, 234, 0.35);
+    transform: translateY(-2px);
+}
+
+.ferramenta-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    background: rgba(147, 51, 234, 0.14);
+    border: 1px solid rgba(147, 51, 234, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--roxo-claro);
+    flex-shrink: 0;
+}
+
+.ferramenta-icon i { width: 20px; height: 20px; }
+
+.ferramenta-txt {
+    flex: 1;
+    min-width: 0;
+}
+
+.ferramenta-txt b {
+    display: block;
+    font-size: 14px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.2px;
+    margin-bottom: 2px;
+}
+
+.ferramenta-txt span {
+    display: block;
+    font-size: 12px;
+    color: var(--txt-dim);
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.ferramenta-seta {
+    width: 16px;
+    height: 16px;
+    color: var(--roxo-claro);
+    flex-shrink: 0;
+    transition: transform 0.2s;
+}
+
+.ferramenta:hover .ferramenta-seta {
+    transform: translateX(4px);
+}
+
+.secao-desc {
+    font-size: 14px;
+    color: var(--txt-dim);
+    line-height: 1.55;
+    max-width: 340px;
+    margin: -20px auto 28px;
+    text-align: center;
+}
+
+/* Ajuste no cards pra caber o texto novo */
+.card p {
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--txt-dim);
+}
