@@ -5,7 +5,6 @@ import { db } from "./hb-firebase.js";
 
 // ▼▼▼ COLE AQUI a chave do ImgBB (https://api.imgbb.com). Só neste lugar. ▼▼▼
 export const IMGBB_KEY = 'b329a89d2327b3957464d6d27a3c275b';
-// (dica: para testar sem mexer no código, rode no console:  localStorage.setItem('hb_imgbb_key', 'SUA_CHAVE'))
 
 const CATBOX_URL = 'https://catbox.moe/user/api.php';
 const chaveImgBB = () => (localStorage.getItem('hb_imgbb_key') || IMGBB_KEY || '').trim();
@@ -78,7 +77,7 @@ export async function uploadCatbox(file) {
  * items: [{ file, arq?: boolean }]  (arq = tratar como arquivo mesmo sendo imagem)
  * Retorna { ok, falha, erros }. Lança erro claro se o ImgBB não estiver configurado.
  */
-export async function salvarItens({ items, materia, userEmail, onProgresso }) {
+export async function salvarItens({ items, materia, bimestre, userEmail, onProgresso }) {
     const precisaImg = items.some((it) => !it.arq && it.file.type.startsWith('image/'));
     if (precisaImg && !imgbbConfigurado()) {
         throw new Error('Falta configurar a chave do ImgBB (conteudos-upload.js). Arquivos PDF/Word funcionam sem ela.');
@@ -97,6 +96,7 @@ export async function salvarItens({ items, materia, userEmail, onProgresso }) {
             await addDoc(collection(db, 'conteudos'), {
                 usuario: userEmail,
                 materia: materia,
+                bimestre: bimestre || '',
                 tipo: tipoItem,
                 url: urls.url,
                 thumb: urls.thumb || '',
