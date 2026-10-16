@@ -126,5 +126,6 @@ window.entrarComoVisitante = () => {
     localStorage.clear();
     localStorage.setItem('dt_user_name', 'Visitante');
     localStorage.setItem('dt_user_type', 'local');
+    localStorage.setItem('dt_visitante_escolhido', 'true');
     window.location.replace('index.html');
 };
