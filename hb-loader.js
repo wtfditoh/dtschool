@@ -2,7 +2,7 @@
     if (window.__hbLoaderAtivo || window.hbLoaderSkip) return;
     window.__hbLoaderAtivo = true;
 
-    const GIF_URL = 'https://media1.tenor.com/m/tN4-q43SkzcAAAAC/scuba.gif';
+    const GIF_URL = 'https://media.tenor.com/GQAsycjoZG8AAAAi/scuba-scuba-cat.gif';
     const MIN_TEMPO = 600;
     const MAX_TEMPO = 4000;
     const inicio = Date.now();
