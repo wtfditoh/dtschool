@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Teste Lottie Roxo</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #05050a;
+    font-family: 'Outfit', sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 30px;
+  }
+  h1 { font-size: 22px; font-weight: 900; letter-spacing: 2px; text-align: center; }
+  p  { font-size: 12px; color: #888; text-align: center; max-width: 380px; line-height: 1.6; }
+  #lottie {
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle at center, rgba(138,43,226,0.08), transparent 70%);
+    border-radius: 50%;
+  }
+  .btn {
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: rgba(138,43,226,0.3); border-color: #8a2be2; }
+  .btn.primario { background: linear-gradient(135deg, #8a2be2, #6a1fc2); border: none; box-shadow: 0 6px 20px rgba(138,43,226,0.4); }
+  input[type=file] { display: none; }
+  .btn-file { display: inline-block; padding: 12px 20px; border-radius: 12px; background: #1a1a20; border: 1px dashed rgba(138,43,226,0.5); cursor: pointer; font-size: 13px; font-weight: 700; color: #c084fc; }
+  .estado-msg { font-size: 11px; color: #666; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+  <h1>🎨 MASCOTE HUB BRAIN — TESTE</h1>
+  <p>Escolhe o arquivo <b>Login character_Hello.json</b> que você baixou. As cores serão trocadas automaticamente e a animação vai aparecer roxa.</p>
+
+  <div id="lottie"></div>
+
+  <div class="estado-msg" id="msg">Aguardando arquivo...</div>
+
+  <label class="btn-file">
+    📁 Escolher arquivo JSON
+    <input type="file" accept=".json" onchange="carregar(this.files[0])">
+  </label>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn" onclick="irPara('idle')">😐 Idle</button>
+    <button class="btn" onclick="irPara('cobrindo')">🙈 Cobrindo olhos</button>
+    <button class="btn" onclick="irPara('espia')">👀 Espiando</button>
+    <button class="btn primario" id="btn-download" style="display:none" onclick="baixar()">⬇ Baixar JSON roxo</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    let anim = null;
+    let jsonRoxo = null;
+
+    // Mapeamento de cores: bege/marrom → roxo Hub Brain
+    const CORES = {
+      '0.937254965305,0.796078503132,0.647058844566': '0.753,0.518,0.988',  // rosto
+      '0.835370719433,0.707643389702,0.57282012701':  '0.541,0.169,0.886',  // contorno
+      '0.835294127464,0.705882370472,0.572549045086': '0.541,0.169,0.886',  // contorno (alt)
+      '0.510000011968,0.294000004787,0.081999999402': '0.353,0.063,0.690',  // braços
+      '0.57599995931,0.344999994016,0.13300000359':   '0.416,0.122,0.761',  // cabeça
+      '0.20800000359,0.20800000359,0.20800000359':    '0.102,0.039,0.180',  // olhos
+      '0.929000016755,0.929000016755,0.929000016755': '0.051,0.051,0.078',  // fundo
+      '#ffffff': '#0d0d12'  // background rect (white → dark)
+    };
+
+    function carregar(file) {
+      if (!file) return;
+      $('#msg').textContent = 'Lendo arquivo...';
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        let txt = e.target.result;
+
+        // Substituir cada cor bege/marrom pela versão roxa
+        for (const [velho, novo] of Object.entries(CORES)) {
+          // Substituição global por string (as cores aparecem várias vezes)
+          while (txt.includes(velho)) txt = txt.replace(velho, novo);
+        }
+
+        try {
+          jsonRoxo = JSON.parse(txt);
+        } catch (err) {
+          $('#msg').textContent = '❌ Erro ao ler JSON: ' + err.message;
+          return;
+        }
+
+        // Recriar animação
+        if (anim) anim.destroy();
+        anim = lottie.loadAnimation({
+          container: $('#lottie'),
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+          animationData: jsonRoxo
+        });
+
+        $('#msg').textContent = '✅ Roxo! Dá play nos botões pra testar os estados.';
+        $('#btn-download').style.display = 'inline-block';
+      };
+      reader.readAsText(file);
+    }
+
+    function irPara(tipo) {
+      if (!anim) return;
+      if (tipo === 'idle') {
+        anim.loop = true;
+        anim.setSegment(0, 30);
+        anim.play();
+      } else if (tipo === 'cobrindo') {
+        anim.loop = false;
+        anim.setSegment(46, 115);
+        anim.play();
+      } else if (tipo === 'espia') {
+        anim.loop = false;
+        anim.setSegment(115, 150);
+        anim.play();
+      }
+    }
+
+    function baixar() {
+      if (!jsonRoxo) return;
+      const blob = new Blob([JSON.stringify(jsonRoxo)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'mascote-roxo.json';
+      a.click();
+    }
+  </script>
+</body>
+</html>
