@@ -1,504 +1,366 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <script src="hb-loader.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain - Bem-vindo!</title>
+    <title>Hub Brain - Bem-vindo</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --roxo: #9333ea;
+            --roxo-claro: #c084fc;
+            --bg: #0a0a0e;
+            --bg-card: #131319;
+            --borda: rgba(255,255,255,0.07);
+            --txt: #ffffff;
+            --txt-dim: #9ca3af;
+            --txt-dimmer: #6b7280;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background: #050508;
+            background: var(--bg);
             font-family: 'Outfit', -apple-system, sans-serif;
-            color: white;
+            color: var(--txt);
             min-height: 100vh;
             overflow: hidden;
             position: relative;
         }
 
-        /* BACKGROUND ANIMADO */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at 30% 20%, rgba(138,43,226,0.15) 0%, transparent 60%),
-                        radial-gradient(circle at 70% 80%, rgba(138,43,226,0.1) 0%, transparent 60%);
+            background:
+                radial-gradient(circle at 20% 15%, rgba(147,51,234,0.18) 0%, transparent 45%),
+                radial-gradient(circle at 85% 90%, rgba(147,51,234,0.12) 0%, transparent 45%);
             pointer-events: none;
-            animation: pulse-bg 8s ease-in-out infinite;
+            z-index: 0;
         }
 
-        @keyframes pulse-bg {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-
-        /* GRAIN TEXTURE */
-        body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-            background-size: 200px 200px;
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        /* BOTÃO PULAR */
+        /* Botão pular */
         .btn-skip {
             position: fixed;
-            top: 24px;
-            right: 24px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            padding: 10px 18px;
-            color: #888;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: var(--txt-dimmer);
             font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
             cursor: pointer;
             z-index: 100;
-            transition: all 0.2s;
+            padding: 8px 12px;
+            transition: color 0.2s;
+            font-family: inherit;
         }
 
-        .btn-skip:active {
-            transform: scale(0.95);
-            background: rgba(255,255,255,0.06);
-        }
+        .btn-skip:hover { color: var(--txt-dim); }
 
-        /* CONTAINER */
-        .onboarding-wrapper {
-            height: 100vh;
+        /* Wrapper */
+        .wrapper {
+            height: 100dvh;
             display: flex;
             flex-direction: column;
             position: relative;
             z-index: 1;
         }
 
-        /* SLIDES */
-        .slides-container {
+        /* Slides */
+        .slides-box {
             flex: 1;
             overflow: hidden;
             position: relative;
-            display: flex;
-            align-items: center;
         }
 
         .slides-track {
             display: flex;
-            width: 100%;
-            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            height: 100%;
+            transition: transform 0.55s cubic-bezier(0.65, 0, 0.35, 1);
         }
 
         .slide {
             min-width: 100vw;
-            padding: 60px 32px;
+            padding: 40px 32px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            gap: 24px;
+            gap: 20px;
         }
 
-        /* ÍCONE ANIMADO */
+        /* Ícone */
         .slide-icon {
-            width: 140px;
-            height: 140px;
-            position: relative;
-            margin-bottom: 8px;
-        }
-
-        .icon-bg {
-            position: absolute;
-            inset: 0;
-            background: rgba(138,43,226,0.08);
-            border: 2px solid rgba(138,43,226,0.2);
-            border-radius: 40px;
-            animation: rotate-border 20s linear infinite;
-            box-shadow: 
-                0 0 40px rgba(138,43,226,0.2),
-                inset 0 0 30px rgba(138,43,226,0.05);
-        }
-
-        @keyframes rotate-border {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .icon-content {
-            position: absolute;
-            inset: 8px;
-            background: radial-gradient(circle at 30% 30%, rgba(138,43,226,0.15), rgba(138,43,226,0.05));
+            width: 110px;
+            height: 110px;
             border-radius: 32px;
+            background: rgba(147,51,234,0.1);
+            border: 1px solid rgba(147,51,234,0.25);
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: float-icon 3.5s ease-in-out infinite;
+            margin-bottom: 8px;
+            position: relative;
+            box-shadow: 0 0 60px rgba(147,51,234,0.2);
+            animation: float 3.5s ease-in-out infinite;
         }
 
-        @keyframes float-icon {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
-        }
-
-        .icon-content i {
-            width: 64px;
-            height: 64px;
-            color: #8a2be2;
-            filter: drop-shadow(0 0 20px rgba(138,43,226,0.6));
-        }
-
-        /* PARTÍCULAS */
-        .icon-particles {
+        .slide-icon::after {
+            content: '';
             position: absolute;
             inset: -20px;
-            pointer-events: none;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #8a2be2;
             border-radius: 50%;
-            opacity: 0;
-            animation: particle-float 3s ease-in-out infinite;
+            background: radial-gradient(circle, rgba(147,51,234,0.15) 0%, transparent 60%);
+            filter: blur(20px);
+            pointer-events: none;
+            z-index: -1;
         }
 
-        .particle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
-        .particle:nth-child(2) { top: 30%; right: 15%; animation-delay: 1s; }
-        .particle:nth-child(3) { bottom: 25%; left: 20%; animation-delay: 2s; }
-
-        @keyframes particle-float {
-            0%, 100% { opacity: 0; transform: translateY(0) scale(1); }
-            50% { opacity: 0.8; transform: translateY(-30px) scale(1.5); }
+        .slide-icon i {
+            width: 52px;
+            height: 52px;
+            color: var(--roxo-claro);
+            filter: drop-shadow(0 0 16px rgba(147,51,234,0.7));
         }
 
-        /* BADGE */
-        .slide-badge {
-            font-size: 11px;
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-1deg); }
+            50%      { transform: translateY(-8px) rotate(1deg); }
+        }
+
+        /* Kicker */
+        .slide-kicker {
+            display: inline-block;
+            font-size: 10px;
             font-weight: 800;
-            letter-spacing: 3px;
-            color: #8a2be2;
+            letter-spacing: 2.5px;
+            color: var(--roxo-claro);
             text-transform: uppercase;
-            background: rgba(138,43,226,0.1);
-            padding: 6px 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(138,43,226,0.2);
         }
 
-        /* TÍTULO */
+        /* Título */
         .slide-title {
-            font-size: 32px;
+            font-size: 30px;
             font-weight: 900;
-            line-height: 1.2;
+            line-height: 1.1;
             letter-spacing: -1px;
-            max-width: 320px;
+            max-width: 340px;
+            color: #fff;
         }
 
-        .slide-title .highlight {
-            background: linear-gradient(135deg, #b060ff, #8a2be2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0 0 20px rgba(138,43,226,0.5));
+        .slide-title em {
+            font-style: normal;
+            color: var(--roxo);
         }
 
-        /* DESCRIÇÃO */
+        /* Descrição */
         .slide-desc {
-            font-size: 16px;
-            color: #888;
-            line-height: 1.7;
-            font-weight: 500;
-            max-width: 300px;
+            font-size: 14px;
+            color: var(--txt-dim);
+            line-height: 1.55;
+            max-width: 320px;
+            font-weight: 400;
         }
 
-        /* SLIDE FINAL */
-        .slide-final .icon-bg {
-            animation: pulse-final 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-final {
-            0%, 100% { 
-                transform: scale(1);
-                box-shadow: 0 0 40px rgba(138,43,226,0.2);
-            }
-            50% { 
-                transform: scale(1.05);
-                box-shadow: 0 0 60px rgba(138,43,226,0.4);
-            }
-        }
-
-        /* FOOTER */
-        .onboarding-footer {
-            padding: 32px;
+        /* Footer */
+        .footer {
+            padding: 24px 24px 32px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 24px;
-            background: linear-gradient(to top, rgba(5,5,8,0.95), transparent);
-            backdrop-filter: blur(10px);
+            gap: 20px;
         }
 
-        /* DOTS */
-        .progress-dots {
+        /* Dots */
+        .dots {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
         }
 
         .dot {
             width: 6px;
             height: 6px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.12);
+            transition: all 0.4s cubic-bezier(0.65, 0, 0.35, 1);
         }
 
-        .dot.active {
-            width: 24px;
-            border-radius: 10px;
-            background: #8a2be2;
-            box-shadow: 0 0 20px rgba(138,43,226,0.6);
+        .dot.on {
+            width: 26px;
+            background: var(--roxo);
+            box-shadow: 0 0 14px rgba(147,51,234,0.6);
         }
 
-        /* BOTÕES */
-        .btn-next {
+        /* Botões */
+        .btn-prox,
+        .btn-comecar {
             width: 100%;
             max-width: 340px;
-            padding: 20px;
-            background: linear-gradient(135deg, rgba(138,43,226,0.15), rgba(138,43,226,0.1));
-            border: 2px solid rgba(138,43,226,0.3);
-            border-radius: 20px;
-            color: white;
-            font-size: 15px;
-            font-weight: 800;
-            font-family: inherit;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-next::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .btn-next:hover::before {
-            opacity: 1;
-        }
-
-        .btn-next:active {
-            transform: scale(0.98);
-        }
-
-        .btn-start {
-            display: none;
-            width: 100%;
-            max-width: 340px;
-            padding: 20px;
-            background: linear-gradient(135deg, #8a2be2, #6a1fc2);
-            border: none;
-            border-radius: 20px;
-            color: white;
-            font-size: 15px;
-            font-weight: 800;
-            font-family: inherit;
-            letter-spacing: 2px;
-            cursor: pointer;
-            box-shadow: 0 10px 40px rgba(138,43,226,0.5);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            padding: 17px 24px;
+            border-radius: 999px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
         }
 
-        .btn-start:active {
-            transform: scale(0.98);
+        .btn-prox {
+            background: var(--roxo);
+            color: #fff;
+            box-shadow: 0 12px 32px rgba(147, 51, 234, 0.4);
         }
 
-        .btn-start i {
-            width: 20px;
-            height: 20px;
+        .btn-prox:hover {
+            background: #a855f7;
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px rgba(147, 51, 234, 0.55);
         }
 
-        /* ANIMAÇÕES DE ENTRADA */
+        .btn-prox:active { transform: scale(0.98); }
+
+        .btn-comecar {
+            background: var(--roxo);
+            color: #fff;
+            box-shadow: 0 12px 32px rgba(147, 51, 234, 0.4);
+            display: none;
+        }
+
+        .btn-comecar:hover {
+            background: #a855f7;
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px rgba(147, 51, 234, 0.55);
+        }
+
+        .btn-comecar:active { transform: scale(0.98); }
+
+        .btn-prox i,
+        .btn-comecar i { width: 17px; height: 17px; }
+
+        /* Animações de entrada */
         .slide > * {
             opacity: 0;
-            transform: translateY(30px);
-            animation: slide-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            transform: translateY(20px);
+            animation: enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .slide > *:nth-child(1) { animation-delay: 0.1s; }
-        .slide > *:nth-child(2) { animation-delay: 0.2s; }
-        .slide > *:nth-child(3) { animation-delay: 0.3s; }
-        .slide > *:nth-child(4) { animation-delay: 0.4s; }
+        .slide > *:nth-child(1) { animation-delay: 0.05s; }
+        .slide > *:nth-child(2) { animation-delay: 0.15s; }
+        .slide > *:nth-child(3) { animation-delay: 0.25s; }
+        .slide > *:nth-child(4) { animation-delay: 0.35s; }
 
-        @keyframes slide-in {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        @keyframes enter {
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* RESPONSIVO */
+        /* Slide final */
+        .slide-final .slide-icon {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 60px rgba(147,51,234,0.2); }
+            50%      { transform: scale(1.05); box-shadow: 0 0 80px rgba(147,51,234,0.45); }
+        }
+
+        /* Responsivo */
         @media (max-width: 480px) {
-            .slide {
-                padding: 40px 24px;
-            }
+            .slide { padding: 32px 24px; gap: 16px; }
+            .slide-icon { width: 96px; height: 96px; border-radius: 28px; }
+            .slide-icon i { width: 46px; height: 46px; }
+            .slide-title { font-size: 26px; }
+            .slide-desc { font-size: 13.5px; }
+        }
 
-            .slide-icon {
-                width: 120px;
-                height: 120px;
-            }
-
-            .icon-content i {
-                width: 56px;
-                height: 56px;
-            }
-
-            .slide-title {
-                font-size: 28px;
-            }
-
-            .slide-desc {
-                font-size: 15px;
-            }
+        @media (max-height: 700px) {
+            .slide { padding: 24px 24px; gap: 14px; }
+            .slide-icon { width: 84px; height: 84px; border-radius: 24px; margin-bottom: 4px; }
+            .slide-icon i { width: 40px; height: 40px; }
+            .slide-title { font-size: 24px; }
+            .footer { padding: 18px 24px 24px; gap: 16px; }
         }
     </style>
 </head>
 <body>
-    <button class="btn-skip" onclick="pular()">PULAR</button>
 
-    <div class="onboarding-wrapper">
-        <div class="slides-container">
+    <button class="btn-skip" onclick="finalizar()">PULAR</button>
+
+    <div class="wrapper">
+        <div class="slides-box">
             <div class="slides-track" id="slides-track">
 
-                <!-- SLIDE 1: BEM-VINDO -->
+                <!-- SLIDE 1 — BEM-VINDO -->
                 <div class="slide">
                     <div class="slide-icon">
-                        <div class="icon-bg"></div>
-                        <div class="icon-content">
-                            <i data-lucide="brain-circuit"></i>
-                        </div>
-                        <div class="icon-particles">
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                        </div>
+                        <i data-lucide="brain"></i>
                     </div>
-                    <span class="slide-badge">BEM-VINDO AO</span>
-                    <h1 class="slide-title">Hub <span class="highlight">Brain</span></h1>
-                    <p class="slide-desc">Seu app escolar inteligente. Organize, estude e suba no ranking.</p>
+                    <span class="slide-kicker">BEM-VINDO AO</span>
+                    <h1 class="slide-title">Hub <em>Brain</em></h1>
+                    <p class="slide-desc">O app que vai te fazer parar de se perder na correria. Feito por aluno, pra aluno.</p>
                 </div>
 
-                <!-- SLIDE 2: NOTAS -->
+                <!-- SLIDE 2 — TUDO NUM LUGAR -->
                 <div class="slide">
                     <div class="slide-icon">
-                        <div class="icon-bg"></div>
-                        <div class="icon-content">
-                            <i data-lucide="chart-line"></i>
-                        </div>
-                        <div class="icon-particles">
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                        </div>
+                        <i data-lucide="layout-grid"></i>
                     </div>
-                    <span class="slide-badge">DESEMPENHO</span>
-                    <h1 class="slide-title">Controle suas <span class="highlight">Notas</span></h1>
-                    <p class="slide-desc">Acompanhe suas notas por bimestre e veja seu aproveitamento em tempo real.</p>
+                    <span class="slide-kicker">TUDO NUM LUGAR</span>
+                    <h1 class="slide-title">Agenda, grade e <em>conteúdos</em></h1>
+                    <p class="slide-desc">Provas, tarefas, aulas da semana e matérias — tudo organizado por matéria e bimestre. Sem caderno perdido.</p>
                 </div>
 
-                <!-- SLIDE 3: AGENDA -->
+                <!-- SLIDE 3 — IA -->
                 <div class="slide">
                     <div class="slide-icon">
-                        <div class="icon-bg"></div>
-                        <div class="icon-content">
-                            <i data-lucide="calendar-check"></i>
-                        </div>
-                        <div class="icon-particles">
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                        </div>
+                        <i data-lucide="sparkles"></i>
                     </div>
-                    <span class="slide-badge">ORGANIZAÇÃO</span>
-                    <h1 class="slide-title">Nunca perca um <span class="highlight">Prazo</span></h1>
-                    <p class="slide-desc">Cadastre tarefas e provas. Receba notificações antes do vencimento.</p>
+                    <span class="slide-kicker">IA DE ESTUDOS</span>
+                    <h1 class="slide-title">Dúvida? <em>Resolve agora</em></h1>
+                    <p class="slide-desc">Tira dúvida, resume matéria, gera simulado e até lê tua grade por foto. Tudo na hora, sem enrolação.</p>
                 </div>
 
-                <!-- SLIDE 4: FOCO -->
+                <!-- SLIDE 4 — MODO FOCO -->
                 <div class="slide">
                     <div class="slide-icon">
-                        <div class="icon-bg"></div>
-                        <div class="icon-content">
-                            <i data-lucide="timer"></i>
-                        </div>
-                        <div class="icon-particles">
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                        </div>
+                        <i data-lucide="timer"></i>
                     </div>
-                    <span class="slide-badge">PRODUTIVIDADE</span>
-                    <h1 class="slide-title">Foco <span class="highlight">Total</span></h1>
-                    <p class="slide-desc">Timer com flip clock, histórico de sessões e meta diária de estudos.</p>
+                    <span class="slide-kicker">MODO FOCO</span>
+                    <h1 class="slide-title">Estudar virou <em>jogo</em></h1>
+                    <p class="slide-desc">Cada minuto estudado vira XP. Sobe no ranking, desbloqueia conquista e vê tua meta enchendo. Vicia.</p>
                 </div>
 
-                <!-- SLIDE 5: RANKING -->
-                <div class="slide">
-                    <div class="slide-icon">
-                        <div class="icon-bg"></div>
-                        <div class="icon-content">
-                            <i data-lucide="trophy"></i>
-                        </div>
-                        <div class="icon-particles">
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                        </div>
-                    </div>
-                    <span class="slide-badge">COMPETIÇÃO</span>
-                    <h1 class="slide-title">Compete e <span class="highlight">Evolui</span></h1>
-                    <p class="slide-desc">Ganhe XP, suba no ranking global e desbloqueie conquistas exclusivas.</p>
-                </div>
-
-                <!-- SLIDE 6: FINAL -->
+                <!-- SLIDE 5 — FINAL -->
                 <div class="slide slide-final">
                     <div class="slide-icon">
-                        <div class="icon-bg"></div>
-                        <div class="icon-content">
-                            <i data-lucide="rocket"></i>
-                        </div>
-                        <div class="icon-particles">
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                            <div class="particle"></div>
-                        </div>
+                        <i data-lucide="rocket"></i>
                     </div>
-                    <span class="slide-badge">TUDO PRONTO!</span>
-                    <h1 class="slide-title">Bora, <span class="highlight" id="nome-usuario">estudante</span>!</h1>
-                    <p class="slide-desc">O Hub Brain tá pronto pra te ajudar a dominar os estudos. Vamos nessa?</p>
+                    <span class="slide-kicker">BORA COMEÇAR</span>
+                    <h1 class="slide-title">Vamo nessa, <em id="nome-usuario">estudante</em>?</h1>
+                    <p class="slide-desc">O Hub Brain tá pronto. Agora é contigo — organiza, estuda e sobe no ranking.</p>
                 </div>
 
             </div>
         </div>
 
-        <div class="onboarding-footer">
-            <div class="progress-dots" id="dots"></div>
-            <button class="btn-next" id="btn-next" onclick="proximo()">PRÓXIMO</button>
-            <button class="btn-start" id="btn-start" onclick="comecar()">
+        <div class="footer">
+            <div class="dots" id="dots"></div>
+            <button class="btn-prox" id="btn-prox" onclick="proximo()">
+                <span>PRÓXIMO</span>
+                <i data-lucide="arrow-right"></i>
+            </button>
+            <button class="btn-comecar" id="btn-comecar" onclick="finalizar()">
                 <span>VAMOS LÁ</span>
                 <i data-lucide="arrow-right"></i>
             </button>
@@ -506,104 +368,71 @@
     </div>
 
     <script>
-        const TOTAL_SLIDES = 6;
-        let slideAtual = 0;
+        const TOTAL = 5;
+        let atual = 0;
 
-        // Preenche nome do usuário
-        const nomeUsuario = localStorage.getItem('dt_user_name') || 'Estudante';
+        // Nome do usuário
+        const nome = (localStorage.getItem('dt_user_name') || 'Estudante').split(' ')[0];
         const nomeEl = document.getElementById('nome-usuario');
-        if (nomeEl) nomeEl.textContent = nomeUsuario.split(' ')[0];
+        if (nomeEl) nomeEl.textContent = nome;
 
-        // Cria dots
-        const dotsContainer = document.getElementById('dots');
-        for (let i = 0; i < TOTAL_SLIDES; i++) {
-            const dot = document.createElement('div');
-            dot.className = 'dot' + (i === 0 ? ' active' : '');
-            dot.id = 'dot-' + i;
-            dotsContainer.appendChild(dot);
+        // Cria os dots
+        const dotsBox = document.getElementById('dots');
+        for (let i = 0; i < TOTAL; i++) {
+            const d = document.createElement('div');
+            d.className = 'dot' + (i === 0 ? ' on' : '');
+            d.id = 'dot-' + i;
+            dotsBox.appendChild(d);
         }
 
-        function atualizarUI() {
-            // Move o track
-            const track = document.getElementById('slides-track');
-            track.style.transform = `translateX(-${slideAtual * 100}vw)`;
-
-            // Atualiza dots
-            for (let i = 0; i < TOTAL_SLIDES; i++) {
-                const dot = document.getElementById('dot-' + i);
-                if (dot) {
-                    dot.className = 'dot' + (i === slideAtual ? ' active' : '');
-                }
+        function render() {
+            document.getElementById('slides-track').style.transform = `translateX(-${atual * 100}vw)`;
+            for (let i = 0; i < TOTAL; i++) {
+                const d = document.getElementById('dot-' + i);
+                if (d) d.className = 'dot' + (i === atual ? ' on' : '');
             }
-
-            // Mostra botão correto
-            const btnNext = document.getElementById('btn-next');
-            const btnStart = document.getElementById('btn-start');
-            
-            if (slideAtual === TOTAL_SLIDES - 1) {
-                btnNext.style.display = 'none';
-                btnStart.style.display = 'flex';
-            } else {
-                btnNext.style.display = 'block';
-                btnStart.style.display = 'none';
-            }
-
-            // Atualiza ícones
+            const btnProx = document.getElementById('btn-prox');
+            const btnComecar = document.getElementById('btn-comecar');
+            const ultimo = atual === TOTAL - 1;
+            btnProx.style.display = ultimo ? 'none' : 'flex';
+            btnComecar.style.display = ultimo ? 'flex' : 'none';
             if (window.lucide) lucide.createIcons();
         }
 
         function proximo() {
-            if (slideAtual < TOTAL_SLIDES - 1) {
-                slideAtual++;
-                atualizarUI();
-            }
-        }
-
-        function pular() {
-            finalizar();
-        }
-
-        function comecar() {
-            finalizar();
+            if (atual < TOTAL - 1) { atual++; render(); }
         }
 
         function finalizar() {
             localStorage.setItem('dt_onboarding_done', 'true');
+            document.body.style.transition = 'opacity 0.35s ease';
             document.body.style.opacity = '0';
-            document.body.style.transition = 'opacity 0.4s ease';
-            setTimeout(() => {
-                window.location.replace('index.html');
-            }, 400);
+            setTimeout(() => window.location.replace('index.html'), 350);
         }
 
-        // Swipe para navegar
-        let touchStartX = 0;
+        // Swipe
+        let startX = 0;
+        let startY = 0;
         document.addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
-        });
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, { passive: true });
 
         document.addEventListener('touchend', (e) => {
-            const touchEndX = e.changedTouches[0].clientX;
-            const diff = touchStartX - touchEndX;
+            const dx = startX - e.changedTouches[0].clientX;
+            const dy = startY - e.changedTouches[0].clientY;
+            if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
+            if (dx > 0 && atual < TOTAL - 1) { atual++; render(); }
+            else if (dx < 0 && atual > 0) { atual--; render(); }
+        }, { passive: true });
 
-            if (diff > 60 && slideAtual < TOTAL_SLIDES - 1) {
-                slideAtual++;
-                atualizarUI();
-            } else if (diff < -60 && slideAtual > 0) {
-                slideAtual--;
-                atualizarUI();
-            }
+        // Setas do teclado (desktop)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && atual < TOTAL - 1) { atual++; render(); }
+            if (e.key === 'ArrowLeft' && atual > 0) { atual--; render(); }
         });
 
-        // Animação de entrada
-        document.body.style.opacity = '0';
-        setTimeout(() => {
-            document.body.style.transition = 'opacity 0.6s ease';
-            document.body.style.opacity = '1';
-        }, 100);
-
-        // Inicializa
-        atualizarUI();
+        render();
         if (window.lucide) lucide.createIcons();
     </script>
 </body>
