@@ -3,7 +3,7 @@
 <head>
     <script>if (!localStorage.getItem('dt_user_name')) { window.location.href = 'login.html'; }</script>
     <script src="hb-loader.js"></script>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Conteúdos - Hub Brain</title>
@@ -106,12 +106,18 @@
         </div>
         <span class="logo-brain">BRAIN</span>
     </div>
-    <button id="ct-add" class="ct-header-add" aria-label="Adicionar">
-        <i data-lucide="plus"></i>
-    </button>
+    <div style="display:flex; gap:8px;">
+        <button id="ct-compartilhar" class="ct-header-add" aria-label="Compartilhar pasta" title="Compartilhar pasta">
+            <i data-lucide="share-2"></i>
+        </button>
+        <button id="ct-add" class="ct-header-add" aria-label="Adicionar">
+            <i data-lucide="plus"></i>
+        </button>
+    </div>
 </header>
 
 <main class="ct-wrap">
+    <div id="ct-fila-badge" class="ct-fila-badge" style="display:none;"></div>
     <div id="ct-loading" class="ct-loading"><span class="ct-spin"></span> Carregando…</div>
     <div id="ct-vazio" class="ct-vazio" style="display:none;">
         <div style="font-size:56px;margin-bottom:12px;">📭</div>
@@ -123,18 +129,18 @@
 
 <div id="ct-viewer" class="ct-viewer">
     <div class="ct-viewer-top">
-    <div class="ct-viewer-info" id="ct-viewer-info"></div>
-    <button class="ct-viewer-btn" id="ct-viewer-rename" title="Renomear">
-        <i data-lucide="pencil" style="width:18px;height:18px;"></i>
-    </button>
-    <button class="ct-viewer-btn" id="ct-viewer-share" title="Compartilhar">
-        <i data-lucide="share-2" style="width:18px;height:18px;"></i>
-    </button>
-    <button class="ct-viewer-btn" id="ct-viewer-del" title="Excluir">
-        <i data-lucide="trash-2" style="width:18px;height:18px;"></i>
-    </button>
-    <button class="ct-viewer-btn" id="ct-viewer-x" title="Fechar">✕</button>
-</div>
+        <div class="ct-viewer-info" id="ct-viewer-info"></div>
+        <button class="ct-viewer-btn" id="ct-viewer-rename" title="Renomear">
+            <i data-lucide="pencil" style="width:18px;height:18px;"></i>
+        </button>
+        <button class="ct-viewer-btn" id="ct-viewer-share" title="Compartilhar">
+            <i data-lucide="share-2" style="width:18px;height:18px;"></i>
+        </button>
+        <button class="ct-viewer-btn" id="ct-viewer-del" title="Excluir">
+            <i data-lucide="trash-2" style="width:18px;height:18px;"></i>
+        </button>
+        <button class="ct-viewer-btn" id="ct-viewer-x" title="Fechar">✕</button>
+    </div>
     <button class="ct-viewer-nav ct-viewer-ant" id="ct-viewer-ant">‹</button>
     <button class="ct-viewer-nav ct-viewer-prox" id="ct-viewer-prox">›</button>
     <img id="ct-viewer-img" alt="">
