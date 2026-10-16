@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <script src="hb-loader.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Login</title>
@@ -10,11 +11,6 @@
     <link rel="stylesheet" href="auth.css">
 </head>
 <body>
-
-    <div id="hb-loading">
-        <img src="https://media.tenor.com/GQAsycjoZG8AAAAi/scuba-scuba-cat.gif" alt="">
-        <p>Preparando seu acesso...</p>
-    </div>
 
     <a href="welcome.html" class="voltar">
         <i data-lucide="arrow-left"></i>
@@ -92,7 +88,6 @@
     </main>
 
     <script type="module" src="login-logica.js"></script>
-    <script src="auth-loader.js"></script>
     <script>
         lucide.createIcons();
         const inputPass = document.getElementById('user-pass');
