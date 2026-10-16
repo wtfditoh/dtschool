@@ -1,5 +1,5 @@
-/* hb-rapido.js — "Adicionar rápido" com IA + bimestre.
-   Duas abas: 📝 Tarefa (IA) e 📸 Conteúdo (foto/arquivo por matéria + bimestre).
+/* hb-rapido.js — "Adicionar rápido" com IA + bimestre + relacionar com atividade.
+   Duas abas: 📝 Tarefa (IA) e 📸 Conteúdo (foto/arquivo por matéria + bimestre + tarefa).
    API: abrirRapido({ aba, data, nome, bimestre, salvarTarefa, onTarefa, onConteudo, maisOpcoes })
         enviarInline(texto, { onEstado }) */
 import { collection, addDoc, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -104,7 +104,6 @@ async function salvar(opts, dados) {
     return r && r.tarefa ? r : { tarefa: r, desfazer: null };
 }
 
-/* Inline (card da Home) */
 export async function enviarInline(texto, opts) {
     opts = opts || {};
     texto = String(texto || '').trim();
@@ -126,7 +125,7 @@ export async function enviarInline(texto, opts) {
 const st = {
     aba: 'tarefa', opts: {}, materias: ['Geral'], ocupado: false, iaTexto: '', nomeIA: null,
     q: { data: '', tipo: 'tarefa', materia: 'Geral', bimestre: '', dataPadrao: '', materiaPadrao: 'Geral', manual: {}, auto: {} },
-    itens: [], matConteudo: 'Geral', bimConteudo: ''
+    itens: [], matConteudo: 'Geral', bimConteudo: '', tarefaConteudo: null, tarefasDisponiveis: []
 };
 let ui = null;
 
@@ -150,6 +149,7 @@ function montar() {
                 '<div class="hbr-painel" data-p="conteudo">' +
                     '<div class="hbr-rot">Matéria</div><div class="hbr-chips" id="hbr-mats"></div>' +
                     '<div class="hbr-rot">Bimestre <small style="opacity:0.5;text-transform:none;letter-spacing:0;">(opcional)</small></div><div class="hbr-chips" id="hbr-bims"></div>' +
+                    '<div class="hbr-rot">Relacionar com atividade <small style="opacity:0.5;text-transform:none;letter-spacing:0;">(opcional)</small></div><div class="hbr-chips" id="hbr-tarefas"></div>' +
                     '<div class="hbr-rot">Adicionar</div>' +
                     '<div class="hbr-fontes">' +
                         '<button data-fonte="camera"><span>📷</span><b>Tirar foto</b></button>' +
@@ -165,7 +165,7 @@ function montar() {
             '<div class="hbr-pe" id="hbr-pe"></div>' +
         '</div>';
     document.body.appendChild(ov);
-    ui = { ov, box: ov.querySelector('.hbr-sheet'), nome: ov.querySelector('#hbr-nome'), prev: ov.querySelector('#hbr-prev'), chips: ov.querySelector('#hbr-chips'), mats: ov.querySelector('#hbr-mats'), bims: ov.querySelector('#hbr-bims'), itens: ov.querySelector('#hbr-itens'), aviso: ov.querySelector('#hbr-aviso'), pe: ov.querySelector('#hbr-pe'), iaBtn: ov.querySelector('#hbr-ia'), iaAuto: ov.querySelector('#hbr-ia-auto') };
+    ui = { ov, box: ov.querySelector('.hbr-sheet'), nome: ov.querySelector('#hbr-nome'), prev: ov.querySelector('#hbr-prev'), chips: ov.querySelector('#hbr-chips'), mats: ov.querySelector('#hbr-mats'), bims: ov.querySelector('#hbr-bims'), tarefas: ov.querySelector('#hbr-tarefas'), itens: ov.querySelector('#hbr-itens'), aviso: ov.querySelector('#hbr-aviso'), pe: ov.querySelector('#hbr-pe'), iaBtn: ov.querySelector('#hbr-ia'), iaAuto: ov.querySelector('#hbr-ia-auto') };
 
     ov.addEventListener('click', onClick);
     ov.addEventListener('change', onChange);
@@ -206,6 +206,7 @@ export async function abrirRapido(opts) {
     if (ui.nome.value) interpretar(); else renderTarefa();
     renderConteudo(); renderPe();
     if (st.aba === 'tarefa') setTimeout(() => ui.nome.focus(), 60);
+    if (st.aba === 'conteudo') carregarTarefasDisponiveis();
 }
 
 function renderAba() {
@@ -222,7 +223,6 @@ function renderAba() {
     renderTarefa(); renderConteudo(); renderPe();
 }
 
-/* Chips de tarefa */
 function chipsTarefa() {
     const q = st.q, hoje = hojeStr(), amanha = Core.somarDias(hoje, 1), depois = Core.somarDias(hoje, 2);
     const rotDia = (d) => { const n = Core.NOMES_DIA[Core.diaDaSemana(d)]; return n.charAt(0) + n.slice(1).toLowerCase() + ' ' + (+d.split('-')[2]); };
@@ -310,11 +310,49 @@ async function confirmarTarefa() {
     } finally { st.ocupado = false; if (aberto()) renderPe(); }
 }
 
-/* Conteúdo */
+async function carregarTarefasDisponiveis() {
+    st.tarefaConteudo = null;
+    st.tarefasDisponiveis = [];
+    try {
+        const email = userEmail();
+        if (!email) return;
+        const { query, where, getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        const q = query(collection(db, 'agenda'), where('usuario', '==', email), where('concluida', '==', false));
+        let snap;
+        try { snap = await getDocs(q); }
+        catch (e) {
+            const q2 = query(collection(db, 'agenda'), where('usuario', '==', email));
+            snap = await getDocs(q2);
+        }
+        const arr = [];
+        snap.forEach((d) => {
+            const t = d.data();
+            if (t.concluida) return;
+            arr.push({ id: d.id, nome: t.nome, materia: t.materia, tipo: t.tipo, dataFim: t.dataFim });
+        });
+        arr.sort((a, b) => String(a.dataFim || '').localeCompare(String(b.dataFim || '')));
+        st.tarefasDisponiveis = arr;
+        renderConteudo();
+    } catch (e) {
+        console.warn('[rapido] tarefas indisponíveis:', e);
+    }
+}
+
 function renderConteudo() {
     ui.mats.innerHTML = st.materias.map((m) => '<button type="button" class="hbr-chip' + (st.matConteudo === m ? ' on' : '') + '" data-mat-c="' + esc(m) + '"><i class="hbr-dot" style="background:' + Core.corMateria(m) + '"></i>' + esc(m) + '</button>').join('');
     const bims = ['1','2','3','4'].map((b) => '<button type="button" class="hbr-chip' + (st.bimConteudo === b ? ' on' : '') + '" data-bim-c="' + b + '">' + b + 'º BIM</button>').join('');
     ui.bims.innerHTML = bims;
+
+    if (ui.tarefas) {
+        if (!st.tarefasDisponiveis.length) {
+            ui.tarefas.innerHTML = '<span style="font-size:11px;color:#555;font-weight:600;padding:6px 2px;">Nenhuma atividade pendente</span>';
+        } else {
+            ui.tarefas.innerHTML = st.tarefasDisponiveis.slice(0, 8).map((t) => {
+                const on = st.tarefaConteudo && st.tarefaConteudo.id === t.id;
+                return '<button type="button" class="hbr-chip' + (on ? ' on' : '') + '" data-tarefa-c="' + esc(t.id) + '">📌 ' + esc((t.nome || '').slice(0, 24)) + '</button>';
+            }).join('');
+        }
+    }
 
     ui.itens.innerHTML = st.itens.map((it, i) =>
         '<div class="hbr-item">' + (it.url ? '<img src="' + it.url + '" alt="">' : '<span class="hbr-item-ico">' + emojiPorExt(extArquivo(it.file.name)) + '</span>') +
@@ -341,6 +379,8 @@ async function enviarConteudo() {
             items: st.itens.map((it) => ({ file: it.file, arq: it.arq })),
             materia: st.matConteudo,
             bimestre: st.bimConteudo,
+            tarefaId: st.tarefaConteudo ? st.tarefaConteudo.id : '',
+            tarefaNome: st.tarefaConteudo ? st.tarefaConteudo.nome : '',
             userEmail: userEmail() || '',
             onProgresso: (i, n) => renderPe('Enviando ' + i + '/' + n + '…')
         });
@@ -390,6 +430,17 @@ function onClick(e) {
     if (bc) {
         const b = bc.dataset.bimC;
         st.bimConteudo = (st.bimConteudo === b) ? '' : b;
+        renderConteudo();
+        return;
+    }
+    const tc = t.closest('[data-tarefa-c]');
+    if (tc) {
+        const id = tc.dataset.tarefaC;
+        if (st.tarefaConteudo && st.tarefaConteudo.id === id) {
+            st.tarefaConteudo = null;
+        } else {
+            st.tarefaConteudo = st.tarefasDisponiveis.find((x) => x.id === id) || null;
+        }
         renderConteudo();
         return;
     }
