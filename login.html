@@ -5,117 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hub Brain - Login</title>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="login.css">
 </head>
 <body>
 <div class="login-wrapper">
-    
-    <!-- MASCOTE CÉREBRO 3D -->
-    <div class="brain-character" id="mascote">
-        <!-- SVG do cérebro -->
-        <svg class="brain-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <radialGradient id="brainGrad" cx="40%" cy="35%">
-                    <stop offset="0%" stop-color="#b060ff"/>
-                    <stop offset="60%" stop-color="#8a2be2"/>
-                    <stop offset="100%" stop-color="#5a10c0"/>
-                </radialGradient>
-                <filter id="shadow">
-                    <feDropShadow dx="0" dy="8" stdDeviation="6" flood-opacity="0.4"/>
-                </filter>
-            </defs>
-            
-            <!-- Base do cérebro -->
-            <g filter="url(#shadow)">
-                <!-- Hemisfério esquerdo -->
-                <path fill="url(#brainGrad)" stroke="#5a10c0" stroke-width="2"
-                      d="M 70 100 
-                         Q 50 70, 55 50
-                         Q 60 30, 75 25
-                         Q 90 20, 100 30
-                         Q 100 50, 95 70
-                         Q 90 85, 85 100
-                         Q 82 120, 75 135
-                         Q 70 145, 65 155
-                         Q 62 165, 70 170
-                         L 70 100 Z"/>
-                
-                <!-- Hemisfério direito -->
-                <path fill="url(#brainGrad)" stroke="#5a10c0" stroke-width="2"
-                      d="M 130 100
-                         Q 150 70, 145 50
-                         Q 140 30, 125 25
-                         Q 110 20, 100 30
-                         Q 100 50, 105 70
-                         Q 110 85, 115 100
-                         Q 118 120, 125 135
-                         Q 130 145, 135 155
-                         Q 138 165, 130 170
-                         L 130 100 Z"/>
-                
-                <!-- Sulcos e giros -->
-                <g stroke="#6a1fc2" stroke-width="3" fill="none" opacity="0.6" stroke-linecap="round">
-                    <path d="M 65 55 Q 70 60, 75 58"/>
-                    <path d="M 62 70 Q 68 75, 73 73"/>
-                    <path d="M 60 90 Q 67 95, 72 92"/>
-                    <path d="M 63 110 Q 70 115, 75 112"/>
-                    <path d="M 65 130 Q 71 135, 76 132"/>
-                    <path d="M 135 55 Q 130 60, 125 58"/>
-                    <path d="M 138 70 Q 132 75, 127 73"/>
-                    <path d="M 140 90 Q 133 95, 128 92"/>
-                    <path d="M 137 110 Q 130 115, 125 112"/>
-                    <path d="M 135 130 Q 129 135, 124 132"/>
-                </g>
-                
-                <!-- Brilhos -->
-                <ellipse fill="rgba(255,255,255,0.15)" cx="75" cy="45" rx="12" ry="8" transform="rotate(-20 75 45)"/>
-                <ellipse fill="rgba(255,255,255,0.15)" cx="125" cy="45" rx="12" ry="8" transform="rotate(20 125 45)"/>
-                <ellipse fill="rgba(255,255,255,0.08)" cx="70" cy="100" rx="8" ry="5"/>
-                <ellipse fill="rgba(255,255,255,0.08)" cx="130" cy="100" rx="8" ry="5"/>
-            </g>
-        </svg>
-        
-        <!-- Olhos -->
-        <div class="character-eyes">
-            <div class="char-eye left-eye">
-                <div class="eyeball">
-                    <div class="pupil" id="pupil-left">
-                        <div class="pupil-shine"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="char-eye right-eye">
-                <div class="eyeball">
-                    <div class="pupil" id="pupil-right">
-                        <div class="pupil-shine"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Boca -->
-        <div class="character-mouth" id="mouth">
-            <svg viewBox="0 0 40 20" class="mouth-svg">
-                <path id="mouth-path" d="M 5 10 Q 20 15 35 10" 
-                      stroke="#8a2be2" stroke-width="3" 
-                      fill="none" stroke-linecap="round"/>
-            </svg>
-        </div>
-        
-        <!-- Partículas pensando -->
-        <div class="thought-particles">
-            <div class="thought-bubble"></div>
-            <div class="thought-bubble"></div>
-            <div class="thought-bubble"></div>
-        </div>
+
+    <!-- MASCOTE MACACO (Lottie) -->
+    <div class="mascote-wrap" id="mascote">
+        <div id="lottie-hello"   style="width:100%;height:100%"></div>
+        <div id="lottie-sucesso" style="width:100%;height:100%;display:none"></div>
+        <div id="lottie-erro"    style="width:100%;height:100%;display:none"></div>
     </div>
 
     <!-- CARD LOGIN -->
     <div class="login-card" id="login-card">
         <div class="card-glow"></div>
-        
+
         <div class="logo-section">
             <h1>HUB <span>BRAIN</span></h1>
             <p>Domine sua rotina de estudos</p>
@@ -125,10 +33,10 @@
             <div class="input-icon">
                 <i data-lucide="mail"></i>
             </div>
-            <input 
-                type="email" 
-                id="user-email" 
-                placeholder="Seu e-mail" 
+            <input
+                type="email"
+                id="user-email"
+                placeholder="Seu e-mail"
                 autocomplete="email"
                 spellcheck="false"
             >
@@ -138,10 +46,10 @@
             <div class="input-icon">
                 <i data-lucide="lock"></i>
             </div>
-            <input 
-                type="password" 
-                id="user-pass" 
-                placeholder="Sua senha" 
+            <input
+                type="password"
+                id="user-pass"
+                placeholder="Sua senha"
                 autocomplete="current-password"
             >
             <button type="button" class="toggle-password" onclick="toggleSenha()">
@@ -189,63 +97,77 @@
 <script>
     lucide.createIcons();
 
-    const mascote = document.getElementById('mascote');
     const inputEmail = document.getElementById('user-email');
-    const inputPass = document.getElementById('user-pass');
-    const card = document.getElementById('login-card');
-    const pupilL = document.getElementById('pupil-left');
-    const pupilR = document.getElementById('pupil-right');
-    const mouth = document.getElementById('mouth-path');
+    const inputPass  = document.getElementById('user-pass');
+    const card       = document.getElementById('login-card');
 
-    // ── MOVIMENTO DOS OLHOS ─────────────────────────────────────────
-    function moverOlhos(x, y) {
-        if (!mascote || mascote.classList.contains('hide-eyes')) return;
-        
-        const rect = mascote.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2 - 10;
-        
-        const angle = Math.atan2(y - centerY, x - centerX);
-        const distance = Math.min(4, Math.hypot(x - centerX, y - centerY) / 40);
-        
-        const moveX = Math.cos(angle) * distance;
-        const moveY = Math.sin(angle) * distance;
-        
-        if (pupilL) pupilL.style.transform = `translate(${moveX}px, ${moveY}px)`;
-        if (pupilR) pupilR.style.transform = `translate(${moveX}px, ${moveY}px)`;
+    /* ═══ LOTTIE — MASCOTE MACACO ROXO ═══ */
+    let animHello, animSucesso, animErro;
+
+    function mostrarEstado(nome) {
+        ['hello', 'sucesso', 'erro'].forEach(n => {
+            const el = document.getElementById('lottie-' + n);
+            if (el) el.style.display = (n === nome) ? 'block' : 'none';
+        });
     }
 
-    document.addEventListener('mousemove', e => moverOlhos(e.clientX, e.clientY));
-    document.addEventListener('touchmove', e => {
-        if (e.touches[0]) moverOlhos(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
+    // Carrega os 3
+    animHello   = lottie.loadAnimation({ container: document.getElementById('lottie-hello'),   renderer: 'svg', loop: true,  autoplay: true,  path: 'lottie/macaco-hello.json' });
+    animSucesso = lottie.loadAnimation({ container: document.getElementById('lottie-sucesso'), renderer: 'svg', loop: false, autoplay: false, path: 'lottie/macaco-sucesso.json' });
+    animErro    = lottie.loadAnimation({ container: document.getElementById('lottie-erro'),    renderer: 'svg', loop: false, autoplay: false, path: 'lottie/macaco-erro.json' });
 
-    // ── ESTADOS DO MASCOTE ─────────────────────────────────────────
-    inputEmail && inputEmail.addEventListener('focus', () => {
-        mascote.classList.remove('hide-eyes', 'error', 'success');
-        if (pupilL) pupilL.style.transform = 'translate(0, 5px)';
-        if (pupilR) pupilR.style.transform = 'translate(0, 5px)';
-        if (mouth) mouth.setAttribute('d', 'M 5 10 Q 20 15 35 10');
+    // Estado inicial: idle (frames 0-30 do hello)
+    animHello.addEventListener('DOMLoaded', () => {
+        animHello.loop = true;
+        animHello.setSegment(0, 30);
+        animHello.play();
     });
 
-    inputEmail && inputEmail.addEventListener('blur', () => {
-        if (pupilL) pupilL.style.transform = 'translate(0, 0)';
-        if (pupilR) pupilR.style.transform = 'translate(0, 0)';
+    /* ═══ REAÇÕES AOS INPUTS ═══ */
+    // Foco no email → idle
+    inputEmail?.addEventListener('focus', () => {
+        mostrarEstado('hello');
+        animHello.loop = true;
+        animHello.setSegment(0, 30);
+        animHello.play();
     });
 
-    inputPass && inputPass.addEventListener('focus', () => {
-        mascote.classList.add('hide-eyes');
-        mascote.classList.remove('error', 'success');
-        if (mouth) mouth.setAttribute('d', 'M 5 12 Q 20 8 35 12');
+    // Foco na senha → cobre os olhos (frames 30-115)
+    inputPass?.addEventListener('focus', () => {
+        mostrarEstado('hello');
+        animHello.loop = false;
+        animHello.setSegment(30, 115);
+        animHello.play();
     });
 
-    inputPass && inputPass.addEventListener('blur', () => {
-        mascote.classList.remove('hide-eyes');
-        if (mouth) mouth.setAttribute('d', 'M 5 10 Q 20 15 35 10');
+    // Sai da senha → volta pro idle
+    inputPass?.addEventListener('blur', () => {
+        animHello.loop = true;
+        animHello.setSegment(0, 30);
+        animHello.play();
     });
 
-    // ── TOGGLE SENHA ────────────────────────────────────────────────
-    window.toggleSenha = function() {
+    /* ═══ ESTADOS CHAMADOS PELO login-logica.js ═══ */
+    window.mascoteErro = function () {
+        mostrarEstado('erro');
+        animErro.goToAndPlay(0, true);
+        card?.classList.add('shake-error');
+        setTimeout(() => {
+            card?.classList.remove('shake-error');
+            mostrarEstado('hello');
+            animHello.loop = true;
+            animHello.setSegment(0, 30);
+            animHello.play();
+        }, 2500);
+    };
+
+    window.mascoteSucesso = function () {
+        mostrarEstado('sucesso');
+        animSucesso.goToAndPlay(0, true);
+    };
+
+    /* ═══ TOGGLE SENHA ═══ */
+    window.toggleSenha = function () {
         const type = inputPass.type === 'password' ? 'text' : 'password';
         inputPass.type = type;
         const icon = document.getElementById('eye-icon');
@@ -253,26 +175,7 @@
         lucide.createIcons();
     };
 
-    // ── ANIMAÇÕES DE FEEDBACK ───────────────────────────────────────
-    window.yetiErro = function() {
-        mascote.classList.add('error');
-        mascote.classList.remove('success', 'hide-eyes');
-        card.classList.add('shake-error');
-        if (mouth) mouth.setAttribute('d', 'M 5 15 Q 20 10 35 15');
-        setTimeout(() => {
-            mascote.classList.remove('error');
-            card.classList.remove('shake-error');
-            if (mouth) mouth.setAttribute('d', 'M 5 10 Q 20 15 35 10');
-        }, 1500);
-    };
-
-    window.yetiSucesso = function() {
-        mascote.classList.add('success');
-        mascote.classList.remove('error', 'hide-eyes');
-        if (mouth) mouth.setAttribute('d', 'M 5 8 Q 20 18 35 8');
-    };
-
-    window.recuperarSenha = function(e) {
+    window.recuperarSenha = function (e) {
         if (e) e.preventDefault();
         if (typeof window.executarRecuperacao === 'function') window.executarRecuperacao();
     };
