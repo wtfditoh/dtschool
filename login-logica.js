@@ -26,9 +26,9 @@ function avisar(msg, tipo = "erro") {
     status.classList.remove('sucesso');
     if (tipo === "sucesso") {
         status.classList.add('sucesso');
-        if (window.yetiSucesso) window.yetiSucesso();
+        if (window.mascoteSucesso) window.mascoteSucesso();
     } else {
-        if (window.yetiErro) window.yetiErro();
+        if (window.mascoteErro) window.mascoteErro();
     }
     status.style.opacity = "1";
     setTimeout(() => { status.style.opacity = "0"; }, 2000);
@@ -48,7 +48,7 @@ window.tentarLogar = async (e) => {
         localStorage.setItem('dt_user_email', email.toLowerCase());
         localStorage.setItem('dt_user_type', 'google');
         avisar("Bem-vindo de volta!", "sucesso");
-        setTimeout(() => window.location.replace('index.html'), 800);
+        setTimeout(() => window.location.replace('index.html'), 1500);
     } catch (error) {
         avisar("E-mail ou senha inválidos!");
     }
@@ -73,7 +73,7 @@ window.realizarCadastro = async (e) => {
             email: email.toLowerCase(), criadoEm: serverTimestamp()
         });
         avisar("Conta criada!", "sucesso");
-        setTimeout(() => window.location.replace('onboarding.html'), 800);
+        setTimeout(() => window.location.replace('onboarding.html'), 1500);
     } catch (error) {
         avisar("Erro ao criar conta. E-mail já existe?");
     }
