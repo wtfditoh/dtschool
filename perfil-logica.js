@@ -390,7 +390,7 @@ window.logout = () => {
     localStorage.removeItem('dt_user_email');
     localStorage.removeItem('dt_user_avatar');
     localStorage.removeItem('dt_user_foto');
-    window.location.href = 'login.html';
+    window.location.href = 'welcome.html';
 };
 
 window.toggleConquistas = () => {
