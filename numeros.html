@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script src="hb-loader.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Brasil em Números - Hub Brain</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="numeros.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header-pill">
+        <a href="welcome.html" class="header-btn">
+            <i data-lucide="arrow-left"></i>
+        </a>
+        <span class="header-title">Números</span>
+        <a href="login.html" class="header-btn roxo">
+            <i data-lucide="log-in"></i>
+        </a>
+    </header>
+
+    <main class="container">
+
+        <!-- HERO -->
+        <section class="hero">
+            <span class="kicker" id="hero-kicker">DADOS PÚBLICOS · INEP</span>
+            <h1>Educação básica<br>em <em>números</em></h1>
+            <p id="hero-desc">Dados oficiais do Censo Escolar do INEP, atualizados anualmente. Sem login, sem enrolação.</p>
+        </section>
+
+        <!-- TOGGLE DE NÍVEL -->
+        <nav class="nivel-toggle">
+            <button class="nivel-btn on" data-nivel="brasil" onclick="mudarNivel('brasil')">
+                <i data-lucide="globe"></i>
+                <span>Brasil</span>
+            </button>
+            <button class="nivel-btn" data-nivel="regioes" onclick="mudarNivel('regioes')">
+                <i data-lucide="map"></i>
+                <span>Regiões</span>
+            </button>
+            <button class="nivel-btn" data-nivel="estados" onclick="mudarNivel('estados')">
+                <i data-lucide="map-pin"></i>
+                <span>Estados</span>
+            </button>
+        </nav>
+
+        <!-- VIEW: BRASIL -->
+        <section class="view on" id="view-brasil">
+            <div class="cards-brasil">
+                <div class="card-destaque">
+                    <div class="card-icon"><i data-lucide="school"></i></div>
+                    <span class="card-label">Escolas</span>
+                    <strong class="card-valor" id="br-escolas">—</strong>
+                    <div class="card-detalhe" id="br-escolas-detalhe"></div>
+                </div>
+
+                <div class="card-destaque">
+                    <div class="card-icon"><i data-lucide="users"></i></div>
+                    <span class="card-label">Alunos</span>
+                    <strong class="card-valor" id="br-alunos">—</strong>
+                    <div class="card-detalhe" id="br-alunos-detalhe"></div>
+                </div>
+
+                <div class="card-destaque">
+                    <div class="card-icon"><i data-lucide="graduation-cap"></i></div>
+                    <span class="card-label">Professores</span>
+                    <strong class="card-valor" id="br-professores">—</strong>
+                    <div class="card-detalhe" id="br-professores-detalhe"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: REGIÕES -->
+        <section class="view" id="view-regioes">
+            <div class="lista" id="lista-regioes"></div>
+        </section>
+
+        <!-- VIEW: ESTADOS -->
+        <section class="view" id="view-estados">
+            <div class="lista" id="lista-estados"></div>
+        </section>
+
+        <!-- RODAPÉ -->
+        <footer class="rodape">
+            <div class="rodape-linha">
+                <span class="rodape-label">FONTE</span>
+                <span class="rodape-valor" id="rodape-fonte">—</span>
+            </div>
+            <div class="rodape-linha">
+                <span class="rodape-label">ATUALIZADO EM</span>
+                <span class="rodape-valor" id="rodape-atualizado">—</span>
+            </div>
+            <a href="https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/sinopses-estatisticas/educacao-basica"
+               target="_blank" rel="noopener" class="rodape-link">
+                Ver dados originais no INEP
+                <i data-lucide="external-link"></i>
+            </a>
+        </footer>
+
+    </main>
+
+    <script src="numeros.js"></script>
+</body>
+</html>
