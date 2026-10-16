@@ -106,7 +106,7 @@ const criarMenuGlobal = () => {
     if (btnOpen) btnOpen.onclick = abrirMenu;
     if (btnClose) btnClose.onclick = fecharMenu;
     if (menuOverlay) menuOverlay.onclick = fecharMenu;
-    if (btnLogout) btnLogout.onclick = () => { localStorage.clear(); window.location.href = 'login.html'; };
+    if (btnLogout) btnLogout.onclick = () => { localStorage.clear(); window.location.href = 'welcome.html'; };
 
     // INSTALAR APP
     let deferredPrompt;
