@@ -1,0 +1,63 @@
+{
+  "ano": 2024,
+  "fonte": "INEP - Censo Escolar 2024",
+  "atualizado": "2026-10-16",
+
+  "brasil": {
+    "escolas_total": 178000,
+    "escolas_publicas": 138400,
+    "escolas_privadas": 39600,
+    "alunos_total": 47120000,
+    "alunos_fundamental": 22034000,
+    "alunos_medio": 7810000,
+    "professores_total": 2367777,
+    "professores_efetivos": 331440,
+    "professores_temporarios": 331971
+  },
+
+  "regioes": [
+    {
+      "nome": "Sudeste",
+      "escolas": 74800,
+      "alunos": 19120000,
+      "professores": 952000
+    },
+    {
+      "nome": "Nordeste",
+      "escolas": 55200,
+      "alunos": 12110000,
+      "professores": 604000
+    },
+    {
+      "nome": "Sul",
+      "escolas": 28900,
+      "alunos": 7980000,
+      "professores": 401000
+    },
+    {
+      "nome": "Norte",
+      "escolas": 14000,
+      "alunos": 4750000,
+      "professores": 241000
+    },
+    {
+      "nome": "Centro-Oeste",
+      "escolas": 5100,
+      "alunos": 3160000,
+      "professores": 169000
+    }
+  ],
+
+  "estados": [
+    { "uf": "SP", "nome": "São Paulo", "escolas": 22100, "alunos": 8542000, "professores": 442000 },
+    { "uf": "MG", "nome": "Minas Gerais", "escolas": 18600, "alunos": 4110000, "professores": 214000 },
+    { "uf": "RJ", "nome": "Rio de Janeiro", "escolas": 12300, "alunos": 3250000, "professores": 176000 },
+    { "uf": "BA", "nome": "Bahia", "escolas": 14200, "alunos": 3810000, "professores": 198000 },
+    { "uf": "RS", "nome": "Rio Grande do Sul", "escolas": 9600, "alunos": 2140000, "professores": 132000 },
+    { "uf": "PR", "nome": "Paraná", "escolas": 8400, "alunos": 2280000, "professores": 124000 },
+    { "uf": "PE", "nome": "Pernambuco", "escolas": 6900, "alunos": 2080000, "professores": 108000 },
+    { "uf": "CE", "nome": "Ceará", "escolas": 8100, "alunos": 2210000, "professores": 111000 },
+    { "uf": "SC", "nome": "Santa Catarina", "escolas": 5200, "alunos": 1180000, "professores": 67000 },
+    { "uf": "GO", "nome": "Goiás", "escolas": 4200, "alunos": 1310000, "professores": 68000 }
+  ]
+}
