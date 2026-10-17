@@ -317,7 +317,7 @@ window.confirmarExclusao = async function() {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// COMPARTILHAR (ESTILO ANTIGO, ESTÉTICA DO LOGIN)
+// COMPARTILHAR (FRASES NATURAIS DE ALUNO - COM SORTEIO)
 // ═══════════════════════════════════════════════════════════════════════════
 window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     let container = document.getElementById('compartilhamento-container');
@@ -328,7 +328,29 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     }
 
     const nota = parseFloat(mediaReal);
-    const isElite = nota >= 8.0;
+    
+    // Frases reais de aluno
+    const frasesTopo = {
+        nota10: ["EU SOU O PRÓPRIO GÊNIO", "NEM ESTUDEI PRA ISSO", "TÁ NA MINHA VEIA", "O PROFESSOR ME AMA", "CHUTEI TUDO E ACERTEI", "FUI FEITO PRA ISSO"],
+        nota8:  ["FÁCIL DEMAIS", "EU AVISEI", "NEM FOI TÃO DIFÍCIL", "SÓ A NATURALIDADE", "NEM PRECISEI SUAR", "TAVA NO PAPO"],
+        nota6:  ["PASSEI POR UM FIO", "DEU BOM, GRAÇAS A DEUS", "QUASE QUE NÃO", "LIVREI A CARA", "NA RISCA DO BATMAN", "UFA, PASSEI"],
+        notaBaixa: ["MEU DEUS DO CÉU", "SOCORRO", "MINHA MÃE VAI ME MATAR", "É O FIM DA LINHA", "VOU REPETIR DE ANO", "F NO CHAT"]
+    };
+
+    const frasesBaixo = {
+        nota10: ["NOTA MÁXIMA: X", "10 COM LOUVOR: X", "MÉDIA: X (PERFEITO)"],
+        nota8:  ["PASSEI COM FOLGA: X", "COM TUDO: X", "TRANQUILO: X"],
+        nota6:  ["NA RISCA: X", "POR POUCO: X", "VALEU A PENA: X"],
+        notaBaixa: ["F NO CHAT: X", "MEUS PÊSAMES: X", "DESCANSE EM PAZ: X"]
+    };
+
+    let chave = 'notaBaixa';
+    if (nota >= 9.5) chave = 'nota10';
+    else if (nota >= 8.0) chave = 'nota8';
+    else if (nota >= 6.0) chave = 'nota6';
+
+    const topSort = frasesTopo[chave][Math.floor(Math.random() * frasesTopo[chave].length)];
+    const bottomSort = frasesBaixo[chave][Math.floor(Math.random() * frasesBaixo[chave].length)].replace('X', mediaReal);
 
     // Preload da imagem
     await new Promise((resolve) => {
@@ -353,14 +375,14 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
             <!-- CONTEÚDO CENTRAL -->
             <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; z-index:10;">
                 
-                <!-- LOGO PNG FLUTUANDO (Sem círculo, sem fundo) -->
+                <!-- LOGO PNG FLUTUANDO -->
                 <div style="margin-bottom:60px; filter:drop-shadow(0 0 40px rgba(147,51,234,0.8)); animation: float 4s ease-in-out infinite;">
                     <img src="icon-514_20260512_161420_0000.png" style="width:240px; height:240px; object-fit:contain;">
                 </div>
 
-                <!-- Texto de Status (Vida que você pediu) -->
+                <!-- Texto de Status Topo (Sorteado) -->
                 <p style="color:#fff; font-size:50px; font-weight:800; text-transform:uppercase; letter-spacing:4px; margin:0 0 20px 0; text-shadow:0 0 20px rgba(147,51,234,0.8);">
-                    ${isElite ? 'NÍVEL ELITE' : 'OBJETIVO CONCLUÍDO'}
+                    ${topSort}
                 </p>
 
                 <!-- Nome da Matéria -->
@@ -368,9 +390,9 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
                     ${nomeMateria}
                 </h1>
 
-                <!-- Nota -->
+                <!-- Texto de Status Rodapé (Sorteado) -->
                 <p style="margin-top:40px; font-size:35px; font-weight:600; color:rgba(255,255,255,0.8); text-transform:uppercase; letter-spacing:8px; border-bottom:2px solid rgba(147,51,234,0.6); padding-bottom:10px;">
-                    ${isElite ? `NOTA EXTRAORDINÁRIA: ${mediaReal}` : `MÉDIA ${mediaReal} SUPERADA`}
+                    ${bottomSort}
                 </p>
 
             </div>
