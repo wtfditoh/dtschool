@@ -20,46 +20,85 @@ body {
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
+    overflow: hidden;
     position: relative;
 }
 
 /* ═══════════════════════════════════════════════════════
-   FUNDO ANIMADO (GRID + GLOWS)
+   FUNDO ANIMADO (GRID + GLOWS + TV EFFECT)
    ═══════════════════════════════════════════════════════ */
 
 /* Grid sutil */
-body::before {
-    content: '';
+.bg-grid {
     position: fixed;
     inset: 0;
     background-image: 
         linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
     background-size: 40px 40px;
-    z-index: -2;
+    z-index: 0;
     pointer-events: none;
 }
 
-/* Glow 1 (Roxo grande se movendo) */
-body::after {
-    content: '';
+/* Glow Roxo se movendo */
+.bg-glow {
     position: fixed;
-    top: -20%;
-    left: -10%;
-    width: 70vw;
-    height: 70vw;
-    background: radial-gradient(circle, rgba(147, 51, 234, 0.15) 0%, transparent 60%);
+    top: 50%;
+    left: 50%;
+    width: 90vw;
+    height: 90vw;
+    background: radial-gradient(circle, rgba(147, 51, 234, 0.25) 0%, transparent 60%);
     border-radius: 50%;
-    filter: blur(60px);
-    z-index: -1;
+    filter: blur(80px);
+    z-index: 1;
     pointer-events: none;
-    animation: flutuarGlow1 12s ease-in-out infinite alternate;
+    transform: translate(-50%, -50%);
+    animation: flutuarGlow 10s ease-in-out infinite alternate;
 }
 
-@keyframes flutuarGlow1 {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(10vw, 10vh) scale(1.1); }
+@keyframes flutuarGlow {
+    0% { transform: translate(-40%, -40%) scale(1); }
+    100% { transform: translate(-60%, -60%) scale(1.2); }
+}
+
+/* EFEITO TV ANTIGA NO FUNDO */
+.bg-tv-logo {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vw;
+    max-width: 500px;
+    opacity: 0.04;
+    z-index: 1;
+    pointer-events: none;
+    animation: tvFlicker 5s infinite;
+}
+
+.bg-tv-text {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20vw;
+    font-weight: 900;
+    letter-spacing: -2vw;
+    color: #fff;
+    opacity: 0.03;
+    z-index: 1;
+    pointer-events: none;
+    white-space: nowrap;
+    animation: tvFlicker 5s infinite;
+}
+
+@keyframes tvFlicker {
+    0%, 100% { opacity: 0.04; filter: blur(0px); }
+    2% { opacity: 0.08; filter: blur(2px); }
+    4% { opacity: 0.02; filter: blur(0px); }
+    6% { opacity: 0.06; filter: blur(1px); }
+    8%, 90% { opacity: 0.04; filter: blur(0px); }
+    92% { opacity: 0.07; filter: blur(2px); }
+    94% { opacity: 0.03; filter: blur(0px); }
 }
 
 /* ─── BOTÃO VOLTAR ─── */
@@ -90,13 +129,13 @@ body::after {
 .login-wrapper {
     width: 100%;
     max-width: 380px;
-    margin: auto; /* Centraliza vertical e horizontalmente */
+    margin: auto;
     padding: 60px 20px 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
-    z-index: 1;
+    z-index: 10; /* Fica acima do fundo */
     animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -142,11 +181,11 @@ body::after {
 /* ─── O CARD DE VIDRO (Glassmorphism) ─── */
 .glass-card {
     width: 100%;
-    background: rgba(20, 20, 26, 0.35); /* Muito transparente */
+    background: rgba(20, 20, 26, 0.45);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 1px solid rgba(255, 255, 255, 0.15); /* Destaque no topo */
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 28px;
     padding: 32px 24px;
     box-shadow: 
@@ -155,7 +194,7 @@ body::after {
 }
 
 /* ─── FORMULÁRIO ─── */
-.form { display: flex; flex-direction: column; gap: 18px; }
+.form { display: flex; flex-direction: column; gap: 16px; }
 .campo { display: flex; flex-direction: column; gap: 6px; }
 .campo label {
     font-size: 10px;
@@ -175,10 +214,10 @@ body::after {
 
 .input-wrap > i {
     position: absolute;
-    left: 16px;
-    width: 18px;
-    height: 18px;
-    color: var(--txt-dim);
+    left: 14px;
+    width: 16px;
+    height: 16px;
+    color: rgba(255, 255, 255, 0.25); /* Ícone mais discreto */
     pointer-events: none;
     transition: color 0.3s;
 }
@@ -188,7 +227,7 @@ body::after {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 14px;
-    padding: 14px 16px 14px 44px;
+    padding: 14px 16px 14px 40px;
     color: var(--txt);
     font-size: 14px;
     font-family: inherit;
@@ -199,18 +238,14 @@ body::after {
 
 .input-wrap input::placeholder { color: #4a4a55; }
 
-/* Brilho forte ao focar */
 .input-wrap input:focus {
     border-color: var(--roxo);
     background: rgba(147, 51, 234, 0.08);
-    box-shadow: 
-        0 0 0 4px rgba(147, 51, 234, 0.15),
-        0 0 20px rgba(147, 51, 234, 0.3);
+    box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.15), 0 0 20px rgba(147, 51, 234, 0.3);
 }
 
 .input-wrap:focus-within > i { color: var(--roxo-claro); }
 
-/* Botão olho */
 .ver-senha {
     position: absolute;
     right: 12px;
@@ -238,140 +273,63 @@ body::after {
 .check { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
 .check input { display: none; }
 .check span {
-    width: 18px;
-    height: 18px;
-    border-radius: 5px;
-    border: 1.5px solid rgba(255,255,255,0.15);
-    background: rgba(0,0,0,0.2);
-    position: relative;
-    transition: all 0.2s;
+    width: 18px; height: 18px; border-radius: 5px;
+    border: 1.5px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2);
+    position: relative; transition: all 0.2s;
 }
-.check input:checked + span {
-    background: var(--roxo);
-    border-color: var(--roxo);
-}
+.check input:checked + span { background: var(--roxo); border-color: var(--roxo); }
 .check input:checked + span::after {
-    content: '';
-    position: absolute;
-    left: 5px;
-    top: 1px;
-    width: 4px;
-    height: 9px;
-    border: solid #fff;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
+    content: ''; position: absolute; left: 5px; top: 1px;
+    width: 4px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
 }
 .check small { font-size: 12px; color: var(--txt-dim); font-weight: 500; }
 
-.linha-extra a {
-    font-size: 12px;
-    color: var(--roxo-claro);
-    text-decoration: none;
-    font-weight: 700;
-}
+.linha-extra a { font-size: 12px; color: var(--roxo-claro); text-decoration: none; font-weight: 700; }
 
-/* Status de erro/sucesso */
 .status {
-    min-height: 16px;
-    font-size: 12px;
-    font-weight: 700;
-    text-align: center;
-    color: var(--erro);
-    opacity: 0;
-    transition: opacity 0.3s;
-    margin-top: -6px;
-    margin-bottom: -6px;
+    min-height: 16px; font-size: 12px; font-weight: 700; text-align: center;
+    color: var(--erro); opacity: 0; transition: opacity 0.3s; margin-top: -6px; margin-bottom: -6px;
 }
 .status.show { opacity: 1; }
 .status.success { color: var(--sucesso); }
 
 /* ─── BOTÃO PRINCIPAL ─── */
 .btn-roxo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 16px;
-    border-radius: 14px;
-    border: none;
-    background: linear-gradient(135deg, #9333ea, #6a1fc2);
-    color: #fff;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(147, 51, 234, 0.4);
-    transition: all 0.3s;
-    margin-top: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 16px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, #9333ea, #6a1fc2); color: #fff;
+    font-family: inherit; font-size: 14px; font-weight: 800; letter-spacing: 0.5px;
+    cursor: pointer; box-shadow: 0 8px 24px rgba(147, 51, 234, 0.4);
+    transition: all 0.3s; margin-top: 8px;
 }
-.btn-roxo:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(147, 51, 234, 0.6);
-}
+.btn-roxo:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(147, 51, 234, 0.6); }
 .btn-roxo:active { transform: scale(0.98); }
 .btn-roxo:disabled { opacity: 0.6; cursor: progress; }
 .btn-roxo i { width: 18px; height: 18px; }
 
 /* ─── DIVISOR E VISITANTE ─── */
-.divisor {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin: 24px 0;
-}
+.divisor { display: flex; align-items: center; gap: 16px; margin: 24px 0; }
 .divisor span { flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
 .divisor small { font-size: 11px; color: var(--txt-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
 .btn-visitante {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: transparent;
-    color: var(--txt-dim);
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08); background: transparent;
+    color: var(--txt-dim); font-family: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
 }
 .btn-visitante:hover { background: rgba(255,255,255,0.04); color: #fff; border-color: rgba(255,255,255,0.15); }
 .btn-visitante i { width: 16px; height: 16px; }
 
 /* ─── RODAPÉ ─── */
-.rodape-form {
-    text-align: center;
-    font-size: 13px;
-    color: var(--txt-dim);
-    margin-top: 32px;
-    font-weight: 500;
-}
-.rodape-form a {
-    color: var(--roxo-claro);
-    font-weight: 800;
-    text-decoration: none;
-    margin-left: 4px;
-}
+.rodape-form { text-align: center; font-size: 13px; color: var(--txt-dim); margin-top: 32px; font-weight: 500; }
+.rodape-form a { color: var(--roxo-claro); font-weight: 800; text-decoration: none; margin-left: 4px; }
 
-.policy {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    color: #4a4a55;
-    margin-top: 24px;
-}
+.policy { display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 11px; color: #4a4a55; margin-top: 24px; }
 .policy a { color: #4a4a55; text-decoration: none; transition: color 0.2s; }
 .policy a:hover { color: var(--roxo-claro); }
 
-/* Responsivo */
 @media (max-width: 380px) {
     .login-wrapper { padding-top: 40px; }
     .glass-card { padding: 24px 18px; border-radius: 20px; }
