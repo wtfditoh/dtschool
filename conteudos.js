@@ -390,17 +390,22 @@ async function compartilharAtual() {
 /* ═══════════════ COMPARTILHAR PASTA ═══════════════ */
 async function compartilharPasta() {
     const filtrados = filtrar();
-    if (!filtrados.length) { toast('Nada pra compartilhar com esses filtros'); return; }
+    if (!filtrados.length) {
+        toast('Nada pra compartilhar com esses filtros');
+        return;
+    }
 
     const matTxt = filtroMat === 'todas' ? 'Todas as matérias' : filtroMat;
     const bimTxt = filtroBim === 'todos' ? '' : filtroBim === '_sem' ? 'Sem bimestre' : filtroBim + 'º BIM';
     const titulo = [matTxt, bimTxt].filter(Boolean).join(' · ');
 
+    // Modal customizado (substitui o confirm() do Chrome)
+    const confirmou = await abrirModalConfirmacao(titulo, filtrados.length);
+    if (!confirmou) return;
+
     const conteudosIds = filtrados.map((f) => f.id);
     const capa = filtrados.find((f) => f.tipo === 'imagem')?.thumb || filtrados[0]?.thumb || filtrados[0]?.url || '';
     const autor = (localStorage.getItem('dt_user_name') || 'Alguém').split(' ')[0];
-
-    if (!confirm(`Compartilhar pasta?\n\n"${titulo}"\n${filtrados.length} conteúdos\n\nO link pode ser aberto por qualquer pessoa.`)) return;
 
     try {
         toast('Criando pasta...', 5000);
@@ -413,6 +418,49 @@ async function compartilharPasta() {
         console.error('[pasta]', e);
         toast('Erro ao criar pasta');
     }
+}
+
+function abrirModalConfirmacao(titulo, qtd) {
+    return new Promise((resolve) => {
+        const ov = document.createElement('div');
+        ov.className = 'ct-confirm';
+        ov.innerHTML = `
+            <div class="ct-confirm-box">
+                <div class="ct-confirm-icon">🔗</div>
+                <h3>Compartilhar pasta?</h3>
+                <p>Vai ser criado um link público que qualquer pessoa pode abrir — mesmo quem não tem conta.</p>
+                <div class="ct-confirm-resumo">
+                    <div class="ct-confirm-resumo-linha">
+                        <span>Conteúdos</span>
+                        <b>${qtd} ${qtd === 1 ? 'item' : 'itens'}</b>
+                    </div>
+                    <div class="ct-confirm-resumo-linha">
+                        <span>Filtro</span>
+                        <b class="roxo">${esc(titulo)}</b>
+                    </div>
+                </div>
+                <div class="ct-confirm-btns">
+                    <button class="ct-confirm-btn sec" data-aca="cancelar">Cancelar</button>
+                    <button class="ct-confirm-btn pri" data-aca="confirmar">Compartilhar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(ov);
+        requestAnimationFrame(() => ov.classList.add('on'));
+
+        const fechar = (valor) => {
+            ov.classList.remove('on');
+            setTimeout(() => ov.remove(), 300);
+            resolve(valor);
+        };
+
+        ov.addEventListener('click', (e) => {
+            if (e.target === ov) return fechar(false);
+            const btn = e.target.closest('[data-aca]');
+            if (!btn) return;
+            fechar(btn.dataset.aca === 'confirmar');
+        });
+    });
 }
 
 function mostrarLinkModal(link, titulo, qtd) {
