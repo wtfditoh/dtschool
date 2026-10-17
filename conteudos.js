@@ -144,7 +144,8 @@ function render() {
         html += '</div></div>';
     });
 
-    lista.innerHTML = html;
+       lista.innerHTML = html;
+    atualizarFAB();
 
     lista.querySelectorAll('.ct-item').forEach(it => {
         it.addEventListener('click', () => abrirViewer(it.dataset.id));
@@ -231,6 +232,20 @@ function renderViewer() {
     const unica = fotos.length < 2;
     $('ct-viewer-ant').hidden = unica;
     $('ct-viewer-prox').hidden = unica;
+}
+function atualizarFAB() {
+    const fab = $('ct-compartilhar');
+    const txt = $('ct-fab-txt');
+    if (!fab) return;
+    const filtrados = filtrar();
+    const temFiltroAtivo = filtroMat !== 'todas' || filtroBim !== 'todos';
+    const deveMostrar = temFiltroAtivo && filtrados.length > 0;
+    if (deveMostrar) {
+        fab.classList.add('on');
+        if (txt) txt.textContent = `Compartilhar ${filtrados.length} ${filtrados.length === 1 ? 'item' : 'itens'}`;
+    } else {
+        fab.classList.remove('on');
+    }
 }
 function abrirPdfBase64(f) {
     try {
