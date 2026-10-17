@@ -20,14 +20,6 @@ const userType    = localStorage.getItem('dt_user_type');
 
 /* ═══════════════════════════════════════════════════ */
 /* TAGS DE TAREFA NO ONESIGNAL                         */
-/* A function `tarefa-aviso.mjs` roda às 7h e 20h BRT  */
-/* e manda push pra quem tem essas tags.               */
-/*                                                     */
-/* Tags salvas:                                        */
-/*   tarefa_dia    = "2026-10-14"                      */
-/*   tarefas_hoje  = "3"   (pendentes pra hoje)        */
-/*   provas_hoje   = "Matemática" (nome da próxima     */
-/*                              prova de hoje, ou "")  */
 /* ═══════════════════════════════════════════════════ */
 async function sincronizarTagsTarefa() {
     if (!window.OneSignalDeferred) return;
@@ -35,20 +27,13 @@ async function sincronizarTagsTarefa() {
 
     try {
         const hoje = new Date().toISOString().split('T')[0];
-
-        // Lê todas as tarefas pendentes do aluno
-        const q = query(
-            collection(db, 'agenda'),
-            where('usuario', '==', emailLogado),
-            where('concluida', '==', false)
-        );
+        const q = query(collection(db, 'agenda'), where('usuario', '==', emailLogado), where('concluida', '==', false));
 
         let pendentes = [];
         try {
             const snap = await getDocs(q);
             pendentes = snap.docs.map(d => d.data());
         } catch (e) {
-            // Fallback sem índice composto (busca tudo e filtra em JS)
             try {
                 const q2 = query(collection(db, 'agenda'), where('usuario', '==', emailLogado));
                 const snap2 = await getDocs(q2);
@@ -59,10 +44,7 @@ async function sincronizarTagsTarefa() {
             }
         }
 
-        // Filtra as que vencem HOJE ou estão atrasadas
         const vencendoHoje = pendentes.filter(t => t.dataFim && t.dataFim <= hoje);
-
-        // Próxima prova entre as pendentes (se tiver)
         const prova = pendentes.find(t => t.tipo === 'prova' && t.dataFim === hoje);
 
         const tags = {
@@ -72,25 +54,23 @@ async function sincronizarTagsTarefa() {
         };
 
         window.OneSignalDeferred.push(async function (OneSignal) {
-    try {
-        await OneSignal.User.addTags(tags);
-        console.log('[home] tags sincronizadas:', tags);
-    } catch (e) {
-        console.warn('[home] falha addTags:', e);
-    }
-    // Salva as mesmas infos no Firestore pra function ler direto
-    try {
-        const { doc: d2, setDoc: ss2 } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-        await ss2(d2(db, 'grades_horarias', userIdPush), {
-            tarefa_dia: tags.tarefa_dia,
-            tarefas_hoje: tags.tarefas_hoje,
-            provas_hoje: tags.provas_hoje
-        }, { merge: true });
-        console.log('[home] tags salvas no Firestore');
-    } catch (e) {
-        console.warn('[home] falha Firestore:', e);
-    }
-});
+            try {
+                await OneSignal.User.addTags(tags);
+                console.log('[home] tags sincronizadas:', tags);
+            } catch (e) {
+                console.warn('[home] falha addTags:', e);
+            }
+            try {
+                const { doc: d2, setDoc: ss2 } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                await ss2(d2(db, 'grades_horarias', userIdPush), {
+                    tarefa_dia: tags.tarefa_dia,
+                    tarefas_hoje: tags.tarefas_hoje,
+                    provas_hoje: tags.provas_hoje
+                }, { merge: true });
+            } catch (e) {
+                console.warn('[home] falha Firestore:', e);
+            }
+        });
     } catch (e) {
         console.warn('[home] erro ao sincronizar tags:', e);
     }
@@ -187,50 +167,67 @@ async function carregarStatsCards(xp, estudadoHoje) {
         statTarefas.textContent = pendentes;
     }
 
+    // 👇 CORREÇÃO DAS NOTAS AQUI 👇
     const statNotas = document.getElementById('stat-notas');
     if (statNotas) {
-        const notas = JSON.parse(localStorage.getItem('dt_notas') || localStorage.getItem('dt_caderno') || '[]');
-        statNotas.textContent = notas.length;
+        if (userType === 'local') {
+            // Local storage usa a chave 'materias'
+            const notas = JSON.parse(localStorage.getItem('materias') || '[]');
+            statNotas.textContent = notas.length;
+        } else if (emailLogado) {
+            try {
+                // Puxa do Firebase
+                const snap = await getDoc(doc(db, 'notas', emailLogado));
+                if (snap.exists() && snap.data().materias) {
+                    statNotas.textContent = snap.data().materias.length;
+                }
+            } catch(e) { console.warn('Erro notas stats:', e); }
+        }
     }
 }
 
-/* ═══════════════ CARREGAR AGENDA NA HOME ═══════════════ */
-async function carregarAgendaHome() {
-    if (!emailLogado) return;
+/* ═══════════════ CARREGAR TAREFA MAIS URGENTE ═══════════════ */
+async function carregarTarefaUrgente() {
+    if (!emailLogado && userType !== 'local') return;
+
     try {
-        const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-        const hoje = new Date().toISOString().split('T')[0];
-        
-        // Puxa tarefas pendentes
-        const q = query(collection(db, "agenda"), where("usuario", "==", emailLogado), where("concluida", "==", false));
-        const snap = await getDocs(q);
-        const pendentes = [];
-        snap.forEach(doc => {
-            const t = doc.data();
-            if (t.dataFim <= hoje) pendentes.push(t); // Pega as que vencem hoje ou já atrasadas
-        });
+        let tarefas = [];
+        if (userType === 'local') {
+            const local = JSON.parse(localStorage.getItem('dt_agenda') || '[]');
+            tarefas = local.filter(t => !t.concluida && !t.feita);
+        } else {
+            const q = query(collection(db, 'agenda'), where('usuario', '==', emailLogado), where('concluida', '==', false));
+            const snap = await getDocs(q);
+            snap.forEach(doc => tarefas.push(doc.data()));
+        }
 
-        // Ordena pelas mais urgentes
-        pendentes.sort((a, b) => a.dataFim.localeCompare(b.dataFim));
+        if (tarefas.length === 0) return;
 
-        const secao = document.getElementById('home-agenda-section');
-        const lista = document.getElementById('home-agenda-lista');
-        
-        if (pendentes.length > 0 && secao && lista) {
-            secao.style.display = 'block';
-            lista.innerHTML = pendentes.slice(0, 3).map(t => `
-                <div class="agenda-item-home" onclick="navegarPara('agenda.html')">
-                    <div style="flex:1;">
-                        <div class="name">${t.nome}</div>
-                        <div class="mat">${t.materia || 'Geral'} · ${t.dataFim.split('-').reverse().slice(0,2).join('/')}</div>
-                    </div>
-                    <i data-lucide="chevron-right" style="width:16px; color:#555;"></i>
-                </div>
-            `).join('');
+        // Ordena pela data de fim (mais próxima primeiro)
+        tarefas.sort((a, b) => (a.dataFim || '9999').localeCompare(b.dataFim || '9999'));
+        const urgente = tarefas[0];
+
+        const card = document.getElementById('home-urgent-card');
+        if (card) {
+            card.style.display = 'flex';
+            document.getElementById('urgent-nome').textContent = urgente.nome;
+            
+            // Formata a data (Hoje, Amanhã, ou dd/mm)
+            const hoje = new Date().toISOString().split('T')[0];
+            let prazoTxt = urgente.dataFim;
+            if (urgente.dataFim === hoje) prazoTxt = 'Hoje';
+            else if (urgente.dataFim) {
+                const [y, m, d] = urgente.dataFim.split('-');
+                prazoTxt = `${d}/${m}`;
+            } else {
+                prazoTxt = 'Sem data';
+            }
+            
+            document.getElementById('urgent-detalhe').textContent = `${urgente.materia || 'Geral'} · Prazo: ${prazoTxt}`;
             if (window.lucide) lucide.createIcons();
         }
     } catch (e) {
-        console.warn('Erro ao carregar agenda na home', e);
+        console.warn('Erro ao buscar tarefa urgente:', e);
     }
 }
 
@@ -243,9 +240,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const periodoEl = document.getElementById('periodo-dia');
     if (periodoEl) periodoEl.innerText = getPeriodoDia();
-
-    const dataEl = document.getElementById('current-date');
-    if (dataEl) dataEl.innerText = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
     const fraseEl = document.getElementById('frase-ia');
     if (fraseEl) fraseEl.innerText = '...';
@@ -270,8 +264,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     /* ─── Registra acesso (pro painel do mestre) ─── */
     registrarAcesso();
 
-    // 👇 ADICIONE ESSA LINHA AQUI 👇
-    carregarAgendaHome();
+    // Busca a tarefa urgente e a lista da agenda
+    carregarTarefaUrgente();
+    // carregarAgendaHome(); // (Se você tiver a função antiga da lista, pode tirar ou deixar descomentada)
 
     /* ─── Manutenção ─── */
     onSnapshot(doc(db, "config", "status_sistema"), (s) => {
@@ -291,16 +286,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const userSnap = await getDoc(doc(db, "notas", emailLogado));
             if (userSnap.exists()) {
                 const dados = userSnap.data();
-                // ═══ FOTO DE PERFIL NA HOME ═══
-    if (dados.fotoPerfil) {
-        const imgEl = document.getElementById('foto-avatar-home');
-        const icoEl = document.getElementById('icone-avatar-home');
-        if (imgEl && icoEl) {
-            imgEl.src = dados.fotoPerfil;
-            imgEl.style.display = 'block';
-            icoEl.style.display = 'none';
-        }
-    }
+                if (dados.fotoPerfil) {
+                    const imgEl = document.getElementById('foto-avatar-home');
+                    const icoEl = document.getElementById('icone-avatar-home');
+                    if (imgEl && icoEl) {
+                        imgEl.src = dados.fotoPerfil;
+                        imgEl.style.display = 'block';
+                        icoEl.style.display = 'none';
+                    }
+                }
                 xpUsuario = dados.xp || 0;
 
                 const xpDisplay = document.getElementById('xp-display');
@@ -377,79 +371,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarStatsCards(xpUsuario, estudadoHoje);
 
     /* ─── Sincroniza tags de tarefa pro push (7h e 20h) ─── */
-    // Espera o OneSignal estar pronto antes de sincronizar
-function tentarSincronizarTentativas(restantes) {
-    if (!window.OneSignalDeferred) {
-        if (restantes > 0) return setTimeout(() => tentarSincronizarTentativas(restantes - 1), 1000);
-        return;
+    function tentarSincronizarTentativas(restantes) {
+        if (!window.OneSignalDeferred) {
+            if (restantes > 0) return setTimeout(() => tentarSincronizarTentativas(restantes - 1), 1000);
+            return;
+        }
+        window.OneSignalDeferred.push(async (OS) => {
+            try {
+                if (OS.User.PushSubscription.optedIn) {
+                    sincronizarTagsTarefa();
+                    console.log('[home] tags sincronizadas na abertura');
+                } else {
+                    if (restantes > 0) setTimeout(() => tentarSincronizarTentativas(restantes - 1), 3000);
+                }
+            } catch (e) {
+                console.warn('[home] erro ao verificar OneSignal:', e);
+            }
+        });
     }
-    window.OneSignalDeferred.push(async (OS) => {
-        try {
-            // Se o device tá pronto, sincroniza
-            if (OS.User.PushSubscription.optedIn) {
-                sincronizarTagsTarefa();
-                console.log('[home] tags sincronizadas na abertura');
-            } else {
-                // Ainda não optou — tenta de novo em 3s (máx 5 tentativas)
-                if (restantes > 0) setTimeout(() => tentarSincronizarTentativas(restantes - 1), 3000);
-            }
-        } catch (e) {
-            console.warn('[home] erro ao verificar OneSignal:', e);
-        }
-    });
-}
-tentarSincronizarTentativas(10);   // tenta por até 10 segundos
-
-    /* ─── Mural ─── */
-    onSnapshot(doc(db, "config", "mural"), (snap) => {
-        if (snap.exists()) {
-            const d = snap.data();
-            const preview = document.getElementById('mural-preview');
-            const cardMural = document.getElementById('btn-mural-main');
-            const iconMural = cardMural?.querySelector('i[data-lucide="megaphone"]');
-            const strongMural = cardMural?.querySelector('strong');
-
-            const cores = {
-                purple: { hex: "#8a2be2", shadow: "rgba(138,43,226,0.5)" },
-                danger: { hex: "#ff3b30", shadow: "rgba(255,59,48,0.5)" },
-                gold:   { hex: "#ffcc00", shadow: "rgba(255,204,0,0.5)" }
-            };
-
-            const corAtual = cores[d.cor] || cores.purple;
-            if (preview) preview.innerText = d.texto;
-
-            if (cardMural && d.texto !== "Nenhum aviso no momento.") {
-                cardMural.classList.add('mural-animado');
-                cardMural.style.setProperty('--glow-color', corAtual.shadow);
-                cardMural.style.setProperty('--border-color', corAtual.hex);
-                if (iconMural) iconMural.style.color = corAtual.hex;
-                if (strongMural) strongMural.style.color = corAtual.hex;
-            } else if (cardMural) {
-                cardMural.classList.remove('mural-animado');
-                cardMural.style.borderColor = "#1a1a1a";
-                if (iconMural) iconMural.style.color = "#8a2be2";
-                if (strongMural) strongMural.style.color = "white";
-            }
-
-            if (cardMural) {
-                cardMural.onclick = () => {
-                    const modal = document.getElementById('modal-mural');
-                    const msg = document.getElementById('mural-msg');
-                    if (modal && msg) {
-                        msg.innerHTML = `
-                            <p style="white-space:pre-wrap; word-break:break-word; color:#eee; line-height:1.6; text-align:left;">${d.texto}</p>
-                            <div style="margin-top:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:15px; text-align:right;">
-                                <small style="color:${corAtual.hex}; font-weight:bold; text-transform:uppercase;">BY: ${d.autor}</small>
-                            </div>
-                        `;
-                        modal.style.display = 'flex';
-                    }
-                };
-            }
-        }
-    });
-
-    if (window.lucide) lucide.createIcons();
+    tentarSincronizarTentativas(10);
 });
 
 /* ═══════════════ REGISTRA ACESSO ═══════════════ */
@@ -553,7 +493,7 @@ window.compartilharMeta = async function(estudadoHoje, metaMin) {
 /* ═══════════════ AO VOLTAR PRO APP ═══════════════ */
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-        // Re-sincroniza tags caso tenha virado o dia ou tarefas tenham mudado
         sincronizarTagsTarefa();
+        carregarTarefaUrgente(); // Atualiza a urgente ao voltar pro app
     }
 });
