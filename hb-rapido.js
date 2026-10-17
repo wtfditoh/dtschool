@@ -114,7 +114,7 @@ export async function enviarInline(texto, opts) {
         tipo: f.tipo || 'tarefa', 
         materia: f.materia || 'Geral', 
         bimestre: '', 
-        descricao: f.descricao || '' // 👈 AQUI VAI A DESCRIÇÃO DA IA
+        descricao: f.descricao || ''
     };
     dados.dataInicio = dados.dataFim = f.data || hojeStr();
     if (opts.onEstado) opts.onEstado('salvando');
@@ -144,7 +144,6 @@ function montar() {
                     '<div class="hbr-linha-input"><input id="hbr-nome" class="hbr-input" type="text" maxlength="80" autocomplete="off" placeholder="Ex.: prova de filosofia segunda feira">' +
                     '<button class="hbr-ia" id="hbr-ia" data-hbr="ia" aria-label="Organizar com IA" title="Organizar com IA">✨</button></div>' +
                     
-                    // Campo de descrição escondido que a IA preenche
                     '<button type="button" class="hbr-add-desc" id="hbr-add-desc">➕ Adicionar descrição</button>' +
                     '<textarea id="hbr-desc" class="hbr-desc" style="display:none;" placeholder="Detalhes, capítulos, o que precisa..."></textarea>' +
                     
@@ -178,7 +177,6 @@ function montar() {
     ui.nome.addEventListener('input', () => interpretar());
     ui.nome.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); confirmarTarefa(); } });
     
-    // Abre e fecha o campo de descrição
     ui.addDesc.addEventListener('click', () => {
         const visivel = ui.desc.style.display !== 'none';
         ui.desc.style.display = visivel ? 'none' : 'block';
@@ -291,11 +289,12 @@ function aplicarCampos(r, origemIA) {
         else if (st.q.auto[k] && !origemIA) { st.q[k] = k === 'tipo' ? 'tarefa' : padrao; st.q.auto[k] = false; }
     });
     
-    // Se a IA ou heurística local acharam uma descrição, preenche o campo e abre ele
-    if (r.descricao && !ui.desc.value.trim()) {
+    if (r.descricao) {
         ui.desc.value = r.descricao;
-        ui.desc.style.display = 'block';
-        ui.addDesc.textContent = '➖ Ocultar descrição';
+        if (ui.desc.style.display === 'none') {
+            ui.desc.style.display = 'block';
+            ui.addDesc.textContent = '➖ Ocultar descrição';
+        }
     }
 }
 
@@ -420,18 +419,11 @@ async function enviarConteudo() {
     if (st.ocupado || !st.itens.length) return;
     st.ocupado = true;
 
-    // Offline: joga direto na fila
     if (!navigator.onLine) {
         try {
             await Fila.adicionar({
                 tipo: 'conteudo',
-                dados: {
-                    materia: st.matConteudo,
-                    bimestre: st.bimConteudo,
-                    tarefaId: st.tarefaConteudo ? st.tarefaConteudo.id : '',
-                    tarefaNome: st.tarefaConteudo ? st.tarefaConteudo.nome : '',
-                    userEmail: userEmail() || ''
-                },
+                dados: { materia: st.matConteudo, bimestre: st.bimConteudo, tarefaId: st.tarefaConteudo ? st.tarefaConteudo.id : '', tarefaNome: st.tarefaConteudo ? st.tarefaConteudo.nome : '', userEmail: userEmail() || '' },
                 arquivos: st.itens.map((it) => ({ file: it.file, arq: it.arq }))
             });
             const opts = st.opts;
@@ -471,13 +463,7 @@ async function enviarConteudo() {
             try {
                 await Fila.adicionar({
                     tipo: 'conteudo',
-                    dados: {
-                        materia: st.matConteudo,
-                        bimestre: st.bimConteudo,
-                        tarefaId: st.tarefaConteudo ? st.tarefaConteudo.id : '',
-                        tarefaNome: st.tarefaConteudo ? st.tarefaConteudo.nome : '',
-                        userEmail: userEmail() || ''
-                    },
+                    dados: { materia: st.matConteudo, bimestre: st.bimConteudo, tarefaId: st.tarefaConteudo ? st.tarefaConteudo.id : '', tarefaNome: st.tarefaConteudo ? st.tarefaConteudo.nome : '', userEmail: userEmail() || '' },
                     arquivos: st.itens.map((it) => ({ file: it.file, arq: it.arq }))
                 });
                 const opts = st.opts;
@@ -485,9 +471,7 @@ async function enviarConteudo() {
                 toast('📶 Sem conexão · salvo pra sincronizar depois', 4000);
                 if (opts.onConteudo) opts.onConteudo({ ok: 1, offline: true });
                 return;
-            } catch (e2) {
-                console.error('[rapido] erro ao salvar offline:', e2);
-            }
+            } catch (e2) { console.error('[rapido] erro ao salvar offline:', e2); }
         }
         toast(e.message || 'Erro ao enviar', 4500);
     } finally { st.ocupado = false; if (aberto()) renderPe(); }
@@ -513,11 +497,8 @@ function onClick(e) {
     if (q) {
         const k = q.dataset.q;
         if (k !== 'data-input') {
-            if (k === 'bimestre' && st.q.bimestre === q.dataset.val) {
-                st.q.bimestre = ''; st.q.manual.bimestre = true;
-            } else {
-                st.q[k] = q.dataset.val; st.q.manual[k] = true;
-            }
+            if (k === 'bimestre' && st.q.bimestre === q.dataset.val) { st.q.bimestre = ''; st.q.manual.bimestre = true; } 
+            else { st.q[k] = q.dataset.val; st.q.manual[k] = true; }
             renderTarefa();
         }
         return;
@@ -533,11 +514,8 @@ function onClick(e) {
     const tc = t.closest('[data-tarefa-c]');
     if (tc) {
         const id = tc.dataset.tarefaC;
-        if (st.tarefaConteudo && st.tarefaConteudo.id === id) {
-            st.tarefaConteudo = null;
-        } else {
-            st.tarefaConteudo = st.tarefasDisponiveis.find((x) => x.id === id) || null;
-        }
+        if (st.tarefaConteudo && st.tarefaConteudo.id === id) { st.tarefaConteudo = null; } 
+        else { st.tarefaConteudo = st.tarefasDisponiveis.find((x) => x.id === id) || null; }
         renderConteudo();
         return;
     }
