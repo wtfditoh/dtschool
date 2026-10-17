@@ -108,15 +108,47 @@ body::after {
 .stat-mini label { font-size: 9px; font-weight: 800; color: #aaa; letter-spacing: 1.5px; text-transform: uppercase; }
 
 /* ═══════════════ PÓDIO ═══════════════ */
-.podium-section { position: relative; padding: 30px 20px; }
+.podium-section { position: relative; padding: 30px 20px 40px; }
 .podium-bg-glow {
-    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-    width: 350px; height: 250px; background: radial-gradient(ellipse, rgba(138,43,226,0.25) 0%, transparent 70%);
+    position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
+    width: 350px; height: 250px; background: radial-gradient(ellipse, rgba(138,43,226,0.3) 0%, transparent 70%);
     filter: blur(60px); pointer-events: none;
 }
 
-.podium-container { display: flex; align-items: flex-end; justify-content: center; gap: 12px; position: relative; }
-.podium-slot { flex: 1; max-width: 120px; display: flex; flex-direction: column; align-items: center; position: relative; animation: podium-rise 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+.podium-container { 
+    display: flex; 
+    align-items: flex-end; 
+    justify-content: center; 
+    gap: 8px; 
+    position: relative; 
+    padding-bottom: 16px; /* Espaço pro chão */
+    max-width: 360px;
+    margin: 0 auto;
+}
+
+/* O CHÃO DO PÓDIO (A mágica acontece aqui) */
+.podium-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -5%; 
+    right: -5%;
+    height: 22px;
+    background: #0a0510;
+    border: 1px solid rgba(138,43,226,0.3);
+    border-top: 2px solid rgba(138,43,226,0.8);
+    border-radius: 6px;
+    box-shadow: 
+        0 20px 40px rgba(0,0,0,0.9), 
+        inset 0 5px 15px rgba(138,43,226,0.2);
+    z-index: 1;
+    transform: perspective(300px) rotateX(15deg); /* Inclinação 3D */
+}
+
+.podium-slot { 
+    flex: 1; max-width: 120px; display: flex; flex-direction: column; align-items: center; 
+    position: relative; animation: podium-rise 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; z-index: 2; 
+}
 .podium-slot.second { animation-delay: 0.1s; } .podium-slot.first { animation-delay: 0.2s; } .podium-slot.third { animation-delay: 0.3s; }
 @keyframes podium-rise { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -138,7 +170,7 @@ body::after {
 .medal-badge {
     position: absolute; top: -10px; right: -5px; width: 34px; height: 34px;
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 900; border: 2px solid var(--bg); z-index: 2;
+    font-size: 11px; font-weight: 900; border: 2px solid var(--bg); z-index: 3;
 }
 .medal-badge.gold { background: linear-gradient(135deg, #ffe259, #ffa751); color: #000; box-shadow: 0 0 25px rgba(241,196,15,0.8); }
 .medal-badge.silver { background: linear-gradient(135deg, #e6e9f0, #8d99ae); color: #000; box-shadow: 0 0 20px rgba(189,195,199,0.5); }
@@ -170,22 +202,45 @@ body::after {
     display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px;
     font-size: 12px; font-weight: 900; border: 1px solid; margin-bottom: 12px;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    position: relative; z-index: 2;
 }
 .podium-xp.gold { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 15px rgba(241,196,15,0.3); }
 .podium-xp.silver { border-color: var(--silver); color: var(--silver); }
 .podium-xp.bronze { border-color: var(--bronze); color: var(--bronze); }
 .podium-xp i { width: 14px; height: 14px; }
 
-/* Barras do Pódio */
+/* Barras do Pódio - Agora com base 3D */
 .podium-bar {
-    width: 100%; height: 80px; border-radius: 16px 16px 0 0;
-    border: 1px solid; border-bottom: none; position: relative; overflow: hidden;
+    width: 100%; 
+    border-radius: 12px 12px 0 0;
+    border: 1px solid; 
+    border-bottom: none; 
+    position: relative; 
+    overflow: hidden;
     backdrop-filter: blur(10px);
+    z-index: 2;
 }
-.podium-bar::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(255,255,255,0.15), transparent); }
-.podium-bar.gold { height: 100px; border-color: var(--gold); background: linear-gradient(to top, rgba(241,196,15,0.2), rgba(241,196,15,0.05)); }
-.podium-bar.silver { height: 80px; border-color: var(--silver); background: linear-gradient(to top, rgba(189,195,199,0.15), rgba(189,195,199,0.02)); }
-.podium-bar.bronze { height: 60px; border-color: var(--bronze); background: linear-gradient(to top, rgba(205,127,50,0.15), rgba(205,127,50,0.02)); }
+.podium-bar::before { 
+    content: ''; position: absolute; inset: 0; 
+    background: linear-gradient(to top, rgba(255,255,255,0.1), transparent); 
+}
+
+/* Adicionado borda inferior pra colar no chão */
+.podium-bar.gold { 
+    height: 110px; border-color: var(--gold); 
+    background: linear-gradient(to top, rgba(241,196,15,0.3), rgba(241,196,15,0.05)); 
+    border-bottom: 3px solid var(--gold);
+}
+.podium-bar.silver { 
+    height: 85px; border-color: var(--silver); 
+    background: linear-gradient(to top, rgba(189,195,199,0.3), rgba(189,195,199,0.05)); 
+    border-bottom: 3px solid var(--silver);
+}
+.podium-bar.bronze { 
+    height: 65px; border-color: var(--bronze); 
+    background: linear-gradient(to top, rgba(205,127,50,0.3), rgba(205,127,50,0.05)); 
+    border-bottom: 3px solid var(--bronze);
+}
 
 /* ═══════════════ DIVIDER ═══════════════ */
 .section-divider { display: flex; align-items: center; gap: 16px; padding: 30px 24px 20px; }
