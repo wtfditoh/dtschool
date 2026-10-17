@@ -18,7 +18,7 @@ const SLIDES = [
         explicacao: {
             ico: '🧠',
             titulo: 'O que mudou?',
-            texto: 'Fizemos um upgrade insano no design de toda a área de login e cadastro. Ficou digno de e-sports.'
+            texto: 'Fizemos um upgrade insano no design de toda a área de login e cadastro. Ficou digno do seu uso.'
         }
     },
     {
