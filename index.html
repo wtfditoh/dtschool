@@ -55,7 +55,7 @@
         #splash-bar { height: 100%; width: 0%; background: #8a2be2; box-shadow: 0 0 15px #8a2be2; border-radius: 10px; transition: width 0.3s ease-out; }
         .splash-hidden { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
         
-        /* HEADER LOGO ANIMADO (Padrão que já usamos) */
+        /* HEADER LOGO ANIMADO */
         .header-logo-animated { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 0; cursor: pointer; animation: logoEntrance 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         @keyframes logoEntrance { 0% { transform: translateX(-50%) scale(3) rotate(360deg); opacity: 0; } 100% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 1; } }
         .logo-hub { font-size: 20px; font-weight: 900; letter-spacing: 1px; color: white; text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); animation: textSlideIn 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.8s backwards; }
@@ -78,7 +78,7 @@
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 30000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
         .modal-card-mural { background: #16161a; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(138,43,226,0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
         
-        /* MODAL DITOH (Padrão) */
+        /* MODAL DITOH */
         .modal-dono-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; backdrop-filter: blur(25px) saturate(180%); background: rgba(10,10,10,0.75); z-index: 99999; padding: 20px; }
         .modal-dono-card { border: 1px solid rgba(138,43,226,0.3); background: rgba(15,15,15,0.95); border-radius: 30px; width: 100%; max-width: 320px; padding: 40px 25px; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.5); animation: brotarCard 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
         @keyframes brotarCard { from{opacity:0;transform:scale(0.8) translateY(30px);} to{opacity:1;transform:scale(1) translateY(0);} }
@@ -167,50 +167,64 @@
             </div>
         </div>
 
-        <!-- ADD RÁPIDO (Barra de Chat) -->
+        <!-- ADD RÁPIDO (O REI DA TELA) -->
         <div class="hbr-home" id="hbr-home">
+            <div class="hbr-home-topo">
+                <span class="hbr-home-tit">⚡ Adicionar rápido</span>
+                <span class="hbr-home-badge">✨ COM IA</span>
+            </div>
             <form class="hbr-home-form" id="hbr-home-form" autocomplete="off">
-                <input id="hbr-home-input" type="text" maxlength="80" placeholder="O que você precisa fazer?" aria-label="Nova tarefa">
-                <button type="submit" id="hbr-home-send" aria-label="Adicionar">➤</button>
+                <input id="hbr-home-input" type="text" maxlength="80" placeholder="Ex: prova de filosofia segunda feira" aria-label="Nova tarefa">
+                <button type="submit" id="hbr-home-send" aria-label="Adicionar tarefa">➤</button>
             </form>
             <div class="hbr-home-acoes">
-                <button type="button" id="hbr-home-ajustar" class="hbr-chip">⚙️ Ajustar</button>
-                <button type="button" id="hbr-home-foto" class="hbr-chip">📸 Conteúdo</button>
-                <button type="button" onclick="navegarPara('estudos.html')" class="hbr-chip">🤖 IA</button>
+                <button type="button" id="hbr-home-ajustar">⚙️ Ajustar detalhes</button>
+                <button type="button" id="hbr-home-foto">📸 Adicionar conteúdo</button>
             </div>
             <div class="hbr-home-status" id="hbr-home-status" role="status" aria-live="polite"></div>
         </div>
 
-        <!-- STATS RÁPIDOS (Glass) -->
+        <!-- STATS (4 Cards Coloridos) -->
         <div class="quick-stats">
-            <div class="stat-card" onclick="navegarPara('foco.html')">
-                <div class="stat-icon" style="color:#ff3b30;"><i data-lucide="timer"></i></div>
-                <div class="stat-info">
-                    <span class="stat-value" id="stat-foco">0h</span>
-                    <span class="stat-label">Foco hoje</span>
+            <div class="stat-card" style="--glow:rgba(138,43,226,0.15); --color:#c084fc;" onclick="navegarPara('foco.html')">
+                <div class="stat-card-top">
+                    <div class="stat-icon"><i data-lucide="timer"></i></div>
+                    <span class="stat-badge">HOJE</span>
                 </div>
+                <div class="stat-value" id="stat-foco">0h</div>
+                <div class="stat-label">Tempo de foco</div>
             </div>
-            <div class="stat-card" onclick="navegarPara('agenda.html')">
-                <div class="stat-icon" style="color:#00c851;"><i data-lucide="list-todo"></i></div>
-                <div class="stat-info">
-                    <span class="stat-value" id="stat-tarefas">0</span>
-                    <span class="stat-label">Tarefas</span>
+            <div class="stat-card" style="--glow:rgba(0,200,81,0.15); --color:#00c851;" onclick="navegarPara('agenda.html')">
+                <div class="stat-card-top">
+                    <div class="stat-icon"><i data-lucide="list-todo"></i></div>
+                    <span class="stat-badge">AGENDA</span>
                 </div>
+                <div class="stat-value" id="stat-tarefas">0</div>
+                <div class="stat-label">Tarefas</div>
             </div>
-            <div class="stat-card" onclick="navegarPara('ranking.html')">
-                <div class="stat-icon" style="color:#ffcc00;"><i data-lucide="zap"></i></div>
-                <div class="stat-info">
-                    <span class="stat-value" id="stat-xp">0</span>
-                    <span class="stat-label">XP Total</span>
+            <div class="stat-card" style="--glow:rgba(255,204,0,0.15); --color:#ffcc00;" onclick="navegarPara('ranking.html')">
+                <div class="stat-card-top">
+                    <div class="stat-icon"><i data-lucide="zap"></i></div>
+                    <span class="stat-badge">XP</span>
                 </div>
+                <div class="stat-value" id="stat-xp">0</div>
+                <div class="stat-label">Total XP</div>
+            </div>
+            <div class="stat-card" style="--glow:rgba(0,122,255,0.15); --color:#007aff;" onclick="navegarPara('notas.html')">
+                <div class="stat-card-top">
+                    <div class="stat-icon"><i data-lucide="layout-dashboard"></i></div>
+                    <span class="stat-badge">NOTAS</span>
+                </div>
+                <div class="stat-value" id="stat-notas">0</div>
+                <div class="stat-label">Salvas</div>
             </div>
         </div>
 
-        <!-- PRÓXIMAS TAREFAS (Nova seção) -->
+        <!-- PRÓXIMAS TAREFAS -->
         <section class="home-section" id="home-agenda-section" style="display:none;">
             <div class="section-header">
                 <h2 class="section-title"><i data-lucide="calendar" style="width:14px;"></i> Para hoje</h2>
-                <button class="btn-ver-tudo" onclick="navegarPara('agenda.html')">Ver agenda</button>
+                <button class="btn-ver-tudo" onclick="navegarPara('agenda.html')">Ver tudo</button>
             </div>
             <div id="home-agenda-lista" class="home-agenda-lista"></div>
         </section>
@@ -231,33 +245,65 @@
                 <div class="meta-footer">
                     <span id="meta-progress-pct">0%</span>
                     <span id="meta-progress-falta">Bora estudar! 💪</span>
-                    <button id="meta-share-btn" style="display:none; background:none; border:none; color:#8a2be2; cursor:pointer; font-size:10px; font-weight:800; align-items:center; gap:4px;">
-                        <i data-lucide="share-2" style="width:12px;"></i> COMPARTILHAR
-                    </button>
                 </div>
             </div>
         </section>
 
-        <!-- GRID DE FERRAMENTAS -->
+        <!-- GRID DE FERRAMENTAS (8 Ícones) -->
         <div class="section-header">
             <h2 class="section-title">Ferramentas</h2>
         </div>
         <div class="tools-grid">
             <div class="tool-item" onclick="navegarPara('notas.html')">
-                <div class="tool-icon" style="background: rgba(138,43,226,0.15); color: #c084fc;"><i data-lucide="layout-dashboard"></i></div>
+                <div class="tool-icon purple"><i data-lucide="layout-dashboard"></i></div>
                 <span>Notas</span>
             </div>
+            <div class="tool-item" onclick="navegarPara('agenda.html')">
+                <div class="tool-icon blue"><i data-lucide="list-todo"></i></div>
+                <span>Agenda</span>
+            </div>
             <div class="tool-item" onclick="navegarPara('conteudos.html')">
-                <div class="tool-icon" style="background: rgba(192,132,252,0.15); color: #e9d5ff;"><i data-lucide="image"></i></div>
+                <div class="tool-icon l-purple"><i data-lucide="image"></i></div>
                 <span>Conteúdos</span>
             </div>
             <div class="tool-item" onclick="navegarPara('horario.html')">
-                <div class="tool-icon" style="background: rgba(255,149,0,0.15); color: #ff9500;"><i data-lucide="clock"></i></div>
+                <div class="tool-icon orange"><i data-lucide="clock"></i></div>
                 <span>Horário</span>
             </div>
+            <div class="tool-item" onclick="navegarPara('estudos.html')">
+                <div class="tool-icon green"><i data-lucide="brain-circuit"></i></div>
+                <span>IA</span>
+            </div>
+            <div class="tool-item" onclick="navegarPara('ranking.html')">
+                <div class="tool-icon gold"><i data-lucide="trophy"></i></div>
+                <span>Ranking</span>
+            </div>
+            <div class="tool-item" onclick="navegarPara('foco.html')">
+                <div class="tool-icon red"><i data-lucide="timer"></i></div>
+                <span>Foco</span>
+            </div>
             <div class="tool-item" onclick="navegarPara('configuracoes.html')">
-                <div class="tool-icon" style="background: rgba(255,255,255,0.05); color: #aaa;"><i data-lucide="settings-2"></i></div>
+                <div class="tool-icon gray"><i data-lucide="settings-2"></i></div>
                 <span>Config</span>
+            </div>
+        </div>
+
+        <!-- ATALHOS RÁPIDOS (Chips) -->
+        <div class="section-header">
+            <h2 class="section-title"><i data-lucide="zap" style="width:12px;"></i> Acesso rápido</h2>
+        </div>
+        <div class="quick-access">
+            <div class="quick-chip" onclick="navegarPara('foco.html')">
+                <i data-lucide="timer" style="color:#ff3b30;"></i> Iniciar foco
+            </div>
+            <div class="quick-chip" onclick="var i=document.getElementById('hbr-home-input');i.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(function(){i.focus()},350);">
+                <i data-lucide="plus-circle" style="color:#007aff;"></i> Nova tarefa
+            </div>
+            <div class="quick-chip" onclick="navegarPara('estudos.html')">
+                <i data-lucide="sparkles" style="color:#8a2be2;"></i> IA
+            </div>
+            <div class="quick-chip" onclick="navegarPara('horario.html')">
+                <i data-lucide="calendar" style="color:#ff9500;"></i> Horário
             </div>
         </div>
 
@@ -266,7 +312,7 @@
             <div class="mural-card" id="btn-mural-main">
                 <div class="mural-icon"><i data-lucide="megaphone"></i></div>
                 <div class="mural-text">
-                    <strong>Mural</strong>
+                    <strong>Mural de Avisos</strong>
                     <span id="mural-preview">Toque para ler</span>
                 </div>
                 <i data-lucide="chevron-right" class="mural-arrow"></i>
