@@ -248,6 +248,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const userSnap = await getDoc(doc(db, "notas", emailLogado));
             if (userSnap.exists()) {
                 const dados = userSnap.data();
+                // ═══ FOTO DE PERFIL NA HOME ═══
+    if (dados.fotoPerfil) {
+        const imgEl = document.getElementById('foto-avatar-home');
+        const icoEl = document.getElementById('icone-avatar-home');
+        if (imgEl && icoEl) {
+            imgEl.src = dados.fotoPerfil;
+            imgEl.style.display = 'block';
+            icoEl.style.display = 'none';
+        }
+    }
                 xpUsuario = dados.xp || 0;
 
                 const xpDisplay = document.getElementById('xp-display');
