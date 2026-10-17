@@ -323,7 +323,37 @@ async function baixarTodos() {
     btn.disabled = false;
 }
 
+/* ═══════════ PREVIEW RESPONSIVO ═══════════ */
+function fitPreview() {
+    const wrap = document.querySelector('.preview-wrap');
+    const scaler = document.querySelector('.preview-scaler');
+    if (!wrap || !scaler) return;
+
+    // Limites: altura disponível na tela (deixa espaço pro resto da UI)
+    const alturaMax = Math.min(window.innerHeight * 0.55, 560);
+    const larguraMax = Math.min(wrap.parentElement?.clientWidth || 320, 320);
+
+    // Calcula pelas 2 restrições
+    let w = larguraMax;
+    let h = w * 16 / 9;
+    if (h > alturaMax) {
+        h = alturaMax;
+        w = h * 9 / 16;
+    }
+
+    wrap.style.width = w + 'px';
+    wrap.style.height = h + 'px';
+
+    const scale = w / 1080;
+    scaler.style.transform = `scale(${scale})`;
+    scaler.style.transformOrigin = 'top left';
+}
+
+window.addEventListener('resize', fitPreview);
+window.addEventListener('orientationchange', () => setTimeout(fitPreview, 100));
+
 /* ═══════════ INIT ═══════════ */
 montarNav();
 atualizarUploadLabel();
 renderizar(0);
+requestAnimationFrame(fitPreview);
