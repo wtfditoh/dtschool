@@ -349,7 +349,7 @@ export function interpretarRapido(texto, ctx) {
     const hoje = ctx.hoje;
     const materias = ctx.materias || [];
     const orig = String(texto || '').trim();
-    if (!orig) return { nome: '', data: null, tipo: null, materia: null };
+    if (!orig) return { nome: '', data: null, tipo: null, materia: null, descricao: null };
 
     const norm = normalizar(orig);
     const remover = new Set();
@@ -427,12 +427,20 @@ export function interpretarRapido(texto, ctx) {
         if (materia) break;
     }
 
-    // ─── nome: mantém palavras originais não removidas ───
-    const nomeFinal = orig
+    // ─── nome & descricao: heurística local ───
+    let nomeFinal = orig
         .split(/\s+/)
         .filter(p => p && !remover.has(normalizar(p)))
         .join(' ')
         .trim();
+
+    let descricao = '';
+    // Se sobrou muita coisa e tem vírgula, separa o título do detalhe
+    if (nomeFinal.includes(',')) {
+        const partes = nomeFinal.split(',');
+        nomeFinal = partes[0].trim();
+        descricao = partes.slice(1).join(',').trim();
+    }
 
     let nome;
     if (!nomeFinal) {
@@ -442,7 +450,7 @@ export function interpretarRapido(texto, ctx) {
         nome = nomeFinal.charAt(0).toUpperCase() + nomeFinal.slice(1);
     }
 
-    return { nome, data, tipo, materia };
+    return { nome, data, tipo, materia, descricao: descricao || null };
 }
 
 /* ═══════════════ LEMBRETE DAS 21h ═══════════════ */
@@ -457,7 +465,7 @@ export function resumoParaTags(tarefas, hoje) {
     return {
         dia: hoje,
         pendentes: n,
-        tagN: String(Math.min(n, 20))   // OneSignal limita tag a 20 valores
+        tagN: String(Math.min(n, 20))
     };
 }
 
@@ -475,12 +483,13 @@ export function promptRapidoIA(texto, ctx) {
         (ctx.materias && ctx.materias.length) ? 'Matérias disponíveis: ' + ctx.materias.join(', ') + '.' : '',
         'Analise a frase abaixo e extraia os campos.',
         'Responda SOMENTE com JSON válido no formato:',
-        '{"nome":"título curto","data":"AAAA-MM-DD","tipo":"tarefa|prova|trabalho|revisao|projeto","materia":"nome ou Geral"}',
+        '{"nome":"título curto","descricao":"detalhes ou vazio","data":"AAAA-MM-DD","tipo":"tarefa|prova|trabalho|revisao|projeto","materia":"nome ou Geral"}',
         'Regras:',
+        '- nome: frase CURTA (máx 5 palavras) apenas com o título principal. Ex: "Prova de Matemática".',
+        '- descricao: se a frase tiver detalhes extras (o que estudar, páginas, capítulos, instruções), coloque AQUI. Se não tiver, deixe vazio "".',
         '- data no formato AAAA-MM-DD. Se não mencionar, use null.',
         '- tipo: use "tarefa" se não mencionar nenhum.',
         '- materia: use o nome exato da lista acima. Se não souber, use "Geral".',
-        '- nome: frase curta, capitalizada, sem as palavras de data/tipo/matéria.',
         '',
         'FRASE: "' + texto + '"'
     ].filter(Boolean).join('\n');
@@ -492,6 +501,7 @@ export function normalizarRespostaIA(dado, ctx) {
     if (!dado || typeof dado !== 'object') return null;
     const out = {};
     if (typeof dado.nome === 'string' && dado.nome.trim()) out.nome = dado.nome.trim();
+    if (typeof dado.descricao === 'string' && dado.descricao.trim()) out.descricao = dado.descricao.trim();
     if (typeof dado.data === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dado.data)) out.data = dado.data;
     if (typeof dado.tipo === 'string' && TIPOS_VALIDOS.indexOf(dado.tipo) !== -1) out.tipo = dado.tipo;
     if (typeof dado.materia === 'string' && dado.materia.trim()) {
@@ -505,6 +515,7 @@ export function mesclarInterpretacao(local, ia) {
     if (!ia) return local;
     return {
         nome: ia.nome || local.nome,
+        descricao: ia.descricao || local.descricao,
         data: ia.data || local.data,
         tipo: ia.tipo || local.tipo,
         materia: ia.materia || local.materia
