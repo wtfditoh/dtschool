@@ -11,7 +11,8 @@ import * as Fila from "./offline-queue.js";
 const userEmail = localStorage.getItem('dt_user_email');
 
 const $ = (id) => document.getElementById(id);
-let fotos = [];
+let fotos = [];           // Todas as fotos (global)
+let fotosFiltradas = [];  // Fotos visíveis na tela (respeitando os filtros e a ordem visual)
 let filtroMat = 'todas';
 let filtroBim = 'todos';
 let viewerIdx = 0;
@@ -114,6 +115,14 @@ function render() {
     html += '</div>';
 
     const listaFiltrada = filtrar();
+    
+    // 👇 AQUI ESTÁ A CORREÇÃO: Agrupa a lista filtrada na MESMA ordem que vai aparecer na tela
+    const todasMatsVisiveis = [...new Set(listaFiltrada.map(f => f.materia || 'Geral'))].sort();
+    fotosFiltradas = [];
+    todasMatsVisiveis.forEach(m => {
+        const doGrupo = listaFiltrada.filter(f => (f.materia || 'Geral') === m);
+        fotosFiltradas.push(...doGrupo);
+    });
 
     if (!listaFiltrada.length) {
         html += '<div class="ct-vazio" style="display:flex;"><div style="font-size:40px;">🔍</div><b>Nada com esses filtros</b><span>Tenta trocar a matéria ou bimestre.</span></div>';
@@ -122,7 +131,6 @@ function render() {
         return;
     }
 
-    const todasMatsVisiveis = [...new Set(listaFiltrada.map(f => f.materia || 'Geral'))].sort();
     todasMatsVisiveis.forEach(m => {
         const doGrupo = listaFiltrada.filter(f => (f.materia || 'Geral') === m);
         if (!doGrupo.length) return;
@@ -144,7 +152,7 @@ function render() {
         html += '</div></div>';
     });
 
-       lista.innerHTML = html;
+    lista.innerHTML = html;
     atualizarFAB();
 
     lista.querySelectorAll('.ct-item').forEach(it => {
@@ -165,7 +173,8 @@ function bindChips() {
 }
 
 function abrirViewer(id) {
-    const idx = fotos.findIndex(f => f.id === id);
+    // 👇 CORREÇÃO: Procura no array VISÍVEL (filtrado), não no global
+    const idx = fotosFiltradas.findIndex(f => f.id === id);
     if (idx === -1) return;
     viewerIdx = idx;
     renderViewer();
@@ -179,7 +188,8 @@ function fecharViewer() {
     resetZoom();
 }
 function renderViewer() {
-    const f = fotos[viewerIdx];
+    // 👇 CORREÇÃO: Usa a foto do array VISÍVEL
+    const f = fotosFiltradas[viewerIdx];
     if (!f) return fecharViewer();
     const img = $('ct-viewer-img');
     resetZoom();
@@ -228,8 +238,10 @@ function renderViewer() {
     const dataFmt = f.data ? f.data.split('-').reverse().join('/') : '';
     const bimTxt = f.bimestre ? ' · ' + f.bimestre + 'º BIM' : '';
     const tarefaTxt = f.tarefaNome ? ` · 📌 ${esc(f.tarefaNome)}` : '';
-    $('ct-viewer-info').innerHTML = esc(f.materia || 'Geral') + bimTxt + tarefaTxt + ' · ' + esc(f.nome || 'Arquivo') + `<small>${esc(dataFmt)} · ${viewerIdx + 1} de ${fotos.length}</small>`;
-    const unica = fotos.length < 2;
+    // 👇 CORREÇÃO: Mostra a contagem do array visível
+    $('ct-viewer-info').innerHTML = esc(f.materia || 'Geral') + bimTxt + tarefaTxt + ' · ' + esc(f.nome || 'Arquivo') + `<small>${esc(dataFmt)} · ${viewerIdx + 1} de ${fotosFiltradas.length}</small>`;
+    // 👇 CORREÇÃO: Verifica se só tem uma foto no array visível
+    const unica = fotosFiltradas.length < 2;
     $('ct-viewer-ant').hidden = unica;
     $('ct-viewer-prox').hidden = unica;
 }
@@ -271,8 +283,9 @@ function baixarPdfBase64(f) {
     } catch (e) { toast('Erro ao baixar PDF'); }
 }
 function navViewer(delta) {
-    if (!fotos.length || zoom.scale > 1) return;
-    viewerIdx = (viewerIdx + delta + fotos.length) % fotos.length;
+    // 👇 CORREÇÃO: Usa o array visível
+    if (!fotosFiltradas.length || zoom.scale > 1) return;
+    viewerIdx = (viewerIdx + delta + fotosFiltradas.length) % fotosFiltradas.length;
     resetConfirm();
     renderViewer();
 }
@@ -286,7 +299,8 @@ function resetConfirm() {
     if (window.lucide) lucide.createIcons();
 }
 async function excluirAtual() {
-    const f = fotos[viewerIdx];
+    // 👇 CORREÇÃO
+    const f = fotosFiltradas[viewerIdx];
     if (!f) return;
     const btn = $('ct-viewer-del');
     if (!confirmandoDel) {
@@ -299,9 +313,16 @@ async function excluirAtual() {
     try {
         await deleteDoc(doc(db, 'conteudos', f.id));
         toast('🗑 Excluído');
-        fotos.splice(viewerIdx, 1);
-        if (!fotos.length) { fecharViewer(); render(); return; }
-        if (viewerIdx >= fotos.length) viewerIdx = fotos.length - 1;
+        
+        // Remove do array global
+        const globalIdx = fotos.findIndex(x => x.id === f.id);
+        if (globalIdx > -1) fotos.splice(globalIdx, 1);
+        
+        // Remove do array visível
+        fotosFiltradas.splice(viewerIdx, 1);
+        
+        if (!fotosFiltradas.length) { fecharViewer(); render(); return; }
+        if (viewerIdx >= fotosFiltradas.length) viewerIdx = fotosFiltradas.length - 1;
         resetConfirm();
         renderViewer();
         render();
@@ -309,7 +330,8 @@ async function excluirAtual() {
 }
 
 async function renomearAtual() {
-    const f = fotos[viewerIdx];
+    // 👇 CORREÇÃO
+    const f = fotosFiltradas[viewerIdx];
     if (!f) return;
     const atual = f.nome || 'Arquivo';
     const novo = window.prompt('Novo nome do arquivo:', atual);
@@ -319,6 +341,11 @@ async function renomearAtual() {
     try {
         await updateDoc(doc(db, 'conteudos', f.id), { nome: limpo });
         f.nome = limpo;
+        
+        // Atualiza no global também
+        const globalF = fotos.find(x => x.id === f.id);
+        if (globalF) globalF.nome = limpo;
+
         renderViewer();
         render();
         toast('✓ Nome atualizado');
@@ -329,7 +356,8 @@ async function renomearAtual() {
 }
 
 async function compartilharAtual() {
-    const f = fotos[viewerIdx];
+    // 👇 CORREÇÃO
+    const f = fotosFiltradas[viewerIdx];
     if (!f) return;
     const texto = '📚 Conteúdo — ' + (f.materia || 'Geral') + (f.bimestre ? ' · ' + f.bimestre + 'º BIM' : '');
 
@@ -399,7 +427,6 @@ async function compartilharPasta() {
     const bimTxt = filtroBim === 'todos' ? '' : filtroBim === '_sem' ? 'Sem bimestre' : filtroBim + 'º BIM';
     const titulo = [matTxt, bimTxt].filter(Boolean).join(' · ');
 
-    // Modal customizado (substitui o confirm() do Chrome)
     const confirmou = await abrirModalConfirmacao(titulo, filtrados.length);
     if (!confirmou) return;
 
