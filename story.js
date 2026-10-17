@@ -1,12 +1,10 @@
-/* ═══════════════════════════════════════════════════════
-   HUB BRAIN — GERADOR DE STORIES
-   Lógica: upload de print + navegação + download PNG
-   ═══════════════════════════════════════════════════════ */
+/* story.js — Hub Brain · Gerador de Stories
+   Foco: nova funcionalidade de Compartilhar Pasta nos Conteúdos
+   4 slides: Hook (problema) → Botão novo → Página compartilhada → CTA */
 
-/* Estado global */
 let imagens = {
-    welcome: null,
-    login: null
+    compartilhar: null,   // print da tela do app com o FAB
+    pasta: null           // print da página compartilhada
 };
 
 let slideAtual = 0;
@@ -14,46 +12,78 @@ let slideAtual = 0;
 /* ═══════════ SLIDES ═══════════ */
 const SLIDES = [
     {
-        nome: 'welcome',
-        label: 'Welcome',
-        imagemKey: 'welcome',
-        badge: '✨ PÁGINA NOVA',
-        titulo: 'Conhece o <em>Welcome</em>?',
-        subtitulo: 'É a primeira tela que você vê quando abre o Hub Brain. Sem precisar criar conta.',
-        placeholder: {
-            ico: '🚪',
-            txt: 'Suba o print da tela Welcome',
-            hint: 'Clica no botão acima'
-        },
+        nome: 'problema',
+        label: 'Problema',
+        tipo: 'hook',
+        badge: '😩 JÁ PASSOU POR ISSO?',
+        titulo: 'Alguém tem<br><em>tudo de matemática</em>?',
+        subtitulo: 'Você pede no grupo, ninguém responde. Ou mandam 30 fotos soltas que se perdem no meio da conversa.',
+        chat: [
+            { tipo: 'outro', txt: 'algm tem as foto de mat do 2 bim??' },
+            { tipo: 'outro', txt: 'eu tbm qro 👀' },
+            { tipo: 'outro', txt: 'tbm n tenho, mandaram no grupo semana passada' },
+            { tipo: 'outro', txt: 'si perdeu tudo no meio da conversa kkkk' }
+        ],
         explicacao: {
             ico: '💡',
-            titulo: 'O que ela faz?',
-            texto: 'Apresenta o app em segundos, mostra as ferramentas principais e deixa você testar a calculadora de notas e os números da educação brasileira sem precisar de login.'
+            titulo: 'A gente resolveu isso.',
+            texto: 'Agora você compartilha a pasta inteira do Hub Brain com UM link só. Bora ver como funciona →'
         }
     },
     {
-        nome: 'login',
-        label: 'Login',
-        imagemKey: 'login',
-        badge: '🔐 MUDOU POUCO',
-        titulo: 'Login <em>repaginado</em>',
-        subtitulo: 'Continua simples — a gente só tirou o mascote e deixou tudo mais clean e moderno.',
+        nome: 'botao',
+        label: 'Como funciona',
+        tipo: 'upload',
+        imagemKey: 'compartilhar',
+        badge: '🔗 NOVIDADE NO APP',
+        titulo: 'Um <em>botão novo</em><br>que muda tudo',
+        subtitulo: 'Filtra a matéria e o bimestre, e o botão "Compartilhar" aparece. Toca nele e pronto.',
         placeholder: {
-            ico: '🔑',
-            txt: 'Suba o print da tela de Login',
-            hint: 'Clica no botão acima'
+            ico: '📱',
+            txt: 'Suba o print da tela de Conteúdos',
+            hint: 'Com o FAB "Compartilhar" aparecendo'
+        },
+        explicacao: {
+            ico: '🎯',
+            titulo: 'Como funciona?',
+            texto: 'Escolhe o filtro (ex: Matemática · 2º BIM), toca em Compartilhar, e o app cria um link único com tudo que tá ali.'
+        }
+    },
+    {
+        nome: 'pasta',
+        label: 'O que chega',
+        tipo: 'upload',
+        imagemKey: 'pasta',
+        badge: '😍 DO OUTRO LADO',
+        titulo: 'Um link só.<br><em>Tudo dentro.</em>',
+        subtitulo: 'Quem recebe no zap vê um preview bonito. Clica e abre a página com todas as fotos e PDFs.',
+        placeholder: {
+            ico: '📚',
+            txt: 'Suba o print da pasta compartilhada',
+            hint: 'A página que abre pelo link /pasta/...'
         },
         explicacao: {
             ico: '⚡',
-            titulo: 'O que mudou?',
-            texto: 'Design mais bonito, campos mais compactos, confirmação de senha no cadastro e validação dos termos. Rápido, seguro e sem enrolação.'
+            titulo: 'Por que é brabo?',
+            texto: 'Preview aparece no zap sozinho, abre em 1 clique e cada foto tem botão de baixar. Zoom, navegação entre fotos, tudo.'
         }
+    },
+    {
+        nome: 'cta',
+        label: 'CTA',
+        tipo: 'cta',
+        badge: '🚀 CHAMA A GALERA',
+        titulo: 'Bora parar de<br><em>perder arquivo</em>?',
+        subtitulo: 'Agenda, notas, foco, IA e conteúdos num app só.<br>Grátis, sem anúncio, feito por aluno.',
+        ctaLink: 'hubbrain.netlify.app'
     }
 ];
 
-/* ═══════════ NAVEGAÇÃO ═══════════ */
+/* ═══════════ UI ═══════════ */
+const $ = (id) => document.getElementById(id);
+
 function montarNav() {
-    const nav = document.getElementById('nav');
+    const nav = $('nav');
     nav.innerHTML = '';
     SLIDES.forEach((s, i) => {
         const b = document.createElement('button');
@@ -73,10 +103,55 @@ function mudarSlide(idx) {
     renderizar(idx);
 }
 
-/* ═══════════ RENDER ═══════════ */
-function htmlSlide(s) {
-    const img = imagens[s.imagemKey];
+/* ═══════════ HTML DOS SLIDES ═══════════ */
 
+/* Slide 1 — Hook com chat feio */
+function htmlSlideHook(s) {
+    const bubbles = s.chat.map((m) => `
+        <div class="chat-bubble ${m.tipo}">
+            <span>${m.txt}</span>
+        </div>
+    `).join('');
+
+    return `
+        <div class="story">
+            <div class="badge">${s.badge}</div>
+            <h1 class="story-title">${s.titulo}</h1>
+            <p class="story-sub">${s.subtitulo}</p>
+
+            <div class="chat-mockup">
+                <div class="chat-topo">
+                    <div class="chat-avatar">👥</div>
+                    <div class="chat-info">
+                        <b>Turma 2º EM</b>
+                        <small>14 participantes</small>
+                    </div>
+                    <div class="chat-badge">zap</div>
+                </div>
+                <div class="chat-corpo">
+                    ${bubbles}
+                </div>
+            </div>
+
+            <div class="explain">
+                <div class="explain-icon">${s.explicacao.ico}</div>
+                <div class="explain-txt">
+                    <b>${s.explicacao.titulo}</b>
+                    <span>${s.explicacao.texto}</span>
+                </div>
+            </div>
+
+            <div class="story-footer">
+                <div class="story-logo">HUB BRAIN</div>
+                <div class="story-url">hubbrain.netlify.app</div>
+            </div>
+        </div>
+    `;
+}
+
+/* Slides 2 e 3 — upload de print */
+function htmlSlideUpload(s) {
+    const img = imagens[s.imagemKey];
     const tela = img
         ? `<img src="${img}" alt="${s.label}">`
         : `<div class="phone-placeholder">
@@ -88,7 +163,6 @@ function htmlSlide(s) {
     return `
         <div class="story">
             <div class="badge">${s.badge}</div>
-
             <h1 class="story-title">${s.titulo}</h1>
             <p class="story-sub">${s.subtitulo}</p>
 
@@ -114,51 +188,90 @@ function htmlSlide(s) {
     `;
 }
 
+/* Slide 4 — CTA */
+function htmlSlideCta(s) {
+    return `
+        <div class="story story-cta">
+            <div class="badge">${s.badge}</div>
+
+            <div class="story-center">
+                <h1 class="story-title cta-titulo">${s.titulo}</h1>
+                <p class="story-sub cta-sub">${s.subtitulo}</p>
+
+                <div class="cta-url-box">
+                    <span class="cta-url-dot"></span>
+                    <span>${s.ctaLink}</span>
+                </div>
+            </div>
+
+            <div class="story-footer">
+                <div class="story-logo">HUB BRAIN</div>
+                <div class="story-url">Feito por DITOH</div>
+            </div>
+        </div>
+    `;
+}
+
+function htmlSlide(s) {
+    if (s.tipo === 'hook') return htmlSlideHook(s);
+    if (s.tipo === 'upload') return htmlSlideUpload(s);
+    if (s.tipo === 'cta') return htmlSlideCta(s);
+    return '';
+}
+
 function renderizar(idx, target) {
-    const alvo = target || document.getElementById('preview-content');
+    const alvo = target || $('preview-content');
     alvo.innerHTML = htmlSlide(SLIDES[idx]);
 }
 
 /* ═══════════ UPLOAD ═══════════ */
-const uploadInput = document.getElementById('upload-input');
-const uploadText = document.getElementById('upload-text');
-const uploadLabel = document.getElementById('upload-label');
+const uploadInput = $('upload-input');
+const uploadText = $('upload-text');
+const uploadLabel = $('upload-label');
+const uploadArea = document.querySelector('.upload-area');
 
 function atualizarUploadLabel() {
     const s = SLIDES[slideAtual];
+    if (s.tipo !== 'upload') {
+        if (uploadArea) uploadArea.style.display = 'none';
+        return;
+    }
+    if (uploadArea) uploadArea.style.display = 'block';
     const temImg = !!imagens[s.imagemKey];
     uploadText.textContent = temImg
-        ? `✓ Print do ${s.label} carregado (clica pra trocar)`
-        : `📱 Subir print do ${s.label}`;
+        ? `✓ Print carregado (clica pra trocar)`
+        : `📱 Subir print: ${s.label}`;
     uploadLabel.classList.toggle('ok', temImg);
 }
 
-uploadInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        imagens[SLIDES[slideAtual].imagemKey] = ev.target.result;
-        atualizarUploadLabel();
-        renderizar(slideAtual);
-    };
-    reader.readAsDataURL(file);
-
-    // Permite subir o mesmo arquivo de novo se trocar
-    uploadInput.value = '';
-});
+if (uploadInput) {
+    uploadInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const s = SLIDES[slideAtual];
+            if (s.tipo !== 'upload') return;
+            imagens[s.imagemKey] = ev.target.result;
+            atualizarUploadLabel();
+            renderizar(slideAtual);
+        };
+        reader.readAsDataURL(file);
+        uploadInput.value = '';
+    });
+}
 
 /* ═══════════ DOWNLOAD ═══════════ */
 async function baixarStory() {
-    const btn = document.getElementById('btn-baixar');
-    const status = document.getElementById('status-msg');
+    const btn = $('btn-baixar');
+    const status = $('status-msg');
+    if (!btn) return;
 
     btn.disabled = true;
     btn.querySelector('span').textContent = 'Gerando...';
 
     try {
-        const renderArea = document.getElementById('render-area');
+        const renderArea = $('render-area');
         renderizar(slideAtual, renderArea);
 
         await new Promise(r => setTimeout(r, 350));
@@ -199,15 +312,13 @@ async function baixarStory() {
 
 async function baixarTodos() {
     const btn = document.querySelector('.btn-secundario');
+    if (!btn) return;
     btn.disabled = true;
-
     for (let i = 0; i < SLIDES.length; i++) {
         slideAtual = i;
         await baixarStory();
         await new Promise(r => setTimeout(r, 700));
     }
-
-    // Volta pro primeiro slide
     mudarSlide(0);
     btn.disabled = false;
 }
