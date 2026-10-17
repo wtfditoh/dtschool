@@ -1,85 +1,75 @@
-/* story.js — Hub Brain · Gerador de Stories
-   Foco: nova funcionalidade de Compartilhar Pasta nos Conteúdos
-   4 slides: Hook (problema) → Botão novo → Página compartilhada → CTA */
+/* story.js — Gerador de Stories para o novo Login/Cadastro */
 
 let imagens = {
-    compartilhar: null,   // print da tela do app com o FAB
-    pasta: null           // print da página compartilhada
+    login: null,
+    cadastro: null
 };
 
 let slideAtual = 0;
 
-/* ═══════════ SLIDES ═══════════ */
 const SLIDES = [
     {
-        nome: 'problema',
-        label: 'Problema',
+        nome: 'hook',
+        label: 'Novidade',
         tipo: 'hook',
-        badge: '😩 JÁ PASSOU POR ISSO?',
-        titulo: 'Alguém tem<br><em>tudo de matemática</em>?',
-        subtitulo: 'Você pede no grupo, ninguém responde. Ou mandam 30 fotos soltas que se perdem no meio da conversa.',
-        chat: [
-            { tipo: 'outro', txt: 'algm tem as foto de mat do 2 bim??' },
-            { tipo: 'outro', txt: 'eu tbm qro 👀' },
-            { tipo: 'outro', txt: 'tbm n tenho, mandaram no grupo semana passada' },
-            { tipo: 'outro', txt: 'si perdeu tudo no meio da conversa kkkk' }
-        ],
+        badge: '✨ NOVO VISUAL',
+        titulo: 'Estudar ficou<br><em>bonito.</em>',
+        subtitulo: 'O Hub Brain ganhou um banho de loja. Mais vidro, mais neon, mais você.',
         explicacao: {
-            ico: '💡',
-            titulo: 'A gente resolveu isso.',
-            texto: 'Agora você compartilha a pasta inteira do Hub Brain com UM link só. Bora ver como funciona →'
+            ico: '🧠',
+            titulo: 'O que mudou?',
+            texto: 'Fizemos um upgrade insano no design de toda a área de login e cadastro. Ficou digno de e-sports.'
         }
     },
     {
-        nome: 'botao',
-        label: 'Como funciona',
+        nome: 'login',
+        label: 'Tela de Login',
         tipo: 'upload',
-        imagemKey: 'compartilhar',
-        badge: '🔗 NOVIDADE NO APP',
-        titulo: 'Um <em>botão novo</em><br>que muda tudo',
-        subtitulo: 'Filtra a matéria e o bimestre, e o botão "Compartilhar" aparece. Toca nele e pronto.',
+        imagemKey: 'login',
+        badge: '🔐 DE VOLTA',
+        titulo: 'Sua conta,<br><em>seu ritmo.</em>',
+        subtitulo: 'O vidro agora é transparente de verdade. O fundo do HUB BRAIN aparece por trás.',
         placeholder: {
             ico: '📱',
-            txt: 'Suba o print da tela de Conteúdos',
-            hint: 'Com o FAB "Compartilhar" aparecendo'
+            txt: 'Suba o print da tela de Login',
+            hint: 'Com o fundo do HUB BRAIN e o card de vidro'
         },
         explicacao: {
-            ico: '🎯',
-            titulo: 'Como funciona?',
-            texto: 'Escolhe o filtro (ex: Matemática · 2º BIM), toca em Compartilhar, e o app cria um link único com tudo que tá ali.'
+            ico: '🌌',
+            titulo: 'Glassmorphism Real',
+            texto: 'Aquele efeito de vidro transparente que a gente ama. O logo HUB BRAIN fica flutuando no fundo.'
         }
     },
     {
-        nome: 'pasta',
-        label: 'O que chega',
+        nome: 'cadastro',
+        label: 'Tela de Cadastro',
         tipo: 'upload',
-        imagemKey: 'pasta',
-        badge: '😍 DO OUTRO LADO',
-        titulo: 'Um link só.<br><em>Tudo dentro.</em>',
-        subtitulo: 'Quem recebe no zap vê um preview bonito. Clica e abre a página com todas as fotos e PDFs.',
+        imagemKey: 'cadastro',
+        badge: '🚀 NOVO POR AQUI?',
+        titulo: 'Comece agora,<br><em>é grátis.</em>',
+        subtitulo: 'Criar conta leva menos de 30 segundos. Zero enrolação, zero anúncios.',
         placeholder: {
-            ico: '📚',
-            txt: 'Suba o print da pasta compartilhada',
-            hint: 'A página que abre pelo link /pasta/...'
+            ico: '📱',
+            txt: 'Suba o print da tela de Cadastro',
+            hint: 'A tela com o HUB BRAIN roxo no fundo'
         },
         explicacao: {
-            ico: '⚡',
-            titulo: 'Por que é brabo?',
-            texto: 'Preview aparece no zap sozinho, abre em 1 clique e cada foto tem botão de baixar. Zoom, navegação entre fotos, tudo.'
+            ico: '💜',
+            titulo: 'Tudo num só lugar',
+            texto: 'Agenda, IA, notas, foco e ranking. O app que a gente sempre quis ter.'
         }
     },
     {
         nome: 'cta',
         label: 'CTA',
         tipo: 'cta',
-        badge: '🚀 CHAMA A GALERA',
-        titulo: 'Bora parar de<br><em>perder arquivo</em>?',
-        subtitulo: 'Agenda, notas, foco, IA e conteúdos num app só.<br>Grátis, sem anúncio, feito por aluno.',
+        badge: '🧠 HUB BRAIN',
+        titulo: 'Bora organizar<br><em>sua vida?</em>',
+        subtitulo: 'Agenda, notas, foco e IA num app só.<br>Grátis, sem anúncio, feito por aluno.',
         ctaLink: 'hubbrain.netlify.app'
     }
 ];
 
-/* ═══════════ UI ═══════════ */
 const $ = (id) => document.getElementById(id);
 
 function montarNav() {
@@ -105,31 +95,21 @@ function mudarSlide(idx) {
 
 /* ═══════════ HTML DOS SLIDES ═══════════ */
 
-/* Slide 1 — Hook com chat feio */
 function htmlSlideHook(s) {
-    const bubbles = s.chat.map((m) => `
-        <div class="chat-bubble ${m.tipo}">
-            <span>${m.txt}</span>
-        </div>
-    `).join('');
-
     return `
         <div class="story">
             <div class="badge">${s.badge}</div>
             <h1 class="story-title">${s.titulo}</h1>
             <p class="story-sub">${s.subtitulo}</p>
 
-            <div class="chat-mockup">
-                <div class="chat-topo">
-                    <div class="chat-avatar">👥</div>
-                    <div class="chat-info">
-                        <b>Turma 2º EM</b>
-                        <small>14 participantes</small>
+            <div class="mockup-login">
+                <div class="glass-preview">
+                    <div class="glass-form">
+                        <div style="height: 60px; width: 60%; background: rgba(255,255,255,0.1); border-radius: 10px; align-self: center; margin-bottom: 20px;"></div>
+                        <div class="glass-input"></div>
+                        <div class="glass-input"></div>
+                        <div class="glass-btn"></div>
                     </div>
-                    <div class="chat-badge">zap</div>
-                </div>
-                <div class="chat-corpo">
-                    ${bubbles}
                 </div>
             </div>
 
@@ -149,7 +129,6 @@ function htmlSlideHook(s) {
     `;
 }
 
-/* Slides 2 e 3 — upload de print */
 function htmlSlideUpload(s) {
     const img = imagens[s.imagemKey];
     const tela = img
@@ -188,7 +167,6 @@ function htmlSlideUpload(s) {
     `;
 }
 
-/* Slide 4 — CTA */
 function htmlSlideCta(s) {
     return `
         <div class="story story-cta">
@@ -289,7 +267,7 @@ async function baixarStory() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `hub-brain-story-${SLIDES[slideAtual].nome}.png`;
+            a.download = `hub-brain-login-${SLIDES[slideAtual].nome}.png`;
             a.click();
             setTimeout(() => URL.revokeObjectURL(url), 2000);
 
@@ -332,11 +310,9 @@ function fitPreview() {
     const larguraTela = window.innerWidth;
     const alturaTela = window.innerHeight;
 
-    // Usa quase toda a largura
     let w = Math.min(larguraTela - 24, 400);
     let h = w * 16 / 9;
 
-    // Se altura passar de (tela - 180px pro resto), reduz
     const alturaMax = alturaTela - 180;
     if (h > alturaMax) {
         h = alturaMax;
