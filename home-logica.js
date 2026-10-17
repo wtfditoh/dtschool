@@ -194,6 +194,46 @@ async function carregarStatsCards(xp, estudadoHoje) {
     }
 }
 
+/* ═══════════════ CARREGAR AGENDA NA HOME ═══════════════ */
+async function carregarAgendaHome() {
+    if (!emailLogado) return;
+    try {
+        const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        const hoje = new Date().toISOString().split('T')[0];
+        
+        // Puxa tarefas pendentes
+        const q = query(collection(db, "agenda"), where("usuario", "==", emailLogado), where("concluida", "==", false));
+        const snap = await getDocs(q);
+        const pendentes = [];
+        snap.forEach(doc => {
+            const t = doc.data();
+            if (t.dataFim <= hoje) pendentes.push(t); // Pega as que vencem hoje ou já atrasadas
+        });
+
+        // Ordena pelas mais urgentes
+        pendentes.sort((a, b) => a.dataFim.localeCompare(b.dataFim));
+
+        const secao = document.getElementById('home-agenda-section');
+        const lista = document.getElementById('home-agenda-lista');
+        
+        if (pendentes.length > 0 && secao && lista) {
+            secao.style.display = 'block';
+            lista.innerHTML = pendentes.slice(0, 3).map(t => `
+                <div class="agenda-item-home" onclick="navegarPara('agenda.html')">
+                    <div style="flex:1;">
+                        <div class="name">${t.nome}</div>
+                        <div class="mat">${t.materia || 'Geral'} · ${t.dataFim.split('-').reverse().slice(0,2).join('/')}</div>
+                    </div>
+                    <i data-lucide="chevron-right" style="width:16px; color:#555;"></i>
+                </div>
+            `).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+    } catch (e) {
+        console.warn('Erro ao carregar agenda na home', e);
+    }
+}
+
 /* ═══════════════ INIT ═══════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
     const nome = localStorage.getItem('dt_user_name') || "ESTUDANTE";
@@ -229,6 +269,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     /* ─── Registra acesso (pro painel do mestre) ─── */
     registrarAcesso();
+
+    // 👇 ADICIONE ESSA LINHA AQUI 👇
+    carregarAgendaHome();
 
     /* ─── Manutenção ─── */
     onSnapshot(doc(db, "config", "status_sistema"), (s) => {
