@@ -1,7 +1,4 @@
-/* hb-rapido.js — "Adicionar rápido" com IA + bimestre + relacionar com atividade + offline.
-   Duas abas: 📝 Tarefa (IA) e 📸 Conteúdo (foto/arquivo por matéria + bimestre + tarefa).
-   API: abrirRapido({ aba, data, nome, bimestre, salvarTarefa, onTarefa, onConteudo, maisOpcoes })
-        enviarInline(texto, { onEstado }) */
+/* hb-rapido.js — "Adicionar rápido" com IA + bimestre + relacionar com atividade + offline. */
 import { collection, addDoc, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { db } from "./hb-firebase.js";
 import * as Core from "./agenda-core.js";
@@ -112,7 +109,13 @@ export async function enviarInline(texto, opts) {
     if (opts.onEstado) opts.onEstado('ia');
     const ia = await iaOrganizar(texto, materias);
     const f = Core.mesclarInterpretacao(local, ia);
-    const dados = { nome: f.nome || Core.capitalizar(texto), tipo: f.tipo || 'tarefa', materia: f.materia || 'Geral', bimestre: '' };
+    const dados = { 
+        nome: f.nome || Core.capitalizar(texto), 
+        tipo: f.tipo || 'tarefa', 
+        materia: f.materia || 'Geral', 
+        bimestre: '', 
+        descricao: f.descricao || '' // 👈 AQUI VAI A DESCRIÇÃO DA IA
+    };
     dados.dataInicio = dados.dataFim = f.data || hojeStr();
     if (opts.onEstado) opts.onEstado('salvando');
     const r = await salvar(opts, dados);
@@ -140,6 +143,11 @@ function montar() {
                 '<div class="hbr-painel" data-p="tarefa">' +
                     '<div class="hbr-linha-input"><input id="hbr-nome" class="hbr-input" type="text" maxlength="80" autocomplete="off" placeholder="Ex.: prova de filosofia segunda feira">' +
                     '<button class="hbr-ia" id="hbr-ia" data-hbr="ia" aria-label="Organizar com IA" title="Organizar com IA">✨</button></div>' +
+                    
+                    // Campo de descrição escondido que a IA preenche
+                    '<button type="button" class="hbr-add-desc" id="hbr-add-desc">➕ Adicionar descrição</button>' +
+                    '<textarea id="hbr-desc" class="hbr-desc" style="display:none;" placeholder="Detalhes, capítulos, o que precisa..."></textarea>' +
+                    
                     '<div class="hbr-prev" id="hbr-prev"></div>' +
                     '<label class="hbr-switch"><input type="checkbox" id="hbr-ia-auto"><i></i><span>IA automática ao adicionar</span></label>' +
                     '<div id="hbr-chips"></div>' +
@@ -163,12 +171,21 @@ function montar() {
             '<div class="hbr-pe" id="hbr-pe"></div>' +
         '</div>';
     document.body.appendChild(ov);
-    ui = { ov, box: ov.querySelector('.hbr-sheet'), nome: ov.querySelector('#hbr-nome'), prev: ov.querySelector('#hbr-prev'), chips: ov.querySelector('#hbr-chips'), mats: ov.querySelector('#hbr-mats'), bims: ov.querySelector('#hbr-bims'), tarefas: ov.querySelector('#hbr-tarefas'), itens: ov.querySelector('#hbr-itens'), aviso: ov.querySelector('#hbr-aviso'), pe: ov.querySelector('#hbr-pe'), iaBtn: ov.querySelector('#hbr-ia'), iaAuto: ov.querySelector('#hbr-ia-auto') };
+    ui = { ov, box: ov.querySelector('.hbr-sheet'), nome: ov.querySelector('#hbr-nome'), prev: ov.querySelector('#hbr-prev'), chips: ov.querySelector('#hbr-chips'), mats: ov.querySelector('#hbr-mats'), bims: ov.querySelector('#hbr-bims'), tarefas: ov.querySelector('#hbr-tarefas'), itens: ov.querySelector('#hbr-itens'), aviso: ov.querySelector('#hbr-aviso'), pe: ov.querySelector('#hbr-pe'), iaBtn: ov.querySelector('#hbr-ia'), iaAuto: ov.querySelector('#hbr-ia-auto'), desc: ov.querySelector('#hbr-desc'), addDesc: ov.querySelector('#hbr-add-desc') };
 
     ov.addEventListener('click', onClick);
     ov.addEventListener('change', onChange);
     ui.nome.addEventListener('input', () => interpretar());
     ui.nome.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); confirmarTarefa(); } });
+    
+    // Abre e fecha o campo de descrição
+    ui.addDesc.addEventListener('click', () => {
+        const visivel = ui.desc.style.display !== 'none';
+        ui.desc.style.display = visivel ? 'none' : 'block';
+        ui.addDesc.textContent = visivel ? '➕ Adicionar descrição' : '➖ Ocultar descrição';
+        if (!visivel) setTimeout(() => ui.desc.focus(), 100);
+    });
+
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ov.classList.contains('aberto') && !st.ocupado) fechar(); });
     return ui;
 }
@@ -192,6 +209,16 @@ export async function abrirRapido(opts) {
     const ultima = localStorage.getItem('hb_ag_ult_materia') || 'Geral';
     st.q = { data: opts.data || hojeStr(), dataPadrao: opts.data || hojeStr(), tipo: 'tarefa', materia: 'Geral', bimestre: opts.bimestre || '', materiaPadrao: 'Geral', manual: {}, auto: {} };
     ui.nome.value = opts.nome || '';
+    
+    ui.desc.value = opts.descricao || '';
+    if (ui.desc.value.trim()) {
+        ui.desc.style.display = 'block';
+        ui.addDesc.textContent = '➖ Ocultar descrição';
+    } else {
+        ui.desc.style.display = 'none';
+        ui.addDesc.textContent = '➕ Adicionar descrição';
+    }
+
     ui.iaAuto.checked = iaLigada();
     ui.aviso.textContent = '';
     ui.ov.classList.add('aberto');
@@ -263,6 +290,13 @@ function aplicarCampos(r, origemIA) {
         if (v) { st.q[k] = v; st.q.auto[k] = true; }
         else if (st.q.auto[k] && !origemIA) { st.q[k] = k === 'tipo' ? 'tarefa' : padrao; st.q.auto[k] = false; }
     });
+    
+    // Se a IA ou heurística local acharam uma descrição, preenche o campo e abre ele
+    if (r.descricao && !ui.desc.value.trim()) {
+        ui.desc.value = r.descricao;
+        ui.desc.style.display = 'block';
+        ui.addDesc.textContent = '➖ Ocultar descrição';
+    }
 }
 
 function interpretar() {
@@ -279,7 +313,12 @@ async function rodarIA(silencioso) {
     const ia = await iaOrganizar(texto, st.materias);
     ui.iaBtn.classList.remove('girando'); ui.iaBtn.disabled = false;
     st.iaTexto = texto;
-    if (ia) { aplicarCampos(ia, true); st.nomeIA = ia.nome || null; renderTarefa('✨ IA'); return true; }
+    if (ia) { 
+        aplicarCampos(ia, true); 
+        st.nomeIA = ia.nome || null; 
+        renderTarefa('✨ IA'); 
+        return true; 
+    }
     st.nomeIA = null; renderTarefa();
     if (!silencioso) toast('IA indisponível agora — usei o leitor automático');
     return false;
@@ -295,7 +334,15 @@ async function confirmarTarefa() {
     try {
         if (iaLigada() && st.iaTexto !== texto) await rodarIA(true);
         const nome = nomeParaMostrar() || Core.capitalizar(texto);
-        const dados = { nome, tipo: st.q.tipo, materia: st.q.materia, bimestre: st.q.bimestre, dataInicio: st.q.data, dataFim: st.q.data };
+        const dados = { 
+            nome, 
+            tipo: st.q.tipo, 
+            materia: st.q.materia, 
+            bimestre: st.q.bimestre, 
+            dataInicio: st.q.data, 
+            dataFim: st.q.data, 
+            descricao: ui.desc.value.trim()
+        };
         localStorage.setItem('hb_ag_ult_materia', st.q.materia);
         const r = await salvar(st.opts, dados);
         const opts = st.opts;
@@ -418,7 +465,6 @@ async function enviarConteudo() {
         else toast('✓ ' + r.ok + ' salvos · ' + r.falha + ' falharam', 3800);
         if (r.ok && opts.onConteudo) opts.onConteudo(r);
     } catch (e) {
-        // Erro de rede → fila
         const msg = String(e && e.message || '').toLowerCase();
         const ehRede = msg.includes('fetch') || msg.includes('network') || msg.includes('failed');
         if (ehRede && st.itens.length) {
@@ -501,7 +547,7 @@ function onClick(e) {
     if (pe) {
         if (pe.dataset.pe === 'add') confirmarTarefa();
         else if (pe.dataset.pe === 'enviar') enviarConteudo();
-        else if (pe.dataset.pe === 'mais') { const d = { nome: nomeParaMostrar(), data: st.q.data, tipo: st.q.tipo, materia: st.q.materia, bimestre: st.q.bimestre }; const f = st.opts.maisOpcoes; fechar(); f(d); }
+        else if (pe.dataset.pe === 'mais') { const d = { nome: nomeParaMostrar(), data: st.q.data, tipo: st.q.tipo, materia: st.q.materia, bimestre: st.q.bimestre, descricao: ui.desc.value.trim() }; const f = st.opts.maisOpcoes; fechar(); f(d); }
         return;
     }
     const h = t.closest('[data-hbr]');
