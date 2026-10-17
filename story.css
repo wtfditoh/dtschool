@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════
    HUB BRAIN — STORY.CSS
-   Ferramenta + estilos dos 4 slides (1080x1920)
    ═══════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
@@ -12,47 +11,30 @@ body {
     color: #fff;
     font-family: 'Outfit', -apple-system, sans-serif;
     min-height: 100vh;
-    padding: 16px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 /* ═══════════════════════════════════════════════════════
    UI DA FERRAMENTA
    ═══════════════════════════════════════════════════════ */
-.header {
-    text-align: center;
-    padding: 6px 0;
-}
-.header h1 {
-    font-size: 18px;
-    font-weight: 900;
-    letter-spacing: -0.5px;
-    margin-bottom: 4px;
-}
+.header { text-align: center; padding: 4px 0; }
+.header h1 { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 3px; }
 .header h1 span { color: #c084fc; }
-.header p {
-    font-size: 11px;
-    color: #9ca3af;
-    font-weight: 500;
-}
+.header p { font-size: 11px; color: #9ca3af; font-weight: 500; }
 
-.upload-area { width: 100%; max-width: 320px; }
-
+.upload-area { width: 100%; max-width: 340px; }
 .upload-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
     padding: 11px;
     background: rgba(147,51,234,0.08);
     border: 1px dashed rgba(147,51,234,0.4);
     border-radius: 12px;
     color: #c084fc;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 12px; font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
@@ -61,8 +43,7 @@ body {
 .upload-btn.ok { color: #00e5a0; border-color: rgba(0,229,160,0.4); background: rgba(0,229,160,0.06); }
 
 .nav {
-    display: flex;
-    gap: 3px;
+    display: flex; gap: 3px;
     background: rgba(20, 20, 26, 0.85);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 999px;
@@ -73,12 +54,10 @@ body {
 }
 .nav-btn {
     padding: 8px 14px;
-    border: none;
-    background: transparent;
+    border: none; background: transparent;
     color: #9ca3af;
     font-family: inherit;
-    font-size: 11px;
-    font-weight: 800;
+    font-size: 11px; font-weight: 800;
     letter-spacing: 0.3px;
     border-radius: 999px;
     cursor: pointer;
@@ -90,24 +69,26 @@ body {
     box-shadow: 0 6px 18px rgba(147,51,234,0.4);
 }
 
-/* Preview compacto */
+/* ─── Preview: SEM max-height (deixa o JS calcular) ─── */
 .preview-wrap {
     position: relative;
     width: 100%;
     max-width: 320px;
-    aspect-ratio: 9 / 16;
-    max-height: 60vh;
     margin: 0 auto;
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    /* width/height definidos via JS (fitPreview) */
 }
+
 .preview-scaler {
     width: 1080px;
     height: 1920px;
     transform-origin: top left;
-    transform: scale(0.2963); /* 320 / 1080 */
+    position: absolute;
+    top: 0; left: 0;
 }
+
 .render-area {
     position: fixed;
     left: -99999px;
@@ -124,16 +105,12 @@ body {
     max-width: 320px;
 }
 .btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
     padding: 13px 16px;
     border-radius: 12px;
     border: none;
     font-family: inherit;
-    font-size: 12px;
-    font-weight: 800;
+    font-size: 12px; font-weight: 800;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -156,8 +133,7 @@ body {
 
 .status-msg {
     font-size: 11px;
-    color: #00e5a0;
-    font-weight: 700;
+    color: #00e5a0; font-weight: 700;
     opacity: 0;
     transition: opacity 0.3s;
     height: 16px;
@@ -165,7 +141,7 @@ body {
 .status-msg.show { opacity: 1; }
 
 /* ═══════════════════════════════════════════════════════
-   STORY BASE (1080x1920)
+   STORY BASE (1080×1920)
    ═══════════════════════════════════════════════════════ */
 .story {
     width: 1080px;
@@ -182,43 +158,36 @@ body {
 .story::before {
     content: '';
     position: absolute;
-    top: -300px;
-    left: 50%;
+    top: -300px; left: 50%;
     transform: translateX(-50%);
-    width: 900px;
-    height: 900px;
+    width: 900px; height: 900px;
     background: radial-gradient(circle, rgba(147,51,234,0.35), transparent 70%);
     pointer-events: none;
 }
 .story::after {
     content: '';
     position: absolute;
-    bottom: -200px;
-    right: -200px;
-    width: 700px;
-    height: 700px;
+    bottom: -200px; right: -200px;
+    width: 700px; height: 700px;
     background: radial-gradient(circle, rgba(147,51,234,0.15), transparent 70%);
     pointer-events: none;
 }
 .story > * { position: relative; z-index: 1; }
 
-/* ─── Badge ─── */
 .badge {
     align-self: center;
     background: rgba(147,51,234,0.2);
     border: 1px solid rgba(147,51,234,0.5);
     color: #c084fc;
-    font-size: 18px;
-    font-weight: 900;
+    font-size: 18px; font-weight: 900;
     letter-spacing: 4px;
     padding: 12px 26px;
     border-radius: 999px;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
     text-transform: uppercase;
     flex-shrink: 0;
 }
 
-/* ─── Título ─── */
 .story-title {
     font-size: 54px;
     font-weight: 900;
@@ -237,14 +206,14 @@ body {
     text-align: center;
     font-weight: 500;
     line-height: 1.4;
-    margin-bottom: 28px;
+    margin-bottom: 26px;
     max-width: 820px;
     align-self: center;
     flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════════════════
-   MOCKUP CELULAR 3D (slides 2 e 3) — reduzido
+   PHONE 3D (slides 2 e 3)
    ═══════════════════════════════════════════════════════ */
 .phone-stage {
     flex: 1;
@@ -252,33 +221,33 @@ body {
     align-items: center;
     justify-content: center;
     perspective: 1400px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     min-height: 0;
+    overflow: hidden;
 }
 .phone-3d {
     position: relative;
-    width: 500px;
-    height: 1000px;
+    width: 440px;
+    height: 850px;
     transform: rotateY(-22deg) rotateX(6deg) rotateZ(-2deg);
     transform-style: preserve-3d;
-    border-radius: 46px;
-    padding: 12px;
+    border-radius: 40px;
+    padding: 10px;
     background: linear-gradient(150deg, #35353d 0%, #1a1a20 50%, #0d0d12 100%);
     box-shadow:
-        -40px 50px 100px rgba(0,0,0,0.7),
-        -16px 16px 50px rgba(147,51,234,0.15),
+        -35px 45px 90px rgba(0,0,0,0.7),
+        -14px 14px 45px rgba(147,51,234,0.15),
         0 0 0 2px rgba(255,255,255,0.04),
         inset 0 1px 0 rgba(255,255,255,0.15),
         inset 0 -2px 6px rgba(0,0,0,0.4);
+    flex-shrink: 0;
 }
 .phone-3d::before {
     content: '';
     position: absolute;
-    top: 18px;
-    left: 50%;
+    top: 16px; left: 50%;
     transform: translateX(-50%);
-    width: 90px;
-    height: 10px;
+    width: 80px; height: 9px;
     border-radius: 999px;
     background: #000;
     z-index: 10;
@@ -286,166 +255,118 @@ body {
 .phone-3d::after {
     content: '';
     position: absolute;
-    bottom: 32px;
-    left: 50%;
+    bottom: 26px; left: 50%;
     transform: translateX(-50%);
-    width: 110px;
-    height: 3px;
+    width: 100px; height: 3px;
     border-radius: 999px;
     background: rgba(255,255,255,0.15);
     z-index: 10;
 }
 .phone-screen {
-    width: 100%;
-    height: 100%;
-    border-radius: 36px;
+    width: 100%; height: 100%;
+    border-radius: 32px;
     overflow: hidden;
     background: #050508;
     position: relative;
 }
-.phone-screen img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
+.phone-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .phone-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    text-align: center;
-    padding: 30px;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 14px; text-align: center; padding: 30px;
     color: #4a4a55;
 }
-.phone-placeholder .ico { font-size: 64px; opacity: 0.4; }
-.phone-placeholder .txt {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    line-height: 1.4;
-    color: #6b7280;
-}
-.phone-placeholder .hint {
-    font-size: 13px;
-    font-weight: 500;
-    color: #4a4a55;
-    margin-top: 6px;
-}
+.phone-placeholder .ico { font-size: 60px; opacity: 0.4; }
+.phone-placeholder .txt { font-size: 17px; font-weight: 700; line-height: 1.4; color: #6b7280; }
+.phone-placeholder .hint { font-size: 12px; font-weight: 500; color: #4a4a55; margin-top: 4px; }
 
 /* ═══════════════════════════════════════════════════════
-   CAIXA EXPLICATIVA — compacta
+   EXPLAIN
    ═══════════════════════════════════════════════════════ */
 .explain {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(147,51,234,0.25);
-    border-radius: 24px;
-    padding: 22px 26px;
-    margin-bottom: 20px;
+    border-radius: 22px;
+    padding: 20px 24px;
+    margin-bottom: 18px;
     display: flex;
-    gap: 16px;
+    gap: 14px;
     align-items: flex-start;
     flex-shrink: 0;
 }
-.explain-icon {
-    font-size: 30px;
-    line-height: 1;
-    flex-shrink: 0;
-    margin-top: 3px;
-}
+.explain-icon { font-size: 28px; line-height: 1; flex-shrink: 0; margin-top: 3px; }
 .explain-txt { flex: 1; min-width: 0; }
 .explain-txt b {
     display: block;
-    font-size: 22px;
-    font-weight: 900;
-    color: #fff;
-    margin-bottom: 6px;
+    font-size: 20px; font-weight: 900; color: #fff;
+    margin-bottom: 5px;
     letter-spacing: -0.3px;
 }
 .explain-txt span {
-    font-size: 18px;
-    color: #9ca3af;
-    font-weight: 500;
-    line-height: 1.45;
+    font-size: 17px; color: #9ca3af;
+    font-weight: 500; line-height: 1.45;
 }
 
 /* ═══════════════════════════════════════════════════════
-   RODAPÉ DO STORY
+   RODAPÉ
    ═══════════════════════════════════════════════════════ */
 .story-footer {
     margin-top: auto;
     text-align: center;
-    padding-top: 16px;
+    padding-top: 12px;
     flex-shrink: 0;
 }
 .story-logo {
-    font-size: 28px;
-    font-weight: 900;
+    font-size: 26px; font-weight: 900;
     letter-spacing: 8px;
     color: #9333ea;
     text-shadow: 0 0 28px rgba(147,51,234,0.5);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 .story-url {
-    font-size: 17px;
-    color: #555;
-    font-weight: 600;
+    font-size: 16px;
+    color: #555; font-weight: 600;
     letter-spacing: 1px;
 }
 
 /* ═══════════════════════════════════════════════════════
-   SLIDE 1 — CHAT MOCKUP
+   SLIDE 1 — CHAT (agora ESTICA pra preencher)
    ═══════════════════════════════════════════════════════ */
 .chat-mockup {
-    width: 560px;
-    max-width: 85%;
-    margin: 20px auto 28px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 760px;
+    margin: 10px auto 20px;
     background: #0d1418;
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 30px;
+    border-radius: 32px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 60px rgba(147,51,234,0.1);
     overflow: hidden;
-    flex-shrink: 0;
+    min-height: 0;
 }
 .chat-topo {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 18px 22px;
+    display: flex; align-items: center; gap: 16px;
+    padding: 22px 28px;
     background: #1a2530;
     border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
 }
 .chat-avatar {
-    width: 50px;
-    height: 50px;
+    width: 58px; height: 58px;
     border-radius: 50%;
     background: linear-gradient(135deg, #2a4a3a, #1a3528);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
     flex-shrink: 0;
 }
 .chat-info { flex: 1; min-width: 0; }
-.chat-info b {
-    display: block;
-    font-size: 18px;
-    font-weight: 900;
-    color: #fff;
-    margin-bottom: 2px;
-}
-.chat-info small {
-    display: block;
-    font-size: 13px;
-    color: #6b7a8a;
-    font-weight: 600;
-}
+.chat-info b { display: block; font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 2px; }
+.chat-info small { display: block; font-size: 14px; color: #6b7a8a; font-weight: 600; }
 .chat-badge {
-    font-size: 11px;
-    font-weight: 900;
+    font-size: 11px; font-weight: 900;
     letter-spacing: 1.5px;
     color: #00e5a0;
     background: rgba(0,229,160,0.12);
@@ -454,19 +375,22 @@ body {
     text-transform: uppercase;
 }
 .chat-corpo {
-    padding: 22px 20px;
+    flex: 1;
+    padding: 28px 26px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    justify-content: center;
+    gap: 14px;
     background: #0a1418;
+    min-height: 0;
 }
 .chat-bubble {
-    max-width: 82%;
-    padding: 14px 20px;
-    border-radius: 20px;
-    font-size: 17px;
+    max-width: 78%;
+    padding: 16px 24px;
+    border-radius: 22px;
+    font-size: 20px;
     font-weight: 600;
-    line-height: 1.35;
+    line-height: 1.4;
     color: #e8edf2;
 }
 .chat-bubble.outro {
@@ -483,31 +407,36 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════
-   SLIDE 4 — CTA
+   SLIDE 4 — CTA (centralizado de verdade)
    ═══════════════════════════════════════════════════════ */
+.story-cta {
+    justify-content: space-between;
+    text-align: center;
+}
 .story-cta .story-center {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    gap: 20px;
+    gap: 18px;
+    padding-bottom: 30px;
 }
 .cta-titulo {
-    font-size: 68px !important;
-    margin-bottom: 0 !important;
+    font-size: 72px !important;
+    margin-bottom: 8px !important;
 }
 .cta-sub {
     font-size: 24px !important;
-    margin-bottom: 0 !important;
+    margin-bottom: 8px !important;
     max-width: 700px;
+    line-height: 1.5;
 }
 .cta-url-box {
     display: inline-flex;
     align-items: center;
     gap: 14px;
-    padding: 18px 32px;
+    padding: 20px 36px;
     background: rgba(147,51,234,0.12);
     border: 1px solid rgba(147,51,234,0.35);
     border-radius: 999px;
@@ -515,12 +444,11 @@ body {
     font-weight: 900;
     color: #c084fc;
     letter-spacing: 0.5px;
-    margin-top: 18px;
+    margin-top: 20px;
     box-shadow: 0 10px 40px rgba(147,51,234,0.2);
 }
 .cta-url-dot {
-    width: 11px;
-    height: 11px;
+    width: 12px; height: 12px;
     border-radius: 50%;
     background: #00e5a0;
     box-shadow: 0 0 16px #00e5a0;
