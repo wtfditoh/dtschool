@@ -1,0 +1,2 @@
+/pasta/*    /.netlify/functions/pasta?id=:splat    200
+/conteudo/* /.netlify/functions/pasta?conteudo=:splat    200
