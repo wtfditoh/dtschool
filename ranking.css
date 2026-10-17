@@ -124,25 +124,6 @@ body::after {
     z-index: 2;
 }
 
-/* ─── A BOLINHA CÉREBRO (Pequena e Rolando) ─── */
-.brain-bolinha {
-    position: absolute;
-    bottom: 14px; /* Coladinha no chão */
-    left: 50%;
-    width: 18px; /* Bem pequena */
-    height: 18px;
-    object-fit: contain;
-    z-index: 2; /* Atrás dos blocos (z-index: 4) e na frente do chão (-1) */
-    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.8)) drop-shadow(0 0 10px var(--primary));
-    pointer-events: none;
-    animation: rolando 7s linear infinite alternate;
-}
-
-@keyframes rolando {
-    0%   { transform: translateX(-140px) rotate(0deg); }
-    100% { transform: translateX(140px) rotate(720deg); }
-}
-
 /* ─── CONTAINER SLOTS ─── */
 .podium-container { 
     display: flex; 
