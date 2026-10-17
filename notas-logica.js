@@ -130,9 +130,6 @@ async function salvarNaNuvem() {
         let xpNotas = 0;
         materias.forEach(m => { xpNotas += calcularXP(m, cfg); });
         
-        console.log('🔵 XP NOVO das notas:', xpNotas);
-        
-        // Pega o documento atual pra ver o XP antigo de notas
         const docRef = doc(db, "notas", email);
         const docSnap = await getDoc(docRef);
         
@@ -143,36 +140,21 @@ async function salvarNaNuvem() {
             xpTotalAtual = docSnap.data().xp || 0;
         }
         
-        console.log('🟡 XP ANTIGO das notas:', xpNotasAntigo);
-        console.log('🟢 XP TOTAL atual:', xpTotalAtual);
-        
-        // Calcula a diferença
         const diferencaXP = xpNotas - xpNotasAntigo;
         
-        console.log('🟣 DIFERENÇA:', diferencaXP);
-        console.log('🔴 XP TOTAL NOVO será:', xpTotalAtual + diferencaXP);
-        
-        // Atualiza o documento
-        // - Salva xpNotas separado pra controle
-        // - Incrementa o xp total pela diferença
         await setDoc(docRef, {
             materias,
-            xpNotas: xpNotas, // XP específico das notas
+            xpNotas: xpNotas,
             email,
             nome: localStorage.getItem('dt_user_name') || 'Estudante',
             avatar: localStorage.getItem('dt_user_avatar') || 'user',
             atualizadoEm: Date.now()
         }, { merge: true });
         
-        // Se teve diferença, atualiza o XP total
         if (diferencaXP !== 0) {
             await setDoc(docRef, {
                 xp: increment(diferencaXP)
             }, { merge: true });
-            
-            console.log('✅ XP atualizado com increment de', diferencaXP);
-        } else {
-            console.log('ℹ️ Nenhuma mudança no XP (diferença = 0)');
         }
     } catch (e) {
         console.error('❌ Erro ao salvar na nuvem:', e);
@@ -332,7 +314,6 @@ window.salvarNota = async function(id, periodo, valor) {
 window.confirmarNovaMateria = async function() {
     const input = document.getElementById('nome-materia-input');
     if (input && input.value.trim() !== '') {
-        // Sempre cria com n1, n2, n3, n4 pra garantir compatibilidade
         const nova = { 
             id: Date.now(), 
             nome: input.value.trim(),
@@ -377,7 +358,7 @@ window.confirmarExclusao = async function() {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// COMPARTILHAR
+// COMPARTILHAR (NOVO DESIGN)
 // ═══════════════════════════════════════════════════════════════════════════
 window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     let container = document.getElementById('compartilhamento-container');
@@ -387,76 +368,115 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
         document.body.appendChild(container);
     }
 
+    const nota = parseFloat(mediaReal);
+    
+    // Define o status e a cor baseado na nota
+    let statusTxt, statusEmoji, corDestaque;
+    if (nota >= 10) {
+        statusTxt = 'NOTA MÁXIMA'; statusEmoji = '💯'; corDestaque = '#00e5a0'; // Verde
+    } else if (nota >= 8) {
+        statusTxt = 'NÍVEL ELITE'; statusEmoji = '⚡'; corDestaque = '#ffcc00'; // Dourado
+    } else if (nota >= 6) {
+        statusTxt = 'APROVADO'; statusEmoji = '🎯'; corDestaque = '#c084fc'; // Roxo Claro
+    } else {
+        statusTxt = 'NA LUTA'; statusEmoji = '💪'; corDestaque = '#ff4455'; // Vermelho
+    }
+
     container.innerHTML = `
-        <div style="width:1080px;height:1920px;background:radial-gradient(circle at center,#1a0b2e 0%,#050505 100%);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:120px 60px;position:relative;">
-            <div style="flex-grow:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:1;">
-                <div style="margin-bottom:60px;filter:drop-shadow(0 0 40px rgba(138,43,226,0.8));">
-                    <i data-lucide="brain-circuit" style="width:240px;height:240px;color:#8a2be2;"></i>
+        <div style="width:1080px; height:1920px; background:#050508; position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit',sans-serif;">
+            
+            <!-- FUNDO COM GRID -->
+            <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(138,43,226,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(138,43,226,0.05) 1px, transparent 1px); background-size: 60px 60px; z-index:0;"></div>
+            
+            <!-- GLOW ROXO GIGANTE -->
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:800px; height:800px; background:radial-gradient(circle, rgba(138,43,226,0.4) 0%, transparent 70%); filter:blur(80px); z-index:1;"></div>
+
+            <!-- CARD DE VIDRO CENTRAL -->
+            <div style="position:relative; z-index:2; width:780px; height:1100px; background:linear-gradient(160deg, rgba(30,30,40,0.8), rgba(15,15,20,0.9)); border:2px solid rgba(138,43,226,0.4); border-top:4px solid rgba(255,255,255,0.2); border-radius:60px; box-shadow:0 40px 100px rgba(0,0,0,0.8), inset 0 0 60px rgba(138,43,226,0.1); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px; text-align:center;">
+                
+                <!-- Ícone do Cérebro -->
+                <div style="width:180px; height:180px; background:rgba(138,43,226,0.15); border:2px solid rgba(138,43,226,0.4); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:50px; box-shadow:0 0 50px rgba(138,43,226,0.4);">
+                    <img src="icon-514_20260512_161420_0000.png" style="width:120px; height:120px; object-fit:contain;">
                 </div>
-                <p style="color:#fff;font-size:50px;font-weight:800;text-transform:uppercase;letter-spacing:4px;margin-bottom:20px;text-shadow:0 0 20px rgba(138,43,226,0.8);">
-                    ${parseFloat(mediaReal) >= 8.0 ? 'NÍVEL ELITE' : 'OBJETIVO CONCLUÍDO'}
-                </p>
-                <h1 style="color:#fff;font-size:140px;font-weight:900;line-height:1;margin:0;text-transform:uppercase;text-shadow:0 0 30px rgba(138,43,226,0.5);">
-                    ${nomeMateria}
-                </h1>
-                <p style="margin-top:40px;font-size:35px;font-weight:600;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:8px;border-bottom:1px solid rgba(138,43,226,0.4);padding-bottom:10px;">
-                    ${parseFloat(mediaReal) >= 8.0 ? `NOTA EXTRAORDINÁRIA: ${mediaReal}` : `MÉDIA ${mediaReal} SUPERADA`}
-                </p>
+
+                <!-- Texto de Status -->
+                <div style="display:inline-flex; align-items:center; gap:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:12px 30px; border-radius:40px; margin-bottom:30px;">
+                    <span style="font-size:32px;">${statusEmoji}</span>
+                    <span style="color:${corDestaque}; font-size:28px; font-weight:900; letter-spacing:4px; text-transform:uppercase;">${statusTxt}</span>
+                </div>
+
+                <!-- Nome da Matéria -->
+                <h1 style="color:#fff; font-size:70px; font-weight:900; margin:0 0 10px 0; line-height:1.1; letter-spacing:-2px; text-transform:uppercase; word-break:break-word;">${nomeMateria}</h1>
+                
+                <!-- Linha divisória -->
+                <div style="width:150px; height:4px; background:linear-gradient(90deg, transparent, ${corDestaque}, transparent); border-radius:4px; margin:20px 0 40px 0;"></div>
+
+                <!-- Nota Gigante -->
+                <span style="color:#9ca3af; font-size:24px; font-weight:800; letter-spacing:6px; text-transform:uppercase;">MÉDIA FINAL</span>
+                <h2 style="color:${corDestaque}; font-size:220px; font-weight:900; margin:0; line-height:1; letter-spacing:-10px; text-shadow:0 0 60px ${corDestaque}80;">${mediaReal}</h2>
+
             </div>
-            <div style="text-align:center;z-index:1;">
-                <p style="color:#8a2be2;font-size:30px;font-weight:800;letter-spacing:5px;text-transform:uppercase;">HUB BRAIN</p>
-                <p style="font-size:24px;color:#444;margin-top:15px;text-transform:lowercase;font-weight:400;letter-spacing:1px;">hubbrain.netlify.app</p>
+
+            <!-- RODAPÉ -->
+            <div style="position:absolute; bottom:80px; z-index:2; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                <p style="color:#fff; font-size:36px; font-weight:900; letter-spacing:8px; margin:0;">HUB BRAIN</p>
+                <p style="color:#666; font-size:24px; font-weight:600; margin:0;">hubbrain.netlify.app</p>
             </div>
         </div>
     `;
 
-    if (window.lucide) lucide.createIcons({ container });
+    // Aguarda a imagem do cérebro carregar no DOM
+    await new Promise(r => setTimeout(r, 500));
 
-    setTimeout(async () => {
-        try {
-            const canvas = await html2canvas(container, {
-                backgroundColor: '#0d0d0d',
-                width: 1080,
-                height: 1920,
-                scale: 1,
-                useCORS: true
-            });
+    try {
+        if (!window.html2canvas) throw new Error('html2canvas não carregou');
 
-            canvas.toBlob(async blob => {
-                const file = new File([blob], `Vitoria_${nomeMateria}.png`, { type: 'image/png' });
-                
-                if (navigator.share) {
+        const canvas = await html2canvas(container.firstElementChild, {
+            backgroundColor: '#050508',
+            width: 1080,
+            height: 1920,
+            scale: 1, // Mantém 1 pra não estourar a memória no celular
+            useCORS: true,
+            allowTaint: true
+        });
+
+        canvas.toBlob(async blob => {
+            const file = new File([blob], `Vitoria_${nomeMateria}.png`, { type: 'image/png' });
+            
+            if (navigator.share) {
+                try {
                     await navigator.share({
                         title: 'Hub Brain',
-                        text: `Menos uma! Passei em ${nomeMateria}. 🚀\nhubbrain.netlify.app`,
+                        text: `Passei em ${nomeMateria} com média ${mediaReal}! 🚀\nhubbrain.netlify.app`,
                         files: [file]
                     });
-                } else {
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = `Vitoria_${nomeMateria}.png`;
-                    a.click();
+                } catch (e) {
+                    if (e.name !== 'AbortError') console.error(e);
                 }
-                
-                container.innerHTML = '';
-            });
-        } catch (e) {
-            console.error('Erro ao compartilhar:', e);
-            showToast('Erro ao gerar imagem', 'error');
-        }
-    }, 400);
+            } else {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `Vitoria_${nomeMateria}.png`;
+                a.click();
+            }
+            
+            container.innerHTML = ''; // Limpa a área de renderização
+        });
+    } catch (e) {
+        console.error('Erro ao compartilhar:', e);
+        showToast('Erro ao gerar imagem', 'error');
+        container.innerHTML = '';
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PONTE para scripts normais (notas-esquema.js)
-// `materias` é privada deste módulo; sem esta ponte, qualquer script externo
-// editaria uma cópia e a próxima salvarNota() apagaria as mudanças.
 // ═══════════════════════════════════════════════════════════════════════════
 window.HBNotas = {
-    getMaterias: () => materias,          // sempre a referência atual
+    getMaterias: () => materias,
     getCfg,
     toast: showToast,
-    persistir: () => {                    // salva local + redesenha; devolve a Promise da nuvem
+    persistir: () => {
         localStorage.setItem('materias', JSON.stringify(materias));
         window.atualizarLista();
         return salvarNaNuvem();
