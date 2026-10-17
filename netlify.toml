@@ -4,13 +4,3 @@
 
 [functions]
   node_bundler = "esbuild"
-
-[[redirects]]
-  from = "/pasta/*"
-  to = "/.netlify/functions/pasta?id=:splat"
-  status = 200
-
-[[redirects]]
-  from = "/conteudo/*"
-  to = "/.netlify/functions/pasta?conteudo=:splat"
-  status = 200
