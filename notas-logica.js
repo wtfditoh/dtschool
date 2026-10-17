@@ -125,8 +125,6 @@ async function salvarNaNuvem() {
 
     try {
         const cfg = getCfg();
-        
-        // Calcula XP ATUAL das notas
         let xpNotas = 0;
         materias.forEach(m => { xpNotas += calcularXP(m, cfg); });
         
@@ -134,27 +132,19 @@ async function salvarNaNuvem() {
         const docSnap = await getDoc(docRef);
         
         let xpNotasAntigo = 0;
-        let xpTotalAtual = 0;
-        if (docSnap.exists()) {
-            xpNotasAntigo = docSnap.data().xpNotas || 0;
-            xpTotalAtual = docSnap.data().xp || 0;
-        }
+        if (docSnap.exists()) xpNotasAntigo = docSnap.data().xpNotas || 0;
         
         const diferencaXP = xpNotas - xpNotasAntigo;
         
         await setDoc(docRef, {
-            materias,
-            xpNotas: xpNotas,
-            email,
+            materias, xpNotas, email,
             nome: localStorage.getItem('dt_user_name') || 'Estudante',
             avatar: localStorage.getItem('dt_user_avatar') || 'user',
             atualizadoEm: Date.now()
         }, { merge: true });
         
         if (diferencaXP !== 0) {
-            await setDoc(docRef, {
-                xp: increment(diferencaXP)
-            }, { merge: true });
+            await setDoc(docRef, { xp: increment(diferencaXP) }, { merge: true });
         }
     } catch (e) {
         console.error('❌ Erro ao salvar na nuvem:', e);
@@ -193,20 +183,14 @@ window.atualizarLista = function() {
         const quase = soma >= cfg.somaMinima * 0.85 && soma < cfg.somaMinima;
         const faltam = Math.max(0, cfg.somaMinima - soma).toFixed(1);
 
-        // Cor da barra
         let barCor = '#8a2be2';
         if (aprovado) barCor = '#00e5a0';
         else if (quase) barCor = '#ffb800';
 
-        // Status badge
         let statusHTML = '';
-        if (aprovado) {
-            statusHTML = '<span class="status-badge aprovado">✓ APROVADO</span>';
-        } else if (quase) {
-            statusHTML = '<span class="status-badge quase">⚡ QUASE LÁ</span>';
-        } else {
-            statusHTML = `<span class="status-badge media">Média: ${mediaM}</span>`;
-        }
+        if (aprovado) statusHTML = '<span class="status-badge aprovado">✓ APROVADO</span>';
+        else if (quase) statusHTML = '<span class="status-badge quase">⚡ QUASE LÁ</span>';
+        else statusHTML = `<span class="status-badge media">Média: ${mediaM}</span>`;
 
         return `
         <div class="materia-card" style="animation-delay: ${idx * 0.1}s">
@@ -234,16 +218,7 @@ window.atualizarLista = function() {
                     return `
                     <div class="nota-input-group">
                         <label class="nota-label">${cfg.labels[i]}</label>
-                        <input 
-                            type="number" 
-                            step="0.1" 
-                            min="0" 
-                            max="${cfg.notaMax}" 
-                            value="${val}"
-                            class="nota-input ${notaClass}"
-                            onchange="window.salvarNota(${m.id}, ${n}, this.value)"
-                            placeholder="0.0"
-                        >
+                        <input type="number" step="0.1" min="0" max="${cfg.notaMax}" value="${val}" class="nota-input ${notaClass}" onchange="window.salvarNota(${m.id}, ${n}, this.value)" placeholder="0.0">
                     </div>`;
                 }).join('')}
             </div>
@@ -255,9 +230,7 @@ window.atualizarLista = function() {
                 </div>
                 <div class="footer-actions">
                     ${aprovado 
-                        ? `<button onclick="window.gerarCardVitoria('${m.nome}', '${mediaM}')" class="btn-share">
-                            <i data-lucide="share-2"></i>
-                           </button>` 
+                        ? `<button onclick="window.gerarCardVitoria('${m.nome}', '${mediaM}')" class="btn-share"><i data-lucide="share-2"></i></button>` 
                         : `<span class="falta-badge">Faltam ${faltam} pts</span>`
                     }
                 </div>
@@ -284,14 +257,9 @@ function atualizarStats(cfg) {
     });
 
     const mediaGeral = total > 0 ? (somaMedias / total).toFixed(1) : '0.0';
-
-    const mgEl = document.getElementById('media-geral');
-    const acEl = document.getElementById('aprov-count');
-    const xpEl = document.getElementById('total-xp');
-
-    if (mgEl) mgEl.textContent = mediaGeral;
-    if (acEl) acEl.textContent = `${aprovados}/${total}`;
-    if (xpEl) xpEl.textContent = xpTotal;
+    if (document.getElementById('media-geral')) document.getElementById('media-geral').textContent = mediaGeral;
+    if (document.getElementById('aprov-count')) document.getElementById('aprov-count').textContent = `${aprovados}/${total}`;
+    if (document.getElementById('total-xp')) document.getElementById('total-xp').textContent = xpTotal;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -314,19 +282,12 @@ window.salvarNota = async function(id, periodo, valor) {
 window.confirmarNovaMateria = async function() {
     const input = document.getElementById('nome-materia-input');
     if (input && input.value.trim() !== '') {
-        const nova = { 
-            id: Date.now(), 
-            nome: input.value.trim(),
-            n1: '', n2: '', n3: '', n4: ''
-        };
-        
+        const nova = { id: Date.now(), nome: input.value.trim(), n1: '', n2: '', n3: '', n4: '' };
         materias.push(nova);
         localStorage.setItem('materias', JSON.stringify(materias));
         window.atualizarLista();
-        
         if (window.fecharModal) window.fecharModal();
         input.value = '';
-        
         await salvarNaNuvem();
         showToast(`${nova.nome} adicionada!`);
     }
@@ -350,15 +311,13 @@ window.confirmarExclusao = async function() {
     materias = materias.filter(m => m.id !== idParaExcluir);
     localStorage.setItem('materias', JSON.stringify(materias));
     window.atualizarLista();
-    
     if (window.fecharModalExcluir) window.fecharModalExcluir();
-    
     await salvarNaNuvem();
     if (materia) showToast(`${materia.nome} excluída`, 'error');
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// COMPARTILHAR (NOVO DESIGN PREMIUM)
+// COMPARTILHAR (ESTILO ANTIGO REFINADO - SEM TABLET)
 // ═══════════════════════════════════════════════════════════════════════════
 window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     let container = document.getElementById('compartilhamento-container');
@@ -370,14 +329,14 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
 
     const nota = parseFloat(mediaReal);
     
-    // Define o status e a cor baseado na nota
+    // Cores baseadas na nota
     let statusTxt, statusEmoji, corDestaque;
     if (nota >= 10) { statusTxt = 'NOTA MÁXIMA'; statusEmoji = '💯'; corDestaque = '#00e5a0'; } 
     else if (nota >= 8) { statusTxt = 'NÍVEL ELITE'; statusEmoji = '⚡'; corDestaque = '#ffcc00'; } 
     else if (nota >= 6) { statusTxt = 'APROVADO'; statusEmoji = '🎯'; corDestaque = '#c084fc'; } 
     else { statusTxt = 'NA LUTA'; statusEmoji = '💪'; corDestaque = '#ff4455'; }
 
-    // Preload da imagem da logo pra não sair em branco
+    // Preload da imagem
     await new Promise((resolve) => {
         const imgPreload = new Image();
         imgPreload.src = 'icon-514_20260512_161420_0000.png';
@@ -386,64 +345,52 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     });
 
     container.innerHTML = `
-        <div style="width:1080px; height:1920px; background:#0a0a0e; position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit',sans-serif;">
+        <div style="width:1080px; height:1920px; background:radial-gradient(circle at center, #1a0b2e 0%, #050508 100%); position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit',sans-serif;">
             
-            <!-- 1. GRID DO LOGIN -->
-            <div style="position:absolute; inset:0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 60px 60px; z-index:0;"></div>
-            
-            <!-- 2. GLOW ROXO -->
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:100%; height:100%; background:radial-gradient(circle at center, rgba(147,51,234,0.4) 0%, transparent 60%); filter:blur(80px); z-index:1;"></div>
+            <!-- Glow suave no centro -->
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:900px; height:900px; background:radial-gradient(circle, rgba(147,51,234,0.15) 0%, transparent 70%); filter:blur(60px); z-index:0;"></div>
 
-            <!-- 3. LETREIRO TV GIGANTE NO FUNDO -->
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:250px; font-weight:900; letter-spacing:-10px; color:#fff; opacity:0.05; z-index:1; white-space:nowrap; pointer-events:none;">
-                HUB <span style="color:#c084fc;">BRAIN</span>
-            </div>
-
-            <!-- 4. LOGO GIGANTE NO FUNDO -->
-            <img src="icon-514_20260512_161420_0000.png" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:600px; opacity:0.15; z-index:1; filter:drop-shadow(0 0 40px rgba(147,51,234,0.5));">
-
-            <!-- 5. O CARD DE VIDRO (Glassmorphism) -->
-            <div style="position:relative; z-index:10; width:880px; height:1400px; background:rgba(20, 20, 26, 0.2); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid rgba(255,255,255,0.25); border-radius: 80px; box-shadow: 0 30px 100px rgba(0,0,0,0.5), inset 0 0 60px rgba(147,51,234,0.1); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px; text-align:center;">
+            <!-- Conteúdo (Sem bordas de tablet, direto na tela) -->
+            <div style="position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; text-align:center; padding: 0 80px;">
                 
-                <!-- Logo PNG no Card -->
-                <div style="width:240px; height:240px; background:rgba(147,51,234,0.15); border:3px solid rgba(147,51,234,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:60px; box-shadow:0 0 60px rgba(147,51,234,0.5);">
-                    <img src="icon-514_20260512_161420_0000.png" style="width:160px; height:160px; object-fit:contain;">
+                <!-- Logo com brilho roxo atrás -->
+                <div style="width:260px; height:260px; background:rgba(147,51,234,0.15); border:3px solid rgba(147,51,234,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:50px; box-shadow:0 0 80px rgba(147,51,234,0.4), inset 0 0 30px rgba(147,51,234,0.2);">
+                    <img src="icon-514_20260512_161420_0000.png" style="width:180px; height:180px; object-fit:contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));">
                 </div>
 
                 <!-- Badge de Status -->
-                <div style="display:inline-flex; align-items:center; gap:16px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:16px 40px; border-radius:50px; margin-bottom:40px; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+                <div style="display:inline-flex; align-items:center; gap:16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:16px 40px; border-radius:50px; margin-bottom:40px;">
                     <span style="font-size:40px;">${statusEmoji}</span>
                     <span style="color:${corDestaque}; font-size:36px; font-weight:900; letter-spacing:6px; text-transform:uppercase; text-shadow:0 0 20px ${corDestaque}80;">${statusTxt}</span>
                 </div>
 
                 <!-- Nome da Matéria -->
-                <h1 style="color:#fff; font-size:90px; font-weight:900; margin:0 0 20px 0; line-height:1.05; letter-spacing:-3px; text-transform:uppercase; word-break:break-word; text-shadow:0 4px 20px rgba(0,0,0,0.5);">${nomeMateria}</h1>
+                <h1 style="color:#fff; font-size:100px; font-weight:900; margin:0 0 20px 0; line-height:1.05; letter-spacing:-4px; text-transform:uppercase; text-shadow:0 10px 30px rgba(0,0,0,0.8);">${nomeMateria}</h1>
                 
                 <!-- Linha Divisória -->
-                <div style="width:200px; height:6px; background:linear-gradient(90deg, transparent, ${corDestaque}, transparent); border-radius:6px; margin:30px 0 50px 0; box-shadow:0 0 20px ${corDestaque};"></div>
+                <div style="width:250px; height:6px; background:linear-gradient(90deg, transparent, ${corDestaque}, transparent); border-radius:6px; margin:20px 0 50px 0; box-shadow:0 0 20px ${corDestaque};"></div>
 
                 <!-- Nota Gigante -->
-                <span style="color:#9ca3af; font-size:32px; font-weight:800; letter-spacing:8px; text-transform:uppercase; margin-bottom:20px;">MÉDIA FINAL</span>
-                <h2 style="color:${corDestaque}; font-size:320px; font-weight:900; margin:0; line-height:0.9; letter-spacing:-15px; text-shadow:0 0 80px ${corDestaque}90;">${mediaReal}</h2>
+                <span style="color:#9ca3af; font-size:36px; font-weight:800; letter-spacing:10px; text-transform:uppercase; margin-bottom:10px;">MÉDIA FINAL</span>
+                <h2 style="color:${corDestaque}; font-size:400px; font-weight:900; margin:0; line-height:0.8; letter-spacing:-20px; text-shadow:0 0 100px ${corDestaque}90;">${mediaReal}</h2>
 
             </div>
 
-            <!-- 6. RODAPÉ -->
+            <!-- Rodapé -->
             <div style="position:absolute; bottom:80px; z-index:10; display:flex; flex-direction:column; align-items:center; gap:10px;">
-                <p style="color:#fff; font-size:40px; font-weight:900; letter-spacing:12px; margin:0; text-shadow:0 0 20px rgba(255,255,255,0.3);">HUB BRAIN</p>
-                <p style="color:#6b7280; font-size:26px; font-weight:600; margin:0; letter-spacing:2px;">hubbrain.netlify.app</p>
+                <p style="color:#fff; font-size:40px; font-weight:900; letter-spacing:15px; margin:0;">HUB BRAIN</p>
+                <p style="color:#6b7280; font-size:24px; font-weight:600; margin:0; letter-spacing:2px;">hubbrain.netlify.app</p>
             </div>
         </div>
     `;
 
-    // Espera um pouco pra garantir que o layout e as imagens renderizaram
     await new Promise(r => setTimeout(r, 800));
 
     try {
         if (!window.html2canvas) throw new Error('html2canvas não carregou');
 
         const canvas = await html2canvas(container.firstElementChild, {
-            backgroundColor: '#0a0a0e',
+            backgroundColor: '#050508',
             width: 1080,
             height: 1920,
             scale: 1, 
@@ -471,7 +418,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
                 a.click();
             }
             
-            container.innerHTML = ''; // Limpa a área
+            container.innerHTML = '';
         });
     } catch (e) {
         console.error('Erro ao compartilhar:', e);
@@ -481,7 +428,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PONTE para scripts normais (notas-esquema.js)
+// PONTE PARA O BOLETIM
 // ═══════════════════════════════════════════════════════════════════════════
 window.HBNotas = {
     getMaterias: () => materias,
@@ -498,18 +445,14 @@ window.HBNotas = {
 // INIT
 // ═══════════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
-    // Sempre renderiza as notas locais primeiro
     window.atualizarLista();
     
-    // Só depois tenta sincronizar com Firebase (sem sobrescrever)
     const email = localStorage.getItem('dt_user_email');
     if (email && email !== 'null') {
         try {
             const snap = await getDoc(doc(db, 'notas', email));
             if (snap.exists() && snap.data().materias) {
                 const materiasFirebase = snap.data().materias;
-                
-                // Se não tem matérias locais, usa as do Firebase
                 if (materias.length === 0 && materiasFirebase.length > 0) {
                     materias = materiasFirebase;
                     localStorage.setItem('materias', JSON.stringify(materias));
