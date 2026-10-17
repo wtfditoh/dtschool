@@ -358,7 +358,7 @@ window.confirmarExclusao = async function() {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// COMPARTILHAR (NOVO DESIGN)
+// COMPARTILHAR (NOVO DESIGN PREMIUM)
 // ═══════════════════════════════════════════════════════════════════════════
 window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     let container = document.getElementById('compartilhamento-container');
@@ -372,70 +372,81 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     
     // Define o status e a cor baseado na nota
     let statusTxt, statusEmoji, corDestaque;
-    if (nota >= 10) {
-        statusTxt = 'NOTA MÁXIMA'; statusEmoji = '💯'; corDestaque = '#00e5a0'; // Verde
-    } else if (nota >= 8) {
-        statusTxt = 'NÍVEL ELITE'; statusEmoji = '⚡'; corDestaque = '#ffcc00'; // Dourado
-    } else if (nota >= 6) {
-        statusTxt = 'APROVADO'; statusEmoji = '🎯'; corDestaque = '#c084fc'; // Roxo Claro
-    } else {
-        statusTxt = 'NA LUTA'; statusEmoji = '💪'; corDestaque = '#ff4455'; // Vermelho
-    }
+    if (nota >= 10) { statusTxt = 'NOTA MÁXIMA'; statusEmoji = '💯'; corDestaque = '#00e5a0'; } 
+    else if (nota >= 8) { statusTxt = 'NÍVEL ELITE'; statusEmoji = '⚡'; corDestaque = '#ffcc00'; } 
+    else if (nota >= 6) { statusTxt = 'APROVADO'; statusEmoji = '🎯'; corDestaque = '#c084fc'; } 
+    else { statusTxt = 'NA LUTA'; statusEmoji = '💪'; corDestaque = '#ff4455'; }
+
+    // Preload da imagem da logo pra não sair em branco
+    await new Promise((resolve) => {
+        const imgPreload = new Image();
+        imgPreload.src = 'icon-514_20260512_161420_0000.png';
+        imgPreload.onload = resolve;
+        imgPreload.onerror = resolve;
+    });
 
     container.innerHTML = `
-        <div style="width:1080px; height:1920px; background:#050508; position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit',sans-serif;">
+        <div style="width:1080px; height:1920px; background:#0a0a0e; position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit',sans-serif;">
             
-            <!-- FUNDO COM GRID -->
-            <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(138,43,226,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(138,43,226,0.05) 1px, transparent 1px); background-size: 60px 60px; z-index:0;"></div>
+            <!-- 1. GRID DO LOGIN -->
+            <div style="position:absolute; inset:0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 60px 60px; z-index:0;"></div>
             
-            <!-- GLOW ROXO GIGANTE -->
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:800px; height:800px; background:radial-gradient(circle, rgba(138,43,226,0.4) 0%, transparent 70%); filter:blur(80px); z-index:1;"></div>
+            <!-- 2. GLOW ROXO -->
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:100%; height:100%; background:radial-gradient(circle at center, rgba(147,51,234,0.4) 0%, transparent 60%); filter:blur(80px); z-index:1;"></div>
 
-            <!-- CARD DE VIDRO CENTRAL -->
-            <div style="position:relative; z-index:2; width:780px; height:1100px; background:linear-gradient(160deg, rgba(30,30,40,0.8), rgba(15,15,20,0.9)); border:2px solid rgba(138,43,226,0.4); border-top:4px solid rgba(255,255,255,0.2); border-radius:60px; box-shadow:0 40px 100px rgba(0,0,0,0.8), inset 0 0 60px rgba(138,43,226,0.1); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px; text-align:center;">
+            <!-- 3. LETREIRO TV GIGANTE NO FUNDO -->
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:250px; font-weight:900; letter-spacing:-10px; color:#fff; opacity:0.05; z-index:1; white-space:nowrap; pointer-events:none;">
+                HUB <span style="color:#c084fc;">BRAIN</span>
+            </div>
+
+            <!-- 4. LOGO GIGANTE NO FUNDO -->
+            <img src="icon-514_20260512_161420_0000.png" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:600px; opacity:0.15; z-index:1; filter:drop-shadow(0 0 40px rgba(147,51,234,0.5));">
+
+            <!-- 5. O CARD DE VIDRO (Glassmorphism) -->
+            <div style="position:relative; z-index:10; width:880px; height:1400px; background:rgba(20, 20, 26, 0.2); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid rgba(255,255,255,0.25); border-radius: 80px; box-shadow: 0 30px 100px rgba(0,0,0,0.5), inset 0 0 60px rgba(147,51,234,0.1); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px; text-align:center;">
                 
-                <!-- Ícone do Cérebro -->
-                <div style="width:180px; height:180px; background:rgba(138,43,226,0.15); border:2px solid rgba(138,43,226,0.4); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:50px; box-shadow:0 0 50px rgba(138,43,226,0.4);">
-                    <img src="icon-514_20260512_161420_0000.png" style="width:120px; height:120px; object-fit:contain;">
+                <!-- Logo PNG no Card -->
+                <div style="width:240px; height:240px; background:rgba(147,51,234,0.15); border:3px solid rgba(147,51,234,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:60px; box-shadow:0 0 60px rgba(147,51,234,0.5);">
+                    <img src="icon-514_20260512_161420_0000.png" style="width:160px; height:160px; object-fit:contain;">
                 </div>
 
-                <!-- Texto de Status -->
-                <div style="display:inline-flex; align-items:center; gap:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:12px 30px; border-radius:40px; margin-bottom:30px;">
-                    <span style="font-size:32px;">${statusEmoji}</span>
-                    <span style="color:${corDestaque}; font-size:28px; font-weight:900; letter-spacing:4px; text-transform:uppercase;">${statusTxt}</span>
+                <!-- Badge de Status -->
+                <div style="display:inline-flex; align-items:center; gap:16px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:16px 40px; border-radius:50px; margin-bottom:40px; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+                    <span style="font-size:40px;">${statusEmoji}</span>
+                    <span style="color:${corDestaque}; font-size:36px; font-weight:900; letter-spacing:6px; text-transform:uppercase; text-shadow:0 0 20px ${corDestaque}80;">${statusTxt}</span>
                 </div>
 
                 <!-- Nome da Matéria -->
-                <h1 style="color:#fff; font-size:70px; font-weight:900; margin:0 0 10px 0; line-height:1.1; letter-spacing:-2px; text-transform:uppercase; word-break:break-word;">${nomeMateria}</h1>
+                <h1 style="color:#fff; font-size:90px; font-weight:900; margin:0 0 20px 0; line-height:1.05; letter-spacing:-3px; text-transform:uppercase; word-break:break-word; text-shadow:0 4px 20px rgba(0,0,0,0.5);">${nomeMateria}</h1>
                 
-                <!-- Linha divisória -->
-                <div style="width:150px; height:4px; background:linear-gradient(90deg, transparent, ${corDestaque}, transparent); border-radius:4px; margin:20px 0 40px 0;"></div>
+                <!-- Linha Divisória -->
+                <div style="width:200px; height:6px; background:linear-gradient(90deg, transparent, ${corDestaque}, transparent); border-radius:6px; margin:30px 0 50px 0; box-shadow:0 0 20px ${corDestaque};"></div>
 
                 <!-- Nota Gigante -->
-                <span style="color:#9ca3af; font-size:24px; font-weight:800; letter-spacing:6px; text-transform:uppercase;">MÉDIA FINAL</span>
-                <h2 style="color:${corDestaque}; font-size:220px; font-weight:900; margin:0; line-height:1; letter-spacing:-10px; text-shadow:0 0 60px ${corDestaque}80;">${mediaReal}</h2>
+                <span style="color:#9ca3af; font-size:32px; font-weight:800; letter-spacing:8px; text-transform:uppercase; margin-bottom:20px;">MÉDIA FINAL</span>
+                <h2 style="color:${corDestaque}; font-size:320px; font-weight:900; margin:0; line-height:0.9; letter-spacing:-15px; text-shadow:0 0 80px ${corDestaque}90;">${mediaReal}</h2>
 
             </div>
 
-            <!-- RODAPÉ -->
-            <div style="position:absolute; bottom:80px; z-index:2; display:flex; flex-direction:column; align-items:center; gap:8px;">
-                <p style="color:#fff; font-size:36px; font-weight:900; letter-spacing:8px; margin:0;">HUB BRAIN</p>
-                <p style="color:#666; font-size:24px; font-weight:600; margin:0;">hubbrain.netlify.app</p>
+            <!-- 6. RODAPÉ -->
+            <div style="position:absolute; bottom:80px; z-index:10; display:flex; flex-direction:column; align-items:center; gap:10px;">
+                <p style="color:#fff; font-size:40px; font-weight:900; letter-spacing:12px; margin:0; text-shadow:0 0 20px rgba(255,255,255,0.3);">HUB BRAIN</p>
+                <p style="color:#6b7280; font-size:26px; font-weight:600; margin:0; letter-spacing:2px;">hubbrain.netlify.app</p>
             </div>
         </div>
     `;
 
-    // Aguarda a imagem do cérebro carregar no DOM
-    await new Promise(r => setTimeout(r, 500));
+    // Espera um pouco pra garantir que o layout e as imagens renderizaram
+    await new Promise(r => setTimeout(r, 800));
 
     try {
         if (!window.html2canvas) throw new Error('html2canvas não carregou');
 
         const canvas = await html2canvas(container.firstElementChild, {
-            backgroundColor: '#050508',
+            backgroundColor: '#0a0a0e',
             width: 1080,
             height: 1920,
-            scale: 1, // Mantém 1 pra não estourar a memória no celular
+            scale: 1, 
             useCORS: true,
             allowTaint: true
         });
@@ -460,7 +471,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
                 a.click();
             }
             
-            container.innerHTML = ''; // Limpa a área de renderização
+            container.innerHTML = ''; // Limpa a área
         });
     } catch (e) {
         console.error('Erro ao compartilhar:', e);
