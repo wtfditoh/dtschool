@@ -317,7 +317,7 @@ window.confirmarExclusao = async function() {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// COMPARTILHAR (CLEAN, DARK, ESTILO LOGIN)
+// COMPARTILHAR (ESTILO ANTIGO, ESTÉTICA DO LOGIN)
 // ═══════════════════════════════════════════════════════════════════════════
 window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     let container = document.getElementById('compartilhamento-container');
@@ -328,13 +328,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     }
 
     const nota = parseFloat(mediaReal);
-    
-    // Cores baseadas na nota
-    let statusTxt, statusEmoji, corDestaque;
-    if (nota >= 10) { statusTxt = 'NOTA MÁXIMA'; statusEmoji = '💯'; corDestaque = '#00e5a0'; } 
-    else if (nota >= 8) { statusTxt = 'NÍVEL ELITE'; statusEmoji = '⚡'; corDestaque = '#ffcc00'; } 
-    else if (nota >= 6) { statusTxt = 'APROVADO'; statusEmoji = '🎯'; corDestaque = '#c084fc'; } 
-    else { statusTxt = 'NA LUTA'; statusEmoji = '💪'; corDestaque = '#ff4455'; }
+    const isElite = nota >= 8.0;
 
     // Preload da imagem
     await new Promise((resolve) => {
@@ -345,57 +339,64 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     });
 
     container.innerHTML = `
-        <div style="width:1080px; height:1920px; background:#0a0a0e; position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit',sans-serif;">
+        <div style="width:1080px; height:1920px; background:#050508; position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:120px 60px; font-family:'Outfit',sans-serif; box-sizing:border-box;">
             
-            <!-- Grid Sutil do Login -->
-            <div style="position:absolute; inset:0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 60px 60px; z-index:0;"></div>
+            <!-- 1. GRID DO LOGIN -->
+            <div style="position:absolute; inset:0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 40px 40px; z-index:0;"></div>
             
-            <!-- Glow Roxo Centralizado (Login style) -->
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:1200px; height:1200px; background:radial-gradient(circle, rgba(147,51,234,0.25) 0%, transparent 60%); filter:blur(100px); z-index:1;"></div>
+            <!-- 2. GLOW ROXO (Estilo Login) -->
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:1000px; height:1000px; background:radial-gradient(circle, rgba(147,51,234,0.3) 0%, transparent 60%); filter:blur(80px); z-index:1;"></div>
 
-            <!-- Logo Transparente Flutuando -->
-            <img src="icon-514_20260512_161420_0000.png" style="position:absolute; top:15%; width:220px; opacity:0.9; z-index:2; filter:drop-shadow(0 0 30px rgba(147,51,234,0.5));">
+            <!-- 3. LOGO NO FUNDO (Sutil) -->
+            <img src="icon-514_20260512_161420_0000.png" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:800px; opacity:0.05; z-index:1; pointer-events:none;">
 
-            <!-- Texto do Topo (Kicker) -->
-            <div style="position:absolute; top:25%; z-index:2; text-align:center;">
-                <span style="color:#c084fc; font-size:24px; font-weight:800; letter-spacing:6px; text-transform:uppercase;">MÉDIA FINAL</span>
-            </div>
-
-            <!-- Card de Vidro Central (Estilo Login) -->
-            <div style="position:relative; z-index:10; width:800px; height:800px; background:rgba(20, 20, 26, 0.2); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); border-top: 1px solid rgba(255,255,255,0.2); border-radius: 60px; box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 0 40px rgba(147,51,234,0.05); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; margin-top: 60px;">
+            <!-- CONTEÚDO CENTRAL -->
+            <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; z-index:10;">
                 
-                <!-- Status Badge -->
-                <div style="display:inline-flex; align-items:center; gap:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:12px 30px; border-radius:40px; margin-bottom:30px;">
-                    <span style="font-size:32px;">${statusEmoji}</span>
-                    <span style="color:${corDestaque}; font-size:28px; font-weight:900; letter-spacing:4px; text-transform:uppercase;">${statusTxt}</span>
+                <!-- LOGO PNG FLUTUANDO (Sem círculo, sem fundo) -->
+                <div style="margin-bottom:60px; filter:drop-shadow(0 0 40px rgba(147,51,234,0.8)); animation: float 4s ease-in-out infinite;">
+                    <img src="icon-514_20260512_161420_0000.png" style="width:240px; height:240px; object-fit:contain;">
                 </div>
 
+                <!-- Texto de Status (Vida que você pediu) -->
+                <p style="color:#fff; font-size:50px; font-weight:800; text-transform:uppercase; letter-spacing:4px; margin:0 0 20px 0; text-shadow:0 0 20px rgba(147,51,234,0.8);">
+                    ${isElite ? 'NÍVEL ELITE' : 'OBJETIVO CONCLUÍDO'}
+                </p>
+
                 <!-- Nome da Matéria -->
-                <h1 style="color:#fff; font-size:70px; font-weight:900; margin:0 0 20px 0; line-height:1.1; letter-spacing:-2px; text-transform:uppercase; text-shadow:0 4px 20px rgba(0,0,0,0.5);">${nomeMateria}</h1>
-                
-                <!-- Linha Divisória -->
-                <div style="width:120px; height:4px; background:linear-gradient(90deg, transparent, ${corDestaque}, transparent); border-radius:4px; margin:20px 0 40px 0;"></div>
+                <h1 style="color:#fff; font-size:140px; font-weight:900; line-height:1; margin:0; text-transform:uppercase; text-shadow:0 0 30px rgba(147,51,234,0.5); max-width:960px; word-wrap:break-word;">
+                    ${nomeMateria}
+                </h1>
 
-                <!-- Nota Gigante -->
-                <h2 style="color:${corDestaque}; font-size:240px; font-weight:900; margin:0; line-height:0.9; letter-spacing:-10px; text-shadow:0 0 60px ${corDestaque}60;">${mediaReal}</h2>
+                <!-- Nota -->
+                <p style="margin-top:40px; font-size:35px; font-weight:600; color:rgba(255,255,255,0.8); text-transform:uppercase; letter-spacing:8px; border-bottom:2px solid rgba(147,51,234,0.6); padding-bottom:10px;">
+                    ${isElite ? `NOTA EXTRAORDINÁRIA: ${mediaReal}` : `MÉDIA ${mediaReal} SUPERADA`}
+                </p>
 
             </div>
 
-            <!-- Rodapé -->
-            <div style="position:absolute; bottom:80px; z-index:10; display:flex; flex-direction:column; align-items:center; gap:8px;">
-                <p style="color:#fff; font-size:36px; font-weight:900; letter-spacing:8px; margin:0;">HUB BRAIN</p>
-                <p style="color:#6b7280; font-size:24px; font-weight:600; margin:0; letter-spacing:2px;">hubbrain.netlify.app</p>
+            <!-- RODAPÉ -->
+            <div style="text-align:center; z-index:10;">
+                <p style="color:#8a2be2; font-size:30px; font-weight:800; letter-spacing:5px; text-transform:uppercase; margin:0;">HUB BRAIN</p>
+                <p style="font-size:24px; color:#666; margin-top:15px; text-transform:lowercase; font-weight:400; letter-spacing:1px; margin-bottom:0;">hubbrain.netlify.app</p>
             </div>
+            
+            <style>
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-15px); }
+                }
+            </style>
         </div>
     `;
 
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise(r => setTimeout(r, 500));
 
     try {
         if (!window.html2canvas) throw new Error('html2canvas não carregou');
 
         const canvas = await html2canvas(container.firstElementChild, {
-            backgroundColor: '#0a0a0e',
+            backgroundColor: '#050508',
             width: 1080,
             height: 1920,
             scale: 1, 
