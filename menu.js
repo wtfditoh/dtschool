@@ -216,3 +216,12 @@ if (document.readyState === 'loading') {
 } else {
     criarMenuGlobal();
 }
+
+// ═══ Fix tela preta ao voltar (bfcache) ═══
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        // Remove a classe que deixa a tela invisível
+        document.body.classList.remove('saindo');
+        document.body.style.opacity = '1';
+    }
+});
