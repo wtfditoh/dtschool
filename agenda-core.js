@@ -384,8 +384,27 @@ export function normalizarRespostaIA(dado, ctx) {
 
 export function mesclarInterpretacao(local, ia) {
     if (!ia) return local;
+    
+    let nomeIA = ia.nome || '';
+    
+    // 1. Remove palavras de data do título (caso a IA tenha esquecido de tirar)
+    nomeIA = nomeIA.replace(/\b(hoje|amanha|amanhã|segunda-feira|segunda|terça-feira|terça|terca-feira|terca|quarta-feira|quarta|quinta-feira|quinta|sexta-feira|sexta|sábado|sabado|domingo|em \d+ dias?)\b/gi, '').trim();
+    
+    // 2. Remove preposições que ficaram sobrando no final (em loop para pegar cascatas tipo "pra de")
+    let nomeAntigo;
+    do {
+        nomeAntigo = nomeIA;
+        nomeIA = nomeIA.replace(/\s+(pra|para|de|da|do|na|no|nas|nos|e|é)$/i, '').trim();
+    } while (nomeIA !== nomeAntigo);
+    
+    // 3. Remove espaços duplicados que possam ter ficado
+    nomeIA = nomeIA.replace(/\s{2,}/g, ' ');
+    
+    // 4. Deixa a primeira letra maiúscula
+    if (nomeIA) nomeIA = nomeIA.charAt(0).toUpperCase() + nomeIA.slice(1);
+
     return {
-        nome: ia.nome || local.nome,
+        nome: nomeIA || local.nome, // Usa o nome limpo da IA, ou o local se falhar
         descricao: ia.descricao || local.descricao,
         data: ia.data || local.data,
         tipo: ia.tipo || local.tipo,
