@@ -1,7 +1,4 @@
-/* agenda-core.js — Hub Brain · Lógica pura da Agenda
-   Sem DOM, sem Firestore. Todas as funções que o agenda-logica.js importa. */
-
-/* ═══════════════ CONSTANTES ═══════════════ */
+/* agenda-core.js — Hub Brain · Lógica pura da Agenda */
 
 export const TIPOS = {
     tarefa:   { label: 'Tarefa',   emoji: '📝', xp: 15, minutos: 25 },
@@ -14,14 +11,11 @@ export const TIPOS = {
 export const NOMES_DIA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
 export const BIMESTRES = {
-    '1': { label: '1º Bimestre' },
-    '2': { label: '2º Bimestre' },
-    '3': { label: '3º Bimestre' },
-    '4': { label: '4º Bimestre' }
+    '1': { label: '1º Bimestre' }, '2': { label: '2º Bimestre' },
+    '3': { label: '3º Bimestre' }, '4': { label: '4º Bimestre' }
 };
 
-const PALETA = ['#8a2be2', '#00d2ff', '#00e5a0', '#ff8c32', '#ff4455',
-                '#c084fc', '#ffbb33', '#3b82f6', '#ec4899', '#10b981'];
+const PALETA = ['#8a2be2', '#00d2ff', '#00e5a0', '#ff8c32', '#ff4455', '#c084fc', '#ffbb33', '#3b82f6', '#ec4899', '#10b981'];
 
 export function corMateria(nome) {
     if (!nome || nome === 'Geral') return '#8a2be2';
@@ -29,8 +23,6 @@ export function corMateria(nome) {
     for (let i = 0; i < nome.length; i++) hash = (hash * 31 + nome.charCodeAt(i)) | 0;
     return PALETA[Math.abs(hash) % PALETA.length];
 }
-
-/* ═══════════════ DATAS ═══════════════ */
 
 export function dataLocal(d) {
     const dt = d instanceof Date ? d : new Date();
@@ -88,8 +80,6 @@ export function rotuloSemana(ref) {
     return `${a[2]} ${MESES_CURTO[a[1] - 1]} – ${b[2]} ${MESES_CURTO[b[1] - 1]}`;
 }
 
-/* ═══════════════ URGÊNCIA ═══════════════ */
-
 export function urgencia(t, hoje) {
     if (t.concluida) return { nivel: 'feita', emoji: '✓', rotulo: 'Concluída', diff: 999 };
     const d = diffDias(t.dataFim, hoje);
@@ -104,18 +94,9 @@ export function urgencia(t, hoje) {
     return { nivel: 'baixa', emoji: '🟢', rotulo: `Em ${d} dias`, diff: d };
 }
 
-/* ═══════════════ TAREFA ═══════════════ */
+export function minutosFoco(t) { return (TIPOS[t.tipo] || TIPOS.tarefa).minutos; }
 
-export function minutosFoco(t) {
-    return (TIPOS[t.tipo] || TIPOS.tarefa).minutos;
-}
-
-export function moverDias(t, n) {
-    return {
-        dataInicio: somarDias(t.dataInicio, n),
-        dataFim: somarDias(t.dataFim, n)
-    };
-}
+export function moverDias(t, n) { return { dataInicio: somarDias(t.dataInicio, n), dataFim: somarDias(t.dataFim, n) }; }
 
 export function reagendarPara(t, novoFim) {
     if (t.dataInicio === t.dataFim) return { dataInicio: novoFim, dataFim: novoFim };
@@ -127,8 +108,6 @@ export function concluidaNoDia(t, dia) {
     if (!t.concluida || !t.concluidaEm) return false;
     return dataLocal(new Date(t.concluidaEm)) === dia;
 }
-
-/* ═══════════════ FILTROS ═══════════════ */
 
 export function tarefasDoDia(tarefas, dia) {
     return tarefas.filter(t => {
@@ -148,13 +127,8 @@ export function filtrarTudo(tarefas, filtro, hoje) {
     if (st === 'pendentes') arr = arr.filter(t => !t.concluida);
     else if (st === 'atrasadas') arr = arr.filter(t => !t.concluida && t.dataFim < hoje);
     else if (st === 'concluidas') arr = arr.filter(t => t.concluida);
-
-    if (filtro.materia && filtro.materia !== 'todas') {
-        arr = arr.filter(t => (t.materia || 'Geral') === filtro.materia);
-    }
-    if (filtro.bim && filtro.bim !== 'todos') {
-        arr = arr.filter(t => String(t.bimestre || '') === String(filtro.bim));
-    }
+    if (filtro.materia && filtro.materia !== 'todas') arr = arr.filter(t => (t.materia || 'Geral') === filtro.materia);
+    if (filtro.bim && filtro.bim !== 'todos') arr = arr.filter(t => String(t.bimestre || '') === String(filtro.bim));
     return arr;
 }
 
@@ -171,22 +145,13 @@ export function agruparPorMateria(lista) {
             if (a.dataFim !== b.dataFim) return a.dataFim < b.dataFim ? -1 : 1;
             return 0;
         });
-        return {
-            nome,
-            tarefas,
-            pendentes: tarefas.filter(t => !t.concluida).length,
-            total: tarefas.length
-        };
+        return { nome, tarefas, pendentes: tarefas.filter(t => !t.concluida).length, total: tarefas.length };
     });
     grupos.sort((a, b) => b.pendentes - a.pendentes || a.nome.localeCompare(b.nome));
     return grupos;
 }
 
-export function vencidasOuHoje(tarefas, hoje) {
-    return tarefas.filter(t => !t.concluida && t.dataFim <= hoje);
-}
-
-/* ═══════════════ RESUMO DO DIA ═══════════════ */
+export function vencidasOuHoje(tarefas, hoje) { return tarefas.filter(t => !t.concluida && t.dataFim <= hoje); }
 
 export function resumoDoDia(tarefas, hoje) {
     const doDia = tarefas.filter(t => {
@@ -201,136 +166,65 @@ export function resumoDoDia(tarefas, hoje) {
     return { total: doDia.length, feitas, pendentes, pct, atrasadas, doDia };
 }
 
-/* ═══════════════ PRIORIDADE INTELIGENTE ═══════════════ */
-
 export function escolherPrioridade(tarefas, hoje) {
     const pend = tarefas.filter(t => !t.concluida);
     if (!pend.length) return null;
-
     const score = (t) => {
         const d = diffDias(t.dataFim, hoje);
         let s = 0;
-        if (d < 0) s += 1000 + (-d) * 50;
-        else if (d === 0) s += 800;
-        else if (d === 1) s += 500;
-        else if (d <= 3) s += 300;
-        else if (d <= 7) s += 150;
-        else s += Math.max(0, 100 - d);
+        if (d < 0) s += 1000 + (-d) * 50; else if (d === 0) s += 800; else if (d === 1) s += 500; else if (d <= 3) s += 300; else if (d <= 7) s += 150; else s += Math.max(0, 100 - d);
         s += (TIPOS[t.tipo]?.xp || 15) * 2;
         return s;
     };
-
     const t = pend.slice().sort((a, b) => score(b) - score(a))[0];
     const u = urgencia(t, hoje);
-
     let motivo;
     if (u.diff < 0) motivo = `Atrasada ${-u.diff} dia${-u.diff === 1 ? '' : 's'}. Melhor resolver agora.`;
     else if (u.diff === 0) motivo = t.tipo === 'prova' ? 'É hoje. Foco total.' : 'Vence hoje. Um passo de cada vez.';
     else if (u.diff === 1) motivo = t.tipo === 'prova' ? 'Prova amanhã — uma revisão hoje ajuda demais.' : 'Vence amanhã. Adianta agora.';
     else if (u.diff <= 3) motivo = `Prazo em ${u.diff} dias. Melhor não deixar pra depois.`;
     else motivo = 'A pendência mais próxima. Dá pra começar sem pressa.';
-
     return { t, motivo, diff: u.diff };
 }
 
-/* ═══════════════ PRÓXIMAS ═══════════════ */
-
 export function proximas(tarefas, hoje, excluirId, n, idDe) {
-    const pend = tarefas
-        .filter(t => !t.concluida)
-        .filter(t => !excluirId || idDe(t) !== excluirId)
+    const pend = tarefas.filter(t => !t.concluida).filter(t => !excluirId || idDe(t) !== excluirId)
         .sort((a, b) => {
-            const da = diffDias(a.dataFim, hoje);
-            const db = diffDias(b.dataFim, hoje);
+            const da = diffDias(a.dataFim, hoje), db = diffDias(b.dataFim, hoje);
             if (da !== db) return da - db;
             return (TIPOS[b.tipo]?.xp || 15) - (TIPOS[a.tipo]?.xp || 15);
         });
     return pend.slice(0, n).map(t => ({ t }));
 }
 
-/* ═══════════════ STREAK ═══════════════ */
-
 export function calcularStreak(tarefas, hoje) {
     const set = new Set();
-    tarefas.forEach(t => {
-        if (t.concluida && t.concluidaEm) set.add(dataLocal(new Date(t.concluidaEm)));
-    });
-    let streak = 0;
-    let d = hoje;
+    tarefas.forEach(t => { if (t.concluida && t.concluidaEm) set.add(dataLocal(new Date(t.concluidaEm))); });
+    let streak = 0, d = hoje;
     if (!set.has(d)) d = somarDias(d, -1);
-    while (set.has(d)) {
-        streak++;
-        d = somarDias(d, -1);
-    }
+    while (set.has(d)) { streak++; d = somarDias(d, -1); }
     return streak;
 }
-
-/* ═══════════════ SUGESTÕES ═══════════════ */
 
 export function gerarSugestoes({ todas, hoje, streak, concluidasHoje }) {
     const sugestoes = [];
     const pend = todas.filter(t => !t.concluida);
-
-    // 1) matéria com mais pendências
     const cont = {};
     pend.forEach(t => { const m = t.materia || 'Geral'; cont[m] = (cont[m] || 0) + 1; });
     const top = Object.entries(cont).sort((a, b) => b[1] - a[1])[0];
-    if (top && top[1] >= 3) {
-        sugestoes.push({
-            emoji: '📚',
-            titulo: `${top[0]} pede atenção`,
-            texto: `${top[1]} pendências nessa matéria. Que tal encarar uma agora?`,
-            acao: { tipo: 'focar', materia: top[0], minutos: 25, rotulo: '▶ Focar' }
-        });
-    }
-
-    // 2) prova próxima
+    if (top && top[1] >= 3) sugestoes.push({ emoji: '📚', titulo: `${top[0]} pede atenção`, texto: `${top[1]} pendências nessa matéria. Que tal encarar uma agora?`, acao: { tipo: 'focar', materia: top[0], minutos: 25, rotulo: '▶ Focar' } });
     const prova = pend.find(t => t.tipo === 'prova' && diffDias(t.dataFim, hoje) >= 0 && diffDias(t.dataFim, hoje) <= 7);
     if (prova) {
         const d = diffDias(prova.dataFim, hoje);
-        sugestoes.push({
-            emoji: '🎯',
-            titulo: `Prova de ${prova.materia || 'Geral'}`,
-            texto: d === 0 ? 'É hoje! Vai com fé.' : `Em ${d} dia${d === 1 ? '' : 's'}. Revisão ativa rende mais que releitura.`,
-            acao: { tipo: 'focar', materia: prova.materia || 'Geral', minutos: 50, rotulo: '▶ Estudar' }
-        });
+        sugestoes.push({ emoji: '🎯', titulo: `Prova de ${prova.materia || 'Geral'}`, texto: d === 0 ? 'É hoje! Vai com fé.' : `Em ${d} dia${d === 1 ? '' : 's'}. Revisão ativa rende mais que releitura.`, acao: { tipo: 'focar', materia: prova.materia || 'Geral', minutos: 50, rotulo: '▶ Estudar' } });
     }
-
-    // 3) atrasadas antigas (sem ação — usuário usa o card de atrasadas)
     const antigas = pend.filter(t => diffDias(t.dataFim, hoje) <= -3);
-    if (antigas.length) {
-        sugestoes.push({
-            emoji: '⚠️',
-            titulo: 'Prazos vencidos',
-            texto: `${antigas.length} tarefa${antigas.length === 1 ? '' : 's'} atrasada${antigas.length === 1 ? '' : 's'} há mais de 3 dias. Reagende ou conclua.`
-        });
-    }
-
-    // 4) streak parado
-    if (streak === 0 && !concluidasHoje && pend.length) {
-        sugestoes.push({
-            emoji: '🔥',
-            titulo: 'Comece a sequência',
-            texto: 'Você ainda não concluiu nada hoje. Uma tarefa pequena já reativa o streak.',
-            acao: { tipo: 'rapido', rotulo: 'Abrir' }
-        });
-    }
-
+    if (antigas.length) sugestoes.push({ emoji: '⚠️', titulo: 'Prazos vencidos', texto: `${antigas.length} tarefa${antigas.length === 1 ? '' : 's'} atrasada${antigas.length === 1 ? '' : 's'} há mais de 3 dias. Reagende ou conclua.` });
+    if (streak === 0 && !concluidasHoje && pend.length) sugestoes.push({ emoji: '🔥', titulo: 'Comece a sequência', texto: 'Você ainda não concluiu nada hoje. Uma tarefa pequena já reativa o streak.', acao: { tipo: 'rapido', rotulo: 'Abrir' } });
     return sugestoes.slice(0, 3);
 }
 
-/* ═══════════════ "+ RÁPIDO" — INTERPRETAÇÃO ═══════════════ */
-
-const DIAS_TXT = {
-    'dom': 0, 'domingo': 0,
-    'seg': 1, 'segunda': 1,
-    'ter': 2, 'terca': 2,
-    'qua': 3, 'quarta': 3,
-    'qui': 4, 'quinta': 4,
-    'sex': 5, 'sexta': 5,
-    'sab': 6, 'sabado': 6
-};
-
+const DIAS_TXT = { 'dom': 0, 'domingo': 0, 'seg': 1, 'segunda': 1, 'ter': 2, 'terca': 2, 'qua': 3, 'quarta': 3, 'qui': 4, 'quinta': 4, 'sex': 5, 'sexta': 5, 'sab': 6, 'sabado': 6 };
 const TIPO_KW = [
     { palavras: ['prova', 'teste', 'exame', 'avaliacao'], tipo: 'prova' },
     { palavras: ['trabalho', 'trab'], tipo: 'trabalho' },
@@ -339,11 +233,7 @@ const TIPO_KW = [
     { palavras: ['tarefa', 'dever', 'exercicio', 'licao', 'atividade'], tipo: 'tarefa' }
 ];
 
-function normalizar(s) {
-    return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-}
-
-function escRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function normalizar(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
 
 export function interpretarRapido(texto, ctx) {
     const hoje = ctx.hoje;
@@ -351,12 +241,28 @@ export function interpretarRapido(texto, ctx) {
     const orig = String(texto || '').trim();
     if (!orig) return { nome: '', data: null, tipo: null, materia: null, descricao: null };
 
+    // 1. Separa Título e Descrição logo de cara
+    let tituloTexto = orig;
+    let descricao = '';
+
+    if (orig.includes(',')) {
+        const partes = orig.split(',');
+        tituloTexto = partes[0].trim();
+        descricao = partes.slice(1).join(',').trim();
+    } else {
+        // Tenta achar palavras de ação no meio
+        const matchAcao = orig.match(/\b(é|e|para|pra)\s+(revisar|estudar|ler|fazer|páginas?|caps?|capítulos?)\b/i);
+        if (matchAcao) {
+            tituloTexto = orig.slice(0, matchAcao.index).trim();
+            descricao = orig.slice(matchAcao.index).replace(/^(é|e|para|pra)\s+/i, '').trim();
+        }
+    }
+
+    // 2. Extrai metadados (data, tipo, matéria) do texto TODO
     const norm = normalizar(orig);
     const remover = new Set();
-
     let data = null, tipo = null, materia = null;
 
-    // ─── data dd/mm ───
     const mDM = norm.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/);
     if (mDM) {
         const d = parseInt(mDM[1]), mo = parseInt(mDM[2]);
@@ -369,20 +275,14 @@ export function interpretarRapido(texto, ctx) {
         }
     }
 
-    // ─── hoje / amanhã / depois de amanhã / em X dias / dia da semana ───
     if (!data) {
         if (/\bhoje\b/.test(norm)) { data = hoje; remover.add('hoje'); }
-        else if (/\bdepois de amanha\b/.test(norm)) {
-            data = somarDias(hoje, 2);
-            remover.add('depois'); remover.add('de'); remover.add('amanha');
-        }
+        else if (/\bdepois de amanha\b/.test(norm)) { data = somarDias(hoje, 2); remover.add('depois'); remover.add('de'); remover.add('amanha'); }
         else if (/\bamanha\b/.test(norm)) { data = somarDias(hoje, 1); remover.add('amanha'); }
         else {
             const mE = norm.match(/\bem (\d{1,3}) dias?\b/);
-            if (mE) {
-                data = somarDias(hoje, parseInt(mE[1]));
-                mE[0].split(/\s+/).forEach(w => remover.add(w));
-            } else {
+            if (mE) { data = somarDias(hoje, parseInt(mE[1])); mE[0].split(/\s+/).forEach(w => remover.add(w)); }
+            else {
                 const dowHoje = diaDaSemana(hoje);
                 for (const k of Object.keys(DIAS_TXT)) {
                     if (new RegExp('\\b' + k + '\\b').test(norm)) {
@@ -397,84 +297,54 @@ export function interpretarRapido(texto, ctx) {
         }
     }
 
-    // ─── tipo ───
     for (const { palavras: ps, tipo: t } of TIPO_KW) {
         let ok = false;
         for (const p of ps) {
             if (new RegExp('\\b' + normalizar(p) + '\\b').test(norm)) {
-                tipo = t;
-                remover.add(normalizar(p));
-                ok = true;
-                break;
+                tipo = t; remover.add(normalizar(p)); ok = true; break;
             }
         }
         if (ok) break;
     }
 
-    // ─── matéria (match exato ou prefixo 3+) ───
     const palavrasNorm = [...new Set(norm.split(/\s+/).filter(Boolean))];
     for (const p of palavrasNorm) {
         if (p.length < 3 || remover.has(p)) continue;
         for (const m of materias) {
-            const nm = normalizar(m).replace(/\s+/g, '');
-            const np = p.replace(/\s+/g, '');
-            if (nm === np || (np.length >= 3 && nm.startsWith(np))) {
-                materia = m;
-                remover.add(p);
-                break;
-            }
+            const nm = normalizar(m).replace(/\s+/g, ''), np = p.replace(/\s+/g, '');
+            if (nm === np || (np.length >= 3 && nm.startsWith(np))) { materia = m; remover.add(p); break; }
         }
         if (materia) break;
     }
 
-    // ─── nome & descricao: heurística local ───
-    let nomeFinal = orig
+    // 3. Limpa o título de conectores ("de", "da", "para"...) e palavras removidas
+    let nomeFinal = tituloTexto
         .split(/\s+/)
-        .filter(p => p && !remover.has(normalizar(p)))
+        .filter(p => p && !remover.has(normalizar(p)) && !['de','da','do','das','dos','para','pra','na','no','nas','nos','e','é','em'].includes(normalizar(p)))
         .join(' ')
         .trim();
 
-    let descricao = '';
-    // Se sobrou muita coisa e tem vírgula, separa o título do detalhe
-    if (nomeFinal.includes(',')) {
-        const partes = nomeFinal.split(',');
-        nomeFinal = partes[0].trim();
-        descricao = partes.slice(1).join(',').trim();
-    }
-
-    let nome;
     if (!nomeFinal) {
         const tipoLabel = (TIPOS[tipo || 'tarefa'] || TIPOS.tarefa).label;
-        nome = tipoLabel + ' de ' + (materia || 'Geral');
+        nomeFinal = tipoLabel + ' de ' + (materia || 'Geral');
     } else {
-        nome = nomeFinal.charAt(0).toUpperCase() + nomeFinal.slice(1);
+        nomeFinal = nomeFinal.charAt(0).toUpperCase() + nomeFinal.slice(1);
     }
 
-    return { nome, data, tipo, materia, descricao: descricao || null };
+    // 4. Limpa a descrição de conectores iniciais
+    descricao = descricao.replace(/^(é|e|para|pra|que)\s+/i, '').trim();
+
+    return { nome: nomeFinal, data, tipo, materia, descricao: descricao || null };
 }
 
-/* ═══════════════ LEMBRETE DAS 21h ═══════════════ */
-
-export function jaPassouDas21(dt) {
-    return (dt || new Date()).getHours() >= 21;
-}
+export function jaPassouDas21(dt) { return (dt || new Date()).getHours() >= 21; }
 
 export function resumoParaTags(tarefas, hoje) {
     const pend = tarefas.filter(t => !t.concluida && t.dataFim <= hoje);
-    const n = pend.length;
-    return {
-        dia: hoje,
-        pendentes: n,
-        tagN: String(Math.min(n, 20))
-    };
+    return { dia: hoje, pendentes: pend.length, tagN: String(Math.min(pend.length, 20)) };
 }
 
-/* ═══════════════ FUNÇÕES PARA O "ADICIONAR RÁPIDO" ═══════════════ */
-
-export function capitalizar(texto) {
-    if (!texto) return '';
-    return texto.charAt(0).toUpperCase() + texto.slice(1);
-}
+export function capitalizar(texto) { return texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : ''; }
 
 export function promptRapidoIA(texto, ctx) {
     return [
@@ -484,12 +354,13 @@ export function promptRapidoIA(texto, ctx) {
         'Analise a frase abaixo e extraia os campos.',
         'Responda SOMENTE com JSON válido no formato:',
         '{"nome":"título curto","descricao":"detalhes ou vazio","data":"AAAA-MM-DD","tipo":"tarefa|prova|trabalho|revisao|projeto","materia":"nome ou Geral"}',
-        'Regras:',
-        '- nome: frase CURTA (máx 5 palavras) apenas com o título principal. Ex: "Prova de Matemática".',
-        '- descricao: se a frase tiver detalhes extras (o que estudar, páginas, capítulos, instruções), coloque AQUI. Se não tiver, deixe vazio "".',
+        'Regras OBRIGATÓRIAS:',
+        '- Se a frase tiver VÍRGULA, a parte ANTES da vírgula é o "nome" (título). A parte DEPOIS da vírgula é a "descricao".',
+        '- Se não tiver vírgula, use o bom senso para separar o título curto dos detalhes.',
+        '- nome: frase CURTA (máx 5 palavras), ex: "Prova de Matemática".',
+        '- descricao: onde o aluno escreve o que tem que fazer (ex: "revisar equações", "ler capítulo 3"). Se não tiver, deixe vazio "".',
         '- data no formato AAAA-MM-DD. Se não mencionar, use null.',
-        '- tipo: use "tarefa" se não mencionar nenhum.',
-        '- materia: use o nome exato da lista acima. Se não souber, use "Geral".',
+        '- materia: use o nome exato da lista acima.',
         '',
         'FRASE: "' + texto + '"'
     ].filter(Boolean).join('\n');
