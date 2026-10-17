@@ -124,28 +124,23 @@ body::after {
     z-index: 2;
 }
 
-/* ─── A BOLINHA CÉREBRO ─── */
+/* ─── A BOLINHA CÉREBRO (Pequena e Rolando) ─── */
 .brain-bolinha {
     position: absolute;
-    bottom: 15px;
+    bottom: 14px; /* Coladinha no chão */
     left: 50%;
-    width: 45px;
-    height: 45px;
+    width: 18px; /* Bem pequena */
+    height: 18px;
     object-fit: contain;
-    z-index: 5; /* Na frente das barras, atrás dos avatares */
-    animation: rolarEQuicar 6s ease-in-out infinite alternate;
-    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.8)) drop-shadow(0 0 15px var(--primary));
+    z-index: 2; /* Atrás dos blocos (z-index: 4) e na frente do chão (-1) */
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.8)) drop-shadow(0 0 10px var(--primary));
     pointer-events: none;
-    transform-origin: center center;
+    animation: rolando 7s linear infinite alternate;
 }
 
-@keyframes rolarEQuicar {
-    0%   { transform: translate(-120px, 0) rotate(0deg); }
-    20%  { transform: translate(-60px, -50px) rotate(180deg); } /* Pula o 2º */
-    40%  { transform: translate(0px, -70px) rotate(360deg); }   /* Pula o 1º */
-    60%  { transform: translate(60px, -40px) rotate(540deg); }  /* Pula o 3º */
-    80%  { transform: translate(120px, 0) rotate(720deg); }
-    100% { transform: translate(120px, 0) rotate(720deg); }     /* Pausa no final */
+@keyframes rolando {
+    0%   { transform: translateX(-140px) rotate(0deg); }
+    100% { transform: translateX(140px) rotate(720deg); }
 }
 
 /* ─── CONTAINER SLOTS ─── */
