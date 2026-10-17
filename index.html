@@ -167,7 +167,7 @@
             </div>
         </div>
 
-        <!-- ADD RÁPIDO (O REI DA TELA) -->
+        <!-- ADD RÁPIDO -->
         <div class="hbr-home" id="hbr-home">
             <div class="hbr-home-topo">
                 <span class="hbr-home-tit">⚡ Adicionar rápido</span>
@@ -220,16 +220,18 @@
             </div>
         </div>
 
-        <!-- PRÓXIMAS TAREFAS -->
-        <section class="home-section" id="home-agenda-section" style="display:none;">
-            <div class="section-header">
-                <h2 class="section-title"><i data-lucide="calendar" style="width:14px;"></i> Para hoje</h2>
-                <button class="btn-ver-tudo" onclick="navegarPara('agenda.html')">Ver tudo</button>
+        <!-- TAREFA MAIS URGENTE (Substituiu o Mural) -->
+        <div class="urgent-card" id="home-urgent-card" style="display:none;" onclick="navegarPara('agenda.html')">
+            <div class="urgent-icon"><i data-lucide="flame"></i></div>
+            <div class="urgent-info">
+                <span class="urgent-kicker">🔥 MAIS URGENTE</span>
+                <strong id="urgent-nome">Carregando...</strong>
+                <span id="urgent-detalhe">—</span>
             </div>
-            <div id="home-agenda-lista" class="home-agenda-lista"></div>
-        </section>
+            <i data-lucide="chevron-right" class="urgent-arrow"></i>
+        </div>
 
-        <!-- META DO DIA -->
+        <!-- META DE FOCO -->
         <section class="meta-section" id="meta-progress-section" style="display:none;">
             <div class="meta-card">
                 <div class="meta-header">
@@ -307,17 +309,8 @@
             </div>
         </div>
 
-        <!-- MURAL & DICA -->
+        <!-- BOTTOM CARDS (Só Dica agora) -->
         <div class="bottom-cards">
-            <div class="mural-card" id="btn-mural-main">
-                <div class="mural-icon"><i data-lucide="megaphone"></i></div>
-                <div class="mural-text">
-                    <strong>Mural de Avisos</strong>
-                    <span id="mural-preview">Toque para ler</span>
-                </div>
-                <i data-lucide="chevron-right" class="mural-arrow"></i>
-            </div>
-
             <div class="tip-card">
                 <div class="tip-icon"><i data-lucide="lightbulb"></i></div>
                 <div class="tip-text">
