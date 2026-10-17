@@ -69,7 +69,7 @@ body {
     transform: translate(-50%, -50%);
     width: 80vw;
     max-width: 500px;
-    opacity: 0.04;
+    opacity: 0.08; /* Era 0.04, agora mais visível */
     z-index: 1;
     pointer-events: none;
     animation: tvFlicker 5s infinite;
@@ -84,7 +84,7 @@ body {
     font-weight: 900;
     letter-spacing: -2vw;
     color: #fff;
-    opacity: 0.03;
+    opacity: 0.06; /* Era 0.03, agora mais visível */
     z-index: 1;
     pointer-events: none;
     white-space: nowrap;
@@ -92,13 +92,13 @@ body {
 }
 
 @keyframes tvFlicker {
-    0%, 100% { opacity: 0.04; filter: blur(0px); }
-    2% { opacity: 0.08; filter: blur(2px); }
-    4% { opacity: 0.02; filter: blur(0px); }
-    6% { opacity: 0.06; filter: blur(1px); }
-    8%, 90% { opacity: 0.04; filter: blur(0px); }
-    92% { opacity: 0.07; filter: blur(2px); }
-    94% { opacity: 0.03; filter: blur(0px); }
+    0%, 100% { opacity: 0.08; filter: blur(0px); }
+    2% { opacity: 0.15; filter: blur(2px); }
+    4% { opacity: 0.05; filter: blur(0px); }
+    6% { opacity: 0.12; filter: blur(1px); }
+    8%, 90% { opacity: 0.08; filter: blur(0px); }
+    92% { opacity: 0.14; filter: blur(2px); }
+    94% { opacity: 0.06; filter: blur(0px); }
 }
 
 /* ─── BOTÃO VOLTAR ─── */
@@ -181,15 +181,15 @@ body {
 /* ─── O CARD DE VIDRO (Glassmorphism) ─── */
 .glass-card {
     width: 100%;
-    background: rgba(20, 20, 26, 0.45);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    background: rgba(20, 20, 26, 0.15); /* Mais transparente */
+    backdrop-filter: blur(16px) saturate(160%); /* Menos blur */
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-top: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 28px;
     padding: 32px 24px;
     box-shadow: 
-        0 24px 64px rgba(0, 0, 0, 0.4),
+        0 24px 64px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -217,7 +217,7 @@ body {
     left: 14px;
     width: 16px;
     height: 16px;
-    color: rgba(255, 255, 255, 0.25); /* Ícone mais discreto */
+    color: rgba(255, 255, 255, 0.25);
     pointer-events: none;
     transition: color 0.3s;
 }
