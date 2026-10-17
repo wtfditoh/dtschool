@@ -107,7 +107,7 @@ body::after {
 /* ═══════════════ PÓDIO 3D COM HOLOFOTES ═══════════════ */
 .podium-section { 
     position: relative; 
-    padding: 70px 20px 50px; /* Aumentei o topo pra coroa respirar */
+    padding: 70px 20px 50px; 
     overflow: visible;
 }
 .podium-bg-glow {
@@ -123,7 +123,7 @@ body::after {
     perspective: 1200px;
 }
 
-/* ─── POSTES (Agora são hastes retas inclinadas) ─── */
+/* ─── POSTES ─── */
 .poste {
     position: absolute;
     bottom: 30px;
@@ -136,22 +136,22 @@ body::after {
 }
 
 .poste-esq { 
-    left: 0px; 
+    left: 10px; 
     transform: rotate(30deg); 
-    transform-origin: bottom center; /* Rotaciona de baixo pra ponta ir pro centro */
+    transform-origin: bottom center;
 }
 .poste-dir { 
-    right: 0px; 
+    right: 10px; 
     transform: rotate(-30deg); 
     transform-origin: bottom center; 
 }
 
-/* ─── HOLOFOTE (Virado de lado) ─── */
+/* ─── HOLOFOTE (Virado pra dentro) ─── */
 .holofote {
     position: absolute;
     top: -30px;
     left: 50%;
-    width: 36px;
+    width: 38px;
     height: 56px;
     background: #0a0a0f;
     border: 2px solid #333;
@@ -161,13 +161,14 @@ body::after {
     align-items: center;
     justify-content: center;
     box-shadow: inset 0 0 10px #000, 0 8px 15px rgba(0,0,0,0.8);
-    /* O segredo pra ficar "de lado": rotateY */
-    transform: translateX(-50%) perspective(100px) rotateY(-55deg) rotateZ(15deg);
+    
+    /* O SEGREDO: rotateY(45deg) vira a caixa de lado */
+    transform: translateX(-50%) perspective(100px) rotateY(45deg) rotateZ(15deg);
 }
 
-/* Espelha o holofote da direita */
+/* Espelha a rotação pro poste da direita */
 .poste-dir .holofote {
-    transform: translateX(-50%) perspective(100px) rotateY(55deg) rotateZ(-15deg);
+    transform: translateX(-50%) perspective(100px) rotateY(-45deg) rotateZ(-15deg);
 }
 
 /* ─── LEDs ─── */
@@ -186,35 +187,33 @@ body::after {
     100% { opacity: 1; filter: drop-shadow(0 0 15px #8a2be2); }
 }
 
-/* ─── FEIXE DE LUZ (O VERDADEIRO SHOW) ─── */
+/* ─── FEIXE DE LUZ (A CORREÇÃO DO ÂNGULO) ─── */
 .feixe-luz {
     position: absolute;
-    top: -10px;
-    width: 250px;
-    height: 350px;
-    /* Triângulo perfeito com gradiente bem forte */
-    clip-path: polygon(0% 0%, 15% 0%, 100% 100%, -20% 100%);
-    background: linear-gradient(to bottom, rgba(192,132,252, 0.85) 0%, rgba(138,43,226, 0.15) 70%, transparent 100%);
-    filter: blur(10px);
-    mix-blend-mode: screen; /* Faz a luz somar com o fundo */
+    top: 0;
+    width: 220px;
+    height: 340px;
+    /* Triângulo perfeito: fino em cima, largo embaixo */
+    clip-path: polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%);
+    background: linear-gradient(to bottom, rgba(192,132,252, 0.9) 0%, rgba(138,43,226, 0.2) 60%, transparent 100%);
+    filter: blur(8px);
+    mix-blend-mode: screen;
     pointer-events: none;
     z-index: 1;
-    transform-origin: top left;
 }
 
-/* Feixe da esquerda (joga pro centro) */
+/* Esquerda joga a luz pra DIREITA (rotação negativa) */
 .poste-esq .feixe-luz {
-    left: 15px;
-    transform: rotate(40deg); 
+    left: -10px;
+    transform-origin: top center;
+    transform: rotate(-35deg); 
 }
 
-/* Feixe da direita (espelhado) */
+/* Direita joga a luz pra ESQUERDA (rotação positiva) */
 .poste-dir .feixe-luz {
-    right: 15px;
-    left: auto;
-    clip-path: polygon(85% 0%, 100% 0%, 120% 100%, 0% 100%);
-    transform-origin: top right;
-    transform: rotate(-40deg);
+    right: -10px;
+    transform-origin: top center;
+    transform: rotate(35deg);
 }
 
 /* ─── CONTAINER SLOTS ─── */
