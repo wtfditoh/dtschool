@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script src="hb-loader.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Por Trás do Hub Brain 🧠</title>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="theme-toggle.css">
+    <script src="theme-manager.js"></script>
+    
+    <style>
+        :root {
+            --roxo: #9333ea;
+            --roxo-claro: #c084fc;
+            --bg: #0a0a0e;
+            --bg-card: #131319;
+            --borda: rgba(255,255,255,0.07);
+            --txt: #ffffff;
+            --txt-dim: #9ca3af;
+            --txt-dimmer: #6b7280;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background: var(--bg);
+            color: var(--txt);
+            font-family: 'Outfit', -apple-system, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 60px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 10%, rgba(147,51,234,0.15) 0%, transparent 45%),
+                radial-gradient(circle at 85% 90%, rgba(147,51,234,0.1) 0%, transparent 45%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ═══ HEADER PÍLULA ═══ */
+        .header-pill {
+            position: sticky;
+            top: 12px;
+            z-index: 1000;
+            margin: 12px 16px 0;
+            padding: 6px;
+            background: rgba(20, 20, 26, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--borda);
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .header-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--txt);
+            border: none;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .header-btn:hover { background: rgba(147,51,234,0.15); }
+        .header-btn svg { width: 18px; height: 18px; }
+
+        .header-title {
+            font-size: 12px; font-weight: 900;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--txt);
+        }
+
+        /* ═══ CONTEÚDO ═══ */
+        main {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 0;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-emoji {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 10px 30px rgba(147,51,234,0.4));
+        }
+
+        .hero-title {
+            font-size: clamp(36px, 8vw, 54px);
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            color: var(--txt);
+        }
+
+        .hero-title span { color: var(--roxo); }
+
+        .hero-subtitle {
+            font-size: clamp(16px, 4vw, 20px);
+            font-weight: 700;
+            color: var(--roxo-claro);
+            margin-bottom: 24px;
+        }
+
+        .hero-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--txt-dim);
+            max-width: 500px;
+            margin-bottom: 32px;
+        }
+
+        .btn-hero {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: linear-gradient(135deg, var(--roxo), #6a1fc2);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 999px;
+            font-weight: 800; font-size: 15px;
+            border: none; cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(147,51,234,0.4);
+            text-decoration: none;
+        }
+
+        .btn-hero:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(147,51,234,0.6); }
+        .btn-hero svg { width: 18px; height: 18px; }
+
+        /* Seções */
+        .section {
+            padding: 60px 0;
+            border-top: 1px solid var(--borda);
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 24px;
+            text-align: center;
+            letter-spacing: -0.5px;
+        }
+
+        .story-card {
+            background: var(--bg-card);
+            border: 1px solid var(--borda);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+
+        .story-text {
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--txt-dim);
+            margin-bottom: 16px;
+        }
+        .story-text:last-child { margin-bottom: 0; }
+
+        .story-highlight {
+            background: rgba(147,51,234,0.1);
+            border-left: 4px solid var(--roxo);
+            padding: 24px;
+            border-radius: 0 16px 16px 0;
+            margin: 24px 0;
+        }
+
+        .story-highlight-text {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--txt);
+            font-style: italic;
+        }
+
+        /* Galeria */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .gallery-item {
+            background: var(--bg-card);
+            border: 1px solid var(--borda);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .gallery-image {
+            width: 100%;
+            aspect-ratio: 9/16;
+            object-fit: cover;
+            background: #131319;
+            border-bottom: 1px solid var(--borda);
+        }
+
+        .gallery-caption {
+            padding: 14px;
+            font-size: 13px;
+            color: var(--txt-dimmer);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Final */
+        .final-box {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(147,51,234,0.1), transparent);
+            border: 1px solid rgba(147,51,234,0.2);
+            border-radius: 24px;
+            padding: 40px 24px;
+            margin-top: 40px;
+        }
+
+        .signature {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--borda);
+            text-align: center;
+        }
+
+        .signature-label { font-size: 10px; font-weight: 800; letter-spacing: 2px; color: var(--txt-dimmer); margin-bottom: 8px; text-transform: uppercase; }
+        .signature-name { font-size: 24px; font-weight: 900; color: var(--roxo-claro); }
+
+        /* Animações */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .reveal.on { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header-pill">
+        <a href="index.html" class="header-btn" aria-label="Voltar">
+            <i data-lucide="arrow-left"></i>
+        </a>
+        <span class="header-title">A História</span>
+        <div style="width:40px"></div> <!-- espaçador pra centralizar o título -->
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <span class="hero-emoji">🧠</span>
+            <h1 class="hero-title">Por Trás do<br><span>Hub Brain</span></h1>
+            <p class="hero-subtitle">Feito por um aluno. Pensado pra estudantes.</p>
+            <p class="hero-text">
+                O Hub Brain não nasceu numa empresa gigante. Ele começou com um aluno do ensino médio tentando resolver um problema simples: encontrar um jeito melhor de estudar e se organizar.
+            </p>
+            <button class="btn-hero" onclick="document.getElementById('historia').scrollIntoView({behavior: 'smooth'})">
+                <i data-lucide="book-open"></i>
+                Conhecer a história
+            </button>
+        </section>
+
+        <!-- HISTÓRIA -->
+        <section class="section reveal" id="historia">
+            <h2 class="section-title">Como tudo começou</h2>
+            
+            <div class="story-card">
+                <p class="story-text">A ideia do Hub Brain surgiu em 2025. Eu tava procurando um app pra organizar estudos, notas e atividades — mas sempre faltava alguma coisa.</p>
+                <p class="story-text">Um app tinha uma função boa, outro fazia algo diferente, mas tudo era muito fragmentado. Nunca existia um lugar que realmente juntasse tudo do jeito que eu precisava.</p>
+            </div>
+
+            <div class="story-highlight">
+                <p class="story-highlight-text">"E se eu criasse o app que eu queria usar?"</p>
+            </div>
+
+            <div class="story-card">
+                <p class="story-text">No começo, era algo bem simples. A ideia era basicamente organizar minhas notas e atividades escolares.</p>
+                <p class="story-text">Mas quanto mais eu construía, mais fui entrando no projeto. Aprendi, testei ideias, quebrei tudo, refiz de novo… e o Hub Brain foi evoluindo junto comigo.</p>
+            </div>
+        </section>
+
+        <!-- GALERIA -->
+        <section class="section reveal">
+            <h2 class="section-title">Você não faz ideia do quanto já mudou 😅</h2>
+            <p style="text-align:center; color:var(--txt-dim); margin-bottom:24px;">Cada versão foi uma lição. Cada erro foi um passo.</p>
+            
+            <div class="gallery-grid">
+                <!-- Substitua os src pelas suas fotos antigas -->
+                <div class="gallery-item">
+                    <img class="gallery-image" src="https://via.placeholder.com/400x711/131319/9333ea?text=Foto+Antiga+1" alt="Versão antiga 1">
+                    <p class="gallery-caption">Uma das primeiras versões</p>
+                </div>
+                <div class="gallery-item">
+                    <img class="gallery-image" src="https://via.placeholder.com/400x711/131319/9333ea?text=Foto+Antiga+2" alt="Versão antiga 2">
+                    <p class="gallery-caption">Quando tudo ainda era bem simples</p>
+                </div>
+                <div class="gallery-item">
+                    <img class="gallery-image" src="https://via.placeholder.com/400x711/131319/9333ea?text=Foto+Antiga+3" alt="Versão antiga 3">
+                    <p class="gallery-caption">Muita coisa mudou desde aqui</p>
+                </div>
+                <div class="gallery-item">
+                    <img class="gallery-image" src="https://via.placeholder.com/400x711/131319/9333ea?text=Foto+Antiga+4" alt="Versão antiga 4">
+                    <p class="gallery-caption">Cada update foi um aprendizado</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- O QUE É -->
+        <section class="section reveal">
+            <div class="story-card" style="text-align:center;">
+                <div style="font-size:40px; margin-bottom:16px;">📚</div>
+                <p class="story-text">O Hub Brain é focado principalmente em <strong>estudos e organização da vida escolar</strong>.</p>
+                <p class="story-text">Não é sobre produtividade perfeita ou pressão.</p>
+                <p class="story-text">É sobre ajudar estudantes a terem um lugar melhor para organizar rotina, atividades, estudos e não se perder na correria.</p>
+                <p style="font-size:20px; font-weight:900; color:var(--roxo-claro); margin-top:24px;">Feito pra quem estuda. Por quem estuda.</p>
+            </div>
+        </section>
+
+        <!-- FINAL -->
+        <section class="section reveal">
+            <div class="final-box">
+                <div style="font-size:48px; margin-bottom:16px;">🚧</div>
+                <h2 class="section-title">Ainda em construção</h2>
+                <p class="story-text" style="max-width:500px; margin:0 auto 16px;">O Hub Brain continua evoluindo. Ele nasceu de uma necessidade real e continua mudando conforme novas ideias aparecem.</p>
+                <p class="story-text" style="max-width:500px; margin:0 auto 24px;">Se você sentir falta de algo ou tiver uma ideia, me chama. Talvez a próxima melhoria do Hub Brain comece exatamente com uma ideia <strong>sua</strong>.</p>
+                <a href="https://www.instagram.com/wtfditoh" target="_blank" class="btn-hero">
+                    <i data-lucide="instagram"></i>
+                    @wtfditoh
+                </a>
+            </div>
+
+            <div class="signature">
+                <p class="signature-label">FOUNDER & DEV</p>
+                <p class="signature-name">DITOH</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="menu.js"></script>
+    <script>
+        // Animação de scroll reveal
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealOnScroll = () => {
+            revealElements.forEach(el => {
+                const top = el.getBoundingClientRect().top;
+                if (top < window.innerHeight * 0.85) {
+                    el.classList.add('on');
+                }
+            });
+        };
+        window.addEventListener('scroll', revealOnScroll);
+        window.addEventListener('load', revealOnScroll);
+        
+        if (window.lucide) lucide.initIcons ? lucide.initIcons() : lucide.createIcons();
+    </script>
+</body>
+</html>
