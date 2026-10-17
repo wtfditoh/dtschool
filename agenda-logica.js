@@ -812,6 +812,7 @@ window.abrirModalAgendaHoje = function (pre) {
     $('tarefa-nome').value = pre.nome || '';
     $('tarefa-data-inicio').value = pre.data || hoje;
     $('tarefa-data-fim').value = pre.data || hoje;
+    $('tarefa-desc').value = pre.descricao || '';
     if (pre.tipo) $('tarefa-tipo').value = pre.tipo;
     if (pre.materia && [...$('tarefa-materia').options].some((o) => o.value === pre.materia)) $('tarefa-materia').value = pre.materia;
     $('modal-agenda').style.display = 'flex';
