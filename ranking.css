@@ -105,7 +105,11 @@ body::after {
 .stat-mini label { font-size: 9px; font-weight: 800; color: #aaa; letter-spacing: 1.5px; text-transform: uppercase; }
 
 /* ═══════════════ PÓDIO 3D COM HOLOFOTES ═══════════════ */
-.podium-section { position: relative; padding: 40px 20px 50px; overflow: hidden; }
+.podium-section { 
+    position: relative; 
+    padding: 60px 20px 50px; 
+    overflow: visible; /* Libera o corte da coroa */
+}
 .podium-bg-glow {
     position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
     width: 350px; height: 250px; background: radial-gradient(ellipse, rgba(138,43,226,0.3) 0%, transparent 70%);
@@ -150,28 +154,41 @@ body::after {
     100% { opacity: 1; transform: translateX(-50%) scale(1.1); }
 }
 
-/* ─── FEIXES DE LUZ ─── */
+/* ─── FEIXES DE LUZ NATURAIS ─── */
 .feixe-luz {
     position: absolute;
-    top: -10px;
-    width: 320px;
+    top: -5px;
+    width: 220px;
     height: 320px;
-    background: linear-gradient(180deg, rgba(192,132,252, 0.4) 0%, rgba(138,43,226, 0.15) 40%, transparent 90%);
-    filter: blur(18px);
+    background: radial-gradient(ellipse at top, rgba(192,132,252, 0.5) 0%, rgba(138,43,226, 0.15) 40%, transparent 70%);
+    filter: blur(22px);
     pointer-events: none;
     z-index: 1;
     mix-blend-mode: screen;
     opacity: 0.9;
+    border-radius: 50%;
 }
+
+/* Brilho central extra pra dar intensidade */
+.feixe-luz::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top, rgba(255,255,255, 0.3) 0%, transparent 50%);
+    border-radius: 50%;
+    mix-blend-mode: overlay;
+}
+
+/* Rotaciona a elipse pra apontar pro centro do pódio */
 .feixe-luz.esq {
-    left: -10px;
-    clip-path: polygon(0 0, 100% 35%, 100% 100%, 0 100%);
-    transform-origin: top left;
+    left: -40px;
+    transform-origin: top center;
+    transform: rotate(30deg);
 }
 .feixe-luz.dir {
-    right: -10px;
-    clip-path: polygon(0 35%, 100% 0, 100% 100%, 0 100%);
-    transform-origin: top right;
+    right: -40px;
+    transform-origin: top center;
+    transform: rotate(-30deg);
 }
 
 /* ─── CONTAINER SLOTS ─── */
@@ -229,7 +246,14 @@ body::after {
 @keyframes sparkle-float { 0%, 100% { opacity: 0; transform: translateY(0) scale(1); } 50% { opacity: 1; transform: translateY(-25px) scale(1.5); } }
 
 /* Coroa */
-.crown-floating { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); animation: crown-bounce 2s ease-in-out infinite; z-index: 10; }
+.crown-floating { 
+    position: absolute; 
+    top: -55px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    animation: crown-bounce 2s ease-in-out infinite; 
+    z-index: 10; 
+}
 .crown-floating i { width: 36px; height: 36px; color: var(--gold); filter: drop-shadow(0 0 15px rgba(241,196,15,0.8)); }
 @keyframes crown-bounce { 0%, 100% { transform: translateX(-50%) translateY(0) rotate(-5deg); } 50% { transform: translateX(-50%) translateY(-8px) rotate(5deg); } }
 
@@ -301,7 +325,7 @@ body::after {
 .divider-line { flex: 1; height: 1px; background: linear-gradient(to right, transparent, rgba(138,43,226,0.3), transparent); }
 .divider-text { font-size: 10px; font-weight: 900; letter-spacing: 3px; color: var(--primary-light); }
 
-/* ═══════════════ LISTA (GLASSMORPHISM 2.0) ═══════════════ */
+/* ═══════════════ LISTA ═══════════════ */
 .ranking-list { padding: 0 20px; display: flex; flex-direction: column; gap: 12px; }
 
 .rank-item {
