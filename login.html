@@ -3,20 +3,20 @@
 <head>
     <script src="hb-loader.js"></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub Brain - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Entrar - Hub Brain</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="login.css">
 </head>
 <body>
 
-    <a href="welcome.html" class="voltar">
+    <a href="welcome.html" class="btn-voltar">
         <i data-lucide="arrow-left"></i>
     </a>
 
-    <main class="container">
+    <main class="login-wrapper">
 
         <div class="topo">
             <img src="icon-514_20260512_161420_0000.png" alt="Hub Brain">
@@ -27,62 +27,65 @@
             <h1>Entrar no <em>Hub Brain</em></h1>
         </div>
 
-        <form class="form" onsubmit="tentarLogar(event)">
-            <div class="campo">
-                <label>E-MAIL</label>
-                <div class="input-wrap">
-                    <i data-lucide="mail"></i>
-                    <input type="email" id="user-email" placeholder="seu@email.com" autocomplete="email" spellcheck="false">
+        <div class="glass-card">
+            <form class="form" onsubmit="tentarLogar(event)">
+                <div class="campo">
+                    <label>E-MAIL</label>
+                    <div class="input-wrap">
+                        <i data-lucide="mail"></i>
+                        <input type="email" id="user-email" placeholder="seu@email.com" autocomplete="email" spellcheck="false">
+                    </div>
                 </div>
-            </div>
 
-            <div class="campo">
-                <label>SENHA</label>
-                <div class="input-wrap">
-                    <i data-lucide="lock"></i>
-                    <input type="password" id="user-pass" placeholder="••••••••" autocomplete="current-password">
-                    <button type="button" class="ver-senha" onclick="toggleSenha()">
-                        <i data-lucide="eye" id="eye-icon"></i>
-                    </button>
+                <div class="campo">
+                    <label>SENHA</label>
+                    <div class="input-wrap">
+                        <i data-lucide="lock"></i>
+                        <input type="password" id="user-pass" placeholder="••••••••" autocomplete="current-password">
+                        <button type="button" class="ver-senha" onclick="toggleSenha()">
+                            <i data-lucide="eye" id="eye-icon"></i>
+                        </button>
+                    </div>
                 </div>
+
+                <div class="linha-extra">
+                    <label class="check">
+                        <input type="checkbox" id="manter-conectado" checked>
+                        <span></span>
+                        <small>Manter conectado</small>
+                    </label>
+                    <a href="#" onclick="window.recuperarSenha(event)">Esqueci a senha</a>
+                </div>
+
+                <div id="login-status" class="status"></div>
+
+                <button type="submit" class="btn-roxo">
+                    <span>Entrar</span>
+                    <i data-lucide="arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="divisor">
+                <span></span>
+                <small>ou</small>
+                <span></span>
             </div>
 
-            <div class="linha-extra">
-                <label class="check">
-                    <input type="checkbox" id="manter-conectado" checked>
-                    <span></span>
-                    <small>Manter conectado</small>
-                </label>
-                <a href="#" onclick="window.recuperarSenha(event)">Esqueci a senha</a>
-            </div>
-
-            <div id="login-status" class="status"></div>
-
-            <button type="submit" class="btn-roxo">
-                <span>Entrar</span>
-                <i data-lucide="arrow-right"></i>
+            <button class="btn-visitante" onclick="entrarComoVisitante()">
+                <i data-lucide="ghost"></i>
+                <span>Entrar como visitante</span>
             </button>
-        </form>
+        </div>
 
         <div class="rodape-form">
             <span>Não tem conta?</span>
             <a href="cadastro.html">Criar agora</a>
         </div>
 
-        <button class="btn-visitante" onclick="entrarComoVisitante()">
-            <i data-lucide="eye"></i>
-            <span>Continuar como visitante</span>
-        </button>
-
         <div class="policy">
             <a href="privacidade.html">Privacidade</a>
             <span>·</span>
             <a href="termos.html">Termos</a>
-            <span>·</span>
-            <a href="https://instagram.com/hubbrain.app" target="_blank" rel="noopener">
-                <i data-lucide="instagram" style="width:12px;height:12px;vertical-align:middle"></i>
-                @hubbrain.app
-            </a>
         </div>
 
     </main>
