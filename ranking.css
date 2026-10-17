@@ -8,7 +8,7 @@
     --silver: #bdc3c7;
     --bronze: #cd7f32;
     --bg: #050508;
-    --glass: rgba(30, 20, 45, 0.5); /* Fundo com tinta roxa */
+    --glass: rgba(30, 20, 45, 0.5);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-highlight: rgba(255, 255, 255, 0.15);
     --txt-dim: #9ca3af;
@@ -24,7 +24,7 @@ body {
     overflow-x: hidden;
 }
 
-/* Fundo Animado do App */
+/* Fundo com grid e glow */
 body::before {
     content: '';
     position: fixed;
@@ -72,9 +72,6 @@ body::after {
 .menu-btn:active, .help-btn:active { transform: scale(0.95); background: rgba(138,43,226,0.2); }
 .help-btn { color: var(--primary-light); }
 
-/* Logo Central (Para o header padrão) */
-.header-logo-animated { display: flex; align-items: center; gap: 8px; }
-
 /* ═══════════════ WRAPPER ═══════════════ */
 .ranking-wrapper { padding-bottom: 100px; position: relative; z-index: 1; }
 
@@ -107,49 +104,116 @@ body::after {
 .stat-mini span { font-size: 26px; font-weight: 900; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
 .stat-mini label { font-size: 9px; font-weight: 800; color: #aaa; letter-spacing: 1.5px; text-transform: uppercase; }
 
-/* ═══════════════ PÓDIO ═══════════════ */
-.podium-section { position: relative; padding: 30px 20px 40px; }
+/* ═══════════════ PÓDIO 3D COM HOLOFOTES ═══════════════ */
+.podium-section { position: relative; padding: 40px 20px 50px; overflow: hidden; }
 .podium-bg-glow {
-    position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
+    position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
     width: 350px; height: 250px; background: radial-gradient(ellipse, rgba(138,43,226,0.3) 0%, transparent 70%);
-    filter: blur(60px); pointer-events: none;
+    filter: blur(60px); pointer-events: none; z-index: 0;
 }
 
+.palco-3d {
+    position: relative;
+    max-width: 380px;
+    margin: 0 auto;
+    perspective: 1200px;
+}
+
+/* ─── POSTES ─── */
+.poste {
+    position: absolute;
+    bottom: 20px;
+    width: 12px;
+    height: 220px;
+    background: linear-gradient(180deg, #111 0%, #2a2a35 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    z-index: 3;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.8), inset 0 0 5px rgba(138,43,226,0.2);
+}
+.poste-esq { left: -10px; transform: rotateY(15deg); }
+.poste-dir { right: -10px; transform: rotateY(-15deg); }
+
+.poste-topo {
+    position: absolute;
+    top: -15px; left: 50%; transform: translateX(-50%);
+    width: 30px; height: 30px;
+    background: radial-gradient(circle, #fff 0%, var(--primary-light) 40%, transparent 70%);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 30px var(--primary-light), 0 0 60px var(--primary);
+    z-index: 4;
+    animation: piscar-luz 2s infinite alternate;
+}
+@keyframes piscar-luz {
+    0% { opacity: 0.7; transform: translateX(-50%) scale(0.9); }
+    100% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+}
+
+/* ─── FEIXES DE LUZ ─── */
+.feixe-luz {
+    position: absolute;
+    top: -10px;
+    width: 320px;
+    height: 320px;
+    background: linear-gradient(180deg, rgba(192,132,252, 0.4) 0%, rgba(138,43,226, 0.15) 40%, transparent 90%);
+    filter: blur(18px);
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: screen;
+    opacity: 0.9;
+}
+.feixe-luz.esq {
+    left: -10px;
+    clip-path: polygon(0 0, 100% 35%, 100% 100%, 0 100%);
+    transform-origin: top left;
+}
+.feixe-luz.dir {
+    right: -10px;
+    clip-path: polygon(0 35%, 100% 0, 100% 100%, 0 100%);
+    transform-origin: top right;
+}
+
+/* ─── CONTAINER SLOTS ─── */
 .podium-container { 
     display: flex; 
     align-items: flex-end; 
     justify-content: center; 
-    gap: 8px; 
+    gap: 4px; 
     position: relative; 
-    padding-bottom: 16px; /* Espaço pro chão */
-    max-width: 360px;
-    margin: 0 auto;
+    z-index: 2;
+    padding-bottom: 10px;
+    transform-style: preserve-3d;
+    transform: rotateX(5deg);
 }
 
-/* O CHÃO DO PÓDIO (A mágica acontece aqui) */
+/* ─── CHÃO ─── */
 .podium-container::after {
     content: '';
     position: absolute;
     bottom: 0;
-    left: -5%; 
-    right: -5%;
-    height: 22px;
-    background: #0a0510;
-    border: 1px solid rgba(138,43,226,0.3);
+    left: -10px; right: -10px;
+    height: 40px;
+    background: radial-gradient(ellipse at top, rgba(138,43,226,0.2) 0%, #050508 70%);
+    border: 1px solid rgba(138,43,226,0.4);
     border-top: 2px solid rgba(138,43,226,0.8);
-    border-radius: 6px;
+    border-radius: 12px;
     box-shadow: 
-        0 20px 40px rgba(0,0,0,0.9), 
-        inset 0 5px 15px rgba(138,43,226,0.2);
-    z-index: 1;
-    transform: perspective(300px) rotateX(15deg); /* Inclinação 3D */
+        0 20px 40px rgba(0,0,0,0.9),
+        inset 0 5px 15px rgba(138,43,226,0.3),
+        0 0 30px rgba(138,43,226,0.3);
+    transform: perspective(400px) rotateX(45deg);
+    z-index: -1;
 }
 
+/* ─── SLOTS ─── */
 .podium-slot { 
     flex: 1; max-width: 120px; display: flex; flex-direction: column; align-items: center; 
     position: relative; animation: podium-rise 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; z-index: 2; 
 }
-.podium-slot.second { animation-delay: 0.1s; } .podium-slot.first { animation-delay: 0.2s; } .podium-slot.third { animation-delay: 0.3s; }
+.podium-slot.second { animation-delay: 0.1s; } 
+.podium-slot.first { animation-delay: 0.2s; } 
+.podium-slot.third { animation-delay: 0.3s; }
 @keyframes podium-rise { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Sparkles */
@@ -158,7 +222,10 @@ body::after {
 .first .sparkle { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
 .second .sparkle { background: var(--silver); box-shadow: 0 0 10px var(--silver); }
 .third .sparkle { background: var(--bronze); box-shadow: 0 0 10px var(--bronze); }
-.sparkle:nth-child(1) { top: 10%; left: 15%; animation-delay: 0s; } .sparkle:nth-child(2) { top: 20%; right: 10%; animation-delay: 1s; } .sparkle:nth-child(3) { bottom: 25%; left: 20%; animation-delay: 2s; } .sparkle:nth-child(4) { top: 35%; left: 50%; animation-delay: 1.5s; }
+.sparkle:nth-child(1) { top: 10%; left: 15%; animation-delay: 0s; } 
+.sparkle:nth-child(2) { top: 20%; right: 10%; animation-delay: 1s; } 
+.sparkle:nth-child(3) { bottom: 25%; left: 20%; animation-delay: 2s; } 
+.sparkle:nth-child(4) { top: 35%; left: 50%; animation-delay: 1.5s; }
 @keyframes sparkle-float { 0%, 100% { opacity: 0; transform: translateY(0) scale(1); } 50% { opacity: 1; transform: translateY(-25px) scale(1.5); } }
 
 /* Coroa */
@@ -177,7 +244,7 @@ body::after {
 .medal-badge.bronze { background: linear-gradient(135deg, #e6a869, #a0522d); color: #000; box-shadow: 0 0 20px rgba(205,127,50,0.5); }
 .medal-badge i { width: 14px; height: 14px; }
 
-/* Avatar Frame */
+/* Avatar */
 .avatar-frame {
     width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     margin-bottom: 12px; position: relative; border: 3px solid; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -195,7 +262,7 @@ body::after {
 .avatar-frame.silver i { color: var(--silver); filter: drop-shadow(0 0 10px rgba(189,195,199,0.6)); }
 .avatar-frame.bronze i { color: var(--bronze); filter: drop-shadow(0 0 10px rgba(205,127,50,0.6)); }
 
-/* Pódio Info */
+/* Textos do Pódio */
 .podium-name { font-size: 14px; font-weight: 900; color: white; margin-bottom: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
 .podium-patente { font-size: 9px; font-weight: 800; color: #888; letter-spacing: 0.5px; margin-bottom: 8px; text-align: center; }
 .podium-xp {
@@ -209,45 +276,32 @@ body::after {
 .podium-xp.bronze { border-color: var(--bronze); color: var(--bronze); }
 .podium-xp i { width: 14px; height: 14px; }
 
-/* Barras do Pódio - Agora com base 3D */
+/* Barras do Pódio 3D */
 .podium-bar {
-    width: 100%; 
-    border-radius: 12px 12px 0 0;
-    border: 1px solid; 
-    border-bottom: none; 
-    position: relative; 
-    overflow: hidden;
-    backdrop-filter: blur(10px);
-    z-index: 2;
+    width: 100%; border-radius: 8px 8px 0 0; border: 1px solid; border-bottom: none; 
+    position: relative; overflow: hidden; backdrop-filter: blur(10px); z-index: 2;
+    box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 10px 20px rgba(0,0,0,0.5);
 }
-.podium-bar::before { 
-    content: ''; position: absolute; inset: 0; 
-    background: linear-gradient(to top, rgba(255,255,255,0.1), transparent); 
+.podium-bar::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(255,255,255,0.1), transparent); }
+
+.podium-bar::after {
+    content: ''; position: absolute; bottom: -4px; left: -2px; right: -2px; height: 8px;
+    border-radius: 4px; z-index: -1;
 }
 
-/* Adicionado borda inferior pra colar no chão */
-.podium-bar.gold { 
-    height: 110px; border-color: var(--gold); 
-    background: linear-gradient(to top, rgba(241,196,15,0.3), rgba(241,196,15,0.05)); 
-    border-bottom: 3px solid var(--gold);
-}
-.podium-bar.silver { 
-    height: 85px; border-color: var(--silver); 
-    background: linear-gradient(to top, rgba(189,195,199,0.3), rgba(189,195,199,0.05)); 
-    border-bottom: 3px solid var(--silver);
-}
-.podium-bar.bronze { 
-    height: 65px; border-color: var(--bronze); 
-    background: linear-gradient(to top, rgba(205,127,50,0.3), rgba(205,127,50,0.05)); 
-    border-bottom: 3px solid var(--bronze);
-}
+.podium-bar.gold { height: 110px; border-color: var(--gold); background: linear-gradient(to top, rgba(241,196,15,0.4), rgba(241,196,15,0.1)); }
+.podium-bar.gold::after { background: #997b00; }
+.podium-bar.silver { height: 85px; border-color: var(--silver); background: linear-gradient(to top, rgba(189,195,199,0.4), rgba(189,195,199,0.1)); }
+.podium-bar.silver::after { background: #6e777a; }
+.podium-bar.bronze { height: 65px; border-color: var(--bronze); background: linear-gradient(to top, rgba(205,127,50,0.4), rgba(205,127,50,0.1)); }
+.podium-bar.bronze::after { background: #7a3f1a; }
 
 /* ═══════════════ DIVIDER ═══════════════ */
 .section-divider { display: flex; align-items: center; gap: 16px; padding: 30px 24px 20px; }
 .divider-line { flex: 1; height: 1px; background: linear-gradient(to right, transparent, rgba(138,43,226,0.3), transparent); }
 .divider-text { font-size: 10px; font-weight: 900; letter-spacing: 3px; color: var(--primary-light); }
 
-/* ═══════════════ LISTA (O VERDADEIRO UPGRADE) ═══════════════ */
+/* ═══════════════ LISTA (GLASSMORPHISM 2.0) ═══════════════ */
 .ranking-list { padding: 0 20px; display: flex; flex-direction: column; gap: 12px; }
 
 .rank-item {
@@ -262,7 +316,7 @@ body::after {
 .rank-item:nth-child(1) { animation-delay: 0.05s; } .rank-item:nth-child(2) { animation-delay: 0.1s; } .rank-item:nth-child(3) { animation-delay: 0.15s; }
 @keyframes item-slide-in { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
 
-/* Card do Próprio Usuário (GIGANTE) */
+/* Card do Próprio Usuário */
 .rank-item.me {
     background: linear-gradient(90deg, rgba(138,43,226,0.2), rgba(20,20,26,0.8));
     border-left: 4px solid var(--primary-light);
@@ -305,7 +359,7 @@ body::after {
 .loading-state p { font-size: 12px; font-weight: 800; color: #888; letter-spacing: 1px; }
 
 /* ═══════════════════════════════════════════════════════════
-   MODAL DE PONTUAÇÃO (O QUE ESTAVA FALTANDO)
+   MODAL DE PONTUAÇÃO
    ═══════════════════════════════════════════════════════════ */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 10000; align-items: center; justify-content: center; padding: 20px; }
 .modal-card { background: #0d0d12; border: 1px solid rgba(138,43,226,0.4); border-radius: 32px; padding: 32px 24px; max-width: 420px; width: 100%; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,0.8), inset 0 0 30px rgba(138,43,226,0.1); animation: modal-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -343,3 +397,19 @@ body::after {
 /* Botão do Modal */
 .modal-btn { width: 100%; background: linear-gradient(135deg, var(--primary), #6a1fc2); border: none; border-radius: 16px; padding: 16px; color: white; font-size: 14px; font-weight: 900; cursor: pointer; transition: all 0.2s; box-shadow: 0 8px 24px rgba(138,43,226,0.4); }
 .modal-btn:active { transform: scale(0.98); }
+
+/* MODAL DITOH */
+.modal-ditoh-orbital { width: 100px; height: 100px; margin: 0 auto 24px; position: relative; display: flex; align-items: center; justify-content: center; }
+.orbital-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--primary); border-bottom-color: var(--primary); }
+.ring-1 { width: 100%; height: 100%; animation: spin-ring 2s linear infinite; opacity: 0.6; }
+.ring-2 { width: 80%; height: 80%; animation: spin-ring 1.5s linear infinite reverse; opacity: 0.8; border-left-color: var(--primary); border-right-color: var(--primary); border-top-color: transparent; border-bottom-color: transparent; }
+@keyframes spin-ring { to { transform: rotate(360deg); } }
+.orbital-core { width: 50px; height: 50px; background: rgba(138,43,226,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(138,43,226,0.6); }
+.orbital-core i { width: 28px; height: 28px; color: white; filter: drop-shadow(0 0 8px rgba(138,43,226,0.8)); }
+
+.modal-subtitle { color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 4px; margin-bottom: 24px; }
+.modal-quote { background: rgba(138,43,226,0.1); border-left: 4px solid var(--primary); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: left; }
+.modal-quote p { color: #ccc; font-size: 13px; font-style: italic; line-height: 1.6; }
+.modal-instagram { display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(138,43,226,0.2); border-radius: 16px; padding: 14px; margin-bottom: 24px; text-decoration: none; color: white; font-weight: 700; transition: all 0.2s; }
+.modal-instagram:hover { background: rgba(255,255,255,0.06); }
+.modal-instagram i { width: 20px; height: 20px; color: var(--primary); }
