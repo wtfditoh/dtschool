@@ -107,7 +107,7 @@ body::after {
 /* ═══════════════ PÓDIO 3D COM HOLOFOTES ═══════════════ */
 .podium-section { 
     position: relative; 
-    padding: 60px 20px 50px; 
+    padding: 70px 20px 50px; /* Aumentei o topo pra coroa respirar */
     overflow: visible;
 }
 .podium-bg-glow {
@@ -123,94 +123,99 @@ body::after {
     perspective: 1200px;
 }
 
-/* ─── BASE DOS POSTES ─── */
+/* ─── POSTES (Agora são hastes retas inclinadas) ─── */
 .poste {
     position: absolute;
     bottom: 30px;
-    width: 60px;
-    height: 220px;
+    width: 8px;
+    height: 200px;
+    background: linear-gradient(to right, #111, #2a2a35, #111);
+    border-radius: 6px;
     z-index: 4;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.8);
 }
-.poste-esq { left: -20px; }
-.poste-dir { right: -20px; }
 
-/* ─── BRAÇO CURVO ─── */
-.braco-curvo {
-    position: absolute;
-    bottom: 0;
-    width: 10px;
-    height: 180px;
-    background: #111;
-    border-radius: 10px;
-    box-shadow: inset 0 0 5px rgba(255,255,255,0.1), 0 10px 20px rgba(0,0,0,0.8);
+.poste-esq { 
+    left: 0px; 
+    transform: rotate(30deg); 
+    transform-origin: bottom center; /* Rotaciona de baixo pra ponta ir pro centro */
 }
-.poste-esq .braco-curvo { left: 15px; }
-.poste-dir .braco-curvo { right: 15px; }
-
-/* O "gancho" do braço */
-.braco-curvo::before {
-    content: '';
-    position: absolute;
-    top: -15px;
-    width: 40px;
-    height: 30px;
-    border: 10px solid #111;
-    border-bottom: none;
-    border-radius: 30px 30px 0 0;
-    box-shadow: 0 -5px 10px rgba(0,0,0,0.5);
+.poste-dir { 
+    right: 0px; 
+    transform: rotate(-30deg); 
+    transform-origin: bottom center; 
 }
-.poste-esq .braco-curvo::before { left: 0; border-right: none; border-top-left-radius: 30px; border-bottom-left-radius: 0; }
-.poste-dir .braco-curvo::before { right: 0; border-left: none; border-top-right-radius: 30px; border-bottom-right-radius: 0; }
 
-/* ─── HOLOFOTE (Caixa de LED) ─── */
+/* ─── HOLOFOTE (Virado de lado) ─── */
 .holofote {
     position: absolute;
-    top: -25px;
-    width: 38px;
-    height: 48px;
+    top: -30px;
+    left: 50%;
+    width: 36px;
+    height: 56px;
     background: #0a0a0f;
-    border: 2px solid #222;
-    border-radius: 8px;
+    border: 2px solid #333;
+    border-radius: 6px;
     z-index: 5;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.8), inset 0 0 10px rgba(138,43,226,0.3);
+    box-shadow: inset 0 0 10px #000, 0 8px 15px rgba(0,0,0,0.8);
+    /* O segredo pra ficar "de lado": rotateY */
+    transform: translateX(-50%) perspective(100px) rotateY(-55deg) rotateZ(15deg);
 }
-.poste-esq .holofote { left: 20px; transform: rotate(25deg); }
-.poste-dir .holofote { right: 20px; transform: rotate(-25deg); }
 
-/* ─── MINI QUADRADOS (LEDs) ─── */
+/* Espelha o holofote da direita */
+.poste-dir .holofote {
+    transform: translateX(-50%) perspective(100px) rotateY(55deg) rotateZ(-15deg);
+}
+
+/* ─── LEDs ─── */
 .leds {
-    width: 22px;
-    height: 34px;
+    width: 20px;
+    height: 40px;
     background-image: radial-gradient(circle, #c084fc 1.5px, transparent 2px);
     background-size: 5px 5px;
     background-position: center;
-    border-radius: 4px;
+    border-radius: 2px;
     animation: leds-pulso 2s infinite alternate;
+    box-shadow: 0 0 20px rgba(192,132,252, 0.8);
 }
 @keyframes leds-pulso {
     0% { opacity: 0.7; filter: drop-shadow(0 0 4px #c084fc); }
     100% { opacity: 1; filter: drop-shadow(0 0 15px #8a2be2); }
 }
 
-/* ─── FEIXE DE LUZ (CONE PERFEITO) ─── */
+/* ─── FEIXE DE LUZ (O VERDADEIRO SHOW) ─── */
 .feixe-luz {
     position: absolute;
-    top: 10px;
-    width: 350px;
-    height: 400px;
-    background: conic-gradient(from 180deg at top center, transparent 40%, rgba(138,43,226,0.4) 50%, transparent 60%);
-    filter: blur(30px);
+    top: -10px;
+    width: 250px;
+    height: 350px;
+    /* Triângulo perfeito com gradiente bem forte */
+    clip-path: polygon(0% 0%, 15% 0%, 100% 100%, -20% 100%);
+    background: linear-gradient(to bottom, rgba(192,132,252, 0.85) 0%, rgba(138,43,226, 0.15) 70%, transparent 100%);
+    filter: blur(10px);
+    mix-blend-mode: screen; /* Faz a luz somar com o fundo */
     pointer-events: none;
     z-index: 1;
-    opacity: 0.8;
-    mix-blend-mode: screen;
-    transform-origin: top center;
+    transform-origin: top left;
 }
-.poste-esq .feixe-luz { left: 20px; transform: rotate(25deg); }
-.poste-dir .feixe-luz { right: 20px; transform: rotate(-25deg) scaleX(-1); }
+
+/* Feixe da esquerda (joga pro centro) */
+.poste-esq .feixe-luz {
+    left: 15px;
+    transform: rotate(40deg); 
+}
+
+/* Feixe da direita (espelhado) */
+.poste-dir .feixe-luz {
+    right: 15px;
+    left: auto;
+    clip-path: polygon(85% 0%, 100% 0%, 120% 100%, 0% 100%);
+    transform-origin: top right;
+    transform: rotate(-40deg);
+}
 
 /* ─── CONTAINER SLOTS ─── */
 .podium-container { 
@@ -268,12 +273,8 @@ body::after {
 
 /* Coroa */
 .crown-floating { 
-    position: absolute; 
-    top: -55px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    animation: crown-bounce 2s ease-in-out infinite; 
-    z-index: 10; 
+    position: absolute; top: -55px; left: 50%; transform: translateX(-50%); 
+    animation: crown-bounce 2s ease-in-out infinite; z-index: 10; 
 }
 .crown-floating i { width: 36px; height: 36px; color: var(--gold); filter: drop-shadow(0 0 15px rgba(241,196,15,0.8)); }
 @keyframes crown-bounce { 0%, 100% { transform: translateX(-50%) translateY(0) rotate(-5deg); } 50% { transform: translateX(-50%) translateY(-8px) rotate(5deg); } }
@@ -328,10 +329,12 @@ body::after {
     box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 10px 20px rgba(0,0,0,0.5);
 }
 .podium-bar::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(255,255,255,0.1), transparent); }
+
 .podium-bar::after {
     content: ''; position: absolute; bottom: -4px; left: -2px; right: -2px; height: 8px;
     border-radius: 4px; z-index: -1;
 }
+
 .podium-bar.gold { height: 110px; border-color: var(--gold); background: linear-gradient(to top, rgba(241,196,15,0.4), rgba(241,196,15,0.1)); }
 .podium-bar.gold::after { background: #997b00; }
 .podium-bar.silver { height: 85px; border-color: var(--silver); background: linear-gradient(to top, rgba(189,195,199,0.4), rgba(189,195,199,0.1)); }
