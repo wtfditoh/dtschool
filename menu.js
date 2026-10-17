@@ -100,13 +100,38 @@ const criarMenuGlobal = () => {
         navLinks.appendChild(adminLink);
     }
 
-    const abrirMenu = () => { sideMenu.classList.add('open'); menuOverlay.classList.add('active'); };
-    const fecharMenu = () => { sideMenu.classList.remove('open'); menuOverlay.classList.remove('active'); };
+    // ═══ CONTROLE DO MENU COM O BOTÃO VOLTAR ═══
+    const abrirMenu = () => {
+        sideMenu.classList.add('open');
+        menuOverlay.classList.add('active');
+        
+        // Avisa o navegador do celular pra não sair da página ao voltar
+        if (!history.state || history.state.menu !== 'aberto') {
+            history.pushState({ menu: 'aberto' }, '');
+        }
+    };
+
+    const fecharMenu = (isBackAction = false) => {
+        sideMenu.classList.remove('open');
+        menuOverlay.classList.remove('active');
+        
+        // Se foi um clique normal no X ou fora do menu, remove o histórico artificial
+        if (!isBackAction && history.state && history.state.menu === 'aberto') {
+            history.back();
+        }
+    };
 
     if (btnOpen) btnOpen.onclick = abrirMenu;
-    if (btnClose) btnClose.onclick = fecharMenu;
-    if (menuOverlay) menuOverlay.onclick = fecharMenu;
+    if (btnClose) btnClose.onclick = () => fecharMenu(false);
+    if (menuOverlay) menuOverlay.onclick = () => fecharMenu(false);
     if (btnLogout) btnLogout.onclick = () => { localStorage.clear(); window.location.href = 'welcome.html'; };
+
+    // Escuta o botão voltar do celular quando o menu tá aberto
+    window.addEventListener('popstate', () => {
+        if (sideMenu.classList.contains('open')) {
+            fecharMenu(true);
+        }
+    });
 
     // INSTALAR APP
     let deferredPrompt;
@@ -217,11 +242,22 @@ if (document.readyState === 'loading') {
     criarMenuGlobal();
 }
 
-// ═══ Fix tela preta ao voltar (bfcache) ═══
+// ═══ Fix tela preta + menu aberto ao voltar (bfcache) ═══
 window.addEventListener('pageshow', (event) => {
     if (event.persisted) {
-        // Remove a classe que deixa a tela invisível
+        // 1. Remove a tela preta
         document.body.classList.remove('saindo');
         document.body.style.opacity = '1';
+        
+        // 2. Fecha o menu à força
+        const sideMenu = document.getElementById('side-menu');
+        const menuOverlay = document.getElementById('menu-overlay');
+        if (sideMenu) sideMenu.classList.remove('open');
+        if (menuOverlay) menuOverlay.classList.remove('active');
+        
+        // 3. Limpa qualquer estado preso no histórico
+        if (history.state && history.state.menu === 'aberto') {
+            history.replaceState(null, '');
+        }
     }
 });
