@@ -106,14 +106,9 @@
         </div>
         <span class="logo-brain">BRAIN</span>
     </div>
-    <div style="display:flex; gap:8px;">
-        <button id="ct-compartilhar" class="ct-header-add" aria-label="Compartilhar pasta" title="Compartilhar pasta">
-            <i data-lucide="share-2"></i>
-        </button>
-        <button id="ct-add" class="ct-header-add" aria-label="Adicionar">
-            <i data-lucide="plus"></i>
-        </button>
-    </div>
+    <button id="ct-add" class="ct-header-add" aria-label="Adicionar">
+    <i data-lucide="plus"></i>
+</button>
 </header>
 
 <main class="ct-wrap">
@@ -127,6 +122,11 @@
     <div id="ct-lista"></div>
 </main>
 
+    <button id="ct-compartilhar" class="ct-fab" aria-label="Compartilhar pasta">
+    <i data-lucide="share-2" style="width:18px;height:18px;"></i>
+    <span id="ct-fab-txt">Compartilhar</span>
+</button>
+    
 <div id="ct-viewer" class="ct-viewer">
     <div class="ct-viewer-top">
         <div class="ct-viewer-info" id="ct-viewer-info"></div>
