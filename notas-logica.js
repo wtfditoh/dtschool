@@ -317,7 +317,7 @@ window.confirmarExclusao = async function() {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// COMPARTILHAR (ESTILO ANTIGO REFINADO - SEM TABLET)
+// COMPARTILHAR (CLEAN, DARK, ESTILO LOGIN)
 // ═══════════════════════════════════════════════════════════════════════════
 window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     let container = document.getElementById('compartilhamento-container');
@@ -345,40 +345,45 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
     });
 
     container.innerHTML = `
-        <div style="width:1080px; height:1920px; background:radial-gradient(circle at center, #1a0b2e 0%, #050508 100%); position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit',sans-serif;">
+        <div style="width:1080px; height:1920px; background:#0a0a0e; position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Outfit',sans-serif;">
             
-            <!-- Glow suave no centro -->
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:900px; height:900px; background:radial-gradient(circle, rgba(147,51,234,0.15) 0%, transparent 70%); filter:blur(60px); z-index:0;"></div>
+            <!-- Grid Sutil do Login -->
+            <div style="position:absolute; inset:0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 60px 60px; z-index:0;"></div>
+            
+            <!-- Glow Roxo Centralizado (Login style) -->
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:1200px; height:1200px; background:radial-gradient(circle, rgba(147,51,234,0.25) 0%, transparent 60%); filter:blur(100px); z-index:1;"></div>
 
-            <!-- Conteúdo (Sem bordas de tablet, direto na tela) -->
-            <div style="position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; text-align:center; padding: 0 80px;">
+            <!-- Logo Transparente Flutuando -->
+            <img src="icon-514_20260512_161420_0000.png" style="position:absolute; top:15%; width:220px; opacity:0.9; z-index:2; filter:drop-shadow(0 0 30px rgba(147,51,234,0.5));">
+
+            <!-- Texto do Topo (Kicker) -->
+            <div style="position:absolute; top:25%; z-index:2; text-align:center;">
+                <span style="color:#c084fc; font-size:24px; font-weight:800; letter-spacing:6px; text-transform:uppercase;">MÉDIA FINAL</span>
+            </div>
+
+            <!-- Card de Vidro Central (Estilo Login) -->
+            <div style="position:relative; z-index:10; width:800px; height:800px; background:rgba(20, 20, 26, 0.2); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); border-top: 1px solid rgba(255,255,255,0.2); border-radius: 60px; box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 0 40px rgba(147,51,234,0.05); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; margin-top: 60px;">
                 
-                <!-- Logo com brilho roxo atrás -->
-                <div style="width:260px; height:260px; background:rgba(147,51,234,0.15); border:3px solid rgba(147,51,234,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:50px; box-shadow:0 0 80px rgba(147,51,234,0.4), inset 0 0 30px rgba(147,51,234,0.2);">
-                    <img src="icon-514_20260512_161420_0000.png" style="width:180px; height:180px; object-fit:contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));">
-                </div>
-
-                <!-- Badge de Status -->
-                <div style="display:inline-flex; align-items:center; gap:16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:16px 40px; border-radius:50px; margin-bottom:40px;">
-                    <span style="font-size:40px;">${statusEmoji}</span>
-                    <span style="color:${corDestaque}; font-size:36px; font-weight:900; letter-spacing:6px; text-transform:uppercase; text-shadow:0 0 20px ${corDestaque}80;">${statusTxt}</span>
+                <!-- Status Badge -->
+                <div style="display:inline-flex; align-items:center; gap:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:12px 30px; border-radius:40px; margin-bottom:30px;">
+                    <span style="font-size:32px;">${statusEmoji}</span>
+                    <span style="color:${corDestaque}; font-size:28px; font-weight:900; letter-spacing:4px; text-transform:uppercase;">${statusTxt}</span>
                 </div>
 
                 <!-- Nome da Matéria -->
-                <h1 style="color:#fff; font-size:100px; font-weight:900; margin:0 0 20px 0; line-height:1.05; letter-spacing:-4px; text-transform:uppercase; text-shadow:0 10px 30px rgba(0,0,0,0.8);">${nomeMateria}</h1>
+                <h1 style="color:#fff; font-size:70px; font-weight:900; margin:0 0 20px 0; line-height:1.1; letter-spacing:-2px; text-transform:uppercase; text-shadow:0 4px 20px rgba(0,0,0,0.5);">${nomeMateria}</h1>
                 
                 <!-- Linha Divisória -->
-                <div style="width:250px; height:6px; background:linear-gradient(90deg, transparent, ${corDestaque}, transparent); border-radius:6px; margin:20px 0 50px 0; box-shadow:0 0 20px ${corDestaque};"></div>
+                <div style="width:120px; height:4px; background:linear-gradient(90deg, transparent, ${corDestaque}, transparent); border-radius:4px; margin:20px 0 40px 0;"></div>
 
                 <!-- Nota Gigante -->
-                <span style="color:#9ca3af; font-size:36px; font-weight:800; letter-spacing:10px; text-transform:uppercase; margin-bottom:10px;">MÉDIA FINAL</span>
-                <h2 style="color:${corDestaque}; font-size:400px; font-weight:900; margin:0; line-height:0.8; letter-spacing:-20px; text-shadow:0 0 100px ${corDestaque}90;">${mediaReal}</h2>
+                <h2 style="color:${corDestaque}; font-size:240px; font-weight:900; margin:0; line-height:0.9; letter-spacing:-10px; text-shadow:0 0 60px ${corDestaque}60;">${mediaReal}</h2>
 
             </div>
 
             <!-- Rodapé -->
-            <div style="position:absolute; bottom:80px; z-index:10; display:flex; flex-direction:column; align-items:center; gap:10px;">
-                <p style="color:#fff; font-size:40px; font-weight:900; letter-spacing:15px; margin:0;">HUB BRAIN</p>
+            <div style="position:absolute; bottom:80px; z-index:10; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                <p style="color:#fff; font-size:36px; font-weight:900; letter-spacing:8px; margin:0;">HUB BRAIN</p>
                 <p style="color:#6b7280; font-size:24px; font-weight:600; margin:0; letter-spacing:2px;">hubbrain.netlify.app</p>
             </div>
         </div>
@@ -390,7 +395,7 @@ window.gerarCardVitoria = async function(nomeMateria, mediaReal) {
         if (!window.html2canvas) throw new Error('html2canvas não carregou');
 
         const canvas = await html2canvas(container.firstElementChild, {
-            backgroundColor: '#050508',
+            backgroundColor: '#0a0a0e',
             width: 1080,
             height: 1920,
             scale: 1, 
