@@ -6,11 +6,11 @@
   node_bundler = "esbuild"
 
 [[redirects]]
-  from = "/pasta/:id"
-  to = "/.netlify/functions/pasta?id=:id"
+  from = "/pasta/*"
+  to = "/.netlify/functions/pasta?id=:splat"
   status = 200
 
 [[redirects]]
-  from = "/conteudo/:id"
-  to = "/.netlify/functions/pasta?conteudo=:id"
+  from = "/conteudo/*"
+  to = "/.netlify/functions/pasta?conteudo=:splat"
   status = 200
