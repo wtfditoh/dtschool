@@ -126,86 +126,91 @@ body::after {
 /* ─── BASE DOS POSTES ─── */
 .poste {
     position: absolute;
-    bottom: 20px;
-    width: 80px;
+    bottom: 30px;
+    width: 60px;
     height: 220px;
-    z-index: 3;
+    z-index: 4;
 }
-.poste-esq { left: -30px; }
-.poste-dir { right: -30px; transform: scaleX(-1); }
+.poste-esq { left: -20px; }
+.poste-dir { right: -20px; }
 
 /* ─── BRAÇO CURVO ─── */
 .braco-curvo {
     position: absolute;
     bottom: 0;
-    left: 10px;
-    width: 60px;
-    height: 170px;
-    border-top: 12px solid #111;
-    border-left: 12px solid #111;
-    border-top-left-radius: 50px;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.6);
+    width: 10px;
+    height: 180px;
+    background: #111;
+    border-radius: 10px;
+    box-shadow: inset 0 0 5px rgba(255,255,255,0.1), 0 10px 20px rgba(0,0,0,0.8);
 }
+.poste-esq .braco-curvo { left: 15px; }
+.poste-dir .braco-curvo { right: 15px; }
 
-/* ─── HOLOFOTE RETANGULAR ─── */
+/* O "gancho" do braço */
+.braco-curvo::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    width: 40px;
+    height: 30px;
+    border: 10px solid #111;
+    border-bottom: none;
+    border-radius: 30px 30px 0 0;
+    box-shadow: 0 -5px 10px rgba(0,0,0,0.5);
+}
+.poste-esq .braco-curvo::before { left: 0; border-right: none; border-top-left-radius: 30px; border-bottom-left-radius: 0; }
+.poste-dir .braco-curvo::before { right: 0; border-left: none; border-top-right-radius: 30px; border-bottom-right-radius: 0; }
+
+/* ─── HOLOFOTE (Caixa de LED) ─── */
 .holofote {
     position: absolute;
-    top: -20px;
-    right: -30px;
-    width: 42px;
-    height: 55px;
+    top: -25px;
+    width: 38px;
+    height: 48px;
     background: #0a0a0f;
-    border: 2px solid #2a2a35;
+    border: 2px solid #222;
     border-radius: 8px;
-    transform: rotate(45deg);
-    z-index: 4;
+    z-index: 5;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 20px rgba(138,43,226,0.4), inset 0 0 10px rgba(0,0,0,0.8);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.8), inset 0 0 10px rgba(138,43,226,0.3);
 }
+.poste-esq .holofote { left: 20px; transform: rotate(25deg); }
+.poste-dir .holofote { right: 20px; transform: rotate(-25deg); }
 
 /* ─── MINI QUADRADOS (LEDs) ─── */
 .leds {
-    width: 26px;
-    height: 38px;
+    width: 22px;
+    height: 34px;
     background-image: radial-gradient(circle, #c084fc 1.5px, transparent 2px);
-    background-size: 6px 6px;
+    background-size: 5px 5px;
     background-position: center;
-    border-radius: 2px;
+    border-radius: 4px;
     animation: leds-pulso 2s infinite alternate;
 }
 @keyframes leds-pulso {
-    0% { opacity: 0.8; filter: drop-shadow(0 0 4px #c084fc); }
+    0% { opacity: 0.7; filter: drop-shadow(0 0 4px #c084fc); }
     100% { opacity: 1; filter: drop-shadow(0 0 15px #8a2be2); }
 }
 
-/* ─── FEIXE DE LUZ MIJADO NO PÓDIO ─── */
+/* ─── FEIXE DE LUZ (CONE PERFEITO) ─── */
 .feixe-luz {
     position: absolute;
     top: 10px;
-    left: 40px;
-    width: 280px;
-    height: 380px;
-    background: linear-gradient(180deg, rgba(192,132,252,0.5) 0%, rgba(138,43,226,0.15) 50%, transparent 100%);
-    filter: blur(22px);
-    mix-blend-mode: screen;
+    width: 350px;
+    height: 400px;
+    background: conic-gradient(from 180deg at top center, transparent 40%, rgba(138,43,226,0.4) 50%, transparent 60%);
+    filter: blur(30px);
     pointer-events: none;
     z-index: 1;
-    opacity: 0.9;
+    opacity: 0.8;
+    mix-blend-mode: screen;
+    transform-origin: top center;
 }
-
-.feixe-luz.esq {
-    clip-path: polygon(20% 0, 80% 0, 100% 100%, 0% 100%);
-    transform: rotate(35deg);
-    transform-origin: top left;
-}
-
-.feixe-luz.dir {
-    clip-path: polygon(20% 0, 80% 0, 100% 100%, 0% 100%);
-    transform: rotate(35deg); 
-    transform-origin: top left;
-}
+.poste-esq .feixe-luz { left: 20px; transform: rotate(25deg); }
+.poste-dir .feixe-luz { right: 20px; transform: rotate(-25deg) scaleX(-1); }
 
 /* ─── CONTAINER SLOTS ─── */
 .podium-container { 
@@ -220,29 +225,29 @@ body::after {
     transform: rotateX(5deg);
 }
 
-/* ─── CHÃO ─── */
+/* ─── CHÃO (PALCO) ─── */
 .podium-container::after {
     content: '';
     position: absolute;
     bottom: 0;
-    left: -10px; right: -10px;
-    height: 40px;
-    background: radial-gradient(ellipse at top, rgba(138,43,226,0.2) 0%, #050508 70%);
-    border: 1px solid rgba(138,43,226,0.4);
-    border-top: 2px solid rgba(138,43,226,0.8);
-    border-radius: 12px;
+    left: -15px; right: -15px;
+    height: 45px;
+    background: linear-gradient(to bottom, rgba(138,43,226,0.15) 0%, #050508 80%);
+    border: 1px solid rgba(138,43,226,0.5);
+    border-top: 2px solid rgba(192,132,252,0.8);
+    border-radius: 20px;
     box-shadow: 
         0 20px 40px rgba(0,0,0,0.9),
-        inset 0 5px 15px rgba(138,43,226,0.3),
-        0 0 30px rgba(138,43,226,0.3);
+        inset 0 8px 20px rgba(138,43,226,0.3),
+        0 0 20px rgba(138,43,226,0.2);
     transform: perspective(400px) rotateX(45deg);
-    z-index: -1;
+    z-index: 1;
 }
 
-/* ─── SLOTS ─── */
+/* ─── SLOTS (Jogadores) ─── */
 .podium-slot { 
     flex: 1; max-width: 120px; display: flex; flex-direction: column; align-items: center; 
-    position: relative; animation: podium-rise 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; z-index: 2; 
+    position: relative; animation: podium-rise 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; z-index: 3; 
 }
 .podium-slot.second { animation-delay: 0.1s; } 
 .podium-slot.first { animation-delay: 0.2s; } 
@@ -323,12 +328,10 @@ body::after {
     box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 10px 20px rgba(0,0,0,0.5);
 }
 .podium-bar::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(255,255,255,0.1), transparent); }
-
 .podium-bar::after {
     content: ''; position: absolute; bottom: -4px; left: -2px; right: -2px; height: 8px;
     border-radius: 4px; z-index: -1;
 }
-
 .podium-bar.gold { height: 110px; border-color: var(--gold); background: linear-gradient(to top, rgba(241,196,15,0.4), rgba(241,196,15,0.1)); }
 .podium-bar.gold::after { background: #997b00; }
 .podium-bar.silver { height: 85px; border-color: var(--silver); background: linear-gradient(to top, rgba(189,195,199,0.4), rgba(189,195,199,0.1)); }
