@@ -329,13 +329,15 @@ function fitPreview() {
     const scaler = document.querySelector('.preview-scaler');
     if (!wrap || !scaler) return;
 
-    // Limites: altura disponível na tela (deixa espaço pro resto da UI)
-    const alturaMax = Math.min(window.innerHeight * 0.55, 560);
-    const larguraMax = Math.min(wrap.parentElement?.clientWidth || 320, 320);
+    const larguraTela = window.innerWidth;
+    const alturaTela = window.innerHeight;
 
-    // Calcula pelas 2 restrições
-    let w = larguraMax;
+    // Usa quase toda a largura
+    let w = Math.min(larguraTela - 24, 400);
     let h = w * 16 / 9;
+
+    // Se altura passar de (tela - 180px pro resto), reduz
+    const alturaMax = alturaTela - 180;
     if (h > alturaMax) {
         h = alturaMax;
         w = h * 9 / 16;
@@ -346,7 +348,6 @@ function fitPreview() {
 
     const scale = w / 1080;
     scaler.style.transform = `scale(${scale})`;
-    scaler.style.transformOrigin = 'top left';
 }
 
 window.addEventListener('resize', fitPreview);
