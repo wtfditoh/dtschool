@@ -372,3 +372,33 @@ body { background:#050508; color:#fff; font-family:'Outfit',-apple-system,sans-s
     margin: 0;
     line-height: 1.5;
 }
+
+/* ═══ FAB compartilhar pasta ═══ */
+.ct-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #9333ea, #6a1fc2);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    z-index: 500;
+    box-shadow: 0 12px 32px rgba(147,51,234,0.45), 0 4px 12px rgba(0,0,0,0.4);
+    transform: translateY(100px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ct-fab.on { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.ct-fab:active { transform: scale(0.95); }
+.ct-fab svg { flex-shrink: 0; }
+@media (max-width: 380px) { .ct-fab { padding: 12px 16px; font-size: 12px; } }
