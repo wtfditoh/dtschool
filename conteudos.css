@@ -227,3 +227,148 @@ body { background:#050508; color:#fff; font-family:'Outfit',-apple-system,sans-s
     backdrop-filter: blur(4px);
     box-shadow: 0 2px 8px rgba(147,51,234,0.4);
 }
+
+.ct-tarefa-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(147,51,234,0.9);
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    z-index: 3;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(147,51,234,0.4);
+}
+
+.ct-fila-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    margin: 14px 16px 0;
+    background: rgba(255,187,51,0.1);
+    border: 1px solid rgba(255,187,51,0.3);
+    border-radius: 12px;
+    color: #ffbb33;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+.ct-fila-badge b { color: #ffdd66; font-weight: 900; }
+
+.ct-modal-pasta {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+.ct-modal-pasta.on { opacity: 1; visibility: visible; }
+
+.ct-modal-pasta-box {
+    background: #131319;
+    border: 1px solid rgba(147,51,234,0.3);
+    border-radius: 24px;
+    padding: 32px 24px 24px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ct-modal-pasta.on .ct-modal-pasta-box { transform: scale(1); }
+
+.ct-modal-pasta-x {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ct-modal-pasta-emoji { font-size: 48px; margin-bottom: 16px; }
+
+.ct-modal-pasta-box h3 {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+}
+
+.ct-modal-pasta-box > p {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.ct-modal-pasta-link {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 11.5px;
+    color: #c084fc;
+    word-break: break-all;
+    margin-bottom: 18px;
+    text-align: left;
+}
+
+.ct-modal-pasta-btns { display: flex; gap: 8px; margin-bottom: 14px; }
+
+.ct-modal-pasta-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.ct-modal-pasta-btn.pri {
+    background: linear-gradient(135deg, #9333ea, #6a1fc2);
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(147,51,234,0.35);
+}
+.ct-modal-pasta-btn.pri:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(147,51,234,0.5); }
+.ct-modal-pasta-btn.sec {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #9ca3af;
+}
+.ct-modal-pasta-btn.sec:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+.ct-modal-pasta-dica {
+    font-size: 11.5px;
+    color: #6b7280;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.5;
+}
