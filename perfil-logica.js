@@ -120,29 +120,35 @@ async function carregarPerfilOficial(userFirebase) {
             else localStorage.removeItem('dt_user_foto');
             mostrarAvatar();
 
-            statsContainer.innerHTML = `
+                        statsContainer.innerHTML = `
                 <div class="xp-card">
-                    <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:900;">
-                        <span style="color:${pCor}; letter-spacing:1px;">PATENTE: ${pNome}</span>
-                        <span style="color:#444;">${xp} XP TOTAL</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:900;">
+                        <span style="color:${pCor}; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+                            <i data-lucide="award" style="width:14px;height:14px;"></i> ${pNome}
+                        </span>
+                        <span style="color:#888;">${xp} XP</span>
                     </div>
                     <div class="xp-bar-bg">
-                        <div class="xp-bar-fill" style="width: ${progressoRelativo}%; background: ${pCor}; box-shadow: 0 0 15px ${pCor}aa;"></div>
+                        <div class="xp-bar-fill" style="width: ${progressoRelativo}%; background: linear-gradient(90deg, ${pCor}, #fff); box-shadow: 0 0 15px ${pCor}aa;"></div>
                     </div>
-                    <p class="hint" style="text-align:center; margin:0;">
-                        ${faltaParaProxima > 0 ? `Faltam ${faltaParaProxima} XP para subir de rank` : 'Nível máximo atingido!'}
+                    <p class="hint" style="text-align:center; margin:0; font-size:10px; color:#555; font-weight:600;">
+                        ${faltaParaProxima > 0 ? `Faltam <b>${faltaParaProxima} XP</b> para subir de rank` : 'Nível máximo atingido! 🏆'}
                     </p>
                 </div>
                 <div class="stat-grid">
                     <div class="stat-box">
-                        <span style="color:#f1c40f;">#${minhaPosicao > 0 ? minhaPosicao : '--'}</span>
+                        <span style="color:#f1c40f; display:flex; flex-direction:column; align-items:center; gap:4px;">
+                            <i data-lucide="trophy" style="width:20px;height:20px; opacity:0.8;"></i>
+                            #${minhaPosicao > 0 ? minhaPosicao : '--'}
+                        </span>
                         <label>RANK GLOBAL</label>
-                        <p class="hint" style="margin-top:5px; font-size:8px;">Posição no Hub</p>
                     </div>
                     <div class="stat-box">
-                        <span style="color:#2ecc71;">${desempenho}%</span>
+                        <span style="color:#00e5a0; display:flex; flex-direction:column; align-items:center; gap:4px;">
+                            <i data-lucide="trending-up" style="width:20px;height:20px; opacity:0.8;"></i>
+                            ${desempenho}%
+                        </span>
                         <label>DESEMPENHO</label>
-                        <p class="hint" style="margin-top:5px; font-size:8px;">Aproveitamento total</p>
                     </div>
                 </div>`;
 
