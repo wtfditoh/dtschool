@@ -1,6 +1,6 @@
 /**
  * Netlify Function — página pública de pasta/conteúdo compartilhado.
- * Renderiza HTML com Open Graph pra preview no WhatsApp.
+ * Detecta o ID pelo path (/pasta/xxx) OU pela query (?id=xxx).
  */
 
 const PROJECT = 'dt-scho0l';
@@ -27,8 +27,14 @@ function extrairCampos(fields) {
 
 async function lerDoc(collection, id) {
     const url = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents/${collection}/${encodeURIComponent(id)}?key=${API_KEY}`;
+    console.log('[pasta] fetch:', url.slice(0, 120) + '...');
     const r = await fetch(url);
-    if (!r.ok) return null;
+    console.log('[pasta] status Firestore:', r.status);
+    if (!r.ok) {
+        const txt = await r.text();
+        console.log('[pasta] erro Firestore:', txt.slice(0, 200));
+        return null;
+    }
     const d = await r.json();
     return extrairCampos(d.fields || {});
 }
@@ -51,12 +57,12 @@ function extArquivo(nome) {
     return m ? m[1] : '';
 }
 
-function htmlErro(msg) {
+function htmlErro(msg, debug) {
     return `<!DOCTYPE html><html lang="pt-br"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Não encontrado - Hub Brain</title>
-<style>body{background:#0a0a0e;color:#fff;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;text-align:center;margin:0}.box{max-width:400px}.icon{font-size:80px;margin-bottom:24px}.txt{font-size:16px;color:#888;line-height:1.5;margin-top:12px}a.btn{display:inline-block;margin-top:24px;padding:14px 28px;background:#9333ea;color:#fff;text-decoration:none;border-radius:12px;font-weight:800}</style>
-</head><body><div class="box"><div class="icon">🔍</div><h1 style="font-size:22px;margin:0 0 8px">Não encontrei nada</h1><p class="txt">${esc(msg)}</p><a href="${SITE}" class="btn">Ir pro Hub Brain →</a></div></body></html>`;
+<style>body{background:#0a0a0e;color:#fff;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;text-align:center;margin:0}.box{max-width:400px}.icon{font-size:80px;margin-bottom:24px}.txt{font-size:16px;color:#888;line-height:1.5;margin-top:12px}a.btn{display:inline-block;margin-top:24px;padding:14px 28px;background:#9333ea;color:#fff;text-decoration:none;border-radius:12px;font-weight:800}.dbg{margin-top:30px;padding:14px;background:#131319;border-radius:12px;font-family:monospace;font-size:11px;color:#666;text-align:left;word-break:break-all}</style>
+</head><body><div class="box"><div class="icon">🔍</div><h1 style="font-size:22px;margin:0 0 8px">Não encontrei nada</h1><p class="txt">${esc(msg)}</p><a href="${SITE}" class="btn">Ir pro Hub Brain →</a>${debug ? `<div class="dbg">${esc(debug)}</div>` : ''}</div></body></html>`;
 }
 
 function htmlPasta(pasta, conteudos) {
@@ -70,7 +76,6 @@ function htmlPasta(pasta, conteudos) {
         const isImg = c.tipo === 'imagem' || c.tipo !== 'arquivo';
         const src = c.thumb || c.medium || c.url || '';
         const nome = c.nome || 'Conteúdo';
-
         if (isImg && src) {
             return `<a class="card" href="${esc(c.url || src)}" target="_blank" rel="noopener"><img src="${esc(src)}" alt="" loading="lazy"><div class="card-info"><b>${esc(nome)}</b>${c.bimestre ? `<small>${c.bimestre}º BIM</small>` : ''}</div></a>`;
         }
@@ -147,28 +152,50 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 
 export default async (req) => {
     const url = new URL(req.url);
-    const idPasta = url.searchParams.get('id');
-    const idConteudo = url.searchParams.get('conteudo');
+    const path = url.pathname;
+
+    console.log('[pasta] ================');
+    console.log('[pasta] req.url:', req.url);
+    console.log('[pasta] pathname:', path);
+    console.log('[pasta] search:', url.search);
+
+    // ─── Detecta se é /pasta/xxx ou /conteudo/xxx pelo path ───
+    let idPasta = url.searchParams.get('id');
+    let idConteudo = url.searchParams.get('conteudo');
+
+    // Fallback: pega direto do path
+    const matchPasta = path.match(/\/pasta\/([^/?#]+)/);
+    const matchConteudo = path.match(/\/conteudo\/([^/?#]+)/);
+
+    if (!idPasta && matchPasta) idPasta = matchPasta[1];
+    if (!idConteudo && matchConteudo) idConteudo = matchConteudo[1];
+
+    console.log('[pasta] idPasta detectado:', idPasta);
+    console.log('[pasta] idConteudo detectado:', idConteudo);
 
     try {
         if (idConteudo) {
             const c = await lerDoc('conteudos', idConteudo);
-            if (!c) return new Response(htmlErro('Esse conteúdo não existe mais.'), { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+            if (!c) return new Response(htmlErro('Esse conteúdo não existe mais.', 'conteudo=' + idConteudo), { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
             const pastaFake = { titulo: c.materia || 'Conteúdo', autor: 'Compartilhado', capa: c.thumb || c.url, id: idConteudo };
             return new Response(htmlPasta(pastaFake, [c]), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' } });
         }
 
-        if (!idPasta) return new Response(htmlErro('Link inválido.'), { status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+        if (!idPasta) {
+            return new Response(htmlErro('Link inválido.', 'path=' + path + ' | query=' + url.search), { status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+        }
 
         const pasta = await lerDoc('pastas', idPasta);
-        if (!pasta) return new Response(htmlErro('Essa pasta não existe mais ou o link expirou.'), { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+        if (!pasta) {
+            return new Response(htmlErro('Essa pasta não existe mais ou o link expirou.', 'id=' + idPasta), { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+        }
 
         const ids = Array.isArray(pasta.conteudosIds) ? pasta.conteudosIds : [];
         const conteudos = await lerVarios('conteudos', ids);
 
         return new Response(htmlPasta(pasta, conteudos), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' } });
     } catch (e) {
-        console.error('[pasta]', e);
-        return new Response(htmlErro('Deu ruim aqui. Tenta de novo.'), { status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+        console.error('[pasta] ERRO:', e);
+        return new Response(htmlErro('Deu ruim aqui.', String(e && e.message)), { status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
     }
 };
