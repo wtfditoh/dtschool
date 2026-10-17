@@ -7,7 +7,6 @@ const criarMenuGlobal = () => {
 
     const menuHTML = `
         <div id="side-menu" class="side-menu">
-
             <!-- MINI CARD PERFIL -->
             <div class="menu-profile-card" onclick="window.location.href='perfil.html'">
                 <div class="menu-avatar" id="menu-avatar-box">
@@ -105,7 +104,6 @@ const criarMenuGlobal = () => {
         sideMenu.classList.add('open');
         menuOverlay.classList.add('active');
         
-        // Avisa o navegador do celular pra não sair da página ao voltar
         if (!history.state || history.state.menu !== 'aberto') {
             history.pushState({ menu: 'aberto' }, '');
         }
@@ -115,7 +113,6 @@ const criarMenuGlobal = () => {
         sideMenu.classList.remove('open');
         menuOverlay.classList.remove('active');
         
-        // Se foi um clique normal no X ou fora do menu, remove o histórico artificial
         if (!isBackAction && history.state && history.state.menu === 'aberto') {
             history.back();
         }
@@ -125,13 +122,6 @@ const criarMenuGlobal = () => {
     if (btnClose) btnClose.onclick = () => fecharMenu(false);
     if (menuOverlay) menuOverlay.onclick = () => fecharMenu(false);
     if (btnLogout) btnLogout.onclick = () => { localStorage.clear(); window.location.href = 'welcome.html'; };
-
-    // Escuta o botão voltar do celular quando o menu tá aberto
-    window.addEventListener('popstate', () => {
-        if (sideMenu.classList.contains('open')) {
-            fecharMenu(true);
-        }
-    });
 
     // INSTALAR APP
     let deferredPrompt;
@@ -173,7 +163,6 @@ const criarMenuGlobal = () => {
     const path = window.location.pathname;
     const paginasQuimica = ['quimica', 'rgb-roi', 'rgb', 'laboratorio', 'banco-amostras'];
     
-    // Se tá em alguma página de química, abre o submenu automaticamente
     if (paginasQuimica.some(pg => path.includes(pg))) {
         const submenu = document.getElementById('submenu-quimica');
         const chevron = document.getElementById('chevron-quimica');
@@ -184,7 +173,6 @@ const criarMenuGlobal = () => {
         if (expandable) expandable.classList.add('active');
     }
 
-    // Marcar página ativa
     if (path === '/' || path.endsWith('index.html')) {
         document.getElementById('link-home')?.classList.add('active');
     }
@@ -200,7 +188,6 @@ const criarMenuGlobal = () => {
         }
     });
 
-    // Marcar sub-links de química
     if (path.includes('quimica') && !path.includes('rgb')) {
         document.getElementById('link-quimica-geral')?.classList.add('active');
     } else if (path.includes('rgb')) {
@@ -242,22 +229,83 @@ if (document.readyState === 'loading') {
     criarMenuGlobal();
 }
 
-// ═══ Fix tela preta + menu aberto ao voltar (bfcache) ═══
+
+// ═══════════════════════════════════════════════════════════════════
+// GESTÃO GLOBAL DE BOTÃO VOLTAR (MENUS, MODAIS E BFCACHE)
+// ═══════════════════════════════════════════════════════════════════
+
+// 1. OBSERVADOR: Deteta quando qualquer modal é aberto
+const observerModais = new MutationObserver(() => {
+    const seletores = '.modal-overlay, .modal-dono-overlay, .hbr-ov, .ct-viewer, .ct-modal-pasta, .pv-viewer, .ct-confirm';
+    
+    let algumAberto = false;
+    document.querySelectorAll(seletores).forEach(m => {
+        const estilo = window.getComputedStyle(m);
+        // Se o modal estiver visível na tela
+        if (estilo.display !== 'none' && estilo.visibility !== 'hidden' && estilo.opacity !== '0') {
+            algumAberto = true;
+        }
+    });
+
+    // Se tem modal aberto e o histórico ainda não sabe, avisa.
+    if (algumAberto && (!history.state || !history.state.modalAberto)) {
+        history.pushState({ modalAberto: true }, '');
+    }
+});
+observerModais.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+
+// 2. BOTÃO VOLTAR: Fecha o que estiver aberto, senão deixa sair
+window.addEventListener('popstate', () => {
+    // A) O menu lateral tá aberto?
+    const sideMenu = document.getElementById('side-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    if (sideMenu && sideMenu.classList.contains('open')) {
+        sideMenu.classList.remove('open');
+        if (menuOverlay) menuOverlay.classList.remove('active');
+        return; // Fecha o menu e para aqui
+    }
+
+    // B) Algum modal tá aberto?
+    const seletores = '.modal-overlay, .modal-dono-overlay, .hbr-ov, .ct-viewer, .ct-modal-pasta, .pv-viewer, .ct-confirm';
+    let fechouAlgo = false;
+
+    document.querySelectorAll(seletores).forEach(m => {
+        if (m.matches('.modal-overlay, .modal-dono-overlay') && m.style.display === 'flex') {
+            m.style.display = 'none';
+            fechouAlgo = true;
+        } else if (m.classList.contains('aberto') || m.classList.contains('on')) {
+            m.classList.remove('aberto', 'on');
+            fechouAlgo = true;
+        }
+    });
+
+    if (fechouAlgo) {
+        document.body.classList.remove('hbr-travado'); // Remove trava de scroll
+        document.body.style.overflow = ''; // Destrava scroll
+        return; // Fecha o modal e para aqui
+    }
+});
+
+// 3. BFCACHE: Se voltar de outra página, limpa tudo
 window.addEventListener('pageshow', (event) => {
     if (event.persisted) {
-        // 1. Remove a tela preta
+        // Tira tela preta
         document.body.classList.remove('saindo');
         document.body.style.opacity = '1';
         
-        // 2. Fecha o menu à força
-        const sideMenu = document.getElementById('side-menu');
-        const menuOverlay = document.getElementById('menu-overlay');
-        if (sideMenu) sideMenu.classList.remove('open');
-        if (menuOverlay) menuOverlay.classList.remove('active');
+        // Fecha o menu à força
+        document.getElementById('side-menu')?.classList.remove('open');
+        document.getElementById('menu-overlay')?.classList.remove('active');
         
-        // 3. Limpa qualquer estado preso no histórico
-        if (history.state && history.state.menu === 'aberto') {
-            history.replaceState(null, '');
-        }
+        // Fecha todos os modais à força
+        document.querySelectorAll('.modal-overlay, .modal-dono-overlay').forEach(m => m.style.display = 'none');
+        document.querySelectorAll('.hbr-ov, .ct-viewer, .ct-modal-pasta, .pv-viewer, .ct-confirm').forEach(m => {
+            m.classList.remove('aberto', 'on', 'active');
+        });
+        document.body.classList.remove('hbr-travado');
+        document.body.style.overflow = '';
+
+        // Limpa qualquer estado do histórico
+        if (history.state) history.replaceState(null, '');
     }
 });
